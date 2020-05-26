@@ -8025,17 +8025,19 @@ class Hero:
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### Hero.DisplayForm: "
+        indent = "    "
         if len(inputs) > 0:
-            print("### DisplayForm: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if index not in range(len(self.other_forms)):
-            print("Error! " + str(index) + " is not a valid index for any of " + self.hero_name + \
-                  "'s " + str(len(self.other_forms)) + " alternate Forms.")
+            print(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
+                  self.hero_name + "'s " + str(len(self.other_forms)) + " alternate Forms.")
             return
         else:
             form = self.other_forms[index]
             if codename:
                 print(prefix + self.hero_name)
-                prefix = "    " + prefix
+                prefix += indent
             if self.archetype_modifier == 1:
                 dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
                 dv_ps = None
@@ -8049,33 +8051,33 @@ class Hero:
             else:
                 print(prefix + form[0] + " (" + status_zones[form[1]] + " Form)")
             if form[2] == self.power_dice:
-                print(prefix + "    [Standard Powers]")
+                print(prefix + indent + "[Standard Powers]")
             elif form[2] == [] and dv_ps:
-                print(prefix + "    [No Powers (see " + dv_ps.flavorname + ")]")
+                print(prefix + indent + "[No Powers (see " + dv_ps.flavorname + ")]")
             else:
-                print(prefix + "    Powers:")
+                print(prefix + indent + "Powers:")
                 for d in form[2]:
-                    print(prefix + "        " + str(d))
+                    print(prefix + indent + indent + str(d))
             if form[3] == self.quality_dice:
-                print(prefix + "    [Standard Qualities]")
+                print(prefix + indent + "[Standard Qualities]")
             elif form[3] == [] and dv_ps:
-                print(prefix + "    [No Qualities (see " + dv_ps.flavorname + ")]")
+                print(prefix + indent + "[No Qualities (see " + dv_ps.flavorname + ")]")
             else:
-                print(prefix + "    Qualities:")
+                print(prefix + indent + "Qualities:")
                 for d in form[3]:
-                    print(prefix + "        " + str(d))
+                    print(prefix + indent + indent + str(d))
             if form[4] in [[0,0,0], self.status_dice]:
-                print(prefix + "    [Standard Status]")
+                print(prefix + indent + "[Standard Status]")
             else:
                 for i in range(3):
-                    print(prefix + "    " + status_zones[i] + ": " + str(form[4][i]))
+                    print(prefix + indent + status_zones[i] + ": " + str(form[4][i]))
             if len(form[5]) > 1:
-                print(prefix + "    You gain access to the following Abilities:")
+                print(prefix + indent + "You gain access to the following Abilities:")
             elif len(form[5]) == 1:
-                print(prefix + "    You gain access to the following Ability:")
+                print(prefix + indent + "You gain access to the following Ability:")
             for i in range(len(form[5])):
-                form[5][i].display(prefix=prefix+"        ",
-                                   width=width-len(prefix+"        "))
+                form[5][i].display(prefix=prefix+indent+indent,
+                                   width=width-len(prefix+indent+indent))
     def ChooseForm(self, zone, stepnum=0, inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
