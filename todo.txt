@@ -1,0 +1,28 @@
+OptionMenu config options: ['activebackground', 'activeforeground', 'anchor', 'background', 'bd', 
+'bg', 'bitmap', 'borderwidth', 'cursor', 'direction', 'disabledforeground', 'fg', 'font', 
+'foreground', 'height', 'highlightbackground', 'highlightcolor', 'highlightthickness', 'image', 
+'indicatoron', 'justify', 'menu', 'padx', 'pady', 'relief', 'compound', 'state', 'takefocus', 
+'text', 'textvariable', 'underline', 'width', 'wraplength']
+
+Make column-display routines adjust number of columns based on width?
+ Max length of a canon Power is 20 (Lightning Calculator)
+ Max length of a canon Quality is 24 (Criminal Underworld Info)
+ 
+Finding proper display sizes...
+ BackgroundDetails
+  dispWidth = 85, dispBuffer = 15
+  dispWidth = 100, dispBuffer = 25
+ PowerSourceDetails
+  dispWidth = 100, dispBuffer = 25
+ ArchetypeDetails
+  min total = 140
+  dispWidth = 110, dispBuffer = 30
+  dispWidth = 130, dispBuffer = 35
+  dispWidth = 150, dispBuffer = 45
+ Linear regression:
+  buffer = 0.432692 * width - 19.7596
+ Quadratic regression:
+  buffer = -0.00201007 * width^2 + 0.907185 * width - 46.6979
+ Entered as:
+  buffer = math.floor(0.43 * width - 20)
+  

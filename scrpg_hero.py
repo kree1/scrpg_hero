@@ -154,6 +154,8 @@ def printlong(text, width, prefix=""):
         print(prefix + text)
     elif " " not in text[0:width]:
         print(prefix + text)
+    elif width <= 0:
+        print(prefix + text)
     else:
         sec_start = 0
         sec_end = text.rfind(" ", sec_start, sec_start + width)
@@ -1004,22 +1006,49 @@ class Principle:
         if self.has_ref and not self.is_template:
             summary += "*"
         return summary
-    def display(self, prefix="", width=100, green=True):
-        pref = prefix
+    def display(self,
+                prefix="",
+                width=100,
+                green=True):
         indent = "    "
-        printlong("Principle of " + self.title, width, prefix=pref)
-        printlong(self.during_roleplaying, width-len(indent), prefix=pref+indent)
-        printlong("Minor Twist: " + self.minor_twist, width-len(indent)*2, prefix=pref+indent+indent)
-        printlong("Major Twist: " + self.major_twist, width-len(indent)*2, prefix=pref+indent+indent)
+        printlong("Principle of " + self.title,
+                  width=width-len(prefix),
+                  prefix=prefix)
+        printlong(self.during_roleplaying,
+                  width=width-len(prefix+indent),
+                  prefix=prefix+indent)
+        printlong("Minor Twist: " + self.minor_twist,
+                  width=width-len(prefix+indent+indent),
+                  prefix=prefix+indent+indent)
+        printlong("Major Twist: " + self.major_twist,
+                  width=width-len(prefix+indent+indent),
+                  prefix=prefix+indent+indent)
         if green:
-            printlong("Green Ability: " + self.green_ability, width-len(indent), prefix=pref+indent)
-    def details(self, green=True, width=100):
-        text = "Principle of " + self.title
-        text += "\n\n" + split_text(self.during_roleplaying, width=width)
-        text += "\n\n" + split_text("Minor Twist: " + self.minor_twist, width=width)
-        text += "\n\n" + split_text("Major Twist: " + self.major_twist, width=width)
+            printlong("Green Ability: " + self.green_ability,
+                      width-len(prefix+indent),
+                      prefix=prefix+indent)
+    def details(self,
+                prefix="",
+                width=100,
+                green=True,
+                breaks=2):
+        indent = "    "
+        text = split_text("Principle of " + self.title,
+                          width=width-len(prefix),
+                          prefix=prefix)
+        text += "\n" * breaks + split_text(self.during_roleplaying,
+                                           width=width-len(prefix+indent),
+                                           prefix=prefix+indent)
+        text += "\n" * breaks + split_text("Minor Twist: " + self.minor_twist,
+                                           width=width-len(prefix+indent+indent),
+                                           prefix=prefix+indent+indent)
+        text += "\n" * breaks + split_text("Major Twist: " + self.major_twist,
+                                           width=width-len(prefix+indent+indent),
+                                           prefix=prefix+indent+indent)
         if green:
-            text += "\n\n" + split_text("Green Ability: " + self.green_ability, width=width)
+            text += "\n" * breaks + split_text("Green Ability: " + self.green_ability,
+                                               width=width-len(prefix+indent+indent),
+                                               prefix=prefix+indent+indent)
         return text
 
 global hp_bounds
@@ -1601,8 +1630,8 @@ class Ability:
             firstline += " (" + status_zones[self.zone] + ")"
         print(pref + firstline)
         printlong(self.dispText(), width-4, prefix=pref+indent)
-    def details(self, width=100):
-        fullText = ""
+    def details(self, width=100, prefix=""):
+        fullText = "" + prefix
         if self.zone != 3:
             if self.flavorname:
                 fullText += self.flavorname
@@ -1612,7 +1641,7 @@ class Ability:
         fullText += "[" + self.type + "]"
         if self.zone in range(len(status_zones)):
             fullText += " (" + status_zones[self.zone] + ")"
-        fullText += "\n" + split_text(self.dispText(), width=width, prefix="    ")
+        fullText += "\n" + split_text(self.dispText(), width=width, prefix=prefix+"    ")
         return fullText
     def dispText(self):
         disptext = self.text
@@ -7917,7 +7946,8 @@ class Hero:
                     prohibited_text += " or " + mode[6][len(mode[6])-1]
                 print(prefix + indent + "You cannot " + prohibited_text + " in this Mode.")
             print(prefix + indent + "You gain access to this Ability:")
-            mode[5].display(prefix=prefix+indent+indent,width=width-len(prefix)-len(indent)*2)
+            mode[5].display(prefix=prefix+indent+indent,
+                            width=width-len(prefix+indent+indent))
     def DisplayForm(self, index, prefix="", width=100, codename=True, inputs=[]):
         # Displays the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
@@ -7972,7 +8002,8 @@ class Hero:
             elif len(form[5]) == 1:
                 print(prefix + "    You gain access to the following Ability:")
             for i in range(len(form[5])):
-                form[5][i].display(prefix=prefix+"        ", width=width-8-len(prefix))
+                form[5][i].display(prefix=prefix+"        ",
+                                   width=width-len(prefix+"        "))
     def ChooseForm(self, zone, stepnum=0, inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
@@ -10696,7 +10727,7 @@ class Hero:
                     print(prefix + indent + "Minion Forms:")
                     for x in range(len(self.min_forms)):
                         printlong(MinionFormStr(self.min_forms[x]),
-                                  width=width-len(prefix)-len(indent)*2,
+                                  width=width-len(prefix+indent+indent),
                                   prefix=prefix+indent+indent)
                 if len(step_forms) > 0:
                     print(prefix + indent + "Forms:")
@@ -10704,14 +10735,14 @@ class Hero:
                         self.DisplayForm(x,
                                          codename=False,
                                          prefix=prefix+indent+indent,
-                                         width=width-len(prefix)-len(indent)*2)
+                                         width=width-len(prefix+indent+indent))
                 if len(step_modes) > 0:
                     print(prefix + indent + "Modes:")
                     for x in range(len(step_modes)):
                         self.DisplayMode(x,
                                          codename=False,
                                          prefix=prefix+indent+indent,
-                                         width=width-len(prefix)-len(indent)*2)
+                                         width=width-len(prefix+indent+indent))
             modified_powers = [d for d in self.power_dice if stepnum in d.steps_modified and \
                                d not in step_powers]
             modified_qualities = [d for d in self.quality_dice if stepnum in d.steps_modified and \
@@ -10744,7 +10775,8 @@ class Hero:
                         print(prefix + indent + "Abilities (" + status_zones[z] + "):")
                         for a in modified_zone_abilities:
                             a.RetrievePrior(stepnum+1).display(prefix=prefix+indent+indent,
-                                                               width=width-len(prefix)-len(indent)*2)
+                                                               width=width - \
+                                                               len(prefix+indent+indent))
             # ...
         else:
             print(prefix + "Error! " + str(stepnum) + " is not a valid step of hero creation.")
@@ -10771,7 +10803,8 @@ class Hero:
             ps_text = ps_collection[self.power_source][0]
         if self.archetype in range(len(arc_collection)):
             arc_text = arc_collection[self.archetype][0]
-            if self.archetype_modifier > 0 and self.archetype_modifier in range(len(arc_modifiers)):
+            if self.archetype_modifier > 0 and \
+               self.archetype_modifier in range(len(arc_modifiers)):
                 arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
         if self.personality in range(len(pn_collection)):
             pn_text = pn_collection[self.personality][0]
@@ -10787,7 +10820,7 @@ class Hero:
             print(prefix + indent + "Principles:")
             for pri in self.principles:
                 pri.display(prefix=prefix+indent+indent,
-                            width=width-len(indent)*2,
+                            width=width-len(prefix+indent+indent),
                             green=False)
         if len(self.power_dice) > 0:
             print(prefix + indent + "Powers:")
@@ -10813,12 +10846,12 @@ class Hero:
                 print(prefix + indent + "Abilities (" + status_zones[z] + "):")
                 for a in zone_abilities:
                     a.display(prefix=prefix+indent+indent,
-                              width=width-len(prefix)-len(indent)*2)
+                              width=width-len(prefix+indent+indent))
         if len(self.min_forms) > 0:
             print(prefix + indent + "Minion Forms:")
             for x in range(len(self.min_forms)):
                 printlong(MinionFormStr(self.min_forms[x]),
-                          width=width-len(prefix)-len(indent)*2,
+                          width=width-len(prefix+indent+indent),
                           prefix=prefix+indent+indent)
         if len(self.other_forms) > 0:
             print(prefix + indent + "Forms:")
@@ -10826,15 +10859,97 @@ class Hero:
                 self.DisplayForm(x,
                                  codename=False,
                                  prefix=prefix+indent+indent,
-                                 width=width-len(prefix)-len(indent)*2)
+                                 width=width-len(prefix+indent+indent))
         if len(self.other_modes) > 0:
             print(prefix + indent + "Modes:")
             for x in range(len(self.other_modes)):
                 self.DisplayMode(x,
                                  codename=False,
                                  prefix=prefix+indent+indent,
-                                 width=width-len(prefix)-len(indent)*2)
+                                 width=width-len(prefix+indent+indent))
+    def details(self, prefix="", width=100):
+        # Returns a string containing a full list of the hero's mechanical attributes: codename,
+        #  name, characteristics, Principles, Powers, Qualities, Status, Health ranges, Abilities,
+        #  etc.
+        indent = "    "
+        notePrefix = "### Hero.details: "
+        heroString = ""
+        if self.hero_name == "":
+            heroString += prefix + "[unnamed hero]"
+        else:
+            heroString += prefix + "Hero Name:  " + self.hero_name
+        if self.alias != "":
+            heroString += "\n" + prefix + "Alias:      " + self.alias
+        bg_text = ps_text = arc_text = pn_text = "[none]"
+##        print(notePrefix + "self.background = " + str(self.background))
+        if self.background in range(len(bg_collection)):
+            bg_text = bg_collection[self.background][0]
+##        print(notePrefix + "self.power_source = " + str(self.power_source))
+        if self.power_source in range(len(ps_collection)):
+            ps_text = ps_collection[self.power_source][0]
+##        print(notePrefix + "self.archetype = " + str(self.archetype))
+        if self.archetype in range(len(arc_collection)):
+            arc_text = arc_collection[self.archetype][0]
+##            print(notePrefix + "self.archetype_modifier = " + str(self.archetype_modifier))
+            if self.archetype_modifier > 0 and \
+               self.archetype_modifier in range(len(arc_modifiers)):
+                arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
+##        print(notePrefix + "self.personality = " + str(self.personality))
+        if self.personality in range(len(pn_collection)):
+            pn_text = pn_collection[self.personality][0]
+            if self.dv_personality in range(len(pn_collection)):
+                pn_text = pn_collection[self.dv_personality][0] + " (" + self.dv_tags[0] + \
+                          ") / " + pn_collection[self.personality][0] + " (" + self.dv_tags[1] + \
+                          ")"
+        heroString += "\n" + prefix + indent + "Background:    " + bg_text
+        heroString += "\n" + prefix + indent + "Power Source:  " + ps_text
+        heroString += "\n" + prefix + indent + "Archetype:     " + arc_text
+        heroString += "\n" + prefix + indent + "Personality:   " + pn_text
+        if len(self.principles) > 0:
+            heroString += "\n" + prefix + indent + "Principles:"
+            for pri in self.principles:
+                heroString += "\n" + pri.details(prefix=prefix+indent+indent,
+                                                 width=width-len(prefix+indent+indent),
+                                                 green=False,
+                                                 breaks=1)
+        if len(self.power_dice) > 0:
+            heroString += "\n" + prefix + indent + "Powers:"
+            for d in self.power_dice:
+                heroString += "\n" + prefix + indent + indent + str(d)
+        if len(self.quality_dice) > 0:
+            heroString += "\n" + prefix + indent + "Qualities:"
+            for d in self.quality_dice:
+                heroString += "\n" + prefix + indent + indent + str(d)
+        if self.status_dice != [0,0,0]:
+            heroString += "\n" + prefix + indent + "Status:"
+            for i in range(len(self.status_dice)):
+                heroString += "\n" + prefix + indent + indent + status_zones[i] + ": " + \
+                              str(self.status_dice[i])
+        if self.health_zones != [0,0,0]:
+            heroString += "\n" + prefix + indent + "Health:"
+            rn = self.HealthRanges()
+            for i in range(len(rn)):
+                heroString += "\n" + prefix + indent + indent + status_zones[i] + " Zone: " + \
+                              str(rn[i][0]) + "-" + str(rn[i][1])
+        for z in range(len(status_zones)):
+            zone_abilities = self.Abilities(z)
+            if len(zone_abilities) > 0:
+                heroString += "\n" + prefix + indent + "Abilities (" + status_zones[z] + "):"
+                for a in zone_abilities:
+                    heroString += "\n" + a.details(prefix=prefix+indent+indent,
+                                                   width=width-len(prefix+indent+indent))
+        if len(self.min_forms) > 0:
+            heroString += "\n" + prefix + indent + "Minion Forms:"
+            for x in range(len(self.min_forms)):
+                heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
+                                                width=width-len(prefix+indent+indent),
+                                                prefix=prefix+indent+indent)
+        # Add Modes and Forms here
+        # ...
+        return heroString
+        
 
+# Sample heroes, for testing purposes...
 # Shikari is an Interstellar Genetic Flier with no Archetype modifier.
 def Create_Shikari():
     shikari = Hero("Shikari", "Shikari Lonestar", 0)
@@ -11470,7 +11585,7 @@ class HeroFrame(Frame):
         buttonColumn = 33
         firstButtonRow = 8
         prevButtons = 0
-        self.buttonWidth = 3
+        self.buttonWidth = 4
         self.buttonHeight = 2
         self.modeButton = Button(self,
                                  text="Modes ("+str(self.myModeCount)+")",
@@ -11592,8 +11707,19 @@ class HeroFrame(Frame):
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  command=self.myHero.display)
+                                  command=lambda arg1=-1 : \
+                                  print(self.myHero.details(width=arg1)))
         self.printButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
+                              column=buttonColumn,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.buttonWidth)
+        prevButtons += 1
+        self.stepsButton = Button(self,
+                                  text="Display Steps",
+                                  width=self.columnWidth*self.buttonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  command=self.myHero.DisplaySteps)
+        self.stepsButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                               column=buttonColumn,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
