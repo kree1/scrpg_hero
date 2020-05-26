@@ -8663,14 +8663,15 @@ class Hero:
                     self.ChooseAbility([template], zone, stepnum=this_step, inputs=pass_inputs)
                 # Then start adding Modes.
                 # First, the user gets to choose whether to add a Powerless Mode.
-                printlong("You can add a Powerless Mode if there are circumstances where you " + \
-                          "could be separated from your power source (like having a Power Suit " + \
-                          "that provides all your powers).", 100)
+                prompt = "You can add a Powerless Mode if there are circumstances where you " + \
+                         "could be separated from your power source (like having a Power Suit " + \
+                         "that provides all your powers).\nDo you want to add a Powerless " + \
+                         "Mode? (y/n)"
                 DisplayModeTemplate(-1,0)
                 entry_options = "YN"
                 decision = choose_letter(entry_options,
                                          ' ',
-                                         prompt="Do you want to add a Powerless Mode? (y/n)",
+                                         prompt=prompt,
                                          repeat_message="Please enter Y or N.",
                                          inputs=inputs)
                 entry_choice = decision[0]
@@ -8682,39 +8683,26 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.AddMode(-1, 0, stepnum=this_step, inputs=pass_inputs)
                 # Then, they get 1 additional Green Mode.
-                entry_options = string.ascii_uppercase[0:len(mc_green)]
-                entry_choice = ' '
-                print("Choose 1 additional Green Mode:")
-                for i in range(len(mc_green)):
-                    print("    " + entry_options[i] + ": " + mc_green[i][0])
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a Mode expanded, " + \
-                                             "or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
-                entry_index = entry_options.find(entry_choice)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.AddMode(0, entry_index, stepnum=this_step, inputs=pass_inputs)
-                # Then, they get 2 different Yellow Modes.
-                yellow_indices = [i for i in range(len(mc_yellow))]
-                for x in range(2):
-                    entry_options = string.ascii_uppercase[0:len(yellow_indices)]
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    options = [x[0] for x in mc_green]
+                    details = [ModeTemplateDetails(0, i) for i in range(len(mc_green))]
+                    rwidth = 100
+                    answer = IntVar()
+                    question = ExpandWindow(self.myWindow,
+                                            "Choose 1 additional Green Mode:",
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype Selection: Modular",
+                                            rwidth=rwidth)
+                    entry_index = answer.get()
+                else:
+                    entry_options = string.ascii_uppercase[0:len(mc_green)]
                     entry_choice = ' '
-                    if x > 0:
-                        print("Choose the second Yellow Mode:")
-                    else:
-                        print("Choose the first Yellow Mode:")
-                    for i in range(len(yellow_indices)):
-                        print("    " + entry_options[i] + ": " + mc_yellow[yellow_indices[i]][0])
+                    print("Choose 1 additional Green Mode:")
+                    for i in range(len(mc_green)):
+                        print("    " + entry_options[i] + ": " + mc_green[i][0])
                     while entry_choice not in entry_options:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see a Mode expanded, " + \
@@ -8727,9 +8715,57 @@ class Hero:
                                                  "it.\n")[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayModeTemplate(1, yellow_indices[entry_index])
+                            DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
                     entry_index = entry_options.find(entry_choice)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                self.AddMode(0, entry_index, stepnum=this_step, inputs=pass_inputs)
+                # Then, they get 2 different Yellow Modes.
+                yellow_indices = [i for i in range(len(mc_yellow))]
+                for x in range(2):
+                    prompt = ""
+                    if x > 0:
+                        prompt = "Choose the second Yellow Mode:"
+                    else:
+                        prompt = "Choose the first Yellow Mode:"
+                    if self.UseGUI(inputs):
+                        # Create an ExpandWindow to prompt the user
+                        options = [mc_yellow[x][0] for x in yellow_indices]
+                        details = [ModeTemplateDetails(1,x) for x in yellow_indices]
+                        rwidth = 100
+                        answer = IntVar()
+                        question = ExpandWindow(self.myWindow,
+                                                prompt,
+                                                options,
+                                                details,
+                                                var=answer,
+                                                title="Archetype Selection: Modular",
+                                                rwidth=rwidth)
+                        entry_index = answer.get()
+                    else:
+                        entry_options = string.ascii_uppercase[0:len(yellow_indices)]
+                        entry_choice = ' '
+                        print(prompt)
+                        for i in range(len(yellow_indices)):
+                            print("    " + entry_options[i] + ": " + \
+                                  mc_yellow[yellow_indices[i]][0])
+                        while entry_choice not in entry_options:
+                            if len(inputs) > 0:
+                                print("Enter a lowercase letter to see a Mode expanded, " + \
+                                      "or an uppercase letter to select it.")
+                                print("> " + inputs[0])
+                                entry_choice = inputs.pop(0)[0]
+                            else:
+                                entry_choice = input("Enter a lowercase letter to see a Mode " + \
+                                                     "expanded, or an uppercase letter to " + \
+                                                     "select it.\n")[0]
+                            if entry_choice.upper() in entry_options and \
+                               entry_choice not in entry_options:
+                                entry_index = entry_options.find(entry_choice.upper())
+                                DisplayModeTemplate(1, yellow_indices[entry_index])
+                        entry_index = entry_options.find(entry_choice)
                     mode_index = yellow_indices[entry_index]
                     pass_inputs = []
                     if len(inputs) > 0:
@@ -8738,23 +8774,40 @@ class Hero:
                     self.AddMode(1, mode_index, stepnum=this_step, inputs=pass_inputs)
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
-                entry_options = string.ascii_uppercase[0:len(mc_red)]
-                entry_choice = ' '
-                print("Choose a Red Mode:")
-                for i in range(len(mc_red)):
-                    print("    " + entry_options[i] + ": " + mc_red[i][0])
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a Mode expanded, " + \
-                                             "or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
-                entry_index = entry_options.find(entry_choice)
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    options = [x[0] for x in mc_red]
+                    details = [ModeTemplateDetails(2, i) for i in range(len(mc_red))]
+                    rwidth = 100
+                    answer = IntVar()
+                    question = ExpandWindow(self.myWindow,
+                                            "Choose a Red Mode:",
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype Selection: Modular",
+                                            rwidth=rwidth)
+                    entry_index = answer.get()
+                else:
+                    entry_options = string.ascii_uppercase[0:len(mc_red)]
+                    entry_choice = ' '
+                    print("Choose a Red Mode:")
+                    for i in range(len(mc_red)):
+                        print("    " + entry_options[i] + ": " + mc_red[i][0])
+                    while entry_choice not in entry_options:
+                        if len(inputs) > 0:
+                            print("Enter a lowercase letter to see a Mode expanded, " + \
+                                  "or an uppercase letter to select it.")
+                            print("> " + inputs[0])
+                            entry_choice = inputs.pop(0)[0]
+                        else:
+                            entry_choice = input("Enter a lowercase letter to see a Mode " + \
+                                                 "expanded, or an uppercase letter to select " + \
+                                                 "it.\n")[0]
+                        if entry_choice.upper() in entry_options and \
+                           entry_choice not in entry_options:
+                            DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
+                    entry_index = entry_options.find(entry_choice)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -13689,6 +13742,7 @@ class ExpandWindow(SubWindow):
                  details,
                  var=None,
                  title=None,
+                 lwidth=40,
                  rwidth=100):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
@@ -13703,7 +13757,8 @@ class ExpandWindow(SubWindow):
                                          self.myOptions,
                                          self.myDetails,
                                          self.myVariable,
-                                         width=rwidth)
+                                         lwidth=lwidth,
+                                         rwidth=rwidth)
         self.activate(self.myExpandFrame)
     def body(self, master):
         self.container = master
@@ -13725,11 +13780,12 @@ class ExpandFrame(Frame):
                  print_options,
                  expand_options,
                  destination,
-                 width=100,
+                 lwidth=40,
+                 rwidth=100,
                  printing=False):
         Frame.__init__(self, parent)
+        notePrefix = "### ExpandFrame.__init__: "
         self.myParent = parent
-        self.myPrompt = str(prompt)
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         # myDestination: IntVar, written to only in finish()
         self.myDestination = destination
@@ -13737,7 +13793,16 @@ class ExpandFrame(Frame):
         self.myAnswer = IntVar()
         # myString: StringVar, written to by OptionMenu directly
         self.myString = StringVar(self, self.myOptions[self.myDestination.get()])
-        self.myDispWidth = width
+        # The prompt is allowed to split across multiple lines, but the options aren't,
+        #  so if one of the options is longer than lwidth, use its length as myPromptWidth
+##        for x in self.myOptions:
+##            print(notePrefix + "len(" + str(x) + ") = " + str(len(x)))
+##        print(notePrefix + "max len = " + str(max([len(x) for x in self.myOptions])))
+        self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
+##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
+        self.myPromptBuffer = math.floor(0.43 * self.myPromptWidth - 20)
+        self.myPrompt = split_text(str(prompt), width=self.myPromptBuffer)
+        self.myDispWidth = rwidth
         self.myDispBuffer = math.floor(0.43 * self.myDispWidth - 20)
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.myDetails = [str(x) for x in expand_options]
@@ -13745,6 +13810,7 @@ class ExpandFrame(Frame):
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
+                                   width=self.myPromptWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myPromptLabel.grid(row=0,
                                 column=0,
@@ -13846,17 +13912,6 @@ class ExpandFrame(Frame):
         dispText = ""
         if index in range(len(self.myDetails)):
             dispText = split_text(self.myDetails[index], width=self.myDispWrap)
-            # Testing: if the option at index is the name of an Archetype, call ArchetypeDetails
-            #  to get the expanded text; repeat for Power Sources and Backgrounds
-##            if self.myOptions[index] in [x[0] for x in arc_collection]:
-##                arc_index = [x[0] for x in arc_collection].index(self.myOptions[index])
-##                dispText = ArchetypeDetails(arc_index, width=self.myDispWrap)
-##            elif self.myOptions[index] in [x[0] for x in ps_collection]:
-##                ps_index = [x[0] for x in ps_collection].index(self.myOptions[index])
-##                dispText = PowerSourceDetails(ps_index, width=self.myDispWrap)
-##            elif self.myOptions[index] in [x[0] for x in bg_collection]:
-##                bg_index = [x[0] for x in bg_collection].index(self.myOptions[index])
-##                dispText = BackgroundDetails(bg_index, width=self.myDispWrap)
         self.myDispLabel.config(text=dispText)
         self.myAnswer.set(index)
     def plusbuffer(self, event=None):
