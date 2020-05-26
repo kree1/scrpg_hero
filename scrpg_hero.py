@@ -11899,6 +11899,15 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
         prevButtons += 1
+        self.saveButton = Button(self,
+                                 text="Save as TXT",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 command=self.SaveTxt)
+        self.saveButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
+                             column=buttonColumn,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth)
         # Hide all creation step buttons by default
         self.backgroundButton.grid_remove()
         self.powerSourceButton.grid_remove()
@@ -12598,7 +12607,8 @@ class HeroFrame(Frame):
         indent = "    "
         if not isinstance(self.myHero, Hero):
             self.SetHero(Hero())
-        prompt = "Enter a codename for this hero:"
+        prompt = "Enter a codename for this hero.\n(Feel free to use a placeholder; you can " + \
+                 "change this at any time.)"
         textVar = StringVar(self, self.myHero.hero_name)
         question = EntryWindow(self.myParent,
                                prompt,
@@ -12606,7 +12616,8 @@ class HeroFrame(Frame):
                                title="Hero Creation")
         self.myHero.hero_name = textVar.get()
         self.UpdateAll(self.myHero)
-        prompt = "Enter a civilian name for " + self.myHero.hero_name + ":"
+        prompt = "Enter a civilian name for " + self.myHero.hero_name + ".\n(Feel free to use " + \
+                 "a placeholder; you can change this at any time.)"
         textVar = StringVar(self, self.myHero.alias)
         question = EntryWindow(self.myParent,
                                prompt,
@@ -12616,7 +12627,8 @@ class HeroFrame(Frame):
         self.UpdateAll(self.myHero)
         pronoun_options = [x[0] + "/" + x[1] for x in pronouns]
         pronoun_choice = IntVar(self, self.myHero.pronoun_set)
-        prompt = "Which pronouns should be used for " + self.myHero.hero_name + "?"
+        prompt = "Which pronouns should be used for " + self.myHero.hero_name + "?\n(You can " + \
+                 "change this at any time.)"
         question = SelectWindow(self.myParent,
                                 prompt,
                                 pronoun_options,
@@ -12624,6 +12636,24 @@ class HeroFrame(Frame):
                                 title="Hero Creation")
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero)
+    def SaveTxt(self, inputs=[]):
+        # Let the user save the hero's attributes to a txt file.
+        notePrefix = "### HeroFrame.SaveTxt: "
+        indent = "    "
+        prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
+                 "name a .txt file that already exists " + \
+                 "in this folder. It WILL be overwritten."
+        textVar = StringVar(self, self.myHero.hero_name)
+        question = EntryWindow(self.myParent,
+                               prompt,
+                               textVar,
+                               title="Save Hero")
+        fname = textVar.get() + ".txt"
+        heroFile = open(fname, mode='w')
+        heroFile.write(self.myHero.details(width=-1))
+        heroFile.close()
+        
+        
 
 class SubWindow(Toplevel):
     # A class for subordinate windows
@@ -13225,8 +13255,8 @@ class FormFrame(Frame):
         self.numCols = 28
         self.width = width
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
-        print(notePrefix + "width: " + str(self.width))
-        print(notePrefix + "columnWidth: " + str(self.columnWidth))
+##        print(notePrefix + "width: " + str(self.width))
+##        print(notePrefix + "columnWidth: " + str(self.columnWidth))
         self.SetHero(hero)
         self.numRows = 11 * self.myFormCount - 1
         # ...
@@ -14091,7 +14121,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
