@@ -7766,7 +7766,11 @@ class Hero:
             entry_index = entry_options.find(entry_choice)
         print(ps_collection[entry_index][0] + " Power Source selected.")
         return entry_index
-    def AddMode(self, zone, index, stepnum=0, inputs=[]):
+    def AddMode(self,
+                zone,
+                index,
+                stepnum=0,
+                inputs=[]):
         # Walks the user through adding a Mode based on the mode_template specified by zone and index.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -7899,16 +7903,22 @@ class Hero:
         self.other_modes.append(new_mode)
         print("All set! " + mode_name + " added to " + self.hero_name + "'s Mode Sheet in " + \
               status_zones[zone] + ".")
-    def DisplayMode(self, index, codename=True, inputs=[], prefix="", width=100):
+    def DisplayMode(self,
+                    index,
+                    codename=True,
+                    prefix="",
+                    width=100,
+                    inputs=[]):
         # Displays the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### Hero.DisplayMode: "
         if len(inputs) > 0:
-            print("### DisplayMode: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         indent = "    "
         if index not in range(len(self.other_modes)):
-            printlong("Error! " + str(index) + " is not a valid index for any of " + \
+            printlong(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
                       self.hero_name + "'s " + str(len(self.other_modes)) + " alternate Modes.",
                       prefix=prefix,
                       width=width)
@@ -7948,7 +7958,69 @@ class Hero:
             print(prefix + indent + "You gain access to this Ability:")
             mode[5].display(prefix=prefix+indent+indent,
                             width=width-len(prefix+indent+indent))
-    def DisplayForm(self, index, prefix="", width=100, codename=True, inputs=[]):
+    def ModeDetails(self,
+                    index,
+                    codename=True,
+                    prefix="",
+                    width=100,
+                    inputs=[]):
+        # Returns a string containing the attributes of the hero's Mode specified by index.
+        # codename: should the hero's codename be displayed with this form?
+        # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### Hero.ModeDetails: "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
+        indent = "    "
+        modeString = ""
+        if index not in range(len(self.other_modes)):
+            printlong(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
+                      self.hero_name + "'s " + str(len(self.other_modes)) + " alternate Modes.",
+                      prefix=prefix,
+                      width=width)
+            return modeString
+        else:
+            mode = self.other_modes[index]
+            if codename:
+                modeString += prefix + self.hero_name + "\n"
+                prefix += indent
+            modeString += prefix + mode[0] + " (" + status_zones[mode[1]] + " Mode)"
+            if mode[2] == self.power_dice:
+                modeString += "\n" + prefix + indent + "[Standard Powers]"
+            else:
+                modeString += "\n" + prefix + indent + "Powers:"
+                for d in mode[2]:
+                    modeString += "\n" + prefix + indent + indent + str(d)
+            if mode[3] == self.quality_dice:
+                modeString += "\n" + prefix + indent + "[Standard Qualities]"
+            else:
+                modeString += "\n" + prefix + indent + "Qualities:"
+                for d in mode[3]:
+                    modeString += "\n" + prefix + indent + indent + str(d)
+            if mode[4] in [[0,0,0], self.status_dice]:
+                modeString += "\n" + prefix + indent + "[Standard Status]"
+            else:
+                for i in range(3):
+                    modeString += "\n" + prefix + indent + status_zones[i] + ": " + str(mode[4][i])
+            if len(mode[6]) > 0:
+                prohibited_text = mode[6][0]
+                for i in range(1, len(mode[6])-1):
+                    prohibited_text += ", " + mode[6][i]
+                if len(mode[6]) > 2:
+                    prohibited_text += ","
+                if len(mode[6]) > 1:
+                    prohibited_text += " or " + mode[6][len(mode[6])-1]
+                modeString += "\n" + prefix + indent + "You cannot " + prohibited_text + \
+                              " in this Mode."
+            modeString += "\n" + prefix + indent + "You gain access to this Ability:"
+            modeString += "\n" + mode[5].details(prefix=prefix+indent+indent,
+                                                 width=width-len(prefix+indent+indent))
+        return modeString
+    def DisplayForm(self,
+                    index,
+                    prefix="",
+                    width=100,
+                    codename=True,
+                    inputs=[]):
         # Displays the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -10944,8 +11016,15 @@ class Hero:
                 heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
                                                 width=width-len(prefix+indent+indent),
                                                 prefix=prefix+indent+indent)
-        # Add Modes and Forms here
+        # Add Forms here
         # ...
+        if len(self.other_modes) > 0:
+            heroString += "\n" + prefix + indent + "Modes:"
+            for x in range(len(self.other_modes)):
+                heroString += "\n" + self.ModeDetails(x,
+                                                      codename=False,
+                                                      prefix=prefix+indent+indent,
+                                                      width=width-len(prefix+indent+indent))
         return heroString
         
 
@@ -10983,7 +11062,7 @@ def Create_Ultra_Boy():
                           [[["a",["a"]],["c"]],["L","n"]],
                           "b",
                           ["I"],
-                          [[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","c","y","That Tickles"],["C","a","y","Zap!"]],
+                          [[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","b","y","That Tickles"],["C","a","y","Zap!"]],
                           "b",
                           ["T","C"],
                           [["a"],["f",["b"]],[["f"]],
@@ -10996,7 +11075,7 @@ def Create_Ultra_Boy():
                            "D",
                            ["b","c","a","b",["c","y","Sprock These Two In Particular"],"y","Flash Vision"],
                            "D",
-                           ["d","d","b","b",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
+                           ["d","a","a","a",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
                            "B",
                            ["d","b",["a","y","Was That Important?"],"y","Ultra Strength"],
                            ["D","n"]],
@@ -13916,32 +13995,32 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getKim()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getJo()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
-platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
-disp_frame = HeroFrame(root, hero=platypus)
-disp_frame.grid(row=0, column=0, columnspan=12)
-platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
-platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
-                                   ["B","A","y","Recalculate"],
-                                   ["A","B","y","Raise the Mirror"],
-                                   ["A","A","y","Statistical Inference"]])
-platypus.AddArchetype(1, inputs=[["b"],
-                                 [["g",["b"]],["b"]],
-                                 ["B","c","y","No One Here But You"],
-                                 ["B","y","Reflection"],
-                                 ["A","c","y","Behind the Scenes"],
-                                 ["M","n"]])
-platypus.AddPersonality(0, inputs=[[["y", "Wind-Up Boogeyman"]],["a"]])
-platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","y","Stand Up On It"]])
-platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
-platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
-platypus.AddHealth(inputs=["a"])
-root.mainloop()
+##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
+##disp_frame = HeroFrame(root, hero=platypus)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
+##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
+##                                   ["B","A","y","Recalculate"],
+##                                   ["A","B","y","Raise the Mirror"],
+##                                   ["A","A","y","Statistical Inference"]])
+##platypus.AddArchetype(1, inputs=[["b"],
+##                                 [["g",["b"]],["b"]],
+##                                 ["B","c","y","No One Here But You"],
+##                                 ["B","y","Reflection"],
+##                                 ["A","c","y","Behind the Scenes"],
+##                                 ["M","n"]])
+##platypus.AddPersonality(0, inputs=[[["y", "Wind-Up Boogeyman"]],["a"]])
+##platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","y","Stand Up On It"]])
+##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
+##platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
+##platypus.AddHealth(inputs=["a"])
+##root.mainloop()
 
 # Using a not-yet-constructed hero
 ##dispFrame = HeroFrame(root)
