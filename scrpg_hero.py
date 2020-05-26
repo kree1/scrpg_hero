@@ -7326,11 +7326,11 @@ class Hero:
                               energy=ability_template.requires_energy,
                               hero_step=max([0,stepnum]))
         if zone != 3:
-            print("OK! " + self.hero_name + "'s new Ability is almost ready:")
-            new_ability.display()
+            rename_prompt = "OK! " + self.hero_name + "'s new Ability is almost ready:"
+            rename_prompt += "\n\n" + new_ability.details()
             # Green/Yellow/Red Abilities can have custom names
             entry_options = "YN"
-            rename_prompt = "Do you want to give " + new_ability.name + " a new name (y/n)?"
+            rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name (y/n)?"
             decision = choose_letter(entry_options,
                                      ' ',
                                      prompt=rename_prompt,
@@ -13579,15 +13579,25 @@ class ModeWindow(SubWindow):
         return master
 
 class SelectWindow(SubWindow):
-    def __init__(self, parent, prompt, options, var=None, title=None):
-        SubWindow.__init__(self, parent, title)
+    def __init__(self,
+                 parent,
+                 prompt,
+                 options,
+                 var=None,
+                 title=None,
+                 width=40):
+        SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
         if isinstance(var, IntVar):
             self.myVariable = var
         else:
             self.myVariable = None
-        self.mySelectFrame = SelectFrame(self, self.myPrompt, self.myOptions, self.myVariable)
+        self.mySelectFrame = SelectFrame(self,
+                                         self.myPrompt,
+                                         self.myOptions,
+                                         self.myVariable,
+                                         width=width)
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
     def body(self, master):
@@ -13600,11 +13610,19 @@ class SelectFrame(Frame):
     # prompt: the text of the question
     # print_options -> self.myOptions: the list of texts of each answer
     # destination -> self.myDestination: the variable to save the index of the chosen answer to
-    def __init__(self, parent, prompt, print_options, destination, printing=False):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 print_options,
+                 destination,
+                 printing=False,
+                 width=40):
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myPrompt = prompt
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
+        self.myWidth = max(width, max([len(x) for x in self.myOptions]))
+        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
+        self.myPrompt = split_text(str(prompt), width=self.myWidth+self.myBuffer)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         self.myPromptLabel = Label(self,
