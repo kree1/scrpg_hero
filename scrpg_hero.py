@@ -11762,6 +11762,8 @@ class HeroFrame(Frame):
         prevButtons = 0
         self.buttonWidth = 4
         self.buttonHeight = 2
+        self.stepAnchor = W
+        self.stepReason = LEFT
         self.modeButton = Button(self,
                                  text="Modes ("+str(self.myModeCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
@@ -11799,6 +11801,8 @@ class HeroFrame(Frame):
         if self.myMinionCount == 0:
             self.minionButton.grid_remove()
         self.nameButton = Button(self,
+                                 anchor=self.stepAnchor,
+                                 justify=self.stepReason,
                                  text="0. Edit Names",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -11809,6 +11813,8 @@ class HeroFrame(Frame):
                              columnspan=self.buttonWidth)
         prevButtons += 1
         self.backgroundButton = Button(self,
+                                       anchor=self.stepAnchor,
+                                       justify=self.stepReason,
                                        text="1. Add Background",
                                        width=self.columnWidth*self.buttonWidth,
                                        height=self.rowHeight*self.buttonHeight,
@@ -11819,6 +11825,8 @@ class HeroFrame(Frame):
                                    columnspan=self.buttonWidth)
         prevButtons += 1
         self.powerSourceButton = Button(self,
+                                        anchor=self.stepAnchor,
+                                        justify=self.stepReason,
                                         text="2. Add Power Source",
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
@@ -11829,6 +11837,8 @@ class HeroFrame(Frame):
                                     columnspan=self.buttonWidth)
         prevButtons += 1
         self.archetypeButton = Button(self,
+                                      anchor=self.stepAnchor,
+                                      justify=self.stepReason,
                                       text="3. Add Archetype",
                                       width=self.columnWidth*self.buttonWidth,
                                       height=self.rowHeight*self.buttonHeight,
@@ -11839,6 +11849,8 @@ class HeroFrame(Frame):
                                   columnspan=self.buttonWidth)
         prevButtons += 1
         self.personalityButton = Button(self,
+                                        anchor=self.stepAnchor,
+                                        justify=self.stepReason,
                                         text="4. Add Personality",
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
@@ -11849,6 +11861,8 @@ class HeroFrame(Frame):
                                     columnspan=self.buttonWidth)
         prevButtons += 1
         self.redAbilityButton = Button(self,
+                                       anchor=self.stepAnchor,
+                                       justify=self.stepReason,
                                        text="5. Add Red Abilities",
                                        width=self.columnWidth*self.buttonWidth,
                                        height=self.rowHeight*self.buttonHeight,
@@ -11859,6 +11873,8 @@ class HeroFrame(Frame):
                                    columnspan=self.buttonWidth)
         prevButtons += 1
         self.retconButton = Button(self,
+                                   anchor=self.stepAnchor,
+                                   justify=self.stepReason,
                                    text="6. Retcon",
                                    width=self.columnWidth*self.buttonWidth,
                                    height=self.rowHeight*self.buttonHeight,
@@ -11869,6 +11885,8 @@ class HeroFrame(Frame):
                                columnspan=self.buttonWidth)
         prevButtons += 1
         self.healthButton = Button(self,
+                                   anchor=self.stepAnchor,
+                                   justify=self.stepReason,
                                    text="7. Health",
                                    width=self.columnWidth*self.buttonWidth,
                                    height=self.rowHeight*self.buttonHeight,
@@ -11893,7 +11911,7 @@ class HeroFrame(Frame):
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  command=self.myHero.DisplaySteps)
+                                  command=self.DisplayHeroSteps)
         self.stepsButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                               column=buttonColumn,
                               rowspan=self.buttonHeight,
@@ -12636,6 +12654,11 @@ class HeroFrame(Frame):
                                 title="Hero Creation")
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero)
+    def DisplayHeroSteps(self, inputs=[]):
+        # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
+        #  etc.) that the hero gained in each step of hero creation.
+        if isinstance(self.myHero, Hero):
+            self.myHero.DisplaySteps()
     def SaveTxt(self, inputs=[]):
         # Let the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
@@ -12652,8 +12675,6 @@ class HeroFrame(Frame):
         heroFile = open(fname, mode='w')
         heroFile.write(self.myHero.details(width=-1))
         heroFile.close()
-        
-        
 
 class SubWindow(Toplevel):
     # A class for subordinate windows
@@ -14121,10 +14142,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham()
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getCham()
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14149,6 +14170,6 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
