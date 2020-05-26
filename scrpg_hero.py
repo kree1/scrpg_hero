@@ -8078,6 +8078,73 @@ class Hero:
             for i in range(len(form[5])):
                 form[5][i].display(prefix=prefix+indent+indent,
                                    width=width-len(prefix+indent+indent))
+    def FormDetails(self,
+                    index,
+                    prefix="",
+                    width=100,
+                    codename=True,
+                    inputs=[]):
+        # Returns a string containing the attributes of the hero's Form specified by index.
+        # codename: should the hero's codename be displayed with this form?
+        # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### Hero.FormDetails: "
+        indent = "    "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
+        formString = ""
+        if index not in range(len(self.other_forms)):
+            print(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
+                  self.hero_name + "'s " + str(len(self.other_forms)) + " alternate Forms.")
+            return
+        else:
+            form = self.other_forms[index]
+            if codename:
+                formString = prefix + self.hero_name + "\n"
+                prefix += indent
+            if self.archetype_modifier == 1:
+                dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
+                dv_ps = None
+                if len(dv_check) > 0:
+                    dv_ps = dv_check[0]
+                if form[6] in [0,1]:
+                    formString += prefix + form[0] + " (" + status_zones[form[1]] + " Form, " + \
+                                  self.dv_tags[form[6]] + ")"
+                else:
+                    formString += prefix + form[0] + " (" + status_zones[form[1]] + \
+                                  " Form, [undecided])"
+            else:
+                formString += prefix + form[0] + " (" + status_zones[form[1]] + " Form)"
+            if form[2] == self.power_dice:
+                formString += "\n" + prefix + indent + "[Standard Powers]"
+            elif form[2] == [] and dv_ps:
+                formString += "\n" + prefix + indent + "[No Powers (see " + dv_ps.flavorname + ")]"
+            else:
+                formString += "\n" + prefix + indent + "Powers:"
+                for d in form[2]:
+                    formString += "\n" + prefix + indent + indent + str(d)
+            if form[3] == self.quality_dice:
+                formString += "\n" + prefix + indent + "[Standard Qualities]"
+            elif form[3] == [] and dv_ps:
+                formString += "\n" + prefix + indent + "[No Qualities (see " + dv_ps.flavorname + \
+                              ")]"
+            else:
+                formString += "\n" + prefix + indent + "Qualities:"
+                for d in form[3]:
+                    formString += "\n" + prefix + indent + indent + str(d)
+            if form[4] in [[0,0,0], self.status_dice]:
+                formString += "\n" + prefix + indent + "[Standard Status]"
+            else:
+                for i in range(3):
+                    formString += "\n" + prefix + indent + status_zones[i] + ": " + str(form[4][i])
+            if len(form[5]) > 1:
+                formString += "\n" + prefix + indent + \
+                              "You gain access to the following Abilities:"
+            elif len(form[5]) == 1:
+                formString += "\n" + prefix + indent + "You gain access to the following Ability:"
+            for i in range(len(form[5])):
+                formString += "\n" + form[5][i].details(prefix=prefix+indent+indent,
+                                                        width=width-len(prefix+indent+indent))
+        return formString
     def ChooseForm(self, zone, stepnum=0, inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
@@ -10929,11 +10996,22 @@ class Hero:
                           prefix=prefix+indent+indent)
         if len(self.other_forms) > 0:
             print(prefix + indent + "Forms:")
+            # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
+            # Divided grants 2 Green Forms, each with no Abilities
+            # To separate the two categories, display Forms with no Abilities before ones with
+            #  Abilities
             for x in range(len(self.other_forms)):
-                self.DisplayForm(x,
-                                 codename=False,
-                                 prefix=prefix+indent+indent,
-                                 width=width-len(prefix+indent+indent))
+                if len(self.other_forms[x][5]) == 0:
+                    self.DisplayForm(x,
+                                     codename=False,
+                                     prefix=prefix+indent+indent,
+                                     width=width-len(prefix+indent+indent))
+            for x in range(len(self.other_forms)):
+                if len(self.other_forms[x][5]) > 0:
+                    self.DisplayForm(x,
+                                     codename=False,
+                                     prefix=prefix+indent+indent,
+                                     width=width-len(prefix+indent+indent))
         if len(self.other_modes) > 0:
             print(prefix + indent + "Modes:")
             for x in range(len(self.other_modes)):
@@ -11018,8 +11096,24 @@ class Hero:
                 heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
                                                 width=width-len(prefix+indent+indent),
                                                 prefix=prefix+indent+indent)
-        # Add Forms here
-        # ...
+        if len(self.other_forms) > 0:
+            heroString += "\n" + prefix + indent + "Forms:"
+            # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
+            # Divided grants 2 Green Forms, each with no Abilities
+            # To separate the two categories, display Forms with no Abilities before ones with
+            #  Abilities
+            for x in range(len(self.other_forms)):
+                if len(self.other_forms[x][5]) == 0:
+                    heroString += "\n" + self.FormDetails(x,
+                                                          codename=False,
+                                                          prefix=prefix+indent+indent,
+                                                          width=width-len(prefix+indent+indent))
+            for x in range(len(self.other_forms)):
+                if len(self.other_forms[x][5]) > 0:
+                    heroString += "\n" + self.FormDetails(x,
+                                                          codename=False,
+                                                          prefix=prefix+indent+indent,
+                                                          width=width-len(prefix+indent+indent))
         if len(self.other_modes) > 0:
             heroString += "\n" + prefix + indent + "Modes:"
             for x in range(len(self.other_modes)):
@@ -11119,7 +11213,7 @@ def Create_Chameleon():
                             [[["y","Frontline Ambassador"]],["a"]],
                             ["A",["B","a","y","Lateral Thinking"]],
                             ["F",["B","a","y","Change for the Better"]],
-                            ["f","c",["E","n",["A"]]],
+                            ["f","c",["E","n",["B"]]],
                             ["b","a"]])
     print()
     cham.display()
@@ -13200,9 +13294,9 @@ class FormFrame(Frame):
                                        len([x for x in split_text(a.dispText(), self.abilityWraps[2]) if x == "\n"]))
             # rightHeight always needs to have room for form name, status header, and 3 status dice
             rightHeight = max(rightHeight, 5)
-            print(notePrefix + thisName + " leftHeight: " + str(leftHeight))
-            print(notePrefix + thisName + " centerHeight: " + str(centerHeight))
-            print(notePrefix + thisName + " rightHeight: " + str(rightHeight))
+##            print(notePrefix + thisName + " leftHeight: " + str(leftHeight))
+##            print(notePrefix + thisName + " centerHeight: " + str(centerHeight))
+##            print(notePrefix + thisName + " rightHeight: " + str(rightHeight))
             # Display the form name (and divided tag if applicable) across the top row
             if self.isDivided:
                 thisName += " (" + self.myDividedTags[thisForm[6]] + ")"
@@ -13258,8 +13352,8 @@ class FormFrame(Frame):
                         if isinstance(thisForm[c][r], PQDie):
                             pqHeights[r] = max(pqHeights[r],
                                                1 + len([x for x in split_text(thisForm[c][r].flavorname, self.pqWrap) if x == "\n"]))
-                    print(notePrefix + thisName + " row " + str(r) + ", column " + str(c) + \
-                          " height: " + str(pqHeights[r]))
+##                    print(notePrefix + thisName + " row " + str(r) + ", column " + str(c) + \
+##                          " height: " + str(pqHeights[r]))
             for j in range(4):
                 columnText = ["" for k in range(max(len(thisForm[2]),len(thisForm[3])))]
                 diceIndex = 2
@@ -13313,8 +13407,8 @@ class FormFrame(Frame):
                     #  rowspan of these labels.
                     abilityHeight = 1 + max(len([x for x in split_text(thisAbility.flavorname, self.abilityWraps[0]) if x == "\n"]),
                                             len([x for x in split_text(thisAbility.dispText(), self.abilityWraps[2]) if x == "\n"]))
-                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
-                          str(abilityHeight))
+##                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
+##                          str(abilityHeight))
                     thisAbilityText = [split_text(thisAbility.flavorname, self.abilityWraps[0]),
                                        thisAbility.type,
                                        split_text(thisAbility.dispText(), self.abilityWraps[2])]
@@ -13997,7 +14091,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getJo()
+firstHero = factory.getLori()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
