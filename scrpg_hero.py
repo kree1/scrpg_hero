@@ -13617,7 +13617,8 @@ class SelectWindow(SubWindow):
                  options,
                  var=None,
                  title=None,
-                 width=40):
+                 width=40,
+                 buffer=5):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
@@ -13629,7 +13630,8 @@ class SelectWindow(SubWindow):
                                          self.myPrompt,
                                          self.myOptions,
                                          self.myVariable,
-                                         width=width)
+                                         width=width,
+                                         buffer=buffer)
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
     def body(self, master):
@@ -13648,7 +13650,8 @@ class SelectFrame(Frame):
                  print_options,
                  destination,
                  printing=False,
-                 width=40):
+                 width=40,
+                 buffer=5):
         Frame.__init__(self, parent)
         notePrefix = "### SelectFrame.__init__: "
         self.myParent = parent
@@ -13656,13 +13659,16 @@ class SelectFrame(Frame):
         self.myWidth = max(width, max([len(x) for x in self.myOptions]))
         self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myWrap = self.myWidth + self.myBuffer
-        self.myPrompt = split_text(str(prompt), width=self.myWrap)
+        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
+        self.myRawPrompt = str(prompt)
+        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
+                                   width=self.myWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myPromptLabel.grid(row=0,
                                 column=0,
@@ -13690,8 +13696,72 @@ class SelectFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        self.myBPlusButton = Button(self,
+                                    anchor=CENTER,
+                                    justify=CENTER,
+                                    text="+B",
+                                    padx=1,
+                                    command=self.plusbuffer)
+        self.myBMinusButton = Button(self,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="-B",
+                                     padx=1,
+                                     command=self.minusbuffer)
+        self.myBPlusButton.grid(row=4,
+                                column=0,
+                                rowspan=1,
+                                columnspan=1,
+                                sticky=N+E+S+W)
+        self.myBMinusButton.grid(row=4,
+                                 column=1,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+        self.myWPlusButton = Button(self,
+                                    anchor=CENTER,
+                                    justify=CENTER,
+                                    text="+W",
+                                    padx=1,
+                                    command=self.pluswidth)
+        self.myWMinusButton = Button(self,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="-W",
+                                     padx=1,
+                                     command=self.minuswidth)
+        self.myWPlusButton.grid(row=5,
+                                column=0,
+                                rowspan=1,
+                                columnspan=1,
+                                sticky=N+E+S+W)
+        self.myWMinusButton.grid(row=5,
+                                 column=1,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+    def update(self, event=None):
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
+        self.myPromptLabel.config(text=self.myPrompt,
+                                  width=self.myWidth,
+                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
+        print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
+              ", myBuffer = " + str(self.myBuffer))
+    def plusbuffer(self, event=None):
+        self.myBuffer += 5
+        self.update()
+    def minusbuffer(self, event=None):
+        self.myBuffer -= 5
+        self.update()
+    def pluswidth(self, event=None):
+        self.myWidth += 5
+        self.update()
+    def minuswidth(self, event=None):
+        self.myWidth -= 5
+        self.update()
     def finish(self, *args):
         if len(self.myOptions) > 0:
             answer = self.myOptions.index(self.myString.get())
@@ -13854,7 +13924,9 @@ class ExpandFrame(Frame):
         self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
 ##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
         self.myPromptBuffer = math.floor(0.43 * self.myPromptWidth - 20)
-        self.myPrompt = split_text(str(prompt), width=self.myPromptBuffer)
+        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
+        self.myRawPrompt = str(prompt)
+        self.myPrompt = split_text(self.myRawPrompt, width=self.myPromptWrap)
         self.myDispWidth = rwidth
         self.myDispBuffer = math.floor(0.43 * self.myDispWidth - 20)
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
@@ -13961,38 +14033,28 @@ class ExpandFrame(Frame):
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def expand(self, event=None):
+        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
         if index in range(len(self.myDetails)):
             dispText = split_text(self.myDetails[index], width=self.myDispWrap)
-        self.myDispLabel.config(text=dispText)
+        self.myDispLabel.config(text=dispText,
+                                width=self.myDispWidth)
+        print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
+              ", myDispBuffer = " + str(self.myDispBuffer))
         self.myAnswer.set(index)
     def plusbuffer(self, event=None):
         self.myDispBuffer += 5
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.expand()
-        print("### ExpandFrame.plusbuffer: myDispBuffer = " + str(self.myDispBuffer) + \
-              ", myDispWrap = " + str(self.myDispWrap))
     def minusbuffer(self, event=None):
         self.myDispBuffer -= 5
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.expand()
-        print("### ExpandFrame.minusbuffer: myDispBuffer = " + str(self.myDispBuffer) + \
-              ", myDispWrap = " + str(self.myDispWrap))
     def pluswidth(self, event=None):
         self.myDispWidth += 5
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
-        self.myDispLabel.config(width=self.myDispWidth)
         self.expand()
-        print("### ExpandFrame.pluswidth: myDispWidth = " + str(self.myDispWidth) + \
-              ", myDispWrap = " + str(self.myDispWrap))
     def minuswidth(self, event=None):
         self.myDispWidth -= 5
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
-        self.myDispLabel.config(width=self.myDispWidth)
         self.expand()
-        print("### ExpandFrame.minuswidth: myDispWidth = " + str(self.myDispWidth) + \
-              ", myDispWrap = " + str(self.myDispWrap))
     def finish(self, *args):
         if len(self.myOptions) > 0:
             if self.myAnswer.get() in range(len(self.myOptions)):
