@@ -6056,6 +6056,7 @@ class Hero:
                     prompt="",
                     repeat_message=invalid_message,
                     title="Hero Creation",
+                    width=40,
                     inputs=[]):
         # Prints a prompt and a list of lettered options (print_options, indicated by A, B, C,
         #  etc.), then lets the user choose from among them
@@ -6075,7 +6076,8 @@ class Hero:
                                     prompt=prompt,
                                     options=print_options,
                                     var=answer,
-                                    title=title)
+                                    title=title,
+                                    width=width)
             return [answer.get(), inputs]
         else:
             indent = "    "
@@ -8515,10 +8517,11 @@ class Hero:
                         if len(primary_matches) > 1:
                             # Choose one of primary_matches to swap out.
                             entry_options = string.ascii_uppercase[0:len(primary_matches)]
+                            cat_index = DieCategory([d.triplet() for d in primary_matches])
+                            cat_text = categories_singular[cat_index]
                             decision = self.ChooseIndex([str(x) for x in primary_matches],
-                                                        prompt="Choose a " + \
-							       categories_singular[DieCategory([d.triplet() for d in primary_matches])] + \
-							       " to change die size:",
+                                                        prompt="Choose a " + cat_text + \
+                                                        " to change die size:",
                                                         inputs=inputs)
                             swap_index = decision[0]
                             inputs = decision[1]
@@ -8885,10 +8888,10 @@ class Hero:
                     # Make a list of abilities the hero has in this zone from this Archetype
                     arc_zone_abilities = [x for x in self.abilities \
                                           if x.step == this_step and x.zone == 0]
-                    print("### AddArchetype: len(arc_zone_abilities) for zone=0 is " + \
-                          str(len(arc_zone_abilities)))
+##                    print("### AddArchetype: len(arc_zone_abilities) for zone=0 is " + \
+##                          str(len(arc_zone_abilities)))
                     if len(arc_zone_abilities) > 0:
-                        print("### AddArchetype: green_unique=" + str(green_unique))
+##                        print("### AddArchetype: green_unique=" + str(green_unique))
                         if green_unique > 0:
                             # There's a minimum number of unique Powers/Qualities that need to be
                             #  used in the Archetype abilities for this zone. Find out if it's been
@@ -8904,8 +8907,8 @@ class Hero:
                                 for j in range(i + 1, len(arc_triplets)):
                                     if arc_triplets[j] == trip:
                                         del arc_triplets[j]
-                            print("### AddArchetype: arc_triplets=" + str(arc_triplets))
-                            print("### AddArchetype: len(arc_triplets)=" + str(len(arc_triplets)))
+##                            print("### AddArchetype: arc_triplets=" + str(arc_triplets))
+##                            print("### AddArchetype: len(arc_triplets)=" + str(len(arc_triplets)))
                             if len(arc_triplets) < green_unique:
                                 # This Ability needs to use a Power/Quality that hasn't been used
                                 #  in this zone before
@@ -8917,7 +8920,7 @@ class Hero:
                         # Green Abilities from this Archetype use only Powers/Qualities from this
                         #  Archetype
                         legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
-                    print("### AddArchetype: legal_triplets=" + str(legal_triplets))
+##                    print("### AddArchetype: legal_triplets=" + str(legal_triplets))
                     # Finally, add the ability
                     green_abilities = self.ChooseAbility(green_abilities,
                                                          0,
@@ -8979,8 +8982,8 @@ class Hero:
                 if self.archetype == 13:
                     entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
-                                                prompt="Choose a Quality to determine the number" + \
-                                                " of Minion Forms " + self.hero_name + \
+                                                prompt="Choose a Quality to determine the " + \
+                                                "number of Minion Forms " + self.hero_name + \
                                                 " has access to:",
                                                 inputs=inputs)
                     entry_index = decision[0]
@@ -9163,8 +9166,8 @@ class Hero:
                             entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
                             decision = self.ChooseIndex([str(x) for x in unassigned_powers],
                                                         prompt="Choose a Power for " + \
-                                                        self.hero_name + " to have access to in both " + \
-                                                        self.dv_tags[0] + " and " + \
+                                                        self.hero_name + " to have access to " + \
+                                                        "in both " + self.dv_tags[0] + " and " + \
                                                         self.dv_tags[1] + " Forms:",
                                                         inputs=inputs)
                             entry_index = decision[0]
@@ -9177,8 +9180,8 @@ class Hero:
                             entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
                             decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
                                                         prompt="Choose a Quality for " + \
-                                                        self.hero_name + " to have access to in both " + \
-                                                        self.dv_tags[0] + " and " + \
+                                                        self.hero_name + " to have access to " + \
+                                                        "in both " + self.dv_tags[0] + " and " + \
 							self.dv_tags[1] + " Forms:",
                                                         inputs=inputs)
                             entry_index = decision[0]
@@ -9193,8 +9196,8 @@ class Hero:
                             entry_options = "AB"
                             decision = self.ChooseIndex(self.dv_tags,
                                                         prompt="Which of " + self.hero_name + \
-							       "'s Divided Forms should have access to " + \
-                                                               str(assigning_die) + "?",
+                                                        "'s Divided Forms should have access " + \
+                                                        "to " + str(assigning_die) + "?",
                                                         inputs=inputs)
                             entry_index = decision[0]
                             inputs = decision[1]
@@ -9253,9 +9256,10 @@ class Hero:
                     for f in unassigned_forms:
                         entry_options = string.ascii_uppercase[0:2]
                         decision = self.ChooseIndex(self.dv_tags,
-                                                    prompt=self.hero_name + " is a Divided hero. Is " + \
-                                                    f[0] + " a " + self.dv_tags[0] + " or " + \
-                                                    self.dv_tags[1] + " form for them?",
+                                                    prompt=self.hero_name + " is a Divided " + \
+                                                    "hero. Is " + f[0] + " a " + \
+                                                    self.dv_tags[0] + " or " + self.dv_tags[1] + \
+                                                    " form for them?",
                                                     inputs=inputs)
                         entry_index = decision[0]
                         inputs = decision[1]
@@ -9263,8 +9267,8 @@ class Hero:
                         print("OK! " + f[0] + " is now marked as a " + self.dv_tags[f[6]] + \
                               " Form.")
                     if dv_nature == a_divided_psyche:
-                        # Your Forms from Form-Changer are now all tagged as either Civilian or
-                        #  Heroic.
+                        # The hero's Forms from Form-Changer are now all tagged as either Civilian
+                        #  or Heroic.
                         for i in range(len(self.other_forms)):
                             form_editing = self.other_forms[i]
                             if form_editing[6] == 0:
@@ -10719,8 +10723,8 @@ class Hero:
         else:
             ps_index = 99
             decision = self.ChooseIndex(step_options,
-                                        prompt="How would you like to choose a Power Source for " + \
-					       self.hero_name + "?",
+                                        prompt="How would you like to choose a Power Source " + \
+                                        "for " + self.hero_name + "?",
                                         inputs=inputs)
             entry_index = decision[0]
             inputs = decision[1]
@@ -10750,7 +10754,7 @@ class Hero:
             arc_indices = [99, 99]
             decision = self.ChooseIndex(step_options,
                                         prompt="How would you like to choose an Archetype for " + \
-					       self.hero_name + "?",
+                                        self.hero_name + "?",
                                         inputs=inputs)
             entry_index = decision[0]
             inputs = decision[1]
@@ -12296,9 +12300,9 @@ class HeroFrame(Frame):
             self.prinTitles[i].config(text=title)
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
-                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
-                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
-                      str(self.rowHeight*sectionMaxHeights[j]))
+##                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
+##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
+##                      str(self.rowHeight*sectionMaxHeights[j]))
                 self.prinSectionTitles[i][j].grid(row=titleRow)
                 self.prinSectionValues[i][j].config(text=sectionValues[j],
                                                     height=self.rowHeight*sectionMaxHeights[j])
@@ -12492,8 +12496,8 @@ class HeroFrame(Frame):
         else:
             bg_index = 99
             decision = self.myHero.ChooseIndex(step_options,
-                                               prompt="How would you like to choose a Background for " + \
-                                                      self.myHero.hero_name + "?",
+                                               prompt="How would you like to choose a " + \
+                                               "Background for " + self.myHero.hero_name + "?",
                                                inputs=inputs)
             entry_index = decision[0]
             inputs = decision[1]
@@ -12731,7 +12735,8 @@ class HeroFrame(Frame):
                                 prompt,
                                 pronoun_options,
                                 pronoun_choice,
-                                title="Hero Creation")
+                                title="Hero Creation",
+                                width=50)
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero)
     def DisplayHeroSteps(self, inputs=[]):
@@ -13645,11 +13650,13 @@ class SelectFrame(Frame):
                  printing=False,
                  width=40):
         Frame.__init__(self, parent)
+        notePrefix = "### SelectFrame.__init__: "
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         self.myWidth = max(width, max([len(x) for x in self.myOptions]))
         self.myBuffer = math.floor(0.43 * self.myWidth - 20)
-        self.myPrompt = split_text(str(prompt), width=self.myWidth+self.myBuffer)
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myPrompt = split_text(str(prompt), width=self.myWrap)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         self.myPromptLabel = Label(self,
@@ -13769,9 +13776,10 @@ class EntryFrame(Frame):
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
     def finish(self, *args):
+        notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
             # Return self.myText to the destination
-            print("EntryFrame.finish: passing '" + self.myText.get() + "'")
+            print(notePrefix + "passing '" + self.myText.get() + "'")
             self.myDestination.set(self.myText.get())
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
@@ -14242,10 +14250,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKnockout()
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getKnockout()
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14270,6 +14278,6 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
