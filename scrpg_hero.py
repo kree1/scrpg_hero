@@ -7443,8 +7443,8 @@ class Hero:
                 # Make a list of abilities the hero has in this zone from this Archetype
                 ps_zone_abilities = [x for x in self.abilities \
                                      if x.step == this_step and x.zone == 1]
-                print(prefix + "ps_zone_abilities = " + \
-                      str([str(x) for x in ps_zone_abilities]))
+##                print(prefix + "ps_zone_abilities = " + \
+##                      str([str(x) for x in ps_zone_abilities]))
                 if len(ps_zone_abilities) > 0:
                     # Start by making a list of the Powers/Qualities already used in
                     #  ps_zone_abilities:
@@ -7457,15 +7457,15 @@ class Hero:
                         for j in range(i + 1, len(ps_triplets)):
                             if ps_triplets[j] == trip:
                                 del ps_triplets[j]
-                    print(prefix + "ps_triplets = " + str(ps_triplets))
-                    print(prefix + "(" + str(MixedPQs(ps_triplets)) + ")")
+##                    print(prefix + "ps_triplets = " + str(ps_triplets))
+##                    print(prefix + "(" + str(MixedPQs(ps_triplets)) + ")")
                     # Remove those previously-used triplets from the list of triplets that can be
                     #  used in this ability:
                     while len([x for x in legal_triplets if x in ps_triplets]) > 0:
                         for x in ps_triplets:
                             legal_triplets.remove(x)
-                    print(prefix + "legal_triplets = " + str(legal_triplets))
-                    print(prefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+##                    print(prefix + "legal_triplets = " + str(legal_triplets))
+##                    print(prefix + "(" + str(MixedPQs(legal_triplets)) + ")")
                 yellow_options = self.ChooseAbility(yellow_options,
                                                     1,
                                                     triplet_options=legal_triplets,
@@ -8850,7 +8850,8 @@ class Hero:
                                 #  in this zone before
                                 while len([x for x in legal_triplets if x in arc_triplets]) > 0:
                                     for x in arc_triplets:
-                                        legal_triplets.remove(x)
+                                        if x in legal_triplets:
+                                            legal_triplets.remove(x)
                     if zone == 0 and green_limited:
                         # This is a Green Ability, and Green Abilities from this Archetype use only
                         #  Powers/Qualities from this Archetype
@@ -11322,7 +11323,7 @@ def Create_Knockout():
                                 [[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]],
                                 "b",
                                 ["S","J"],
-                                [["a","a"],"y",["h"],"n",[["b"]],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["C","a","y",'Say "Ahh!"'],["b"],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
+                                [["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
                                 "b",
                                 ["N","T"],
                                 [[["Y","Mad Doctor"]],["e"]],
@@ -11367,7 +11368,7 @@ def Create_Spark():
                              [[["i",["b"]],["d"]],["e","E","n"]],
                              "b",
                              ["a","A"],
-                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","c","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
+                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
                              "b",
                              ["E"],
                              [["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]],
@@ -11678,7 +11679,7 @@ class HeroFrame(Frame):
         titleWidth = 6
         titleHeight = 1
         mainTitleHeight = 2
-        sectionHeight = 4
+        sectionHeight = 2
         sectionRelief = GROOVE
         sectionWrap = math.floor(self.columnWidth*groupWidth*1.25)
         self.principleWrap = sectionWrap
@@ -12229,6 +12230,7 @@ class HeroFrame(Frame):
             self.myMinionCount = len(self.myHero.min_forms)
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
+        notePrefix = "### HeroFrame.UpdateAll: "
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
         for i in range(len(self.charTitles)):
@@ -12262,6 +12264,23 @@ class HeroFrame(Frame):
             self.statusValues[i].config(text=disp)
         for i in range(len(self.healthValues)):
             self.healthValues[i].config(text=self.RangeText(i))
+        # Get the maximum height of each Principle section across all Principles
+        prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
+        for i in range(len(self.myHeroPrinciples)):
+            thisSections = ["", "", ""]
+            if isinstance(self.myHeroPrinciples[i], Principle):
+                thisSections[0] = self.myHeroPrinciples[i].during_roleplaying
+                thisSections[1] = self.myHeroPrinciples[i].minor_twist
+                thisSections[2] = self.myHeroPrinciples[i].major_twist
+            wrapSections = [split_text(x, width=self.principleWrap) for x in thisSections]
+            thisSectionHeights = [1 + len([c for c in x if c == "\n"]) for x in wrapSections]
+            for j in range(len(prinSectionHeights)):
+                prinSectionHeights[j][i] = thisSectionHeights[j]
+        sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
+        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
+        # ...
+        firstRow = 29
+        titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
             title = "Principle of "
             dr = ""
@@ -12276,7 +12295,15 @@ class HeroFrame(Frame):
             sectionValues = [split_text(x, width=self.principleWrap) for x in sectionValues]
             self.prinTitles[i].config(text=title)
             for j in range(len(self.prinSectionTitles[i])):
-                self.prinSectionValues[i][j].config(text=sectionValues[j])
+                titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
+                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
+                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
+                      str(self.rowHeight*sectionMaxHeights[j]))
+                self.prinSectionTitles[i][j].grid(row=titleRow)
+                self.prinSectionValues[i][j].config(text=sectionValues[j],
+                                                    height=self.rowHeight*sectionMaxHeights[j])
+                self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
+                                                  rowspan=sectionMaxHeights[j])
         firstRow = 3
         firstCol = 17
         sectionWidths = [4, 2, 10]
@@ -14215,10 +14242,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getCham()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getKnockout()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14243,6 +14270,6 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
