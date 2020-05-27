@@ -12736,7 +12736,8 @@ class HeroFrame(Frame):
                                 pronoun_options,
                                 pronoun_choice,
                                 title="Hero Creation",
-                                width=50)
+                                width=40,
+                                buffer=6)
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero)
     def DisplayHeroSteps(self, inputs=[]):
@@ -13657,7 +13658,8 @@ class SelectFrame(Frame):
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         self.myWidth = max(width, max([len(x) for x in self.myOptions]))
-        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
+##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
+        self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
         print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
         self.myRawPrompt = str(prompt)
