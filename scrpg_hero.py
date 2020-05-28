@@ -11208,218 +11208,325 @@ class Hero:
 
 # Sample heroes, for testing purposes...
 # Shikari is an Interstellar Genetic Flier with no Archetype modifier.
-def Create_Shikari():
+def Create_Shikari(step=len(step_names)):
     shikari = Hero("Shikari", "Shikari Lonestar", 0)
-    shikari.CreateHero(health_roll=2,
-                       inputs=["b",
-                               ["Q"],
-                               [[["i",["a"]],["b"]],["K","y","d","What new threat is as prepared for this harsh environment as you are?","f"]],
-                               "b",
-                               ["C"],
-                               [[["o",["a"]],["h",["a"]],["c",[["y","Warskin"]]]],["A","b","y","Advance Tracking"],["A","a","y","Know the Way"],["A","a","y","Warrior's Instinct"]],
-                               "b",
-                               ["H"],
-                               [["a",["b"]],["b",["a"]],"n",[["i"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]],
-                               "b",
-                               ["I"],
-                               [[["Y","Lone Star Legion"]]],
-                               ["F",["D","y","End of the Road"]],
-                               ["H",["E","y","Obstacle Avoidance"]],
-                               ["g",["C",["D","y","Protective Escort"]]],
-                               ["b","b"]])
+    if step >= 1:
+        bg = shikari.ConstructedBackground(inputs=["Q"])
+        shikari.AddBackground(bg,
+                              inputs=[[["i",["a"]],["b"]],["K","y","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+    if step >= 2:
+        ps = shikari.ConstructedPowerSource(inputs=["C"])
+        shikari.AddPowerSource(ps,
+                               inputs=[[["o",["a"]],["h",["a"]],["c",[["y","Warskin"]]]],["A","b","y","Advance Tracking"],["A","a","y","Know the Way"],["A","a","y","Warrior's Instinct"]])
+    if step >= 3:
+        arc = shikari.ConstructedArchetype(inputs=["H"])
+        shikari.AddArchetype(arc[0],
+                             arc[1],
+                             inputs=[["a",["b"]],["b",["a"]],"n",[["i"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]])
+    if step >= 4:
+        pn = shikari.ConstructedPersonality(inputs=["I"])
+        shikari.AddPersonality(pn[0],
+                               inputs=[[["Y","Lone Star Legion"]]])
+    if step >= 5:
+        shikari.AddRedAbility(inputs=["F",["D","y","End of the Road"]])
+        shikari.AddRedAbility(inputs=["H",["E","y","Obstacle Avoidance"]])
+    if step >= 6:
+        shikari.AddRetcon(inputs=["g",["C",["D","y","Protective Escort"]]])
+    if step >= 7:
+        shikari.AddHealth(roll=2,
+                          inputs=["b","b"])
     print()
     shikari.display()
     return shikari
 
 # Ultra Boy is a Criminal Radiation Modular:Physical Powerhouse.
-def Create_Ultra_Boy():
+def Create_Ultra_Boy(step=len(step_names)):
     jo = Hero("Ultra Boy", "Jo Nah", 1)
-    jo.CreateHero(health_roll=6,
-                  inputs=["b",
-                          ["L"],
-                          [[["a",["a"]],["c"]],["L","n"]],
-                          "b",
-                          ["I"],
-                          [[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","b","y","That Tickles"],["C","a","y","Zap!"]],
-                          "b",
-                          ["T","C"],
-                          [["a"],["f",["b"]],[["f"]],
-                           ["f","y","I'm On It"],
-                           ["y","'Scuse Me"],
-                           ["y","Now I'm Mad"],
-                           "n",
-                           "A",
-                           ["a","b","c","a",["c","y","Who Let You Play With These?"],"y","Ultra Speed"],
-                           "D",
-                           ["b","c","a","b",["c","y","Sprock These Two In Particular"],"y","Flash Vision"],
-                           "D",
-                           ["d","a","a","a",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
-                           "B",
-                           ["d","b",["a","y","Was That Important?"],"y","Ultra Strength"],
-                           ["D","n"]],
-                          "b",
-                          ["O"],
-                          [[["y","Gangster Made Good"]],["c"]],
-                          ["F",["C","y","Ring-Sling"]],
-                          ["A",["A","y","Street Smarts"]],
-                          ["e"],
-                          ["b","b"]])
+    if step >= 1:
+        bg = jo.ConstructedBackground(inputs=["L"])
+        jo.AddBackground(bg,
+                         inputs=[[["a",["a"]],["c"]],["L","n"]])
+    if step >= 2:
+        ps = jo.ConstructedPowerSource(inputs=["I"])
+        jo.AddPowerSource(ps,
+                          inputs=[[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","b","y","That Tickles"],["C","a","y","Zap!"]])
+    if step >= 3:
+        arc = jo.ConstructedArchetype(inputs=["T","C"])
+        jo.AddArchetype(arc[0],
+                        arc[1],
+                        inputs=[["a"],["f",["b"]],[["f"]],
+                                ["f","y","I'm On It"],
+                                ["y","'Scuse Me"],
+                                ["y","Now I'm Mad"],
+                                "n",
+                                "A",
+                                ["a","b","c","a",["c","y","Who Let You Play With These?"],"y","Ultra Speed"],
+                                "D",
+                                ["b","c","a","b",["c","y","Sprock These Two In Particular"],"y","Flash Vision"],
+                                "D",
+                                ["d","a","a","a",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
+                                "B",
+                                ["d","b",["a","y","Was That Important?"],"y","Ultra Strength"],
+                                ["D","n"]])
+    if step >= 4:
+        pn = jo.ConstructedPersonality(inputs=["O"])
+        jo.AddPersonality(pn[0],
+                          inputs=[[["y","Gangster Made Good"]],["c"]])
+    if step >= 5:
+        jo.AddRedAbility(inputs=["F",["C","y","Ring-Sling"]])
+        jo.AddRedAbility(inputs=["A",["A","y","Street Smarts"]])
+    if step >= 6:
+        jo.AddRetcon(inputs=["e"])
+    if step >= 7:
+        jo.AddHealth(roll=6,
+                     inputs=["b","b"])
     print()
     jo.display()
     return jo
 
 # Chameleon is an Interstellar Alien Form-Changer with no Archetype modifier.
-def Create_Chameleon():
+def Create_Chameleon(step=len(step_names)):
     cham = Hero("Chameleon", "Reep Daggle", 1)
-    cham.CreateHero(inputs=["b",
-                            ["Q"],
-                            [[["k",["a"]],["k"]],["D", "n"]],
-                            "b",
-                            ["N"],
-                            [[["a","p",["a"]],["a","a",["b", ["y","Legion Flight Ring"]]],["a","b"]],["C","c","y","Slippery"],["A","a","y","Excellent Listener"],"b"],
-                            "b",
-                            ["P"],
-                            [["h"],
-                             ["n"],
-                             "n",
-                             [["n"]],
-                             ["a","n"],
-                             ["y","Improvise"],
-                             ["B", "a", "y", "Distracting Strike"],
-                             ["C","a","a","b","a","b","e","b","e","b","d",["e","y","Natural Weaponry"],"y","Beast Form"],
-                             ["D","a","b","e","b","e","q","d",["a","y","Critical Discovery"],"y","Stealth Form"],
-                             ["G","a","a","d","a","b","e","b","e","l","d","d","a",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
-                             ["K","n"]],
-                            "b",
-                            ["O"],
-                            [[["y","Frontline Ambassador"]],["a"]],
-                            ["A",["B","a","y","Lateral Thinking"]],
-                            ["F",["B","a","y","Change for the Better"]],
-                            ["f","c",["E","n",["B"]]],
-                            ["b","a"]])
+    if step >= 1:
+        bg = cham.ConstructedBackground(inputs=["Q"])
+        cham.AddBackground(bg,
+                           inputs=[[["k",["a"]],["k"]],["D", "n"]])
+    if step >= 2:
+        ps = cham.ConstructedPowerSource(inputs=["N"])
+        cham.AddPowerSource(ps,
+                            inputs=[[["a","p",["a"]],["a","a",["b", ["y","Legion Flight Ring"]]],["a","b"]],["C","c","y","Slippery"],["A","a","y","Excellent Listener"],"b"])
+    if step >= 3:
+        arc = cham.ConstructedArchetype(inputs=["P"])
+        cham.AddArchetype(arc[0],
+                          arc[1],
+                          inputs=[["h"],
+                                  ["n"],
+                                  "n",
+                                  [["n"]],
+                                  ["a","n"],
+                                  ["y","Improvise"],
+                                  ["B", "a", "y", "Distracting Strike"],
+                                  ["C","a","a","b","a","b","e","b","e","b","d",["e","y","Natural Weaponry"],"y","Beast Form"],
+                                  ["D","a","b","e","b","e","q","d",["a","y","Critical Discovery"],"y","Stealth Form"],
+                                  ["G","a","a","d","a","b","e","b","e","l","d","d","a",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
+                                  ["K","n"]])
+    if step >= 4:
+        pn = cham.ConstructedPersonality(inputs=["O"])
+        cham.AddPersonality(pn[0],
+                            inputs=[[["y","Frontline Ambassador"]],["a"]])
+    if step >= 5:
+        cham.AddRedAbility(inputs=["A",["B","a","y","Lateral Thinking"]])
+        cham.AddRedAbility(inputs=["F",["B","a","y","Change for the Better"]])
+    if step >= 6:
+        cham.AddRetcon(inputs=["f","c",["E","n",["B"]]])
+    if step >= 7:
+        cham.AddHealth(inputs=["b","a"])
     print()
     cham.display()
     return cham
 
 # Lori Morning is an Anachronistic Relic Divided:Form-Changer who uses Divided Psyche.
-def Create_Future_Girl():
+def Create_Future_Girl(step=len(step_names)):
     lori = Hero("Future Girl", "Lori Morning", 0)
-    lori.CreateHero(health_roll=1, inputs=["b",
-                                           ["N"],
-                                           [[["C",["A"]],["H"]],["L","N"]],
-                                           "b",
-                                           ["G"],
-                                           [[["A","D",["A",["Y","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","Y","Natural Heroism"],["B","B","Y","Synthetic Power"],["A","A","Y","One-Hour Superpower"]],
-                                           "b",
-                                           ["S","P"],
-                                           [["H",["A"]],
-                                            ["T",["A"]],
-                                            "N",
-                                            [["C"]],
-                                            ["y","Redial"],
-                                            ["y","Dial ICE"],
-                                            ["B","Y","Collect Call"],
-                                            ["A","a","c","d","a","a","b","b","b","b","b","e","i","d",["b","y","Where Was I?"],"y","Mobile Hero","B"],
-                                            ["D","a","a","c","a","c","b","b","b","o","b","e","q","d",["b","y","Wrap It Up"],"y","Capture Hero","C"],
-                                            ["B","a","a","b","a","c","d","b","e","c","b","c","c","d","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
-                                            "N",
-                                            "B",
-                                            ["y","Dial H for Hero"],
-                                            "A",
-                                            ["Y","Unlisted Numbers"],
-                                            "B",
-                                            ["H","n"]],
-                                           "b",
-                                           ["N","D"],
-                                           [[["Y","Future Girl"]],["e"]],
-                                           ["B",["B","Y","Please Hold"]],
-                                           ["F",["A","Y","Wrong Number"]],
-                                           ["e"],
-                                           ["a","b"]])
+    if step >= 1:
+        bg = lori.ConstructedBackground(inputs=["N"])
+        lori.AddBackground(bg,
+                           inputs=[[["C",["A"]],["H"]],["L","N"]])
+    if step >= 2:
+        ps = lori.ConstructedPowerSource(inputs=["G"])
+        lori.AddPowerSource(ps,
+                            inputs=[[["A","D",["A",["Y","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","Y","Natural Heroism"],["B","B","Y","Synthetic Power"],["A","A","Y","One-Hour Superpower"]])
+    if step >= 3:
+        arc = lori.ConstructedArchetype(inputs=["S","P"])
+        lori.AddArchetype(arc[0],
+                          arc[1],
+                          inputs=[["H",["A"]],
+                                  ["T",["A"]],
+                                  "N",
+                                  [["C"]],
+                                  ["y","Redial"],
+                                  ["y","Dial ICE"],
+                                  ["B","Y","Collect Call"],
+                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","d",["b","y","Where Was I?"],"y","Mobile Hero","B"],
+                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","d",["b","y","Wrap It Up"],"y","Capture Hero","C"],
+                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","d","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
+                                  "N",
+                                  "B",
+                                  ["y","Dial H for Hero"],
+                                  "A",
+                                  ["Y","Unlisted Numbers"],
+                                  "B",
+                                  ["H","n"]])
+    if step >= 4:
+        pn = lori.ConstructedPersonality(inputs=["N","D"])
+        lori.AddPersonality(pn[0],
+                            inputs=[[["Y","Future Girl"]],["e"]])
+    if step >= 5:
+        lori.AddRedAbility(inputs=["B",["B","Y","Please Hold"]])
+        lori.AddRedAbility(inputs=["F",["A","Y","Wrong Number"]])
+    if step >= 6:
+        lori.AddRetcon(inputs=["e"])
+    if step >= 7:
+        lori.AddHealth(roll=1,
+                       inputs=["a","b"])
     print()
     lori.display()
     return lori
 
 # Knockout (credit to NovaSpark#2117) is a Medical Alien Divided:Robot/Cyborg who uses Split Form.
-def Create_Knockout():
+def Create_Knockout(step=len(step_names)):
     knockout = Hero("Knockout", "n/a", 1)
-    knockout.CreateHero(inputs=["b",
-                                ["M"],
-                                [["b"],[["b",["a"]],["f"]],["E","n"]],
-                                "b",
-                                ["N"],
-                                [[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]],
-                                "b",
-                                ["S","J"],
-                                [["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
-                                "b",
-                                ["N","T"],
-                                [[["Y","Mad Doctor"]],["e"]],
-                                ["D",["C","y","Peel Out"]],
-                                ["D",["A","y","Anesthetic"]],
-                                ["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]],
-                                ["c","a"]])
+    if step >= 1:
+        bg = knockout.ConstructedBackground(inputs=["M"])
+        knockout.AddBackground(bg,
+                               inputs=[["b"],[["b",["a"]],["f"]],["E","n"]])
+    if step >= 2:
+        ps = knockout.ConstructedPowerSource(inputs=["N"])
+        knockout.AddPowerSource(ps,
+                                inputs=[[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]])
+    if step >= 3:
+        arc = knockout.ConstructedArchetype(inputs=["S","J"])
+        knockout.AddArchetype(arc[0],
+                              arc[1],
+                              inputs=[["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]])
+    if step >= 4:
+        pn = knockout.ConstructedPersonality(inputs=["N","T"])
+        knockout.AddPersonality(pn[0],
+                                inputs=[[["Y","Mad Doctor"]],["e"]])
+    if step >= 5:
+        knockout.AddRedAbility(inputs=["D",["C","y","Peel Out"]])
+        knockout.AddRedAbility(inputs=["D",["A","y","Anesthetic"]])
+    if step >= 6:
+        knockout.AddRetcon(inputs=["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]])
+    if step >= 7:
+        knockout.AddHealth(inputs=["c","a"])
+##    knockout.CreateHero(inputs=["b",
+##                                ["M"],
+##                                [["b"],[["b",["a"]],["f"]],["E","n"]],
+##                                "b",
+##                                ["N"],
+##                                [[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]],
+##                                "b",
+##                                ["S","J"],
+##                                [["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
+##                                "b",
+##                                ["N","T"],
+##                                [[["Y","Mad Doctor"]],["e"]],
+##                                ["D",["C","y","Peel Out"]],
+##                                ["D",["A","y","Anesthetic"]],
+##                                ["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]],
+##                                ["c","a"]])
     print()
     knockout.display()
     return knockout
 
 # The second Architect is a Dynasty Relic Minion-Maker with no Archetype modifier.
-def Create_Architect():
+def Create_Architect(step=len(step_names)):
     kim = Hero("The Architect", "Kimberly Harris", 0)
-    kim.CreateHero(health_roll=6,
-                   inputs=["B",
-                           ["R"],
-                           [[["b"],["b"]],["K","n"]],
-                           "B",
-                           ["E"],
-                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]],
-                           "B",
-                           ["N"],
-                           [["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]],
-                           "B",
-                           ["G"],
-                           [[["Y", "Super Mom"]],["D"]],
-                           ["H",["A","D","y","Economy of Scale"]],
-                           ["E",["A","y","Blot Out"]],
-                           ["G",["G",["F","y","Constructive Criticism"]]],
-                           ["A","B"]])
+    if step >= 1:
+        bg = kim.ConstructedBackground(inputs=["R"])
+        kim.AddBackground(bg,
+                          inputs=[[["b"],["b"]],["K","n"]])
+    if step >= 2:
+        ps = kim.ConstructedPowerSource(inputs=["E"])
+        kim.AddPowerSource(ps,
+                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]])
+    if step >= 3:
+        arc = kim.ConstructedArchetype(inputs=["N"])
+        kim.AddArchetype(arc[0],
+                         arc[1],
+                         inputs=[["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+    if step >= 4:
+        pn = kim.ConstructedPersonality(inputs=["G"])
+        kim.AddPersonality(pn[0],
+                           inputs=[[["Y", "Super Mom"]],["D"]])
+    if step >= 5:
+        kim.AddRedAbility(inputs=["H",["A","D","y","Economy of Scale"]])
+        kim.AddRedAbility(inputs=["E",["A","y","Blot Out"]])
+    if step >= 6:
+        kim.AddRetcon(inputs=["G",["G",["F","y","Constructive Criticism"]]])
+    if step >= 7:
+        kim.AddHealth(roll=6,
+                      inputs=["A","B"])
+##    kim.CreateHero(health_roll=6,
+##                   inputs=["B",
+##                           ["R"],
+##                           [[["b"],["b"]],["K","n"]],
+##                           "B",
+##                           ["E"],
+##                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]],
+##                           "B",
+##                           ["N"],
+##                           [["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]],
+##                           "B",
+##                           ["G"],
+##                           [[["Y", "Super Mom"]],["D"]],
+##                           ["H",["A","D","y","Economy of Scale"]],
+##                           ["E",["A","y","Blot Out"]],
+##                           ["G",["G",["F","y","Constructive Criticism"]]],
+##                           ["A","B"]])
     print()
     kim.display()
     return kim
 
 # Spark is an Unremarkable Accident Blaster who uses some element/energy-limited Abilities.
-def Create_Spark():
+def Create_Spark(step=len(step_names)):
     spark = Hero("Spark", "Ayla Ranzz", 0)
-    spark.CreateHero(health_roll=7,
-                     inputs=["b",
-                             ["E"],
-                             [[["i",["b"]],["d"]],["e","E","n"]],
-                             "b",
-                             ["a","A"],
-                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
-                             "b",
-                             ["E"],
-                             [["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]],
-                             "b",
-                             ["P"],
-                             [[["Y","Bright Lights"]],["d"]],
-                             ["D",["A","y","Finishing Strike"]],
-                             ["G",["B","y","Living Battery"]],
-                             ["G",["A",["B","y","Struck by Inspiration"]]],
-                             ["b","b"]])
+    if step >= 1:
+        bg = spark.ConstructedBackground(inputs=["E"])
+        spark.AddBackground(bg,
+                            inputs=[[["i",["b"]],["d"]],["e","E","n"]])
+    if step >= 2:
+        ps = spark.ConstructedPowerSource(inputs=["a","A"])
+        spark.AddPowerSource(ps,
+                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]])
+    if step >= 3:
+        arc = spark.ConstructedArchetype(inputs=["E"])
+        spark.AddArchetype(arc[0],
+                           arc[1],
+                           inputs=[["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+    if step >= 4:
+        pn = spark.ConstructedPersonality(inputs=["P"])
+        spark.AddPersonality(pn[0],
+                             inputs=[[["Y","Bright Lights"]],["d"]])
+    if step >= 5:
+        spark.AddRedAbility(inputs=["D",["A","y","Finishing Strike"]])
+        spark.AddRedAbility(inputs=["G",["B","y","Living Battery"]])
+    if step >= 6:
+        spark.AddRetcon(inputs=["G",["A",["B","y","Struck by Inspiration"]]])
+    if step >= 7:
+        spark.AddHealth(roll=7,
+                        inputs=["b","b"])
+##    spark.CreateHero(health_roll=7,
+##                     inputs=["b",
+##                             ["E"],
+##                             [[["i",["b"]],["d"]],["e","E","n"]],
+##                             "b",
+##                             ["a","A"],
+##                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
+##                             "b",
+##                             ["E"],
+##                             [["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]],
+##                             "b",
+##                             ["P"],
+##                             [[["Y","Bright Lights"]],["d"]],
+##                             ["D",["A","y","Finishing Strike"]],
+##                             ["G",["B","y","Living Battery"]],
+##                             ["G",["A",["B","y","Struck by Inspiration"]]],
+##                             ["b","b"]])
     print()
     spark.display()
     return spark
 
 class SampleMaker:
     def __init__(self):
-        self.shikari = None
-        self.jo = None
-        self.cham = None
-        self.lori = None
-        self.knockout = None
-        self.kim = None
-        self.ayla = None
+        self.shikari = [None, 0]
+        self.jo = [None, 0]
+        self.cham = [None, 0]
+        self.lori = [None, 0]
+        self.knockout = [None, 0]
+        self.kim = [None, 0]
+        self.ayla = [None, 0]
         self.codenames = ["Shikari",
                           "Ultra Boy",
                           "Chameleon",
@@ -11427,34 +11534,118 @@ class SampleMaker:
                           "Knockout",
                           "The Architect",
                           "Spark"]
-    def getShikari(self):
-        if self.shikari == None:
-            self.shikari = Create_Shikari()
-        return self.shikari
-    def getJo(self):
-        if self.jo == None:
-            self.jo = Create_Ultra_Boy()
-        return self.jo
-    def getCham(self):
-        if self.cham == None:
-            self.cham = Create_Chameleon()
-        return self.cham
-    def getLori(self):
-        if self.lori == None:
-            self.lori = Create_Future_Girl()
-        return self.lori
-    def getKnockout(self):
-        if self.knockout == None:
-            self.knockout = Create_Knockout()
-        return self.knockout
-    def getKim(self):
-        if self.kim == None:
-            self.kim = Create_Architect()
-        return self.kim
-    def getAyla(self):
-        if self.ayla == None:
-            self.ayla = Create_Spark()
-        return self.ayla
+    def getShikari(self,
+                   step=len(step_names)):
+        notePrefix = "### SampleMaker.getShikari: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.shikari[1]))
+        if step in range(1, len(step_names) + 1) and step != self.shikari[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.shikari[0] = Create_Shikari(step=step)
+            self.shikari[1] = step
+        if step not in range(1, len(step_names) + 1) and self.shikari[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.shikari[0] = Create_Shikari()
+            self.shikari[1] = len(step_names)
+        return self.shikari[0]
+    def getJo(self,
+              step=len(step_names)):
+        notePrefix = "### SampleMaker.getJo: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.jo[1]))
+        if step in range(1, len(step_names) + 1) and step != self.jo[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.jo[0] = Create_Ultra_Boy(step=step)
+            self.jo[1] = step
+        if step not in range(1, len(step_names) + 1) and self.jo[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.jo[0] = Create_Ultra_Boy()
+            self.jo[1] = len(step_names)
+        return self.jo[0]
+    def getCham(self,
+                step=len(step_names)):
+        notePrefix = "### SampleMaker.getCham: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.cham[1]))
+        if step in range(1, len(step_names) + 1) and step != self.cham[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.cham[0] = Create_Chameleon(step=step)
+            self.cham[1] = step
+        if step not in range(1, len(step_names) + 1) and self.cham[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.cham[0] = Create_Chameleon()
+            self.cham[1] = len(step_names)
+        return self.cham[0]
+    def getLori(self,
+                step=len(step_names)):
+        notePrefix = "### SampleMaker.getLori: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.lori[1]))
+        if step in range(1, len(step_names) + 1) and step != self.lori[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.lori[0] = Create_Future_Girl(step=step)
+            self.lori[1] = step
+        if step not in range(1, len(step_names) + 1) and self.lori[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.lori[0] = Create_Future_Girl()
+            self.lori[1] = len(step_names)
+        return self.lori[0]
+    def getKnockout(self,
+                    step=len(step_names)):
+        notePrefix = "### SampleMaker.getKnockout: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.knockout[1]))
+        if step in range(1, len(step_names) + 1) and step != self.knockout[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.knockout[0] = Create_Knockout(step=step)
+            self.knockout[1] = step
+        if step not in range(1, len(step_names) + 1) and self.knockout[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.knockout[0] = Create_Knockout()
+            self.knockout[1] = len(step_names)
+        return self.knockout[0]
+    def getKim(self,
+               step=len(step_names)):
+        notePrefix = "### SampleMaker.getKim: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.kim[1]))
+        if step in range(1, len(step_names) + 1) and step != self.kim[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.kim[0] = Create_Architect(step=step)
+            self.kim[1] = step
+        if step not in range(1, len(step_names) + 1) and self.kim[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.kim[0] = Create_Architect()
+            self.kim[1] = len(step_names)
+        return self.kim[0]
+    def getAyla(self,
+                step=len(step_names)):
+        notePrefix = "### SampleMaker.getAyla: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.ayla[1]))
+        if step in range(1, len(step_names) + 1) and step != self.ayla[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.ayla[0] = Create_Spark(step=step)
+            self.ayla[1] = step
+        if step not in range(1, len(step_names) + 1) and self.ayla[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.ayla[0] = Create_Spark()
+            self.ayla[1] = len(step_names)
+        return self.ayla[0]
         
 class SampleGUI:
     def __init__(self, parent):
@@ -11779,7 +11970,7 @@ class HeroFrame(Frame):
                                        columnspan=sectionWidths[i])
         # Principle Abilities start after Green Abilities
         greenRows = 0
-        abilityMultiplier = 1.2
+        abilityMultiplier = 1.25
         self.abilityWraps = [math.floor(a*abilityMultiplier*self.columnWidth) \
                              for a in sectionWidths]
         greenRows = len(self.myZoneAbilities[0])
@@ -14344,7 +14535,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKim()
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
