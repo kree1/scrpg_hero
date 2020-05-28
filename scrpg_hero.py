@@ -6057,6 +6057,7 @@ class Hero:
                     repeat_message=invalid_message,
                     title="Hero Creation",
                     width=40,
+                    buffer=5,
                     inputs=[]):
         # Prints a prompt and a list of lettered options (print_options, indicated by A, B, C,
         #  etc.), then lets the user choose from among them
@@ -6077,7 +6078,8 @@ class Hero:
                                     options=print_options,
                                     var=answer,
                                     title=title,
-                                    width=width)
+                                    width=width,
+                                    buffer=buffer)
             return [answer.get(), inputs]
         else:
             indent = "    "
@@ -6280,7 +6282,9 @@ class Hero:
         # Now we know there are multiple valid_dice with different values. Time to make a choice.
         decision = self.ChooseIndex([str(d) for d in valid_dice],
                                     prompt="Choose a die to assign to " + print_name + ":",
-                                    inputs=inputs)
+                                    inputs=inputs,
+                                    width=35,
+                                    buffer=10)
         entry_index = decision[0]
         inputs = decision[1]
         pass_inputs = []
@@ -6431,7 +6435,9 @@ class Hero:
                                         prompt=dice_report + "\n" + "Choose one of these " + \
                                         print_types + ":",
                                         inputs=inputs,
-                                        title=print_type + " Selection")
+                                        title=print_type + " Selection",
+                                        width=50,
+                                        buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             triplet_choice = print_triplets[entry_index]
@@ -6844,7 +6850,7 @@ class Hero:
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to ask the user to choose
                 answer = IntVar()
-                options = [bg_collection[x][0] + " (" + str(x) + ")" for x in bg_indices]
+                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
                 if rerolls > 0:
                     options += ["REROLL"]
                 question = ExpandWindow(self.myWindow,
@@ -6890,7 +6896,8 @@ class Hero:
                 if entry_choice == 'Y':
                     decision = self.ChooseIndex([str(r) for r in die_results],
                                                 prompt="Choose which result to keep:",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=25)
                     entry_index = decision[0]
                     inputs = decision[1]
                     prev_result = die_results[entry_index]
@@ -7465,7 +7472,8 @@ class Hero:
                     #  used in this ability:
                     while len([x for x in legal_triplets if x in ps_triplets]) > 0:
                         for x in ps_triplets:
-                            legal_triplets.remove(x)
+                            if x in legal_triplets:
+                                legal_triplets.remove(x)
 ##                    print(prefix + "legal_triplets = " + str(legal_triplets))
 ##                    print(prefix + "(" + str(MixedPQs(legal_triplets)) + ")")
                 yellow_options = self.ChooseAbility(yellow_options,
@@ -7564,8 +7572,10 @@ class Hero:
                 else:
                     decision = self.ChooseIndex([str(x) for x in d8_plus_powers],
                                                 prompt="Choose a Power to downgrade:",
-                                                title="Power Source",
-                                                inputs=inputs)
+                                                title="Power Source: Cosmos",
+                                                inputs=inputs,
+                                                width=40,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     downgraded_power = d8_plus_powers[entry_index]
@@ -7583,7 +7593,9 @@ class Hero:
                     decision = self.ChooseIndex([str(x) for x in d10_minus_powers],
                                                 prompt="Choose a Power to upgrade:",
                                                 title="Power Source: Cosmos",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=40,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgraded_power = d10_minus_powers[entry_index]
@@ -9707,7 +9719,9 @@ class Hero:
                         upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
                     decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
                                                 prompt=impulsive_prompt,
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=40,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgrade_die = upgrade_pqs[entry_index]
@@ -9870,7 +9884,8 @@ class Hero:
                         entry_options = string.ascii_uppercase[0:len(die_results)]
                         decision = self.ChooseIndex([str(x) for x in die_results],
                                                     prompt="Choose which result to keep:",
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=25)
                         inputs = decision[1]
                         prev_result = die_results[decision[0]]
                     rerolls = 0
@@ -10193,7 +10208,8 @@ class Hero:
                             "Gain another Red Ability"]
             decision = self.ChooseIndex(step_options,
                                         prompt="Choose a Retcon to take:",
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=60)
             entry_index = decision[0]
             inputs = decision[1]
             step_choice = step_options[entry_index]
@@ -10658,7 +10674,9 @@ class Hero:
             random_options = ["4", "Roll 1d8"]
             decision = self.ChooseIndex(random_options,
                                         prompt=random_prompt,
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=25)
             entry_index = decision[0]
             inputs = decision[1]
             if random_options[entry_index] == "Roll 1d8":
@@ -10697,7 +10715,9 @@ class Hero:
             decision = self.ChooseIndex(step_options,
                                         prompt="How would you like to choose a Background for " + \
                                         str(self.hero_name) + "?",
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -10725,7 +10745,9 @@ class Hero:
             decision = self.ChooseIndex(step_options,
                                         prompt="How would you like to choose a Power Source " + \
                                         "for " + self.hero_name + "?",
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -10792,7 +10814,9 @@ class Hero:
                             self.hero_name + "?"
             decision = self.ChooseIndex(step_options,
                                         prompt=pn_prompt,
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -12498,7 +12522,9 @@ class HeroFrame(Frame):
             decision = self.myHero.ChooseIndex(step_options,
                                                prompt="How would you like to choose a " + \
                                                "Background for " + self.myHero.hero_name + "?",
-                                               inputs=inputs)
+                                               inputs=inputs,
+                                               width=50,
+                                               buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -12534,7 +12560,9 @@ class HeroFrame(Frame):
             decision = self.myHero.ChooseIndex(step_options,
                                                prompt="How would you like to choose a Power " + \
                                                "Source for " + self.myHero.hero_name + "?",
-                                               inputs=inputs)
+                                               inputs=inputs,
+                                               width=50,
+                                               buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -12618,7 +12646,9 @@ class HeroFrame(Frame):
                             self.myHero.hero_name + "?"
             decision = self.myHero.ChooseIndex(step_options,
                                                prompt=pn_prompt,
-                                               inputs=inputs)
+                                               inputs=inputs,
+                                               width=50,
+                                               buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -14320,9 +14350,9 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a partially constructed hero
-##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
-##disp_frame = HeroFrame(root, hero=platypus)
-##disp_frame.grid(row=0, column=0, columnspan=12)
+platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
+disp_frame = HeroFrame(root, hero=platypus)
+disp_frame.grid(row=0, column=0, columnspan=12)
 ##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
 ##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
 ##                                   ["B","A","y","Recalculate"],
@@ -14339,9 +14369,9 @@ root.geometry("+0+0")
 ##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
 ##platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
 ##platypus.AddHealth(inputs=["a"])
-##root.mainloop()
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
