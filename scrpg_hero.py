@@ -11372,13 +11372,13 @@ def Create_Architect():
                            [[["b"],["b"]],["K","n"]],
                            "B",
                            ["E"],
-                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","b","y","Aerial Survey"],["c"]],
+                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]],
                            "B",
                            ["N"],
                            [["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]],
                            "B",
-                           ["M"],
-                           [[["Y", "Super Mom"]]],
+                           ["G"],
+                           [[["Y", "Super Mom"]],["D"]],
                            ["H",["A","D","y","Economy of Scale"]],
                            ["E",["A","y","Blot Out"]],
                            ["G",["G",["F","y","Constructive Criticism"]]],
@@ -14344,15 +14344,15 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getKnockout()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getKim()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
-platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
-disp_frame = HeroFrame(root, hero=platypus)
-disp_frame.grid(row=0, column=0, columnspan=12)
+##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
+##disp_frame = HeroFrame(root, hero=platypus)
+##disp_frame.grid(row=0, column=0, columnspan=12)
 ##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
 ##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
 ##                                   ["B","A","y","Recalculate"],
@@ -14369,7 +14369,7 @@ disp_frame.grid(row=0, column=0, columnspan=12)
 ##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
 ##platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
 ##platypus.AddHealth(inputs=["a"])
-root.mainloop()
+##root.mainloop()
 
 # Using a not-yet-constructed hero
 ##dispFrame = HeroFrame(root)
