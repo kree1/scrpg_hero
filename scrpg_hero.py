@@ -9611,8 +9611,13 @@ class Hero:
         # Adds the Status dice and Out Ability granted by the specified Personality (or
         #  Personalities, in the case of a Divided hero)
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### Hero.AddPersonality: "
         if len(inputs) > 0:
-            print("### AddPersonality: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
+        print(notePrefix + "pn_index=" + str(pn_index) + " (" + pn_collection[pn_index][0] + ")")
+        if dv_index in range(len(pn_collection)):
+            print(notePrefix + "dv_index=" + str(dv_index) + " (" + pn_collection[dv_index][0] + \
+                  ")")
         # This is Step 4 of hero creation!
         this_step = 4
         your_pn = pn_collection[pn_index]
@@ -9632,9 +9637,9 @@ class Hero:
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
             # has_multiple is only true if the hero has the Divided modifier AND dv_index is a
-            #  valid Personality index AND index and dv_index don't match
+            #  valid Personality index AND pn_index and dv_index don't match
             has_multiple = (self.archetype_modifier == 1 and dv_index in range(len(pn_collection)) \
-                            and dv_index != index)
+                            and dv_index != pn_index)
             if has_multiple:
                 self.dv_personality = dv_index
                 your_dv_pn = pn_collection[self.dv_personality]
@@ -9711,12 +9716,15 @@ class Hero:
                         # Add less-than-maximal Powers and Qualities from this form, if they don't
                         #  already have dice in upgrade_pqs
                         upgrade_pqs += [d for d in this_form[2] + this_form[3] \
-                                        if d.triplet() not in [ex.triplet() for ex in upgrade_pqs]]
+                                        if d.diesize < max(legal_dice) and \
+                                        d.triplet() not in [ex.triplet() for ex in upgrade_pqs]]
                     # Check if the hero has Divided Psyche. If so, their Heroic Form can only use
-                    #  Powers, regardless of their Quality list.
+                    #  Powers, and their Civilian Form can only use Qualities.
                     dv_ps_matches = [a for a in self.abilities if a.name == "Divided Psyche"]
                     if len(dv_ps_matches) > 0 and i == 1:
                         upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
+                    elif len(dv_ps_matches) > 0:
+                        upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 0]
                     decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
                                                 prompt=impulsive_prompt,
                                                 inputs=inputs,
@@ -9740,14 +9748,17 @@ class Hero:
                                 else:
                                     print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
                                           ".")
-                        # Make sure to check other Forms as well
+                        # Make sure to check other Forms as well, if they have their own Power
+                        #  lists
                         for f in self.other_forms:
-                            for d in f[2]:
-                                if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                    d.SetPrevious(this_step)
-                                    d.diesize += 2
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          " in " + f[0] + ".")
+                            if f[2] != self.power_dice:
+                                for d in f[2]:
+                                    if d.triplet() == upgrade_triplet and \
+                                       d.diesize < max(legal_dice):
+                                        d.SetPrevious(this_step)
+                                        d.diesize += 2
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + " in " + f[0] + ".")
                     else:
                         # Upgrading a Quality
                         # Find all Quality dice matching this triplet that can be upgraded, and
@@ -9760,15 +9771,19 @@ class Hero:
                                     print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
                                           " in base form.")
                                 else:
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + ".")
-                        # Make sure to check other Forms as well
-                        for f in self.other_forms:
-                            for d in f[3]:
-                                if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                    d.SetPrevious(this_step)
-                                    d.diesize += 2
                                     print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          " in " + f[0] + ".")
+                                          ".")
+                        # Make sure to check other Forms as well, if they have their own Quality
+                        #  lists
+                        for f in self.other_forms:
+                            if f[3] != self.quality_dice:
+                                for d in f[3]:
+                                    if d.triplet() == upgrade_triplet and \
+                                       d.diesize < max(legal_dice):
+                                        d.SetPrevious(this_step)
+                                        d.diesize += 2
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + " in " + f[0] + ".")
                 elif this_bonus == 2:
                     # Mischievous: You may use any Power or Quality to determine Health.
                     for i in range(len(mixed_collection)):
@@ -9916,21 +9931,21 @@ class Hero:
             is_multiple = (entry_choice == "Y")
         if is_multiple:
             # Choose 2 Personalities and 1 Out Ability.
-            # Returns [personality index 1, personality index 2, Out Ability index]
+            # Returns [Heroic Personality index, Civilian Personality index, Out Ability index]
             personalities = [99, 99]
             out_options = [None, None]
             pn_indices = [x for x in range(len(pn_collection))]
-            for f in [0,1]:
+            for f in range(len(personalities)):
                 entry_options = string.ascii_uppercase[0:len(pn_indices)]
                 entry_choice = ' '
+                prompt = "Choose a Personality for " + self.dv_tags[f] + " form:"
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [pn_collection[x][0] for x in pn_indices]
                     details = [PersonalityDetails(x, width=0) for x in pn_indices]
                     question = ExpandWindow(self.myWindow,
-                                            "Choose a Personality for " + self.dv_tags[f] + \
-                                            " form:",
+                                            prompt,
                                             options,
                                             details,
                                             var=answer,
@@ -9938,7 +9953,7 @@ class Hero:
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
-                    print("OK! Choose a Personality for " + self.dv_tags[f] + " form:")
+                    print(prompt)
                     for i in range(len(pn_indices)):
                         print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0])
                     while entry_choice not in entry_options:
@@ -9948,15 +9963,19 @@ class Hero:
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Personality " + \
-                                                 "expanded, or an uppercase letter to select it.\n")[0]
-                        if entry_choice not in entry_options and entry_choice.upper() in entry_options:
+                            entry_choice = input("Enter a lowercase letter to see a " + \
+                                                 "Personality expanded, or an uppercase " + \
+                                                 "letter to select it.\n")[0]
+                        if entry_choice not in entry_options and \
+                           entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
                             DisplayPersonality(entry_index)
                     entry_index = entry_options.find(entry_choice)
                 print(pn_collection[entry_index][0] + " Personality selected.")
-                personalities[f] = entry_index
-                out_options[f] = pn_collection[entry_index][2]
+                # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
+                #  [Heroic, Civilian], so flip them here
+                personalities[1-f] = entry_index
+                out_options[1-f] = pn_collection[entry_index][2]
             # Now they have two different Personalities- but they can only have one Out Ability.
             out_options = [pn_collection[p][2] for p in personalities]
             out_choice = 99
@@ -14535,7 +14554,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKnockout()
+firstHero = factory.getLori(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
