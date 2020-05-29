@@ -7311,7 +7311,9 @@ class Hero:
                                                     "\n\n" + "Choose a " + category + \
 						    " die for this Ability:",
                                                     title=display_str,
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=50,
+                                                    buffer=15)
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
@@ -7897,7 +7899,8 @@ class Hero:
         inputs = decision[1]
         if entry_choice == 'Y':
             decision = self.EnterText("Enter the new name for this Mode:",
-                                      inputs=inputs)
+                                      inputs=inputs,
+                                      default=t_name)
             mode_name = decision[0]
             inputs = decision[1]
 ##            if len(inputs) > 0:
@@ -8177,24 +8180,40 @@ class Hero:
                 other_abilities.extend(self.other_forms[i][5])
             form_options = [fa for fa in form_options if fa.name not in \
                             [oa.name for oa in other_abilities]]
-        entry_options = string.ascii_uppercase[0:len(form_options)]
-        entry_choice = ' '
-        print("Choose a Form to add in " + status_zones[zone] + ":")
-        for i in range(len(form_options)):
-            print("    " + entry_options[i] + ": " + form_options[i].name)
-        while entry_choice not in entry_options:
-            if len(inputs) > 0:
-                print("Enter a lowercase letter to see a Form expanded, " + \
-                      "or an uppercase letter to select it.")
-                print("> " + inputs[0])
-                entry_choice = inputs.pop(0)
-            else:
-                entry_choice = input("Enter a lowercase letter to see a Form expanded, " + \
-                                     "or an uppercase letter to select it.\n")[0]
-            if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                entry_index = entry_options.find(entry_choice.upper())
-                form_options[entry_index].display()
-        entry_index = entry_options.find(entry_choice)
+        prompt = "Choose a Form to add in " + status_zones[zone] + ":"
+        if self.UseGUI(inputs):
+            # Create an ExpandWindow to prompt the user
+            dispWidth = 100
+            answer = IntVar()
+            options = [x.name for x in form_options]
+            details = [x.details() for x in form_options]
+            question = ExpandWindow(self.myWindow,
+                                    prompt,
+                                    options,
+                                    details,
+                                    var=answer,
+                                    title="Form Selection",
+                                    rwidth=dispWidth)
+            entry_index = answer.get()
+        else:
+            entry_options = string.ascii_uppercase[0:len(form_options)]
+            entry_choice = ' '
+            print(prompt)
+            for i in range(len(form_options)):
+                print("    " + entry_options[i] + ": " + form_options[i].name)
+            while entry_choice not in entry_options:
+                if len(inputs) > 0:
+                    print("Enter a lowercase letter to see a Form expanded, " + \
+                          "or an uppercase letter to select it.")
+                    print("> " + inputs[0])
+                    entry_choice = inputs.pop(0)
+                else:
+                    entry_choice = input("Enter a lowercase letter to see a Form expanded, " + \
+                                         "or an uppercase letter to select it.\n")[0]
+                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
+                    entry_index = entry_options.find(entry_choice.upper())
+                    form_options[entry_index].display()
+            entry_index = entry_options.find(entry_choice)
         form_ability_template = form_options[entry_index]
         form_name = form_ability_template.name
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
@@ -8212,21 +8231,27 @@ class Hero:
         step_options = "ABCD"
         step_text = ["Swap 2 Power dice",
                      "Replace a Power with a Form-Changer Power",
-                     "Show current Powers for this Form",
                      "No further changes"]
-        step_choice = ' '
+        step_choice = 99
         # The user can swap two power dice, or replace a power die with another Power from the
         #  Form-Changer secondary list, any number of times.
-        while step_choice != "D":
-            print("Do you want to modify " + self.hero_name + "'s Powers in " + \
-                  form_ability_template.name + "?")
-            for i in range(len(step_options)):
-                print("    " + step_options[i] + ": " + step_text[i])
-            decision = choose_letter(step_options, ' ', inputs=inputs)
+        while step_choice != len(step_text)-1:
+            # Display the current Power list for this Form
+            prompt = self.hero_name + "'s current Powers in " + form_ability_template.name + \
+                     " are..."
+            for i in range(len(form_power_dice)):
+                prompt += "\n    " + str(form_power_dice[i])
+            prompt += "\n\nDo you want to modify " + self.hero_name + "'s Powers in " + \
+                     form_ability_template.name + "?"
+            decision = self.ChooseIndex(step_text,
+                                        prompt=prompt,
+                                        title="Create Form: " + form_ability_template.name,
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             step_choice = decision[0]
             inputs = decision[1]
-            if step_choice == "A":
-                # Swap 2 Power dice
+            if step_text[step_choice] == "Swap 2 Power dice":
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
@@ -8277,11 +8302,13 @@ class Hero:
                 else:
                     print(swap_dice[0].name + " and " + swap_dice[1].name + \
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
-            elif step_choice == "B":
-                # Replace a Power with a Form-Changer Power
+            elif step_text[step_choice] == "Replace a Power with a Form-Changer Power":
                 decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                             prompt="Choose a Power die to switch out...",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            title="Create Form: " + form_ability_template.name,
+                                            width=40,
+                                            buffer=10)
                 die_index = decision[0]
                 inputs = decision[1]
                 changed_die = form_power_dice[die_index]
@@ -8289,8 +8316,11 @@ class Hero:
                                    [d.triplet() for d in form_power_dice]]
                 decision = self.ChooseIndex([MixedPQ(x) for x in replace_options],
                                             prompt="Choose a Power to replace " + \
-                                            changed_die.flavorname + ":",
-                                            inputs=inputs)
+                                            str(changed_die) + ":",
+                                            inputs=inputs,
+                                            title="Create Form: " + form_ability_template.name,
+                                            width=40,
+                                            buffer=10)
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Change changed_die's attributes to those of the newly selected Power
@@ -8303,12 +8333,6 @@ class Hero:
                 changed_die.name = MixedPQ(replace_power)
                 changed_die.flavorname = changed_die.name
                 print("OK! " + prev_str + " is now " + str(changed_die))
-            elif step_choice == "C":
-                # Display the current Power list for this Form
-                print(self.hero_name + "'s current Powers in " + form_ability_template.name + \
-                      " are...")
-                for i in range(len(form_power_dice)):
-                    print("    " + str(form_power_dice[i]))
         if zone == 1:
             # For a Yellow Form, the user can choose up to 2 dice to increase by 1 die size each
             power_indices = [x for x in range(len(form_power_dice))\
@@ -8320,7 +8344,8 @@ class Hero:
                 decision = self.ChooseIndex([str(form_power_dice[x]) for x in power_indices],
                                             prompt="Choose a Power die to increase by one size" + \
                                             " in this Form:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            title="Create Form: " + form_ability_template.name)
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index in range(len(power_indices)):
@@ -8357,16 +8382,11 @@ class Hero:
         inputs = decision[1]
         if entry_choice == 'Y':
             decision = self.EnterText("Enter the new name for this Form:",
-                                      inputs=inputs)
+                                      inputs=inputs,
+                                      default=form_name,
+                                      title="Create Form: " + form_ability_template.name)
             form_name = decision[0]
             inputs = decision[1]
-##            form_name = ""
-##            if len(inputs) > 0:
-##                print("Enter the new name for this Form:")
-##                print("> " + inputs[0])
-##                form_name = inputs.pop(0)
-##            else:
-##                form_name = input("Enter the new name for this Form:\n")
         new_form = [form_name,
                     zone,
                     form_power_dice,
@@ -8387,7 +8407,8 @@ class Hero:
                                         form_name + " a " + self.dv_tags[0] + " or " + \
                                         self.dv_tags[1] + " form for " + \
 					pronouns[self.pronoun_set][1] + "?",
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        title="Create Form: " + form_ability_template.name)
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index < 2:
@@ -9973,9 +9994,8 @@ class Hero:
                     entry_index = entry_options.find(entry_choice)
                 print(pn_collection[entry_index][0] + " Personality selected.")
                 # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
-                #  [Heroic, Civilian], so flip them here
+                #  [Heroic, Civilian] because Civilian is optional, so flip them here
                 personalities[1-f] = entry_index
-                out_options[1-f] = pn_collection[entry_index][2]
             # Now they have two different Personalities- but they can only have one Out Ability.
             out_options = [pn_collection[p][2] for p in personalities]
             out_choice = 99
@@ -9989,7 +10009,9 @@ class Hero:
                                              pn_collection[personalities[i]][0] + ")" \
                                              for i in range(len(personalities))],
                                             prompt="Choose which Out Ability to use:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 out_choice = decision[0]
                 inputs = decision[1]
             personalities.append(out_choice)
@@ -10796,7 +10818,9 @@ class Hero:
             decision = self.ChooseIndex(step_options,
                                         prompt="How would you like to choose an Archetype for " + \
                                         self.hero_name + "?",
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -12810,7 +12834,9 @@ class HeroFrame(Frame):
             decision = self.myHero.ChooseIndex(step_options,
                                                prompt="How would you like to choose an " + \
                                                "Archetype for " + self.myHero.hero_name + "?",
-                                               inputs=inputs)
+                                               inputs=inputs,
+                                               width=50,
+                                               buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
             pass_inputs = []
@@ -14554,7 +14580,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori(step=3)
+firstHero = factory.getCham(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
