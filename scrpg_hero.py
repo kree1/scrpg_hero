@@ -1430,14 +1430,14 @@ class Ability:
         # pq_reqs -> self.required_pqs: <=2 sets of triplets identifying powers and/or qualities
         #     required to add this Ability
         #     NOTE: these powers/qualities may not necessarily appear in the ability text... BUT
-        #     any powers/qualities that appear in the ability text should also appear in this list,
-        #     if it exists
+        #     if this list exists, it should include any powers/qualities that appear in the 
+        #     ability text
         # pq_opts -> self.pq_options: <=2 sets of triplets identifying options from which the
         #     respective pq_ids can be chosen
         # pq_ids -> self.insert_pqs: <=2 triplets identifying powers/qualities used in the ability
         #     text
-        #     NOTE: pq_ids overrules pq_opts,
-        #           pq_opts overrules pq_reqs,
+        #     NOTE: pq_ids overrules pq_opts (and modifies it if not empty),
+        #           pq_opts overrules pq_reqs (and modifies it if not empty),
         #           pq_opts overrules categories
         # element_id -> self.insert_element: int identifying an element/energy (from
         #     mixed_collection[1][1]: Elemental/Energy Powers) used in the ability text
@@ -1554,7 +1554,9 @@ class Ability:
                 print(notePrefix + "self.insert_pqs[" + str(i) + "]=" + str(self.insert_pqs[i]))
                 print(notePrefix + "self.pq_options[" + str(i) + "]=" + str(self.pq_options[i]))
                 print(notePrefix + "match= " + str(self.insert_pqs[i] in self.pq_options[i]))
-            if self.insert_pqs[i] not in self.pq_options[i] and len(self.insert_pqs[i]) > 0:
+            if self.insert_pqs[i] not in self.pq_options[i] and \
+               len(self.insert_pqs[i]) > 0 and \
+               len(self.pq_options[i]) > 0:
                 print("Specified power/quality " + str(self.insert_pqs[i]) + \
                       " not in option list " + str(self.pq_options[i]) + ". Expanding options.")
                 self.pq_options[i].append(self.insert_pqs[i])
@@ -1585,7 +1587,7 @@ class Ability:
                     print(notePrefix + "triplet in self.pq_options[" + str(i) + "]=" + \
                           str(triplet))
                 if len(triplet) == 3:
-                    if triplet not in self.required_pqs[i]:
+                    if triplet not in self.required_pqs[i] and len(self.required_pqs[i]) > 0:
                         print("Specified power/quality option " + str(triplet) + \
                               " not in requirement set " + str(self.required_pqs[i]) + \
                               ". Expanding requirement set.")
@@ -11832,7 +11834,11 @@ class SampleGUI:
 
 class HeroFrame(Frame):
     # A container displaying all the mechanical information about a Hero.
-    def __init__(self, parent, hero=None, width=160, height=52):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=160,
+                 height=52):
         Frame.__init__(self, parent)
         notePrefix = "HeroFrame: "
         self.zoneColors = ["PaleGreen1", "LightGoldenrod1", "IndianRed1"]
@@ -12150,7 +12156,8 @@ class HeroFrame(Frame):
                                                             anchor=sectionAnchors[s],
                                                             justify=sectionReasons[s],
                                                             relief=abilityRelief,
-                                                            width=self.columnWidth*sectionWidths[s],
+                                                            width=self.columnWidth * \
+                                                            sectionWidths[s],
                                                             height=self.rowHeight*rowsNeeded)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
@@ -12209,9 +12216,9 @@ class HeroFrame(Frame):
                                  height=self.rowHeight*self.buttonHeight,
                                  command=self.LaunchMinionWindow)
         self.minionButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=buttonColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
+                               column=buttonColumn,
+                               rowspan=self.buttonHeight,
+                               columnspan=self.buttonWidth)
         prevButtons += 1
         if self.myMinionCount == 0:
             self.minionButton.grid_remove()
@@ -12597,7 +12604,8 @@ class HeroFrame(Frame):
         for i in range(len(self.charTitles)):
             self.charValues[i].config(text=self.myHeroChars[i])
         sectionWidths = [4, 1]
-        pqDiceValues = [["" for a in range(len(self.pqTitles))] for a in range(len(self.myHeroPowers))]
+        pqDiceValues = [["" for a in range(len(self.pqTitles))] \
+                        for a in range(len(self.myHeroPowers))]
         for x in range(len(self.myHeroPowers)):
             if isinstance(self.myHeroPowers[x], PQDie):
                 pqDiceValues[x][0] = split_text(self.myHeroPowers[x].flavorname,
@@ -12741,7 +12749,8 @@ class HeroFrame(Frame):
         if isinstance(self.myOutAbility, Ability):
             outText = split_text(self.myOutAbility.dispText(), sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
-        self.outAbilityValue.config(text=outText, height=rowsNeeded)
+        self.outAbilityValue.config(text=outText,
+                                    height=rowsNeeded)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -14383,7 +14392,8 @@ class ExpandFrame(Frame):
                                  rowspan=1,
                                  columnspan=1,
                                  sticky=N+E+S+W)
-        detailsHeight = max([1 + len([x for x in y if x == "\n"]) for y in self.myDetails])
+        detailsHeight = max([1 + len([x for x in split_text(y, width=self.myDispWrap) \
+                                      if x == "\n"]) for y in self.myDetails])
         self.myDispLabel = Label(self,
                                  anchor=NW,
                                  justify=LEFT,
@@ -14403,8 +14413,8 @@ class ExpandFrame(Frame):
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
-        if index in range(len(self.myDetails)):
-            dispText = split_text(self.myDetails[index], width=self.myDispWrap)
+##        if index in range(len(self.myDetails)):
+##            dispText = split_text(self.myDetails[index], width=self.myDispWrap)
         self.myDispLabel.config(text=dispText,
                                 width=self.myDispWidth)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
@@ -14679,10 +14689,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham(step=1)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getCham(step=1)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14707,6 +14717,6 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
