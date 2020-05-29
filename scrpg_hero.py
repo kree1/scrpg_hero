@@ -7079,39 +7079,62 @@ class Hero:
                 prompt = "Choose one of these Abilities to add in " + status_zones[zone] + ":"
             printlong(prompt, 100)
             col_num = 3
-            section_length = 24
+            section_length = 9
             if len(template_options) > section_length:
                 sections = math.ceil(len(template_options)/section_length)
                 entry_options = string.ascii_uppercase[0:sections]
-                print("You have a lot of Ability options...")
-                columns = [0] * col_num
-                for c in range(len(columns)):
-                    if c in range(len(template_options)):
-                        columns[c] = max([len(str(template_options[i]))+2\
-                                          for i in range(len(template_options)) if i%col_num == c])
-                for i in range(len(template_options)):
-                    as_text = str(template_options[i])
-                    while len(as_text) < columns[i%col_num]:
-                        as_text += " "
-                    if i%section_length == 0:
-                        if i%col_num != 0:
-                            print()
-                        print("    " + entry_options[math.floor(i/section_length)] + ": ", end="")
-                    elif i%col_num == 0:
-                        print("       ", end="")
-                    if i%col_num == col_num-1 or i == len(template_options)-1:
-                        print(as_text)
-                    else:
-                        print(as_text, end="")
+                options_report = "You have a lot of Ability options..."
+                choice_request = "Choose a section of the list to pick from:"
                 section_list = [str(template_options[s*section_length]) + " through " + \
                                 str(template_options[min((s+1)*section_length-1,
                                                          len(template_options)-1)]) \
                                 for s in range(sections)]
-                decision = self.ChooseIndex(section_list,
-                                            prompt="Choose a section of the list to pick from:",
-                                            inputs=inputs)
-                entry_index = decision[0]
-                inputs = decision[1]
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    details = ["" for i in range(sections)]
+                    for i in range(sections):
+                        this_length = min(section_length,
+                                          len(template_options) - i*section_length)
+                        for j in range(this_length):
+                            details[i] += template_options[i*section_length+j].details()
+                            if j in range(this_length-1):
+                                details[i] += "\n"
+                    answer = IntVar()
+                    question = ExpandWindow(self.myWindow,
+                                            options_report + "\n" + choice_request,
+                                            section_list,
+                                            details,
+                                            var=answer,
+                                            title="Ability Selection")
+                    entry_index = answer.get()
+                else:
+                    print(options_report)
+                    columns = [0] * col_num
+                    for c in range(len(columns)):
+                        if c in range(len(template_options)):
+                            columns[c] = max([len(str(template_options[i]))+2 \
+                                              for i in range(len(template_options)) \
+                                              if i%col_num == c])
+                    for i in range(len(template_options)):
+                        as_text = str(template_options[i])
+                        while len(as_text) < columns[i%col_num]:
+                            as_text += " "
+                        if i%section_length == 0:
+                            if i%col_num != 0:
+                                print()
+                            print("    " + entry_options[math.floor(i/section_length)] + ": ",
+                                  end="")
+                        elif i%col_num == 0:
+                            print("       ", end="")
+                        if i%col_num == col_num-1 or i == len(template_options)-1:
+                            print(as_text)
+                        else:
+                            print(as_text, end="")
+                    decision = self.ChooseIndex(section_list,
+                                                prompt=choice_request,
+                                                inputs=inputs)
+                    entry_index = decision[0]
+                    inputs = decision[1]
                 entry_start = entry_index * section_length
                 entry_end = min(entry_start + section_length, len(template_options))
                 template_options = template_options[entry_start:entry_end]
@@ -8345,7 +8368,9 @@ class Hero:
                                             prompt="Choose a Power die to increase by one size" + \
                                             " in this Form:",
                                             inputs=inputs,
-                                            title="Create Form: " + form_ability_template.name)
+                                            title="Create Form: " + form_ability_template.name,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index in range(len(power_indices)):
@@ -10140,7 +10165,8 @@ class Hero:
                 ra_sublists.append([rt for rt in ra_minion_maker])
                 sublist_strings.append("for Minion-Maker heroes")
                 # ...
-            # Show the user the list of sublists of Red Abilities and corresponding Powers/Qualities
+            # Show the user the list of sublists of Red Abilities and corresponding
+            #  Powers/Qualities
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
@@ -10149,8 +10175,8 @@ class Hero:
                 for i in range(len(pq_sublists)):
                     pq_first = pq_sublists[i][0]
                     if len(pq_sublists[i]) > 1 and sublist_strings[i] == "":
-                        pq_category = mixed_categories[pq_first.ispower][pq_first.category] + " " + \
-                                      categories_singular[pq_first.ispower]
+                        pq_category = mixed_categories[pq_first.ispower][pq_first.category] + \
+                                      " " + categories_singular[pq_first.ispower]
                         pq_options = str(pq_first)
                         for d in pq_sublists[i][1:-1]:
                             pq_options += ", " + str(d)
@@ -10158,7 +10184,8 @@ class Hero:
                             pq_options += ","
                         pq_options += " or " + str(pq_sublists[i][-1])
                         if pq_category[0].upper() in "AEIOU":
-                            sublist_strings[i] = "using an " + pq_category + " (" + pq_options + ")"
+                            sublist_strings[i] = "using an " + pq_category + " (" + \
+                                                 pq_options + ")"
                         else:
                             sublist_strings[i] = "using a " + pq_category + " (" + pq_options + ")"
                     elif sublist_strings[i] == "":
