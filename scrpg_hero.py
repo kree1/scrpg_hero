@@ -1451,6 +1451,7 @@ class Ability:
         #     Elemental/Energy power matching the element in the ability text; False otherwise
         # hero_step -> self.step: the number of the step of hero creation (1-7) at which this
         #     ability was added
+        notePrefix = "### Ability.__init__: "
         self.zone = -1
         self.insert_element = 99
         self.insert_pqs = []
@@ -1477,7 +1478,12 @@ class Ability:
         else:
             print("Error! " + str(subtype) + " is not a valid ability type")
             return
-        self.name = name
+        self.name = str(name)
+        notePrefix += self.name + ": "
+        # For debugging: __init__ gets run dozens of times, so if one Ability gives you trouble,
+        #  set isProblem to an expression that identifies it (e.g. "name == "Onboard Upgrade"")
+        #  to activate more diagnostic printouts for just that Ability
+        isProblem = False
         self.text = main_text
         if "%p" in self.text:
             self.has_pq = True
@@ -1502,53 +1508,91 @@ class Ability:
                 return
         # Validate the entries in pq_ids, add the valid ones to self.insert_pqs
         self.insert_pqs = [[], []]
+        self.pq_options = [[], []]
+        self.required_pqs = [[], []]
         if pq_ids:
             self.has_pq = True
+            if isProblem:
+                print(notePrefix + "has_pq=" + str(self.has_pq))
             for i in range(len(pq_ids)):
                 triplet = pq_ids[i]
+                if isProblem:
+                    print(notePrefix + "pq_id at i=" + str(i) + ": " + str(triplet))
                 if len(triplet) == 3:
                     if triplet[0] in range(len(mixed_collection)):
                         if triplet[1] in range(len(mixed_collection[triplet[0]])):
                             if triplet[2] in range(len(mixed_collection[triplet[0]][triplet[1]])):
                                 # triplet refers to an existing power/quality
                                 self.insert_pqs[i] = triplet
+                                if isProblem:
+                                    print(notePrefix + "self.insert_pqs[" + str(i) + "]=" + \
+                                          str(self.insert_pqs[i]))
                                 if len(die_names) >= i:
                                     if die_names[i] != "":
                                         self.flavordice[i] = die_names[i]
         # Validate the entries in pq_opts, add the valid ones to self.pq_options
-        self.pq_options = [[], []]
-        for i in range(len(pq_opts)):
-            for triplet in pq_opts[i]:
-                if triplet[0] in range(len(mixed_collection)):
-                    if triplet[1] in range(len(mixed_collection[triplet[0]])):
-                        if triplet[2] in range(len(mixed_collection[triplet[0]][triplet[1]])):
-                            # triplet refers to an existing power/quality
-                            self.pq_options[i].append(triplet)
+        for i in range(len(self.pq_options)):
+            if i in range(len(pq_opts)):
+                if isProblem:
+                    print(notePrefix + "pq_opts[" + str(i) + "]=" + str(pq_opts[i]))
+                for triplet in pq_opts[i]:
+                    if isProblem:
+                        print(notePrefix + "triplet in pq_opts[" + str(i) + "]=" + str(triplet))
+                    if triplet[0] in range(len(mixed_collection)):
+                        if triplet[1] in range(len(mixed_collection[triplet[0]])):
+                            if triplet[2] in range(len(mixed_collection[triplet[0]][triplet[1]])):
+                                # triplet refers to an existing power/quality
+                                self.pq_options[i].append(triplet)
+                                if isProblem:
+                                    print(notePrefix + str(triplet) + " added to " + \
+                                          "self.pq_options[" + str(i) + "]")
+                                    print(notePrefix + "self.pq_options[" + str(i) + "]=" + \
+                                          str(self.pq_options[i]))
             # After adding the specified options, make sure the known powers/qualities are also
             #  present
-            if self.insert_pqs[i] not in self.pq_options[i] and \
-               len(self.pq_options[i]) > 0 and len(self.insert_pqs[i]) > 0:
+            if isProblem:
+                print(notePrefix + "self.insert_pqs[" + str(i) + "]=" + str(self.insert_pqs[i]))
+                print(notePrefix + "self.pq_options[" + str(i) + "]=" + str(self.pq_options[i]))
+                print(notePrefix + "match= " + str(self.insert_pqs[i] in self.pq_options[i]))
+            if self.insert_pqs[i] not in self.pq_options[i] and len(self.insert_pqs[i]) > 0:
                 print("Specified power/quality " + str(self.insert_pqs[i]) + \
                       " not in option list " + str(self.pq_options[i]) + ". Expanding options.")
                 self.pq_options[i].append(self.insert_pqs[i])
+                if isProblem:
+                    print(notePrefix + "self.pq_options[" + str(i) + "]=" + \
+                          str(self.pq_options[i]))
         # Validate the entries in pq_reqs, add the valid ones to self.required_pqs
-        self.required_pqs = [[], []]
-        for i in range(len(pq_reqs)):
-            for triplet in pq_reqs[i]:
-                if triplet[0] in range(len(mixed_collection)):
-                    if triplet[1] in range(len(mixed_collection[triplet[0]])):
-                        if triplet[2] in range(len(mixed_collection[triplet[0]][triplet[1]])):
-                            # triplet refers to an existing power/quality
-                            self.required_pqs[i].append(triplet)
+        for i in range(len(self.required_pqs)):
+            if i in range(len(pq_reqs)):
+                if isProblem:
+                    print(notePrefix + "pq_reqs[" + str(i) + "]=" + str(pq_reqs[i]))
+                for triplet in pq_reqs[i]:
+                    if isProblem:
+                        print(notePrefix + "triplet in pq_reqs[" + str(i) + "]=" + str(triplet))
+                    if triplet[0] in range(len(mixed_collection)):
+                        if triplet[1] in range(len(mixed_collection[triplet[0]])):
+                            if triplet[2] in range(len(mixed_collection[triplet[0]][triplet[1]])):
+                                # triplet refers to an existing power/quality
+                                self.required_pqs[i].append(triplet)
+                                if isProblem:
+                                    print(notePrefix + str(triplet) + " added to " + \
+                                          "self.required_pqs[" + str(i) + "]")
+                                    print(notePrefix + "self.required_pqs[" + str(i) + "]=" + \
+                                          str(self.required_pqs[i]))
             # After adding the specified requirements, also add the known in-text options
             for triplet in self.pq_options[i]:
+                if isProblem:
+                    print(notePrefix + "triplet in self.pq_options[" + str(i) + "]=" + \
+                          str(triplet))
                 if len(triplet) == 3:
                     if triplet not in self.required_pqs[i]:
                         print("Specified power/quality option " + str(triplet) + \
                               " not in requirement set " + str(self.required_pqs[i]) + \
                               ". Expanding requirement set.")
                         self.required_pqs[i].append(triplet)
-                        self.required_pqs[i].append(triplet)
+                        if isProblem:
+                            print(notePrefix + "self.required_pqs[" + str(i) + "] updated to " + \
+                                  str(self.required_pqs[i]))
                     # Also make sure that required_categories is expanded to include these options
                     if self.required_categories[i] not in [2, triplet[0]]:
                         print("Specified power/quality option " + str(triplet) + \
@@ -2084,6 +2128,7 @@ a_onboard_upgrade = Ability("Onboard Upgrade",
                             1,
                             categories=[1,2],
                             pq_ids=[[1,8,2]],
+                            pq_opts=[[[1,8,2]]],
                             pq_reqs=[[[1,8,2]]])
 a_damage_reduction = Ability("Damage Reduction",
                              "I",
@@ -6307,8 +6352,9 @@ class Hero:
         # custom_name: should the user be prompted to customize the name of this die?
         # stepnum: the number of the step of hero creation (1-7) at which this die is being added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### Hero.ChoosePQ: "
         if len(inputs) > 0:
-            print("### ChoosePQ: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # Start by validating each entry in triplets:
         valid_triplets = []
         for entry in triplets:
@@ -6334,12 +6380,16 @@ class Hero:
             return [triplets, []]
         elif len(valid_triplets) == 1:
             # Only one power/quality to assign to? Pass it to ChoosePQDieSize
+##            print(notePrefix + "valid_triplets[0]: " + str(valid_triplets[0]))
+##            print(notePrefix + "valid_triplets[0][0]: " + str(valid_triplets[0][0]))
+##            print(notePrefix + "valid_triplets[0][1:3]: " + str(valid_triplets[0][1:3]))
+##            print(notePrefix + "die_options: " + str(die_options))
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             return [[], self.ChoosePQDieSize(valid_triplets[0][0],
-                                             valid_triplets[0][1:2],
+                                             valid_triplets[0][1:3],
                                              die_options,
                                              stepnum=max([0, stepnum]),
                                              inputs=pass_inputs)]
@@ -6979,8 +7029,9 @@ class Hero:
         # Returns:
         #   if add==1: the set of unused abilities.
         #   otherwise: the filled-in Ability
+        notePrefix = "### ChooseAbility: "
         if len(inputs) > 0:
-            print("### ChooseAbility: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         p_dice = self.power_dice
         if len(alt_powers) > 0:
             p_dice = alt_powers
@@ -7043,7 +7094,7 @@ class Hero:
                 matching_templates.append(a)
         if len(matching_templates) == 0:
             print("Error! All of the ability templates had power/quality requirements " + \
-                  "incompatible with the specified options " + str(triplet_options) + ".")
+                  "incompatible with the specified options (" + str(triplet_options) + ").")
             if add==1:
                 return template_options
             else:
@@ -7060,18 +7111,16 @@ class Hero:
         elif len(template_options) == 1:
             ability_template = template_options[0]
         else:
-            if len(triplet_options) > 1:
+            if len(triplet_options) > 0:
                 option_text = MixedPQ(triplet_options[0])
                 for i in range(1,len(triplet_options)-1):
                     option_text += ", " + MixedPQ(triplet_options[i])
                 if option_text != MixedPQ(triplet_options[0]):
                     option_text += ","
-                option_text += " or " + MixedPQ(triplet_options[len(triplet_options)-1])
+                if len(triplet_options) > 1:
+                    option_text += " or " + MixedPQ(triplet_options[len(triplet_options)-1])
                 prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
                           ", using " + option_text + ":"
-            elif len(triplet_options) == 1:
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
-                         ", using " + MixedPQ(triplet_options[0]) + ":"
             elif category_req in [0,1]:
                 prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
                          ", using a " + categories_singular[category_req] + ":"
@@ -7146,7 +7195,7 @@ class Hero:
                                         [str(x) for x in template_options],
                                         [x.details() for x in template_options],
                                         var=answer,
-                                        title="Hero Creation",
+                                        title="Ability Selection",
                                         rwidth=a_width)
                 entry_index = answer.get()
             else:
@@ -7161,13 +7210,14 @@ class Hero:
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an ability expanded, " + \
-                                             "or an uppercase letter to select it.\n")[0]
+                        entry_choice = input("Enter a lowercase letter to see an ability " + \
+                                             "expanded, or an uppercase letter to select it.\n")[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         template_options[entry_index].display(prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             ability_template = template_options[entry_index]
+        notePrefix += ability_template.name + ": "
         # The first time we need the user to make a choice for this Ability, we'll display the
         # template text... but not before that, in case they don't have to
         has_displayed = False
@@ -7175,15 +7225,16 @@ class Hero:
         if ability_template.zone == 3:
             # Out Abilities don't get names
             display_str = self.hero_name + "'s Out Ability"
-        # If the ability has power or quality requirements, evaluate those to see if it can be added.
+        # If the ability has power or quality requirements, evaluate those to see if it can be
+        #  added.
         for i in [0,1]:
             if len(ability_template.required_pqs[i]) > 0:
                 matching_pqs = [d.triplet() for d in p_dice + self.quality_dice \
                                 if d.triplet() in ability_template.required_pqs[i]]
                 if len(matching_pqs) == 0:
                     print("Error! " + self.hero_name + \
-                          "doesn't have any of the required Powers/Qualities for this ability (" + \
-                          MixedPQs(ability_template.required_pqs[i]) + ").")
+                          "doesn't have any of the required Powers/Qualities for this ability " + \
+                          "(" + MixedPQs(ability_template.required_pqs[i]) + ").")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
@@ -7191,7 +7242,7 @@ class Hero:
                         return []
         # If the ability needs a damage category, prompt the user for it
         damage_entry = ability_template.insert_damage
-        if ability_template.has_damage and damage_entry == 99:
+        if ability_template.has_damage and damage_entry not in [0,1]:
             if not has_displayed:
                 print("OK! Let's fill in " + display_str + "...")
                 ability_template.display()
@@ -7210,7 +7261,9 @@ class Hero:
                                         prompt=ability_template.details() + "\n\n" +
                                         "Choose a damage category for this Ability:",
                                         title=display_str,
-                                        inputs=inputs)
+                                        inputs=inputs,
+                                        width=50,
+                                        buffer=15)
             damage_entry = decision[0]
             inputs = decision[1]
             # Testing...
@@ -7256,7 +7309,9 @@ class Hero:
                                             prompt=ability_template.details() + "\n\n" +
                                             "Choose an energy or element for this Ability:",
                                             title=display_str,
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=10)
                 element_num = decision[0]
                 inputs = decision[1]
         # If the ability needs any basic actions, prompt the user for those
@@ -7285,10 +7340,15 @@ class Hero:
                 if ("%p" + str(i)) in ability_template.text:
                     category = categories_singular[ability_template.required_categories[i]]
                     die_options = self.quality_dice + p_dice
+##                    print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                          str([str(d) for d in die_options]))
                     if ability_template.required_categories[i] == 0 or category_req == 0:
                         die_options = self.quality_dice
                     elif ability_template.required_categories[i] == 1 or category_req == 1:
                         die_options = p_dice
+##                    print(notePrefix + "filtered by category")
+##                    print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                          str([str(d) for d in die_options]))
                     error = ""
                     if len(die_options) == 0:
                         error = ability_template.name + " requires a " + category + ", but " + \
@@ -7296,18 +7356,28 @@ class Hero:
                     # If only certain powers/qualities are valid for this slot, narrow the field
                     #  to those
                     if len(ability_template.pq_options[i]) > 0:
+##                        print(notePrefix + "pq_options[i]: " + str(ability_template.pq_options[i]))
                         die_options = [d for d in die_options \
                                        if d.triplet() in ability_template.pq_options[i]]
                         if len(die_options) == 0:
                             error = self.hero_name + " doesn't have any " + category + \
                                     " dice matching the ability's options for this slot (" + \
-                                    MixedPQs(ability_template.pq_options[i]) + ")."
+                                    str(MixedPQs(ability_template.pq_options[i])) + ")."
+##                        print(notePrefix + "filtered by pq_options")
+##                        print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                              str([str(d) for d in die_options]))
+##                    else:
+##                        print(notePrefix + "didn't filter by pq_options at i=" + str(i))
+                    # If triplet_options was specified, narrow the field to dice that match those
                     if len(triplet_options) > 0:
                         die_options = [d for d in die_options if d.triplet() in triplet_options]
                         if len(die_options) == 0:
                             error = self.hero_name + " doesn't have any " + category + \
                                     " dice matching the specified triplet options (" + \
-                                    MixedPQs(triplet_options) + ")."
+                                    str(MixedPQs(triplet_options)) + ")."
+##                        print(notePrefix + "filtered by triplet_options")
+##                        print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                              str([str(d) for d in die_options]))
                     if len(die_options) == 0:
                         # No valid options? Fail with an error
                         print("Error! " + error)
@@ -7458,7 +7528,7 @@ class Hero:
                 pdice = self.ChoosePQ(required_powers,
                                       pdice,
                                       stepnum=this_step,
-                                      inputs=pass_inputs)[0]
+                                      inputs=pass_inputs)[1]
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
             pass_inputs = []
             if len(inputs) > 0:
@@ -7566,8 +7636,10 @@ class Hero:
                     decision = self.ChooseIndex([str(x) for x in d6_pqs],
                                                 prompt="Bonus: Choose a d6 Power or Quality to " + \
                                                 "upgrade to d8.",
-                                                title="Power Source",
-                                                inputs=inputs)
+                                                title="Power Source: Alien",
+                                                inputs=inputs,
+                                                width=45,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
@@ -14607,7 +14679,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham(step=2)
+firstHero = factory.getCham(step=1)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
