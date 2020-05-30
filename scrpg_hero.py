@@ -7220,9 +7220,6 @@ class Hero:
                 entry_index = entry_options.find(entry_choice)
             ability_template = template_options[entry_index]
         notePrefix += ability_template.name + ": "
-        # The first time we need the user to make a choice for this Ability, we'll display the
-        # template text... but not before that, in case they don't have to
-        has_displayed = False
         display_str = str(ability_template)
         if ability_template.zone == 3:
             # Out Abilities don't get names
@@ -7234,7 +7231,7 @@ class Hero:
                 matching_pqs = [d.triplet() for d in p_dice + self.quality_dice \
                                 if d.triplet() in ability_template.required_pqs[i]]
                 if len(matching_pqs) == 0:
-                    print("Error! " + self.hero_name + \
+                    print(ability_template.details() + "\n\n" + "Error! " + self.hero_name + \
                           "doesn't have any of the required Powers/Qualities for this ability " + \
                           "(" + MixedPQs(ability_template.required_pqs[i]) + ").")
                     template_options.remove(ability_template)
@@ -7245,20 +7242,6 @@ class Hero:
         # If the ability needs a damage category, prompt the user for it
         damage_entry = ability_template.insert_damage
         if ability_template.has_damage and damage_entry not in [0,1]:
-            if not has_displayed:
-                print("OK! Let's fill in " + display_str + "...")
-                ability_template.display()
-                has_displayed = True
-##            print("Choose a damage category for this Ability:")
-##            entry_options = "AB"
-##            entry_choice = ' '
-##            for i in [0,1]:
-##                print("    " + entry_options[i] + ": " + damage_categories[i])
-##            decision = choose_letter(entry_options, ' ', inputs=inputs)
-##            entry_choice = decision[0]
-##            inputs = decision[1]
-##            damage_entry = entry_options.find(entry_choice)
-            # EDIT: use self.ChooseIndex() instead of find()
             decision = self.ChooseIndex(damage_categories[0:2],
                                         prompt=ability_template.details() + "\n\n" +
                                         "Choose a damage category for this Ability:",
@@ -7275,7 +7258,7 @@ class Hero:
             if ability_template.requires_energy:
                 power_die_options = [d for d in p_dice if d.category==1]
                 if len(power_die_options) == 0:
-                    print("Error! " + self.name + \
+                    print(ability_template.details() + "\n\n" + "Error! " + self.name + \
                           " doesn't have any Elemental/Energy powers to use with " + \
                           ability_template.name + "!")
                     template_options.remove(ability_template)
@@ -7284,14 +7267,10 @@ class Hero:
                     else:
                         return []
                 elif len(power_die_options) == 1:
-                    print(self.hero_name + "'s only Elemental/Energy power is " + \
-                          str(power_die_options[0]) + ".")
+                    print(ability_template.details() + "\n\n" + self.hero_name + \
+                          "'s only Elemental/Energy power is " + str(power_die_options[0]) + ".")
                     element_num = power_die_options[0].index
                 else:
-                    if not has_displayed:
-                        print("OK! Let's fill in " + display_str + "...")
-                        ability_template.display()
-                        has_displayed = True
                     decision = self.ChooseIndex([str(d) for d in power_die_options],
                                                 prompt=ability_template.details() + "\n\n" +
                                                 "Choose one of your Elemental/Energy " + \
@@ -7302,10 +7281,6 @@ class Hero:
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
             else:
-                if not has_displayed:
-                    print("OK! Let's fill in " + display_str + "...")
-                    ability_template.display()
-                    has_displayed = True
                 decision = self.ChooseIndex([mixed_collection[1][1][i] \
                                              for i in range(len(mixed_collection[1][1]))],
                                             prompt=ability_template.details() + "\n\n" +
@@ -7321,10 +7296,6 @@ class Hero:
         if ability_template.has_actions:
             for i in [0,1]:
                 if ("%a" + str(i)) in ability_template.text:
-                    if not has_displayed:
-                        print("OK! Let's fill in " + display_str + "...")
-                        ability_template.display()
-                        has_displayed = True
                     decision = self.ChooseIndex([basic_actions[j] \
                                                  for j in ability_template.action_options[i]],
                                                 prompt=ability_template.details() + "\n\n" +
@@ -7390,20 +7361,20 @@ class Hero:
                             return []
                     elif len(die_options) == 1:
                         # Only 1 valid option? Select it and move on
-                        print(self.hero_name + "'s only valid " + category + \
-                              " die for this slot is " + str(die_options[0]) + ".")
+                        slot_id = "first"
+                        if i == 1:
+                            slot_id = "second"
+                        print(ability_template.details() + "\n\n" + self.hero_name + \
+                              "'s only valid " + category + " die for this ability's " + \
+                              slot_id + " slot is " + str(die_options[0]) + ".")
                         pq_triplets[i] = die_options[0].triplet()
                         if die_options[0].flavorname != die_options[0].name:
                             pq_names[i] = die_options[0].flavorname
                     else:
                         # More than 1 valid option? Prompt the user to choose
-                        if not has_displayed:
-                            print("OK! Let's fill in " + display_str + "...")
-                            ability_template.display()
-                            has_displayed = True
                         decision = self.ChooseIndex([str(d) for d in die_options],
-                                                    prompt=ability_template.details() + \
-                                                    "\n\n" + "Choose a " + category + \
+                                                    prompt=ability_template.details() + "\n\n" + \
+                                                    "Choose a " + category + \
 						    " die for this Ability:",
                                                     title=display_str,
                                                     inputs=inputs,
@@ -7412,6 +7383,7 @@ class Hero:
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
+                        # If the selected die has a custom name, save that as well
                         if die_options[entry_index].flavorname != die_options[entry_index].name:
                             pq_names[i] = die_options[entry_index].flavorname
         # Phew! We've filled in all the variables for this Ability.
@@ -8316,9 +8288,7 @@ class Hero:
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
         form_power_dice = []
         form_ability_template.display(prefix="    ")
-        print(self.hero_name + " has the following Powers:")
         for d in self.power_dice:
-            print("    " + str(d))
             form_power_dice.append(PQDie(d.ispower,
                                          d.category,
                                          d.index,
@@ -11450,9 +11420,9 @@ def Create_Chameleon(step=len(step_names)):
                                   ["a","n"],
                                   ["y","Improvise"],
                                   ["B", "a", "y", "Distracting Strike"],
-                                  ["C","a","a","b","a","b","e","b","e","b","d",["e","y","Natural Weaponry"],"y","Beast Form"],
-                                  ["D","a","b","e","b","e","q","d",["a","y","Critical Discovery"],"y","Stealth Form"],
-                                  ["G","a","a","d","a","b","e","b","e","l","d","d","a",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
+                                  ["C","a","a","b","a","b","e","b","e","b","c",["e","y","Natural Weaponry"],"y","Beast Form"],
+                                  ["D","a","b","e","b","e","q","c",["a","y","Critical Discovery"],"y","Stealth Form"],
+                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
                                   ["K","n"]])
     if step >= 4:
         pn = cham.ConstructedPersonality(inputs=["O"])
@@ -11491,9 +11461,9 @@ def Create_Future_Girl(step=len(step_names)):
                                   ["y","Redial"],
                                   ["y","Dial ICE"],
                                   ["B","Y","Collect Call"],
-                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","d",["b","y","Where Was I?"],"y","Mobile Hero","B"],
-                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","d",["b","y","Wrap It Up"],"y","Capture Hero","C"],
-                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","d","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
+                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","y","Where Was I?"],"y","Mobile Hero","B"],
+                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","y","Wrap It Up"],"y","Capture Hero","C"],
+                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
                                   "N",
                                   "B",
                                   ["y","Dial H for Hero"],
@@ -14689,10 +14659,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getCham(step=1)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getLori()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14717,6 +14687,6 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
