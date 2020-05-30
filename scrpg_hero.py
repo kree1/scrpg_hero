@@ -5,6 +5,7 @@ import os
 import random
 import string
 import tkinter
+import tkinter.font
 import tkSimpleDialog
 from tkinter import *
 from tkinter import messagebox
@@ -256,7 +257,7 @@ def choose_letter(entry_options,
     if len(inputs) > 0:
         if len(prompt) > 0:
             print(prompt)
-        print("> " + inputs[0])
+        print("> " + str(inputs[0]))
         entry_choice = inputs.pop(0)[0].upper()
     elif entry_options == "YN":
         # If there are no inputs and the choices are Y and N, we can use a simple dialog to
@@ -275,7 +276,7 @@ def choose_letter(entry_options,
     while entry_choice not in entry_options:
         if len(inputs) > 0:
             print(repeat_message)
-            print("> " + inputs[0])
+            print("> " + str(inputs[0]))
             entry_choice = inputs.pop(0)[0].upper()
         else:
             entry_choice = input(repeat_message + "\n")[0].upper()
@@ -6137,14 +6138,14 @@ class Hero:
             for i in range(len(print_options)):
                 print(indent + entry_options[i] + ": " + print_options[i])
             if len(inputs) > 0:
-                print("> " + inputs[0])
+                print("> " + str(inputs[0]))
                 entry_choice = inputs.pop(0)[0].upper()
             else:
                 entry_choice = input()[0].upper()
             while entry_choice not in entry_options:
                 if len(inputs) > 0:
                     print(repeat_message)
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
                     entry_choice = input(repeat_message + "\n")[0].upper()
@@ -6164,7 +6165,7 @@ class Hero:
         entry_line = ""
         if len(inputs) > 0:
             print(prompt)
-            print("> " + inputs[0])
+            print("> " + str(inputs[0]))
             entry_line = inputs.pop(0)
         elif self.UseGUI(inputs):
             # If we have a GUI and no prepared inputs, create an EntryWindow to get text from the
@@ -6570,7 +6571,7 @@ class Hero:
                 if len(inputs) > 0:
                     print("Enter A to replace the first one, B to replace the second one, or " + \
                           "anything else to cancel.")
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
                     entry_choice = input("Enter A to replace the first one, B to replace the " + \
@@ -6654,7 +6655,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a Principle expanded, or an " + \
                               "uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a Principle " + \
@@ -6751,7 +6752,7 @@ class Hero:
                             printlong("Current During Roleplaying text: " + entry_roleplaying, 100)
                             if len(inputs) > 0:
                                 print("Enter new During Roleplaying text:")
-                                print("> " + inputs[0])
+                                print("> " + str(inputs[0]))
                                 entry_roleplaying = inputs.pop(0)
                             else:
                                 entry_roleplaying = input("Enter new During Roleplaying text:\n")
@@ -6760,7 +6761,7 @@ class Hero:
                             printlong("Current minor twist: " + entry_minor, 100)
                             if len(inputs) > 0:
                                 print("Enter a new minor twist:")
-                                print("> " + inputs[0])
+                                print("> " + str(inputs[0]))
                                 entry_minor = inputs.pop(0)
                             else:
                                 entry_minor = input("Enter a new minor twist:\n")
@@ -6769,7 +6770,7 @@ class Hero:
                             printlong("Current major twist: " + entry_major, 100)
                             if len(inputs) > 0:
                                 print("Enter a new major twist:")
-                                print("> " + inputs[0])
+                                print("> " + str(inputs[0]))
                                 entry_major = inputs.pop(0)
                             else:
                                 entry_major = input("Enter a new major twist:\n")
@@ -6778,7 +6779,7 @@ class Hero:
                             printlong("Current Green Ability: " + entry_green, 100)
                             if len(inputs) > 0:
                                 print("Enter a new Green Ability:")
-                                print("> " + inputs[0])
+                                print("> " + str(inputs[0]))
                                 entry_green = inputs.pop(0)
                             else:
                                 entry_green = input("Enter a new Green Ability:\n")
@@ -6924,7 +6925,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a Background expanded, or an " + \
                               "uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a Background " + \
@@ -6986,7 +6987,7 @@ class Hero:
                 if len(inputs) > 0:
                     print("Enter a lowercase letter to see a Background expanded, or an uppercase " + \
                           "letter to select it.")
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)[0]
                 else:
                     entry_choice = input("Enter a lowercase letter to see a Background expanded, or " + \
@@ -7209,7 +7210,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see an ability expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see an ability " + \
@@ -7797,7 +7798,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see an option expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see an option " + \
@@ -7868,7 +7869,7 @@ class Hero:
                 if len(inputs) > 0:
                     print("Enter a lowercase letter to see a Power Source expanded, " + \
                           "or an uppercase letter to select it.")
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)[0]
                 else:
                     entry_choice = input("Enter a lowercase letter to see a Power Source expanded, " + \
@@ -8002,7 +8003,7 @@ class Hero:
             inputs = decision[1]
 ##            if len(inputs) > 0:
 ##                print("Enter the new name for this Mode:")
-##                print("> " + inputs[0])
+##                print("> " + str(inputs[0]))
 ##                mode_name = inputs.pop(0)
 ##            else:
 ##                mode_name = input("Enter the new name for this Mode:\n")
@@ -8302,7 +8303,7 @@ class Hero:
                 if len(inputs) > 0:
                     print("Enter a lowercase letter to see a Form expanded, " + \
                           "or an uppercase letter to select it.")
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)
                 else:
                     entry_choice = input("Enter a lowercase letter to see a Form expanded, " + \
@@ -8842,7 +8843,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see a Mode expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see a Mode " + \
@@ -8890,7 +8891,7 @@ class Hero:
                             if len(inputs) > 0:
                                 print("Enter a lowercase letter to see a Mode expanded, " + \
                                       "or an uppercase letter to select it.")
-                                print("> " + inputs[0])
+                                print("> " + str(inputs[0]))
                                 entry_choice = inputs.pop(0)[0]
                             else:
                                 entry_choice = input("Enter a lowercase letter to see a Mode " + \
@@ -8933,7 +8934,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see a Mode expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see a Mode " + \
@@ -9192,7 +9193,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a transition method expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a transition " + \
@@ -9230,7 +9231,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a divided nature expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a divided nature " + \
@@ -9504,7 +9505,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see an Archetype expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see an Archetype " + \
@@ -9632,7 +9633,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see an Archetype expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see an " + \
@@ -9676,7 +9677,7 @@ class Hero:
                 if len(inputs) > 0:
                     print("Enter a lowercase letter to see an Archetype expanded, " + \
                           "or an uppercase letter to select it.")
-                    print("> " + inputs[0])
+                    print("> " + str(inputs[0]))
                     entry_choice = inputs.pop(0)[0]
                 else:
                     entry_choice = input("Enter a lowercase letter to see an Archetype " + \
@@ -9716,7 +9717,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see an Archetype expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see an Archetype " + \
@@ -9994,7 +9995,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see a Personality expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see a Personality " + \
@@ -10080,7 +10081,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see a Personality expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see a " + \
@@ -10141,7 +10142,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a Personality expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a Personality " + \
@@ -10303,7 +10304,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a category expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         entry_choice = input("Enter a lowercase letter to see a category expanded, " + \
@@ -10483,7 +10484,7 @@ class Hero:
                         if len(inputs) > 0:
                             print("Enter a lowercase letter to see an Ability expanded, " + \
                                   "or an uppercase letter to select it.")
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0]
                         else:
                             entry_choice = input("Enter a lowercase letter to see an " + \
@@ -10696,7 +10697,7 @@ class Hero:
                             print("            " + rc_master[i][j][0])
                     while entry_choice not in entry_options:
                         if len(inputs) > 0:
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0].upper()
                         else:
                             entry_choice = input()[0].upper()
@@ -11843,6 +11844,23 @@ class HeroFrame(Frame):
         notePrefix = "HeroFrame: "
         self.zoneColors = ["PaleGreen1", "LightGoldenrod1", "IndianRed1"]
         self.myParent = parent
+        self.dispFonts = [tkinter.font.Font(root=self.myParent,
+                                            family="Calibri",
+                                            size=10,
+                                            name="Calibri10pt"),
+                          tkinter.font.Font(root=self.myParent,
+                                            family="Arial",
+                                            size=10,
+                                            name="Arial10pt"),
+                          tkinter.font.Font(root=self.myParent,
+                                            family="Times",
+                                            size=10,
+                                            name="Times10pt"),
+                          tkinter.font.Font(root=self.myParent,
+                                            family="Terminal",
+                                            size=10,
+                                            name="Terminal10pt")]
+        self.fontIndex = 0
         self.numCols = 32
         self.numRows = 52
         self.width = width
@@ -11869,12 +11887,14 @@ class HeroFrame(Frame):
                                        text=self.nameTitleText[i],
                                        anchor=W, relief=titleRelief,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.dispFonts[self.fontIndex])
             self.nameValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.dispFonts[self.fontIndex])
             self.nameTitles[i].grid(row=firstRow,
                                     column=firstCol+i*2*groupWidth,
                                     rowspan=groupHeight,
@@ -11903,13 +11923,15 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.dispFonts[self.fontIndex])
             self.charValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        relief=charRelief,
                                        width=self.columnWidth*valueWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.dispFonts[self.fontIndex])
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
 ##                  " rows")
@@ -11949,7 +11971,8 @@ class HeroFrame(Frame):
                                      justify=reason,
                                      relief=titleRelief,
                                      width=self.columnWidth*groupWidth,
-                                     height=self.rowHeight*groupHeight)
+                                     height=self.rowHeight*groupHeight,
+                                     font=self.dispFonts[self.fontIndex])
             self.pqTitles[i].grid(row=firstRow,
                                   column=groupCol,
                                   rowspan=groupHeight,
@@ -11962,7 +11985,8 @@ class HeroFrame(Frame):
                                             justify=reason,
                                             relief=pqRelief,
                                             width=self.columnWidth*groupWidth,
-                                            height=self.rowHeight*groupHeight)
+                                            height=self.rowHeight*groupHeight,
+                                            font=self.dispFonts[self.fontIndex])
                 self.pqValues[j][i].grid(row=firstRow+(j+1)*groupHeight,
                                          column=groupCol,
                                          rowspan=groupHeight,
@@ -11979,7 +12003,8 @@ class HeroFrame(Frame):
                                  background=statusBG,
                                  text="Status Dice",
                                  width=self.columnWidth*groupWidth,
-                                 height=self.rowHeight*titleHeight)
+                                 height=self.rowHeight*titleHeight,
+                                 font=self.dispFonts[self.fontIndex])
         self.statusTitle.grid(row=titleRow,
                               column=firstCol,
                               rowspan=titleHeight,
@@ -11993,7 +12018,8 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight)
+                                         height=self.rowHeight*groupHeight,
+                                         font=self.dispFonts[self.fontIndex])
             self.statusValues[i].grid(row=firstRow+i*groupHeight,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -12009,7 +12035,8 @@ class HeroFrame(Frame):
                                  text="Health Range",
                                  anchor=E,
                                  width=self.columnWidth*titleWidth,
-                                 height=self.rowHeight*titleHeight)
+                                 height=self.rowHeight*titleHeight,
+                                 font=self.dispFonts[self.fontIndex])
         self.healthTitle.grid(row=titleRow,
                               column=titleCol,
                               rowspan=titleHeight,
@@ -12026,7 +12053,8 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight)
+                                         height=self.rowHeight*groupHeight,
+                                         font=self.dispFonts[self.fontIndex])
             self.healthValues[i].grid(row=firstRow+i*groupVSpace,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -12058,7 +12086,8 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*mainTitleHeight)
+                                       height=self.rowHeight*mainTitleHeight,
+                                       font=self.dispFonts[self.fontIndex])
             self.prinTitles[i].grid(row=firstRow,
                                     column=groupCol,
                                     rowspan=mainTitleHeight,
@@ -12072,7 +12101,8 @@ class HeroFrame(Frame):
                                                      text=self.prinSectionNames[j],
                                                      relief=sectionRelief,
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*titleHeight)
+                                                     height=self.rowHeight*titleHeight,
+                                                     font=self.dispFonts[self.fontIndex])
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
                                                   rowspan=titleHeight,
@@ -12081,7 +12111,8 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j] = Label(self,
                                                      background="white",
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*sectionHeight)
+                                                     height=self.rowHeight*sectionHeight,
+                                                     font=self.dispFonts[self.fontIndex])
                 self.prinSectionValues[i][j].grid(row=sectionRow,
                                                   column=groupCol,
                                                   rowspan=sectionHeight,
@@ -12109,7 +12140,8 @@ class HeroFrame(Frame):
                                           anchor=sectionAnchors[i],
                                           relief=titleRelief,
                                           width=self.columnWidth*sectionWidths[i],
-                                          height=self.rowHeight*titleHeight)
+                                          height=self.rowHeight*titleHeight,
+                                          font=self.dispFonts[self.fontIndex])
 ##            print(notePrefix + str(self.abilityTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow) + " and spans " + str(titleHeight) + " rows")
             self.abilityTitles[i].grid(row=firstRow,
@@ -12135,7 +12167,8 @@ class HeroFrame(Frame):
                                                      justify=sectionReasons[j],
                                                      relief=abilityRelief,
                                                      width=self.columnWidth*sectionWidths[j],
-                                                     height=self.rowHeight*rowsNeeded)
+                                                     height=self.rowHeight*rowsNeeded,
+                                                     font=self.dispFonts[self.fontIndex])
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -12156,9 +12189,9 @@ class HeroFrame(Frame):
                                                             anchor=sectionAnchors[s],
                                                             justify=sectionReasons[s],
                                                             relief=abilityRelief,
-                                                            width=self.columnWidth * \
-                                                            sectionWidths[s],
-                                                            height=self.rowHeight*rowsNeeded)
+                                                            width=self.columnWidth*sectionWidths[s],
+                                                            height=self.rowHeight*rowsNeeded,
+                                                            font=self.dispFonts[self.fontIndex])
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -12171,7 +12204,8 @@ class HeroFrame(Frame):
                                      anchor=W,
                                      justify=LEFT,
                                      width=self.columnWidth*sum(sectionWidths),
-                                     height=rowsNeeded)
+                                     height=rowsNeeded,
+                                     font=self.dispFonts[self.fontIndex])
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -12190,7 +12224,8 @@ class HeroFrame(Frame):
                                  text="Modes ("+str(self.myModeCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchModeWindow)
+                                 command=self.LaunchModeWindow,
+                                 font=self.dispFonts[self.fontIndex])
         self.modeButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                              column=buttonColumn,
                              rowspan=self.buttonHeight,
@@ -12202,7 +12237,8 @@ class HeroFrame(Frame):
                                  text="Forms ("+str(self.myFormCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchFormWindow)
+                                 command=self.LaunchFormWindow,
+                                 font=self.dispFonts[self.fontIndex])
         self.formButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                              column=buttonColumn,
                              rowspan=self.buttonHeight,
@@ -12214,7 +12250,8 @@ class HeroFrame(Frame):
                                  text="Minions ("+str(self.myMinionCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchMinionWindow)
+                                 command=self.LaunchMinionWindow,
+                                 font=self.dispFonts[self.fontIndex])
         self.minionButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                column=buttonColumn,
                                rowspan=self.buttonHeight,
@@ -12228,7 +12265,8 @@ class HeroFrame(Frame):
                                  text="0. Edit Names",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=self.AddHeroNames)
+                                 command=self.AddHeroNames,
+                                 font=self.dispFonts[self.fontIndex])
         self.nameButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                              column=buttonColumn,
                              rowspan=self.buttonHeight,
@@ -12240,7 +12278,8 @@ class HeroFrame(Frame):
                                        text="1. Add Background",
                                        width=self.columnWidth*self.buttonWidth,
                                        height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroBackground)
+                                       command=self.AddHeroBackground,
+                                       font=self.dispFonts[self.fontIndex])
         self.backgroundButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                    column=buttonColumn,
                                    rowspan=self.buttonHeight,
@@ -12252,7 +12291,8 @@ class HeroFrame(Frame):
                                         text="2. Add Power Source",
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPowerSource)
+                                        command=self.AddHeroPowerSource,
+                                        font=self.dispFonts[self.fontIndex])
         self.powerSourceButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                     column=buttonColumn,
                                     rowspan=self.buttonHeight,
@@ -12264,7 +12304,8 @@ class HeroFrame(Frame):
                                       text="3. Add Archetype",
                                       width=self.columnWidth*self.buttonWidth,
                                       height=self.rowHeight*self.buttonHeight,
-                                      command=self.AddHeroArchetype)
+                                      command=self.AddHeroArchetype,
+                                      font=self.dispFonts[self.fontIndex])
         self.archetypeButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                   column=buttonColumn,
                                   rowspan=self.buttonHeight,
@@ -12276,7 +12317,8 @@ class HeroFrame(Frame):
                                         text="4. Add Personality",
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPersonality)
+                                        command=self.AddHeroPersonality,
+                                        font=self.dispFonts[self.fontIndex])
         self.personalityButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                     column=buttonColumn,
                                     rowspan=self.buttonHeight,
@@ -12288,7 +12330,8 @@ class HeroFrame(Frame):
                                        text="5. Add Red Abilities",
                                        width=self.columnWidth*self.buttonWidth,
                                        height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroRedAbilities)
+                                       command=self.AddHeroRedAbilities,
+                                       font=self.dispFonts[self.fontIndex])
         self.redAbilityButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                    column=buttonColumn,
                                    rowspan=self.buttonHeight,
@@ -12300,7 +12343,8 @@ class HeroFrame(Frame):
                                    text="6. Retcon",
                                    width=self.columnWidth*self.buttonWidth,
                                    height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroRetcon)
+                                   command=self.AddHeroRetcon,
+                                   font=self.dispFonts[self.fontIndex])
         self.retconButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                column=buttonColumn,
                                rowspan=self.buttonHeight,
@@ -12312,7 +12356,8 @@ class HeroFrame(Frame):
                                    text="7. Health",
                                    width=self.columnWidth*self.buttonWidth,
                                    height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroHealth)
+                                   command=self.AddHeroHealth,
+                                   font=self.dispFonts[self.fontIndex])
         self.healthButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                column=buttonColumn,
                                rowspan=self.buttonHeight,
@@ -12323,7 +12368,8 @@ class HeroFrame(Frame):
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
                                   command=lambda arg1=-1 : \
-                                  print(self.myHero.details(width=arg1)))
+                                  print(self.myHero.details(width=arg1)),
+                                  font=self.dispFonts[self.fontIndex])
         self.printButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                               column=buttonColumn,
                               rowspan=self.buttonHeight,
@@ -12333,7 +12379,8 @@ class HeroFrame(Frame):
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  command=self.DisplayHeroSteps)
+                                  command=self.DisplayHeroSteps,
+                                  font=self.dispFonts[self.fontIndex])
         self.stepsButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                               column=buttonColumn,
                               rowspan=self.buttonHeight,
@@ -12343,7 +12390,8 @@ class HeroFrame(Frame):
                                  text="Save as TXT",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=self.SaveTxt)
+                                 command=self.SaveTxt,
+                                 font=self.dispFonts[self.fontIndex])
         self.saveButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                              column=buttonColumn,
                              rowspan=self.buttonHeight,
@@ -12392,7 +12440,8 @@ class HeroFrame(Frame):
 ##                                   text=str(self.reliefOptions[self.reliefIndex]),
 ##                                   width=self.columnWidth*self.buttonWidth,
 ##                                   height=self.rowHeight*self.buttonHeight,
-##                                   command=self.UpdateRelief)
+##                                   command=self.UpdateRelief,
+##                                   font=self.dispFonts[self.fontIndex])
 ##        self.reliefButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
 ##                               column=toolboxColumn,
 ##                               rowspan=self.buttonHeight,
@@ -12403,7 +12452,8 @@ class HeroFrame(Frame):
 ##                                 text=str(self.principleWrap),
 ##                                 width=self.columnWidth*self.buttonWidth,
 ##                                 height=self.rowHeight*self.buttonHeight,
-##                                 command=self.UpdateWrap)
+##                                 command=self.UpdateWrap,
+##                                 font=self.dispFonts[self.fontIndex])
 ##        self.wrapButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
 ##                             column=toolboxColumn,
 ##                             rowspan=self.buttonHeight,
@@ -12414,7 +12464,8 @@ class HeroFrame(Frame):
                                     text="Next Hero >>",
                                     width=self.columnWidth*self.buttonWidth,
                                     height=self.rowHeight*self.buttonHeight,
-                                    command=self.SwitchHero)
+                                    command=self.SwitchHero,
+                                    font=self.dispFonts[self.fontIndex])
         self.forwardButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                                 column=toolboxColumn,
                                 rowspan=self.buttonHeight,
@@ -12424,8 +12475,20 @@ class HeroFrame(Frame):
                                  text="<< Prev Hero",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 command=lambda arg1=-1 : self.SwitchHero(arg1))
+                                 command=lambda arg1=-1 : self.SwitchHero(arg1),
+                                 font=self.dispFonts[self.fontIndex])
         self.backButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
+                             column=toolboxColumn,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth)
+        prevButtons += 1
+        self.fontButton = Button(self,
+                                 text="Next Font",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 command=self.SwitchFont,
+                                 font=self.dispFonts[(self.fontIndex+1)%len(self.dispFonts)])
+        self.fontButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                              column=toolboxColumn,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
@@ -12485,6 +12548,10 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getKim())
         elif self.sampleIndex == 6:
             self.UpdateAll(factory.getAyla())
+    def SwitchFont(self):
+        self.fontIndex = (self.fontIndex + 1) % len(self.dispFonts)
+        print(str(self.dispFonts[self.fontIndex]))
+        self.UpdateAll(self.myHero)
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -12600,9 +12667,11 @@ class HeroFrame(Frame):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
         for i in range(len(self.nameTitles)):
-            self.nameValues[i].config(text=self.myHeroNames[i])
+            self.nameValues[i].config(text=self.myHeroNames[i],
+                                      font=self.dispFonts[self.fontIndex])
         for i in range(len(self.charTitles)):
-            self.charValues[i].config(text=self.myHeroChars[i])
+            self.charValues[i].config(text=self.myHeroChars[i],
+                                      font=self.dispFonts[self.fontIndex])
         sectionWidths = [4, 1]
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
@@ -12621,7 +12690,8 @@ class HeroFrame(Frame):
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
 ##                      str(self.pqValues[j][i]["justify"]))
-                self.pqValues[j][i].config(text=pqDiceValues[j][i])
+                self.pqValues[j][i].config(text=pqDiceValues[j][i],
+                                           font=self.dispFonts[self.fontIndex])
 ##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
@@ -12630,9 +12700,11 @@ class HeroFrame(Frame):
             disp = ""
             if self.myHeroStatus[i] in legal_dice:
                 disp = str(self.myHeroStatus[i])
-            self.statusValues[i].config(text=disp)
+            self.statusValues[i].config(text=disp,
+                                        font=self.dispFonts[self.fontIndex])
         for i in range(len(self.healthValues)):
-            self.healthValues[i].config(text=self.RangeText(i))
+            self.healthValues[i].config(text=self.RangeText(i),
+                                        font=self.dispFonts[self.fontIndex])
         # Get the maximum height of each Principle section across all Principles
         prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
         for i in range(len(self.myHeroPrinciples)):
@@ -12662,15 +12734,18 @@ class HeroFrame(Frame):
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
             sectionValues = [split_text(x, width=self.principleWrap) for x in sectionValues]
-            self.prinTitles[i].config(text=title)
+            self.prinTitles[i].config(text=title,
+                                      font=self.dispFonts[self.fontIndex])
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
 ##                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
 ##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
 ##                      str(self.rowHeight*sectionMaxHeights[j]))
+                self.prinSectionTitles[i][j].config(font=self.dispFonts[self.fontIndex])
                 self.prinSectionTitles[i][j].grid(row=titleRow)
                 self.prinSectionValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*sectionMaxHeights[j])
+                                                    height=self.rowHeight*sectionMaxHeights[j],
+                                                    font=self.dispFonts[self.fontIndex])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
         firstRow = 3
@@ -12707,7 +12782,8 @@ class HeroFrame(Frame):
 ##                  " and takes up " + str(rowsNeeded) + rword)
             for j in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*rowsNeeded)
+                                                    height=self.rowHeight*rowsNeeded,
+                                                    font=self.dispFonts[self.fontIndex])
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -12737,7 +12813,8 @@ class HeroFrame(Frame):
 ##                      " and takes up " + str(rowsNeeded) + rword)
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s].config(text=sectionValues[s],
-                                                           height=self.rowHeight*rowsNeeded)
+                                                           height=self.rowHeight*rowsNeeded,
+                                                           font=self.dispFonts[self.fontIndex])
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -12750,15 +12827,26 @@ class HeroFrame(Frame):
             outText = split_text(self.myOutAbility.dispText(), sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
         self.outAbilityValue.config(text=outText,
-                                    height=rowsNeeded)
+                                    height=rowsNeeded,
+                                    font=self.dispFonts[self.fontIndex])
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
                                   columnspan=sum(sectionWidths),
                                   sticky=N+E+S+W)
-        self.modeButton.config(text="Modes ("+str(self.myModeCount)+")")
-        self.formButton.config(text="Forms ("+str(self.myFormCount)+")")
-        self.minionButton.config(text="Minions ("+str(self.myMinionCount)+")")
+        self.modeButton.config(text="Modes ("+str(self.myModeCount)+")",
+                               font=self.dispFonts[self.fontIndex])
+        self.formButton.config(text="Forms ("+str(self.myFormCount)+")",
+                               font=self.dispFonts[self.fontIndex])
+        self.minionButton.config(text="Minions ("+str(self.myMinionCount)+")",
+                                 font=self.dispFonts[self.fontIndex])
+        self.backgroundButton.config(font=self.dispFonts[self.fontIndex])
+        self.powerSourceButton.config(font=self.dispFonts[self.fontIndex])
+        self.archetypeButton.config(font=self.dispFonts[self.fontIndex])
+        self.personalityButton.config(font=self.dispFonts[self.fontIndex])
+        self.redAbilityButton.config(font=self.dispFonts[self.fontIndex])
+        self.retconButton.config(font=self.dispFonts[self.fontIndex])
+        self.healthButton.config(font=self.dispFonts[self.fontIndex])
         # Hide the Forms button if it's not relevant, otherwise show it
         if self.myFormCount == 0:
             self.formButton.grid_remove()
@@ -14689,10 +14777,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getCham(step=1)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getAyla()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14717,6 +14805,6 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
