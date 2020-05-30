@@ -1675,8 +1675,11 @@ class Ability:
         if self.zone in range(len(status_zones)):
             firstline += " (" + status_zones[self.zone] + ")"
         print(pref + firstline)
-        printlong(self.dispText(), width-4, prefix=pref+indent)
+        printlong(self.dispText(),
+                  width=width-len(indent),
+                  prefix=pref+indent)
     def details(self, width=100, prefix=""):
+        indent = "    "
         fullText = "" + prefix
         if self.zone != 3:
             if self.flavorname:
@@ -1687,7 +1690,9 @@ class Ability:
         fullText += "[" + self.type + "]"
         if self.zone in range(len(status_zones)):
             fullText += " (" + status_zones[self.zone] + ")"
-        fullText += "\n" + split_text(self.dispText(), width=width, prefix=prefix+"    ")
+        fullText += "\n" + split_text(self.dispText(),
+                                      width=width-len(prefix+indent),
+                                      prefix=prefix+indent)
         return fullText
     def dispText(self):
         disptext = self.text
@@ -5456,7 +5461,8 @@ def DisplayBackground(index, prefix="", width=100):
 def BackgroundDetails(index, width=100):
     if index in range(len(bg_collection)):
         bg = bg_collection[index]
-        bgText = split_text(bg[0] + ": " + bg[1], width=width)
+        bgText = split_text(bg[0] + ": " + bg[1],
+                            width=width)
         bgText += "\n\n" + "Quality Dice: " + str(bg[2])
         if len(bg[3]) > 0:
             bgText += "\n\n" + "Required Quality: " + MixedPQ(bg[3][0])
@@ -5473,7 +5479,9 @@ def BackgroundDetails(index, width=100):
             this_line += quality_text
             if i < len(quality_choices) - 1:
                 this_line += ", "
-        bgText += "\n" + split_text(this_line, width=width, prefix="  ")
+        bgText += "\n" + split_text(this_line,
+                                    width=width-len("  "),
+                                    prefix="  ")
         bgText += "\n\n" + rc_names[bg[5]] + " Principle"
         bgText += "\n\n" + "Power Source Dice: " + str(bg[6])
         return bgText
@@ -5527,7 +5535,8 @@ def PowerSourceDetails(index, width=100):
     if index in range(len(ps_collection)):
         psText = ""
         powersource = ps_collection[index]
-        psText += split_text(powersource[0] + ": " + powersource[1], width=width)
+        psText += split_text(powersource[0] + ": " + powersource[1],
+                             width=width)
         if len(powersource[2]) > 0:
             psText += "\n\n" + "Required Power: " + MixedPQ(powersource[2][0])
         psText += "\n\n" + "Optional Powers: "
@@ -5538,7 +5547,9 @@ def PowerSourceDetails(index, width=100):
             this_line += power_text
             if i < len(power_choices) - 1:
                 this_line += ", "
-        psText += "\n" + split_text(this_line, width=width, prefix="  ")
+        psText += "\n" + split_text(this_line,
+                                    width=width-len("  "),
+                                    prefix="  ")
         if powersource[4] > 0:
             if powersource[4] == 1:
                 psText += "\n\n" + str(powersource[4]) + " Yellow Ability from:"
@@ -5578,7 +5589,8 @@ def DisplayTransitionMethod(index, prefix="", width=100):
 def TransitionDetails(index, width=50):
     if index in range(len(tr_collection)):
         transition = tr_collection[index]
-        trText = split_text(transition[0] + ": " + transition[1], width=width)
+        trText = split_text(transition[0] + ": " + transition[1],
+                            width=width)
         if len(transition[2]) > 1:
             trText += "\n" + "Optional Green Abilities:"
         else:
@@ -5878,7 +5890,8 @@ def ArchetypeDetails(index, width=100):
     if index in range(len(arc_collection)):
         archetype = arc_collection[index]
         arcText = ""
-        arcText += split_text(archetype[0] + ": " + archetype[1], width=width)
+        arcText += split_text(archetype[0] + ": " + archetype[1],
+                              width=width)
         if index in range(18):
             # A normal standalone archetype
             # Display the primary power(s)/quality(ies) from archetype[2]
@@ -5894,7 +5907,9 @@ def ArchetypeDetails(index, width=100):
                     this_line += MixedPQ(primary_choices[i])
                     if i < len(primary_choices) - 1:
                         this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
+                arcText += "\n" + split_text(this_line,
+                                             width=width-len("  "),
+                                             prefix="  ")
             if archetype[3] > 0:
                 alternatives = ["", "skip it or choose another", "skip it or swap in a new die"]
                 arcText += "\n(If already present: " + alternatives[archetype[3]] + ")"
@@ -5910,7 +5925,9 @@ def ArchetypeDetails(index, width=100):
                     this_line += MixedPQ(secondary_choices[i])
                     if i < len(secondary_choices) - 1:
                         this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
+                arcText += "\n" + split_text(this_line,
+                                             width=width-len("  "),
+                                             prefix="  ")
             # Display the tertiary power(s)/quality(ies) from archetype[6]
             if len(archetype[6]) > 0:
                 arcText += "\n\nOptional Powers/Qualities:"
@@ -5920,7 +5937,9 @@ def ArchetypeDetails(index, width=100):
                     this_line += MixedPQ(tertiary_choices[i])
                     if i < len(tertiary_choices) - 1:
                         this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
+                arcText += "\n" + split_text(this_line,
+                                             width=width-len("  "),
+                                             prefix="  ")
             # Display the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
@@ -5997,12 +6016,14 @@ def ArchetypeDetails(index, width=100):
             arcText += "\n\n" + rc_names[archetype[18]] + " Principle"
             # Add bonus effects, if applicable
             if archetype[19] > 0:
-                arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
+                arcText += "\n\n" + split_text(arc_special[archetype[19]],
+                                               width=width)
         elif index == 18:
             # Divided
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
+            arcText += "\n\n" + split_text(arc_special[archetype[19]],
+                                           width=width)
             # Display the Transition Types and their associated Green Abilities.
             arcText += "\n\n" + "Transition Types (choose 1):"
             # ...
@@ -6019,7 +6040,8 @@ def ArchetypeDetails(index, width=100):
             # Modular
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
+            arcText += "\n\n" + split_text(arc_special[archetype[19]],
+                                           width=width)
             # Display the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
@@ -6044,17 +6066,20 @@ def DisplayPersonality(index, prefix="", width=100):
     personality = pn_collection[index]
     print(prefix + personality[0])
     print(prefix + indent + "Status Dice: " + str(personality[1]))
-    personality[2].display(prefix=prefix+indent, width=width-len(indent))
+    personality[2].display(prefix=prefix+indent,
+                           width=width-len(prefix+indent))
     if personality[3] > 0:
         print(prefix + indent + "Bonus: " + pn_special[personality[3]])
 
 def PersonalityDetails(index, width=100):
     personality = pn_collection[index]
     pnText = "" + personality[0]
-    pnText += "\n" + split_text("Status Dice: " + str(personality[1]), width=width)
+    pnText += "\n" + split_text("Status Dice: " + str(personality[1]),
+                                width=width)
     pnText += "\n" + personality[2].details(width=width)
     if personality[3] > 0:
-        pnText += "\n" + split_text("Bonus: " + pn_special[personality[3]], width=width)
+        pnText += "\n" + split_text("Bonus: " + pn_special[personality[3]],
+                                    width=width)
     return pnText
 
 class Hero:
@@ -6425,7 +6450,8 @@ class Hero:
                         for j in range(1, section_length):
                             if i*section_length + j < len(valid_triplets):
                                 this_section += ", " + print_names[i*section_length + j]
-                        details[i] = split_text(this_section, width=dispWidth)
+                        details[i] = split_text(this_section,
+                                                width=dispWidth)
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
                                             dice_report + "\n" + \
@@ -8570,12 +8596,16 @@ class Hero:
                 primary_names = MixedPQ(primary_pqs[0])
                 for triplet in primary_pqs[1:]:
                     primary_names += ", " + MixedPQ(triplet)
-                ext_report += "\n" + split_text(primary_names, width=100, prefix="    ")
+                ext_report += "\n" + split_text(primary_names,
+                                                width=100,
+                                                prefix="    ")
                 ext_report += "\n\nYou already have..."
                 ext_names = str(primary_matches[0])
                 for d in primary_matches[1:]:
                     ext_names += ", " + str(d)
-                ext_report += "\n" + split_text(ext_names, width=100, prefix="    ")
+                ext_report += "\n" + split_text(ext_names,
+                                                width=100,
+                                                prefix="    ")
                 # primary_alt > 0, so the user gets to make a choice
                 if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
                     # Skip or choose another die to gain
@@ -8693,7 +8723,7 @@ class Hero:
                     names = MixedPQ(secondary_pqs[0])
                     for triplet in secondary_pqs[1:]:
                         names += ", " + MixedPQ(triplet)
-                    names = split_text(names, 100)
+                    names = split_text(names, width=100)
                     decision = choose_letter(entry_options,
                                              ' ',
                                              prompt=prompt + "\n\n" + names,
@@ -12429,7 +12459,8 @@ class HeroFrame(Frame):
         for i in range(len(self.prinSectionValues)):
             for j in range(len(self.prinSectionValues[i])):
                 flatText = self.prinSectionValues[i][j]["text"].replace("\n", " ")
-                newSplit = split_text(flatText, width=self.principleWrap)
+                newSplit = split_text(flatText,
+                                      width=self.principleWrap)
                 self.prinSectionValues[i][j]["text"] = newSplit
                 self.prinSectionValues[i][j].update_idletasks()
         self.wrapButton["text"] = str(self.principleWrap)
@@ -12579,11 +12610,11 @@ class HeroFrame(Frame):
         for x in range(len(self.myHeroPowers)):
             if isinstance(self.myHeroPowers[x], PQDie):
                 pqDiceValues[x][0] = split_text(self.myHeroPowers[x].flavorname,
-                                                sectionWidths[0]*self.columnWidth)
+                                                width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][1] = str(self.myHeroPowers[x].diesize)
             if isinstance(self.myHeroQualities[x], PQDie):
                 pqDiceValues[x][2] = split_text(self.myHeroQualities[x].flavorname,
-                                                sectionWidths[0]*self.columnWidth)
+                                                width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
             for j in range(len(pqDiceValues)):
@@ -12651,8 +12682,10 @@ class HeroFrame(Frame):
         for a in self.myZoneAbilities[0]:
             rowCount = 1
             if isinstance(a, Ability):
-                textRows = split_text(a.dispText(), width=self.abilityWraps[2])
-                nameRows = split_text(a.name, width=self.abilityWraps[0])
+                textRows = split_text(a.dispText(),
+                                      width=self.abilityWraps[2])
+                nameRows = split_text(a.name,
+                                      width=self.abilityWraps[0])
                 rowCount = 1 + max(len([x for x in textRows if x == "\n"]),
                                    len([y for y in nameRows if y == "\n"]))
             greenRows += rowCount
@@ -12667,7 +12700,8 @@ class HeroFrame(Frame):
                 sectionValues = [self.myPrinAbilities[i].flavorname,
                                  self.myPrinAbilities[i].type,
                                  self.myPrinAbilities[i].dispText()]
-                sectionValues = [split_text(sectionValues[j], self.abilityWraps[j]) \
+                sectionValues = [split_text(sectionValues[j],
+                                            width=self.abilityWraps[j]) \
                                  for j in range(len(sectionValues))]
                 rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
             rword = " rows"
@@ -12697,7 +12731,8 @@ class HeroFrame(Frame):
                     sectionValues = [self.myZoneAbilities[z][a].flavorname,
                                      self.myZoneAbilities[z][a].type,
                                      self.myZoneAbilities[z][a].dispText()]
-                    sectionValues = [split_text(sectionValues[j], self.abilityWraps[j]) \
+                    sectionValues = [split_text(sectionValues[j],
+                                                width=self.abilityWraps[j]) \
                                      for j in range(len(sectionValues))]
                     rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
                 rword = " rows"
@@ -12717,7 +12752,8 @@ class HeroFrame(Frame):
         outText = ""
         rowsNeeded = 1
         if isinstance(self.myOutAbility, Ability):
-            outText = split_text(self.myOutAbility.dispText(), sum(self.abilityWraps))
+            outText = split_text(self.myOutAbility.dispText(),
+                                 width=sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
         self.outAbilityValue.config(text=outText,
                                     height=rowsNeeded)
@@ -13266,7 +13302,8 @@ class ModeFrame(Frame):
                 thisPowerDie = ""
                 thisPowerHeight = 1
                 if isinstance(thisPower, PQDie):
-                    thisPowerText = split_text(thisPower.flavorname, self.powerWrap)
+                    thisPowerText = split_text(thisPower.flavorname,
+                                               width=self.powerWrap)
                     thisPowerDie = str(thisPower.diesize)
                     thisPowerHeight = max(self.powerHeight,
                                           1 + len([x for x in thisPowerText if x == "\n"]))
@@ -13293,7 +13330,8 @@ class ModeFrame(Frame):
                               " columns")
                 leftHeight += thisPowerHeight
             # Display mode rules across columns 6-21 starting at the second row
-            thisRulesSections = [split_text(x, width=self.rulesWrap) \
+            thisRulesSections = [split_text(x,
+                                            width=self.rulesWrap) \
                                  for x in self.myModeRules[i].split("\n")]
             thisRulesText = "\n".join(thisRulesSections)
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
@@ -13341,7 +13379,8 @@ class ModeFrame(Frame):
                 thisAbilityType = self.myModeAbilities[i].type
                 thisAbilityText = self.myModeAbilities[i].dispText()
             thisAbilitySections = [thisAbilityName, thisAbilityType, thisAbilityText]
-            thisAbilitySections = [split_text(thisAbilitySections[i], self.abilityWraps[i]) \
+            thisAbilitySections = [split_text(thisAbilitySections[i],
+                                              width=self.abilityWraps[i]) \
                                    for i in range(len(thisAbilitySections))]
             thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
@@ -13547,7 +13586,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.sizeRules, self.rulesWrap),
+                                       text=split_text(self.sizeRules,
+                                                       width=self.rulesWrap),
                                        width=sum(self.sizeWidths)*self.columnWidth,
                                        height=math.floor(2*self.rowHeight))
         self.myMinionSizeRules.grid(row=1,
@@ -13561,7 +13601,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Sizes", self.titleWrap),
+                                       text=split_text("Minion Sizes",
+                                                       width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionSizeTitle.grid(row=3,
@@ -13577,7 +13618,8 @@ your minion one of the following upgrades:"
                                anchor=W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.sizeHeaders[i], self.sizeWraps[i]),
+                               text=split_text(self.sizeHeaders[i],
+                                               width=self.sizeWraps[i]),
                                width=self.sizeWidths[i]*self.columnWidth,
                                height=math.floor(self.rowHeight))
             self.myMinionSizeHeaders[i] = thisHeader
@@ -13595,7 +13637,8 @@ your minion one of the following upgrades:"
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.sizeText[c][r], self.sizeWraps[c]),
+                                  text=split_text(self.sizeText[c][r],
+                                                  width=self.sizeWraps[c]),
                                   width=self.sizeWidths[c]*self.columnWidth,
                                   height=math.floor(self.rowHeight))
                 self.myMinionSizeEntries[c][r] = thisEntry
@@ -13612,7 +13655,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.formRules, self.rulesWrap),
+                                       text=split_text(self.formRules,
+                                                       width=self.rulesWrap),
                                        width=sum(self.formWidths)*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionFormRules.grid(row=12,
@@ -13626,7 +13670,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Forms", self.titleWrap),
+                                       text=split_text("Minion Forms",
+                                                       width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionFormTitle.grid(row=13,
@@ -13642,7 +13687,8 @@ your minion one of the following upgrades:"
                                anchor=W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.formHeaders[i], self.formWraps[i]),
+                               text=split_text(self.formHeaders[i],
+                                               width=self.formWraps[i]),
                                width=self.formWidths[i]*self.columnWidth,
                                height=math.floor(self.rowHeight))
             self.myMinionFormHeaders[i] = thisHeader
@@ -13660,7 +13706,8 @@ your minion one of the following upgrades:"
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.myMinionInfo[r][c], self.formWraps[c]),
+                                  text=split_text(self.myMinionInfo[r][c],
+                                                  width=self.formWraps[c]),
                                   width=self.formWidths[c]*self.columnWidth,
                                   height=math.floor(self.rowHeight))
                 self.myMinionFormEntries[r][c] = thisEntry
@@ -13682,7 +13729,9 @@ your minion one of the following upgrades:"
             self.myMinionInfo = [["","",-1] for i in range(self.myMinionCount)]
             for i in range(self.myMinionCount):
                 thisMinion = self.myHero.min_forms[i]
-                self.myMinionInfo[i] = [str(thisMinion[0]), "+" + str(thisMinion[2]), str(thisMinion[1])]
+                self.myMinionInfo[i] = [str(thisMinion[0]),
+                                        "+" + str(thisMinion[2]),
+                                        str(thisMinion[1])]
 
 class FormWindow(SubWindow):
     def __init__(self, parent, title=None, hero=None):
@@ -13736,19 +13785,27 @@ class FormFrame(Frame):
         self.pqModifier = 1
         self.pqWrap = math.floor(self.upperWidths[0]*self.columnWidth*self.pqModifier)
         self.abilityModifiers = [1,1,1]
-        self.abilityWraps = [math.floor(self.lowerWidths[x+5]*self.columnWidth*self.abilityModifiers[x]) for x in range(len(self.abilityModifiers))]
+        self.abilityWraps = [math.floor(self.lowerWidths[x+5] * self.columnWidth * \
+                                        self.abilityModifiers[x]) \
+                             for x in range(len(self.abilityModifiers))]
         # Form name labels are organized by form
         self.myFormNames = [None for x in range(self.myFormCount)]
         # Header labels are organized by form, then by category (in headerText)
-        self.myHeaders = [[None for x in range(len(self.headerText))] for y in range(self.myFormCount)]
+        self.myHeaders = [[None for x in range(len(self.headerText))] \
+                          for y in range(self.myFormCount)]
         # Status die labels are organized by form, then by zone
-        self.myStatusDice = [[None for x in range(len(self.zoneColors))] for y in range(self.myFormCount)]
+        self.myStatusDice = [[None for x in range(len(self.zoneColors))] \
+                             for y in range(self.myFormCount)]
         # Power/Quality die labels are organized by form, then by column (in headerText[0:4]),
         #  then by row
-        self.myPQDice = [[[None for x in range(8)] for y in range(4)] for z in range(self.myFormCount)]
+        self.myPQDice = [[[None for x in range(8)] \
+                          for y in range(4)] \
+                         for z in range(self.myFormCount)]
         # Ability labels are organized by form, then by Ability (in thisForm[5]), then by section
         #  (in headerText[4:])
-        self.myAbilities = [[[None for x in range(3)] for y in range(len(self.myFormInfo[z][5]))] for z in range(self.myFormCount)]
+        self.myAbilities = [[[None for x in range(3)] \
+                             for y in range(len(self.myFormInfo[z][5]))] \
+                            for z in range(self.myFormCount)]
         firstRow = 1
         for i in range(self.myFormCount):
             thisForm = self.myFormInfo[i]
@@ -13758,12 +13815,14 @@ class FormFrame(Frame):
             leftHeight = 2
             # If this form has Powers, leftHeight adds the height of each Power
             for p in thisForm[2]:
-                leftHeight += 1 + len([x for x in split_text(p.flavorname, self.pqWrap) if x == "\n"])
+                leftHeight += 1 + len([x for x in split_text(p.flavorname,
+                                                             width=self.pqWrap) if x == "\n"])
             # centerHeight starts with 1 for form name plus 1 for Quality headers
             centerHeight = 2
             # If this form has Qualities, centerHeight adds the height of each Quality
             for q in thisForm[3]:
-                centerHeight += 1 + len([x for x in split_text(q.flavorname, self.pqWrap) if x == "\n"])
+                centerHeight += 1 + len([x for x in split_text(q.flavorname,
+                                                               width=self.pqWrap) if x == "\n"])
             # rightHeight starts with 1 for form name plus 2 for description
             rightHeight = 3
             # If this form has Abilities, rightHeight adds 1 for Ability headers...
@@ -13771,8 +13830,12 @@ class FormFrame(Frame):
                 rightHeight += 1
             # ... plus the height of each Ability
             for a in thisForm[5]:
-                rightHeight += 1 + max(len([x for x in split_text(a.flavorname, self.abilityWraps[0]) if x == "\n"]),
-                                       len([x for x in split_text(a.dispText(), self.abilityWraps[2]) if x == "\n"]))
+                rightHeight += 1 + max(len([x for x in split_text(a.flavorname,
+                                                                  width=self.abilityWraps[0]) \
+                                            if x == "\n"]),
+                                       len([x for x in split_text(a.dispText(),
+                                                                  width=self.abilityWraps[2]) \
+                                            if x == "\n"]))
             # rightHeight always needs to have room for form name, status header, and 3 status dice
             rightHeight = max(rightHeight, 5)
 ##            print(notePrefix + thisName + " leftHeight: " + str(leftHeight))
@@ -13812,7 +13875,8 @@ class FormFrame(Frame):
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Label(self,
-                                                background=self.zoneColors[j] + str(self.darkColorIndex),
+                                                background=self.zoneColors[j] + \
+                                                str(self.darkColorIndex),
                                                 anchor=self.targets[4],
                                                 justify=self.reasons[4],
                                                 relief=self.statusRelief,
@@ -13832,7 +13896,10 @@ class FormFrame(Frame):
                     if r < len(thisForm[c]):
                         if isinstance(thisForm[c][r], PQDie):
                             pqHeights[r] = max(pqHeights[r],
-                                               1 + len([x for x in split_text(thisForm[c][r].flavorname, self.pqWrap) if x == "\n"]))
+                                               1 + len([x for x in \
+                                                        split_text(thisForm[c][r].flavorname,
+                                                                   width=self.pqWrap) \
+                                                        if x == "\n"]))
 ##                    print(notePrefix + thisName + " row " + str(r) + ", column " + str(c) + \
 ##                          " height: " + str(pqHeights[r]))
             for j in range(4):
@@ -13844,7 +13911,8 @@ class FormFrame(Frame):
                 for d in range(len(columnDice)):
                     if isinstance(columnDice[d], PQDie):
                         if j%2 == 0:
-                            columnText[d] = split_text(columnDice[d].flavorname, self.pqWrap)
+                            columnText[d] = split_text(columnDice[d].flavorname,
+                                                       width=self.pqWrap)
                         else:
                             columnText[d] = str(columnDice[d].diesize)
 ##                print(notePrefix + thisName + " " + self.headerText[j] + " justify: " + \
@@ -13886,13 +13954,21 @@ class FormFrame(Frame):
                     thisAbility = thisForm[5][j]
                     # Get the max height of the text boxes for this Ability. That will be the
                     #  rowspan of these labels.
-                    abilityHeight = 1 + max(len([x for x in split_text(thisAbility.flavorname, self.abilityWraps[0]) if x == "\n"]),
-                                            len([x for x in split_text(thisAbility.dispText(), self.abilityWraps[2]) if x == "\n"]))
+                    abilityHeight = 1 + max(len([x for x in \
+                                                 split_text(thisAbility.flavorname,
+                                                            width=self.abilityWraps[0]) \
+                                                 if x == "\n"]),
+                                            len([x for x in \
+                                                 split_text(thisAbility.dispText(),
+                                                            width=self.abilityWraps[2]) \
+                                                 if x == "\n"]))
 ##                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
 ##                          str(abilityHeight))
-                    thisAbilityText = [split_text(thisAbility.flavorname, self.abilityWraps[0]),
+                    thisAbilityText = [split_text(thisAbility.flavorname,
+                                                  width=self.abilityWraps[0]),
                                        thisAbility.type,
-                                       split_text(thisAbility.dispText(), self.abilityWraps[2])]
+                                       split_text(thisAbility.dispText(),
+                                                  width=self.abilityWraps[2])]
                     for k in range(3):
                         self.myAbilities[i][j][k] = Label(self,
                                                           background=thisBG,
@@ -13931,8 +14007,10 @@ class FormFrame(Frame):
             # Divided grants 2 Green Forms, each with no Abilities
             # To separate the two categories, display Green Forms with no Abilities before ones with
             #  Abilities
-            self.myFormInfo = [[x for x in y] for y in self.myHero.other_forms if y[1] == 0 and len(y[5]) <= 0] + \
-                              [[x for x in y] for y in self.myHero.other_forms if y[1] == 0 and len(y[5]) > 0] + \
+            self.myFormInfo = [[x for x in y] for y in self.myHero.other_forms \
+                               if y[1] == 0 and len(y[5]) <= 0] + \
+                              [[x for x in y] for y in self.myHero.other_forms \
+                               if y[1] == 0 and len(y[5]) > 0] + \
                               [[x for x in y] for y in self.myHero.other_forms if y[1] == 1] + \
                               [[x for x in y] for y in self.myHero.other_forms if y[1] == 2]
             # For each form, if the status dice are empty, replace them with the hero's main
@@ -14007,7 +14085,8 @@ class SelectFrame(Frame):
         self.myWrap = self.myWidth + self.myBuffer
         print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
         self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         self.myPromptLabel = Label(self,
@@ -14090,7 +14169,8 @@ class SelectFrame(Frame):
         self.bind("<Return>", self.finish)
     def update(self, event=None):
         self.myWrap = self.myWidth + self.myBuffer
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
         self.myPromptLabel.config(text=self.myPrompt,
                                   width=self.myWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
@@ -14272,7 +14352,8 @@ class ExpandFrame(Frame):
         self.myPromptBuffer = math.floor(0.43 * self.myPromptWidth - 20)
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
         self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myPromptWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myPromptWrap)
         self.myDispWidth = rwidth
         self.myDispBuffer = math.floor(0.43 * self.myDispWidth - 20)
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
@@ -14362,7 +14443,8 @@ class ExpandFrame(Frame):
                                  rowspan=1,
                                  columnspan=1,
                                  sticky=N+E+S+W)
-        detailsHeight = max([1 + len([x for x in split_text(y, width=self.myDispWrap) \
+        detailsHeight = max([1 + len([x for x in split_text(y,
+                                                            width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
         self.myDispLabel = Label(self,
                                  anchor=NW,
@@ -14384,7 +14466,8 @@ class ExpandFrame(Frame):
         index = self.myOptions.index(self.myString.get())
         dispText = ""
 ##        if index in range(len(self.myDetails)):
-##            dispText = split_text(self.myDetails[index], width=self.myDispWrap)
+##            dispText = split_text(self.myDetails[index],
+##                                  width=self.myDispWrap)
         self.myDispLabel.config(text=dispText,
                                 width=self.myDispWidth)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
@@ -14470,7 +14553,8 @@ class SwapFrame(Frame):
         self.myParent = parent
         self.myOptions = [str(x) for x in options]
         self.myWidth = max(width, max([len(s) for s in self.myOptions]))
-        self.myPrompt = split_text(str(prompt), self.myWidth)
+        self.myPrompt = split_text(str(prompt),
+                                   width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
         self.myPromptLabel = Label(self,
