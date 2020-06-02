@@ -5681,7 +5681,8 @@ def TransitionDetails(index,
                                         prefix=prefix+indent)
         for i in range(len(transition[2])):
             trText += "\n" + transition[2][i].details(width=width,
-                                                      prefix=prefix+indent*2)
+                                                      prefix=prefix+indent*2,
+                                                      indented=indented)
         return trText
     else:
         return split_text("Invalid transition index: " + str(index),
