@@ -6019,7 +6019,8 @@ def ArchetypeDetails(index,
             for i in range(len(tr_collection)):
                 arcText += "\n" + TransitionDetails(i,
                                                     width=width,
-                                                    prefix=prefix+indent*2)
+                                                    prefix=prefix+indent*2,
+                                                    indented=indented)
             # Include the Build Options and the Green Ability associated with Split Form.
             build_options = [a_divided_psyche, a_split_form]
             arcText += "\n" * breaks + split_text("Divided Nature (choose 1):",
@@ -6598,7 +6599,9 @@ class Hero:
                 answer = IntVar()
                 dispWidth = 100
                 options = [str(x) for x in self.principles] + ["Cancel"]
-                details = [x.details(width=dispWidth) for x in self.principles]
+                details = [x.details(width=dispWidth,
+                                     breaks=2,
+                                     indented=False) for x in self.principles]
                 question = ExpandWindow(self.myWindow,
                                         "Choose a Principle to replace: ",
                                         options,
@@ -6683,7 +6686,9 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         prompt,
                                         [x.title for x in r_options],
-                                        [x.details() for x in r_options],
+                                        [x.details(width=-1,
+                                                   breaks=2,
+                                                   indented=False) for x in r_options],
                                         var=answer,
                                         title="Principle Selection")
                 entry_index = answer.get()
@@ -6952,7 +6957,11 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [BackgroundDetails(x, width=0) for x in bg_indices],
+                                        [BackgroundDetails(x,
+                                                           width=-1,
+                                                           breaks=2,
+                                                           indented=True,
+                                                           grid=False) for x in bg_indices],
                                         var=answer,
                                         title="Background Selection",
                                         rwidth=bg_width)
@@ -7020,7 +7029,11 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose a Background from the list:",
                                     [x[0] for x in bg_collection],
-                                    [BackgroundDetails(i, width=0) \
+                                    [BackgroundDetails(i,
+                                                       width=-1,
+                                                       breaks=2,
+                                                       indented=True,
+                                                       grid=False) \
                                      for i in range(len(bg_collection))],
                                     var=answer,
                                     title="Background Selection",
@@ -7197,7 +7210,9 @@ class Hero:
                         this_length = min(section_length,
                                           len(template_options) - i*section_length)
                         for j in range(this_length):
-                            details[i] += template_options[i*section_length+j].details()
+                            opt_text = template_options[i*section_length+j].details(width=-1,
+                                                                                    indented=True)
+                            details[i] += opt_text
                             if j in range(this_length-1):
                                 details[i] += "\n"
                     answer = IntVar()
@@ -7241,7 +7256,8 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         prompt,
                                         [str(x) for x in template_options],
-                                        [x.details() for x in template_options],
+                                        [x.details(width=-1,
+                                                   indented=True) for x in template_options],
                                         var=answer,
                                         title="Ability Selection",
                                         rwidth=a_width)
@@ -7277,9 +7293,10 @@ class Hero:
                 matching_pqs = [d.triplet() for d in p_dice + self.quality_dice \
                                 if d.triplet() in ability_template.required_pqs[i]]
                 if len(matching_pqs) == 0:
-                    print(ability_template.details() + "\n\n" + "Error! " + self.hero_name + \
-                          "doesn't have any of the required Powers/Qualities for this ability " + \
-                          "(" + MixedPQs(ability_template.required_pqs[i]) + ").")
+                    print(ability_template.details(indented=True) + "\n\n" + "Error! " + \
+                          self.hero_name + "doesn't have any of the required Powers/Qualities " + \
+                          "for this ability " + "(" + \
+                          MixedPQs(ability_template.required_pqs[i]) + ").")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
@@ -7289,8 +7306,9 @@ class Hero:
         damage_entry = ability_template.insert_damage
         if ability_template.has_damage and damage_entry not in [0,1]:
             decision = self.ChooseIndex(damage_categories[0:2],
-                                        prompt=ability_template.details(width=-1) + "\n\n" +
-                                        "Choose a damage category for this Ability:",
+                                        prompt=ability_template.details(width=-1,
+                                                                        indented=True) + \
+                                        "\n\nChoose a damage category for this Ability:",
                                         title=display_str,
                                         inputs=inputs,
                                         width=50,
@@ -7304,21 +7322,22 @@ class Hero:
             if ability_template.requires_energy:
                 power_die_options = [d for d in p_dice if d.category==1]
                 if len(power_die_options) == 0:
-                    print(ability_template.details() + "\n\n" + "Error! " + self.name + \
-                          " doesn't have any Elemental/Energy powers to use with " + \
-                          ability_template.name + "!")
+                    print(ability_template.details(indented=True) + "\n\n" + "Error! " + \
+                          self.hero_name + " doesn't have any Elemental/Energy powers to use " + \
+                          "with " + ability_template.name + "!")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
                     else:
                         return []
                 elif len(power_die_options) == 1:
-                    print(ability_template.details() + "\n\n" + self.hero_name + \
+                    print(ability_template.details(indented=True) + "\n\n" + self.hero_name + \
                           "'s only Elemental/Energy power is " + str(power_die_options[0]) + ".")
                     element_num = power_die_options[0].index
                 else:
                     decision = self.ChooseIndex([str(d) for d in power_die_options],
-                                                prompt=ability_template.details(width=-1) + \
+                                                prompt=ability_template.details(width=-1,
+                                                                                indented=True) + \
                                                 "\n\n" + "Choose one of your Elemental/Energy " + \
                                                 "Powers for this ability:",
                                                 title=display_str,
@@ -7329,8 +7348,9 @@ class Hero:
             else:
                 decision = self.ChooseIndex([mixed_collection[1][1][i] \
                                              for i in range(len(mixed_collection[1][1]))],
-                                            prompt=ability_template.details(width=-1) + "\n\n" + \
-                                            "Choose an energy or element for this Ability:",
+                                            prompt=ability_template.details(width=-1,
+                                                                            indented=True) + \
+                                            "\n\nChoose an energy or element for this Ability:",
                                             title=display_str,
                                             inputs=inputs,
                                             width=50,
@@ -7344,8 +7364,9 @@ class Hero:
                 if ("%a" + str(i)) in ability_template.text:
                     decision = self.ChooseIndex([basic_actions[j] \
                                                  for j in ability_template.action_options[i]],
-                                                prompt=ability_template.details(width=-1) + \
-                                                "\n\n" + "Choose a basic action for this Ability:",
+                                                prompt=ability_template.details(width=-1,
+                                                                                indented=True) + \
+                                                "\n\nChoose a basic action for this Ability:",
                                                 title=display_str,
                                                 inputs=inputs,
                                                 width=50,
@@ -7412,7 +7433,7 @@ class Hero:
                         slot_id = "first"
                         if i == 1:
                             slot_id = "second"
-                        print(ability_template.details() + "\n\n" + self.hero_name + \
+                        print(ability_template.details(indented=True) + "\n\n" + self.hero_name + \
                               "'s only valid " + category + " die for this ability's " + \
                               slot_id + " slot is " + str(die_options[0]) + ".")
                         pq_triplets[i] = die_options[0].triplet()
@@ -7420,10 +7441,11 @@ class Hero:
                             pq_names[i] = die_options[0].flavorname
                     else:
                         # More than 1 valid option? Prompt the user to choose
+                        prompt = ability_template.details(width=-1,
+                                                          indented=True) + "\n\nChoose a " + \
+                                                          category + " die for this Ability:"
                         decision = self.ChooseIndex([str(d) for d in die_options],
-                                                    prompt=ability_template.details(width=-1) + \
-                                                    "\n\n" + "Choose a " + category + \
-						    " die for this Ability:",
+                                                    prompt=prompt,
                                                     title=display_str,
                                                     inputs=inputs,
                                                     width=50,
@@ -7453,7 +7475,8 @@ class Hero:
                               hero_step=max([0,stepnum]))
         if zone != 3:
             rename_prompt = "OK! " + self.hero_name + "'s new Ability is almost ready:"
-            rename_prompt += "\n\n" + new_ability.details()
+            rename_prompt += "\n\n" + new_ability.details(width=-1,
+                                                          indented=True)
             # Green/Yellow/Red Abilities can have custom names
             entry_options = "YN"
             rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name (y/n)?"
@@ -7465,7 +7488,8 @@ class Hero:
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == "Y":
-                decision = self.EnterText(new_ability.details() + "\n\n" + \
+                decision = self.EnterText(new_ability.details(width=-1,
+                                                              indented=True) + "\n\n" + \
                                           "Enter the new name for this Ability:",
                                           title=display_str,
                                           default=new_ability.name,
@@ -7802,7 +7826,11 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [PowerSourceDetails(i, width=0) for i in ps_indices],
+                                        [PowerSourceDetails(i,
+                                                            width=-1,
+                                                            indented=True,
+                                                            breaks=2,
+                                                            grid=False) for i in ps_indices],
                                         var=answer,
                                         title="Power Source Selection",
                                         rwidth=ps_width)
@@ -7876,7 +7904,11 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose a Power Source from the list:",
                                     [x[0] for x in ps_collection],
-                                    [PowerSourceDetails(i, width=0) \
+                                    [PowerSourceDetails(i,
+                                                        width=-1,
+                                                        indented=True,
+                                                        breaks=2,
+                                                        grid=False) \
                                      for i in range(len(ps_collection))],
                                     var=answer,
                                     title="Power Source Selection",
@@ -8317,7 +8349,8 @@ class Hero:
             dispWidth = 100
             answer = IntVar()
             options = [x.name for x in form_options]
-            details = [x.details() for x in form_options]
+            details = [x.details(width=-1,
+                                 indented=True) for x in form_options]
             question = ExpandWindow(self.myWindow,
                                     prompt,
                                     options,
@@ -8863,7 +8896,9 @@ class Hero:
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     options = [x[0] for x in mc_green]
-                    details = [ModeTemplateDetails(0, i) for i in range(len(mc_green))]
+                    details = [ModeTemplateDetails(0,
+                                                   i,
+                                                   indented=True) for i in range(len(mc_green))]
                     rwidth = 100
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
@@ -8910,7 +8945,10 @@ class Hero:
                     if self.UseGUI(inputs):
                         # Create an ExpandWindow to prompt the user
                         options = [mc_yellow[x][0] for x in yellow_indices]
-                        details = [ModeTemplateDetails(1,x) for x in yellow_indices]
+                        details = [ModeTemplateDetails(1,
+                                                       x,
+                                                       width=-1,
+                                                       indented=True) for x in yellow_indices]
                         rwidth = 100
                         answer = IntVar()
                         question = ExpandWindow(self.myWindow,
@@ -8954,7 +8992,10 @@ class Hero:
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     options = [x[0] for x in mc_red]
-                    details = [ModeTemplateDetails(2, i) for i in range(len(mc_red))]
+                    details = [ModeTemplateDetails(2,
+                                                   i,
+                                                   width=-1,
+                                                   indented=True) for i in range(len(mc_red))]
                     rwidth = 100
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
@@ -9234,7 +9275,9 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [tr_collection[i][0] for i in range(len(tr_collection))]
-                    details = [TransitionDetails(i, width=-1) for i in range(len(tr_collection))]
+                    details = [TransitionDetails(i,
+                                                 width=-1,
+                                                 indented=True) for i in range(len(tr_collection))]
                     question = ExpandWindow(self.myWindow,
                                             tr_prompt,
                                             options,
@@ -9290,7 +9333,9 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [build_options[i].name for i in range(len(build_options))]
-                    details = [build_options[i].details(width=0) for i in range(len(build_options))]
+                    details = [build_options[i].details(width=-1,
+                                                        indented=False) \
+                               for i in range(len(build_options))]
                     question = ExpandWindow(self.myWindow,
                                             bo_prompt,
                                             options,
@@ -9574,7 +9619,11 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [ArchetypeDetails(i, width=0) for i in arc_indices],
+                                        [ArchetypeDetails(i,
+                                                          width=-1,
+                                                          indented=True,
+                                                          breaks=2,
+                                                          grid=False) for i in arc_indices],
                                         var=answer,
                                         title="Archetype Selection",
                                         rwidth=arc_width)
@@ -9706,7 +9755,11 @@ class Hero:
                     question = ExpandWindow(self.myWindow,
                                             roll_report + "\nChoose one:",
                                             options,
-                                            [ArchetypeDetails(i, width=0) \
+                                            [ArchetypeDetails(i,
+                                                              width=-1,
+                                                              indented=True,
+                                                              breaks=2,
+                                                              grid=False) \
                                              for i in arc_indices],
                                             var=answer,
                                             title="Archetype Selection",
@@ -9752,7 +9805,11 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose an Archetype from the list:",
                                     [x[0] for x in arc_collection],
-                                    [ArchetypeDetails(i, width=0) \
+                                    [ArchetypeDetails(i,
+                                                      width=-1,
+                                                      indented=True,
+                                                      breaks=2,
+                                                      grid=False) \
                                      for i in range(len(arc_collection))],
                                     var=answer,
                                     title="Archetype Selection",
@@ -9793,7 +9850,11 @@ class Hero:
                                         arc_mod[0] + " modifies another Archetype. Choose " + \
                                         "another Archetype from the list:",
                                         [x[0] for x in arc_simple],
-                                        [ArchetypeDetails(i, width=0) \
+                                        [ArchetypeDetails(i,
+                                                          width=-1,
+                                                          indented=True,
+                                                          breaks=2,
+                                                          grid=False) \
                                          for i in range(len(arc_simple))],
                                         var=answer,
                                         title="Archetype Selection",
@@ -10109,7 +10170,10 @@ class Hero:
                                for i in range(len(pn_indices))]
                     if rerolls > 0:
                         options += ["REROLL"]
-                    details = [PersonalityDetails(i, width=0) for i in pn_indices]
+                    details = [PersonalityDetails(i,
+                                                  width=-1,
+                                                  indented=True,
+                                                  breaks=2) for i in pn_indices]
                     question = ExpandWindow(self.myWindow,
                                             "Choose one:",
                                             options,
@@ -10199,7 +10263,10 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [pn_collection[x][0] for x in pn_indices]
-                    details = [PersonalityDetails(x, width=0) for x in pn_indices]
+                    details = [PersonalityDetails(x,
+                                                  width=-1,
+                                                  indented=True,
+                                                  breaks=2) for x in pn_indices]
                     question = ExpandWindow(self.myWindow,
                                             prompt,
                                             options,
@@ -10260,7 +10327,10 @@ class Hero:
                 # Create an ExpandWindow to prompt the user.
                 answer = IntVar()
                 options = [x[0] for x in pn_collection]
-                details = [PersonalityDetails(i, width=0) for i in range(len(pn_collection))]
+                details = [PersonalityDetails(i,
+                                              width=-1,
+                                              indented=True,
+                                              breaks=2) for i in range(len(pn_collection))]
                 question = ExpandWindow(self.myWindow,
                                         "Choose a Personality from the list:",
                                         options,
@@ -10380,7 +10450,6 @@ class Hero:
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                dispWidth = 100
                 details = ["" for i in range(len(pq_sublists))]
                 for i in range(len(pq_sublists)):
                     pq_first = pq_sublists[i][0]
@@ -10402,14 +10471,15 @@ class Hero:
                         sublist_strings[i] = "using " + str(pq_first)
                     details[i] = "Red Abilities " + sublist_strings[i] + ":"
                     for rt in ra_sublists[i]:
-                        details[i] += "\n" + rt.details(width=dispWidth)
+                        details[i] += "\n" + rt.details(width=-1,
+                                                        indented=True)
                 question = ExpandWindow(self.myWindow,
                                         "Choose a category to gain a Red Ability from:",
                                         sublist_strings,
                                         details,
                                         var=answer,
                                         title="Red Ability Selection",
-                                        rwidth=dispWidth)
+                                        rwidth=100)
                 entry_index = answer.get()
             else:
                 entry_options = string.ascii_uppercase[0:len(pq_sublists)]
@@ -10600,7 +10670,8 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [str(x) for x in ability_options]
-                    details = [x.details(width=100) for x in ability_options]
+                    details = [x.details(width=-1,
+                                         indented=True) for x in ability_options]
                     prompt = "Choose an Ability to edit:"
                     question = ExpandWindow(self.myWindow,
                                             prompt,
@@ -14866,10 +14937,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getJo(step=4)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getJo(step=4)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14894,6 +14965,6 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
