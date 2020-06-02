@@ -168,9 +168,17 @@ def split_text(text,
     notePrefix = "### split_text: "
     if prefix == "":
         # No prefix specified? Check to see if text starts with whitespace; if so, use that
-        while text[0] == " ":
+        okToShift = False
+        if len(text) > 0:
+            if text[0] == " ":
+                okToShift = True
+        while okToShift:
             prefix += text[0]
             text = text[1:]
+            if len(text) <= 0:
+                okToShift = False
+            elif text[0] != " ":
+                okToShift = False
     # prefix takes up a certain number of characters on every line, so set those aside and
     #  designate the width of actual text as textWidth
     textWidth = width-len(prefix)
@@ -14514,9 +14522,9 @@ class ExpandFrame(Frame):
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
-##        if index in range(len(self.myDetails)):
-##            dispText = split_text(self.myDetails[index],
-##                                  width=self.myDispWrap)
+        if index in range(len(self.myDetails)):
+            dispText = split_text(self.myDetails[index],
+                                  width=self.myDispWrap)
         self.myDispLabel.config(text=dispText,
                                 width=self.myDispWidth)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
@@ -14793,7 +14801,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori()
+firstHero = factory.getLori(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
