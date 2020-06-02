@@ -8539,7 +8539,9 @@ class Hero:
                                         self.dv_tags[1] + " form for " + \
 					pronouns[self.pronoun_set][1] + "?",
                                         inputs=inputs,
-                                        title="Create Form: " + form_ability_template.name)
+                                        title="Create Form: " + form_ability_template.name,
+                                        width=50,
+                                        buffer=20)
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index < 2:
@@ -9200,14 +9202,18 @@ class Hero:
                 # If the hero is Divided, they take some extra steps here
                 entry_options = "YN"
                 entry_choice = ' '
-                printlong("As a Divided hero, you have two very different forms, such as a " + \
-                          "nonpowered civilian form and a powered heroic form.",
-                          100)
-                print("The default names for these forms are " + self.dv_tags[0] + " and " + \
-                      self.dv_tags[1] + ".")
+                dispWidth = 100
+                prompt = split_text("As a Divided hero, you have two very different forms, " + \
+                                    "such as a nonpowered civilian form and a powered heroic form.",
+                                    width=dispWidth)
+                prompt += "\n" + split_text("The default names for these forms are " + \
+                                            self.dv_tags[0] + " and " + self.dv_tags[1] + ".",
+                                            width=dispWidth)
+                prompt += "\n" + split_text("Do you want to give them custom names? (y/n)",
+                                            width=dispWidth)
                 decision = choose_letter(entry_options,
                                          ' ',
-                                         prompt="Do you want to give them custom names? (y/n)",
+                                         prompt=prompt,
                                          repeat_message="Please enter Y or N.",
                                          inputs=inputs)
                 entry_choice = decision[0]
@@ -9222,25 +9228,43 @@ class Hero:
                         if len(self.dv_tags[i]) == 0:
                             self.dv_tags[i] = dv_defaults[i]
                 # Choose a method of transition
-                entry_options = string.ascii_uppercase[0:len(tr_collection)]
-                entry_choice = ' '
-                print("Choose a method of transformation between your " + self.dv_tags[0] + \
-                      " and " + self.dv_tags[1] + " forms:")
-                for i in range(len(tr_collection)):
-                    print("    " + entry_options[i] + ": " + tr_collection[i][0])
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a transition method expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a transition " + \
-                                             "method expanded, or an uppercase letter to " + \
-                                             "select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
-                entry_index = entry_options.find(entry_choice)
+                tr_prompt = "Choose a method of transformation between your " + self.dv_tags[0] + \
+                            " and " + self.dv_tags[1] + " forms:"
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    answer = IntVar()
+                    options = [tr_collection[i][0] for i in range(len(tr_collection))]
+                    details = [TransitionDetails(i, width=-1) for i in range(len(tr_collection))]
+                    question = ExpandWindow(self.myWindow,
+                                            tr_prompt,
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype: Divided - Transition Selection",
+                                            rwidth=100)
+                    entry_index = answer.get()
+                    # ...
+                else:
+                    # Use the shell to prompt the user
+                    entry_options = string.ascii_uppercase[0:len(tr_collection)]
+                    entry_choice = ' '
+                    print(tr_prompt)
+                    for i in range(len(tr_collection)):
+                        print("    " + entry_options[i] + ": " + tr_collection[i][0])
+                    while entry_choice not in entry_options:
+                        if len(inputs) > 0:
+                            print("Enter a lowercase letter to see a transition method " + \
+                                  "expanded, or an uppercase letter to select it.")
+                            print("> " + inputs[0])
+                            entry_choice = inputs.pop(0)[0]
+                        else:
+                            entry_choice = input("Enter a lowercase letter to see a transition " + \
+                                                 "method expanded, or an uppercase letter to " + \
+                                                 "select it.\n")[0]
+                        if entry_choice.upper() in entry_options and \
+                           entry_choice not in entry_options:
+                            DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
+                    entry_index = entry_options.find(entry_choice)
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
                 # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
@@ -9261,24 +9285,44 @@ class Hero:
                                    inputs=pass_inputs)
                 # Then, choose a build option and create your heroic & civilian forms
                 build_options = [a_divided_psyche, a_split_form]
-                entry_options = string.ascii_uppercase[0:len(build_options)]
-                entry_choice = ' '
-                print("Choose one as the nature of your divided self:")
-                for i in range(len(build_options)):
-                    print("    " + entry_options[i] + ": " + build_options[i].name)
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a divided nature expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a divided nature " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        build_options[entry_options.find(entry_choice.upper())].display(prefix="    ",
-                                                                                        width=100)
-                dv_nature = build_options[entry_options.find(entry_choice)]
+                bo_prompt = "Choose one as the nature of your divided self:"
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    answer = IntVar()
+                    options = [build_options[i].name for i in range(len(build_options))]
+                    details = [build_options[i].details(width=0) for i in range(len(build_options))]
+                    question = ExpandWindow(self.myWindow,
+                                            bo_prompt,
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype: Divided - Divided Nature",
+                                            rwidth=100)
+                    dv_nature = build_options[answer.get()]
+                    # ...
+                else:
+                    # Use the shell to prompt the user
+                    entry_options = string.ascii_uppercase[0:len(build_options)]
+                    entry_choice = ' '
+                    print(bo_prompt)
+                    for i in range(len(build_options)):
+                        print("    " + entry_options[i] + ": " + build_options[i].name)
+                    while entry_choice not in entry_options:
+                        if len(inputs) > 0:
+                            print("Enter a lowercase letter to see a divided nature expanded, " + \
+                                  "or an uppercase letter to select it.")
+                            print("> " + inputs[0])
+                            entry_choice = inputs.pop(0)[0]
+                        else:
+                            entry_choice = input("Enter a lowercase letter to see a divided " + \
+                                                 "nature expanded, or an uppercase letter to " + \
+                                                 "select it.\n")[0]
+                        if entry_choice.upper() in entry_options and \
+                           entry_choice not in entry_options:
+                            expand_index = entry_options.find(entry_choice.upper())
+                            build_options[expand_index].display(prefix="    ",
+                                                                width=100)
+                    dv_nature = build_options[entry_options.find(entry_choice)]
                 if dv_nature == a_divided_psyche:
                     # Add the Divided Psyche Green Ability
                     pass_inputs = []
@@ -9432,7 +9476,9 @@ class Hero:
                                                     "hero. Is " + f[0] + " a " + \
                                                     self.dv_tags[0] + " or " + self.dv_tags[1] + \
                                                     " form for them?",
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=50,
+                                                    buffer=20)
                         entry_index = decision[0]
                         inputs = decision[1]
                         f[6] = entry_index
@@ -9521,7 +9567,8 @@ class Hero:
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" for i in range(len(arc_options))]
+                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
+                           for i in range(len(arc_options))]
                 if rerolls > 0:
                     options += ["REROLL"]
                 question = ExpandWindow(self.myWindow,
@@ -12491,6 +12538,7 @@ class HeroFrame(Frame):
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
         self.UpdateAll(hero)
+        self.focus_set()
     def RangeText(self, zone):
         # Returns the text representation of the health range for the specified status zone if legal
         #  and valid, and "" otherwise
