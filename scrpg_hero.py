@@ -9810,8 +9810,40 @@ class Hero:
                                  [8],
                                  stepnum=this_step,
                                  inputs=pass_inputs)
-            # If the hero has Split Form, their Heroic and Civilian Forms each get this Quality
-            #  even though neither of their Quality lists match the base one
+            # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
+            #  Psyche and gets no Qualities in Heroic Form(s)
+            matching_dice = [x for x in self.quality_dice if x.step == this_step]
+            rpq_die = matching_dice[0]
+            dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
+            if len(dv_check) > 0:
+                dv_ps = dv_check[0]
+                print(notePrefix + "Divided Psyche found (" + dv_ps.flavorname + ")")
+                # All Civilian Form(s) get this Quality
+                for fm in self.other_forms:
+                    print(notePrefix + "checking " + fm[0] + "...")
+                    if fm[6] == 0 and rpq_die not in fm[3]:
+                        print(notePrefix + fm[0] + " is " + self.dv_tags[fm[6]] + \
+                              ", adding " + rpq_die.flavorname)
+                        fm[3].append(rpq_die)
+                    elif fm[6] != 0:
+                        print(notePrefix + fm[0] + " is " + self.dv_tags[fm[6]])
+                    elif rpq_die in fm[3]:
+                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
+            else:
+                print(notePrefix + "Divided Psyche not found")
+                # All Form(s) and Mode(s) get this Quality
+                for fm in self.other_forms:
+                    if rpq_die not in fm[3]:
+                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
+                        fm[3].append(rpq_die)
+                    else:
+                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
+                for md in self.other_modes:
+                    if rpq_die not in md[3]:
+                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md[0])
+                        md[3].append(rpq_die)
+                    else:
+                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
             # ...
             # Then fill in their status dice and Out Ability.
             out_options = []
@@ -14752,8 +14784,8 @@ class PrincipleFrame(Frame):
 
 factory = SampleMaker()
 
-##root = Tk()
-##root.geometry("+0+0")
+root = Tk()
+root.geometry("+0+0")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -14761,10 +14793,10 @@ factory = SampleMaker()
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getLori()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getLori()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -14792,28 +14824,3 @@ factory = SampleMaker()
 ##dispFrame = HeroFrame(root)
 ##dispFrame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
-
-# Testing Details() methods...
-w=50
-ind=True
-br=1
-pr=""
-g=True
-
-sampleHeroes = [factory.getShikari(),
-                factory.getJo(),
-                factory.getCham(),
-                factory.getLori(),
-                factory.getKnockout(),
-                factory.getKim(),
-                factory.getAyla()]
-
-input()
-for h in sampleHeroes:
-    print(h.details(width=w,
-                    prefix=pr,
-                    indented=ind))
-    h.display(width=w,
-              prefix=pr,
-              indented=ind)
-    print()
