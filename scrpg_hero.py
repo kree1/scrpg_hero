@@ -226,20 +226,34 @@ def split_text(text,
                 if sec_end in range(len(text)):
                     print(notePrefix + " ('" + text[sec_end] + "')")
             # Add this line
-            lines.append(text[sec_start:sec_end])
+            lines.append(text[sec_start:sec_end+1])
             if print_issue:
-                print(notePrefix + "'" + text[sec_start:sec_end] + "' added to lines")
+                print(notePrefix + "'" + text[sec_start:sec_end+1] + "' added to lines")
             # Adjust values for the next one
+            # sec_start goes to the character after the last one in the previous line
             sec_start = sec_end + 1
             if print_issue:
                 print(notePrefix + "sec_start= " + str(sec_start))
                 if sec_start in range(len(text)):
                     print(notePrefix + " ('" + text[sec_start] + "')")
             if sec_start + textWidth in range(len(text)):
+                # If a space can be found within the next textWidth characters, sec_end goes to the
+                #  last such space
                 sec_end = text.rfind(" ",
                                      sec_start,
                                      sec_start + textWidth)
+                if sec_end not in range(len(text)):
+                    # If no space can be found within that range, sec_end goes to the next space in
+                    #  the string
+                    sec_end = text.find(" ",
+                                        sec_start)
+                    if sec_end not in range(len(text)):
+                        # If no space can be found within the rest of the string, sec_end goes to
+                        #  the end of the string
+                        sec_end = len(text)
             else:
+                # If there are fewer than textWidth characters remaining in the string, sec_end goes
+                #  to the end of the string
                 sec_end = len(text)
         # Make sure to include prefix before the first line
         return prefix + conjunction.join(lines)
@@ -5639,23 +5653,10 @@ def DisplayTransitionMethod(index,
                             width=100,
                             prefix="",
                             indented=True):
-    if indented:
-        indent = "    "
-    else:
-        indent = ""
-    transition = tr_collection[index]
-    print(prefix + transition[0])
-    printlong(transition[1],
-              width=width,
-              prefix=prefix+indent)
-    if len(transition[2]) > 1:
-        print(prefix + indent + "Optional Green Abilities:")
-    else:
-        print(prefix + indent + "Required Green Ability:")
-    for i in range(len(transition[2])):
-        transition[2][i].display(prefix=prefix+indent*2,
-                                 width=width,
-                                 indented=indented)
+    print(TransitionDetails(index,
+                            width=width,
+                            prefix=prefix,
+                            indented=indented))
 
 def TransitionDetails(index,
                       width=100,
@@ -5692,50 +5693,11 @@ def DisplayModeTemplate(zone,
                         width=100,
                         prefix="",
                         indented=True):
-    if indented:
-        indent = "    "
-    else:
-        indent = ""
-    mode = []
-    if zone in [-1,3]:
-        mode = mt_powerless
-        zone = 0
-    else:
-        mode = mc_zones[zone][index]
-    print(prefix + mode[0] + " [" + status_zones[zone] + "]:")
-    for d in legal_dice:
-        matching_dice = [size for size in mode[2] if size==d]
-        if len(matching_dice) == 1:
-            print(prefix + indent + str(len(matching_dice)) + " Power at d" + str(d))
-        elif len(matching_dice) > 1:
-            print(prefix + indent + str(len(matching_dice)) + " Powers at d" + str(d))
-    for modifier in range(-2, 3):
-        mod_text = str(modifier)
-        if modifier >=0:
-            mod_text = "+" + mod_text
-        if abs(modifier) == 1:
-            mod_text += " die size"
-        else:
-            mod_text += " die sizes"
-        matching_mods = [m for m in mode[3] if m==modifier]
-        if len(matching_mods) == 1:
-            print(prefix + indent + str(len(matching_mods)) + " Power at " + mod_text)
-        elif len(matching_mods) > 1:
-            print(prefix + indent + str(len(matching_mods)) + " Powers at " + mod_text)
-    if len(mode[4]) > 0:
-        prohibited_text = mode[4][0]
-        for i in range(1, len(mode[4])-1):
-            prohibited_text += ", " + mode[4][i]
-        if len(mode[4]) > 2:
-            prohibited_text += ","
-        if len(mode[4]) > 1:
-            prohibited_text += " or " + mode[4][len(mode[4])-1]
-        print(prefix + indent + "You cannot " + prohibited_text + " while in this mode.")
-    if mode[5]:
-        print(prefix + indent + "You gain access to this Ability:")
-        mode[5].display(prefix=prefix+indent*2,
-                        width=width,
-                        indented=indented)
+    print(ModeTemplateDetails(zone,
+                              index,
+                              width=width,
+                              prefix=prefix,
+                              indented=indented))
 
 def ModeTemplateDetails(zone,
                         index,
@@ -5806,7 +5768,8 @@ def ModeTemplateDetails(zone,
                                       width=width,
                                       prefix=prefix+indent)
         modeText += "\n" + mode[5].details(width=width,
-                                           prefix=prefix+indent*2)
+                                           prefix=prefix+indent*2,
+                                           indented=indented)
     return modeText
         
 def DisplayArchetype(index,

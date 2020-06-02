@@ -170,8 +170,6 @@ Assign width/buffer values to existing SelectWindow calls
  
 ? Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows
 
-DisplayTransitionMethod and DisplayModeTemplate need to stop duplicating code with TransitionDetails and ModeTemplateDetails
-
 Assign indented/breaks values to existing DisplayBackground, BackgroundDetails, DisplayPowerSource, PowerSourceDetails, DisplayArchetype, ArchetypeDetails, etc. calls
   Display() methods
 	Hero.GuidedBackground, line 7015 (expand this background if not UseGUI)
