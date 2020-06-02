@@ -5465,7 +5465,7 @@ def DisplayBackground(index,
 def BackgroundDetails(index,
                       width=100,
                       prefix="",
-                      indented=True,
+                      indented=False,
                       breaks=2,
                       grid=False):
     if index in range(len(bg_collection)):
@@ -5543,7 +5543,7 @@ def DisplayPowerSource(index,
 def PowerSourceDetails(index,
                        width=100,
                        prefix="",
-                       indented=True,
+                       indented=False,
                        breaks=2,
                        grid=False):
     if index in range(len(ps_collection)):
@@ -5636,8 +5636,8 @@ def MinionFormStr(min_form):
     return min_form[0] + " (requires +" + str(min_form[2]) + " or higher): " + min_form[1]
 
 def DisplayTransitionMethod(index,
-                            prefix="",
                             width=100,
+                            prefix="",
                             indented=True):
     if indented:
         indent = "    "
@@ -5658,7 +5658,7 @@ def DisplayTransitionMethod(index,
                                  indented=indented)
 
 def TransitionDetails(index,
-                      width=50,
+                      width=100,
                       prefix="",
                       indented=True):
     if index in range(len(tr_collection)):
@@ -5825,7 +5825,7 @@ def DisplayArchetype(index,
 def ArchetypeDetails(index,
                      width=100,
                      prefix="",
-                     indented=True,
+                     indented=False,
                      breaks=2,
                      grid=False):
     if index in range(len(arc_collection)):
@@ -6106,7 +6106,7 @@ def DisplayPersonality(index,
 def PersonalityDetails(index,
                        width=100,
                        prefix="",
-                       indented=True,
+                       indented=False,
                        breaks=2):
     if indented:
         indent = "    "
@@ -6205,10 +6205,12 @@ class Hero:
             return [answer.get(), inputs]
         else:
             indent = "    "
+            dispWidth = 100
             entry_options = string.ascii_uppercase[0:len(print_options)]
             entry_choice = ' '
             if len(prompt) > 0:
-                print(prompt)
+                print(split_text(prompt,
+                                 width=dispWidth))
             for i in range(len(print_options)):
                 print(indent + entry_options[i] + ": " + print_options[i])
             if len(inputs) > 0:
@@ -6218,11 +6220,13 @@ class Hero:
                 entry_choice = input()[0].upper()
             while entry_choice not in entry_options:
                 if len(inputs) > 0:
-                    print(repeat_message)
+                    print(split_text(repeat_message,
+                                     width=dispWidth))
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
-                    entry_choice = input(repeat_message + "\n")[0].upper()
+                    entry_choice = input(split_text(repeat_message,
+                                                    width=dispWidth) + "\n")[0].upper()
             entry_index = entry_options.find(entry_choice)
             return [entry_index, inputs]
     def EnterText(self,
@@ -7005,9 +7009,12 @@ class Hero:
                     else:
                         entry_choice = input("Enter a lowercase letter to see a Background " + \
                                              "expanded, or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options[:-1] and entry_choice not in entry_options:
+                    if entry_choice.upper() in entry_options[:-1] and \
+                       entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayBackground(bg_indices[entry_index], "    ", width=96)
+                        DisplayBackground(bg_indices[entry_index],
+                                          width=100,
+                                          prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
@@ -7016,7 +7023,8 @@ class Hero:
                 entry_choice = ' '
                 decision = choose_letter(entry_options,
                                          ' ',
-                                         prompt="Do you want to keep any of the previous results? (y/n)",
+                                         prompt="Do you want to keep any of the previous " + \
+                                         "results? (y/n)",
                                          repeat_message="Please enter Y or N.",
                                          inputs=inputs)
                 entry_choice = decision[0]
@@ -7069,7 +7077,9 @@ class Hero:
                                          "an uppercase letter to select it.\n")[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
-                    DisplayBackground(entry_index, "    ", width=96)
+                    DisplayBackground(entry_index,
+                                      width=100,
+                                      prefix="    ")
             entry_index = entry_options.find(entry_choice)
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
@@ -7315,7 +7325,7 @@ class Hero:
         damage_entry = ability_template.insert_damage
         if ability_template.has_damage and damage_entry not in [0,1]:
             decision = self.ChooseIndex(damage_categories[0:2],
-                                        prompt=ability_template.details() + "\n\n" +
+                                        prompt=ability_template.details(width=-1) + "\n\n" +
                                         "Choose a damage category for this Ability:",
                                         title=display_str,
                                         inputs=inputs,
@@ -7344,8 +7354,8 @@ class Hero:
                     element_num = power_die_options[0].index
                 else:
                     decision = self.ChooseIndex([str(d) for d in power_die_options],
-                                                prompt=ability_template.details() + "\n\n" +
-                                                "Choose one of your Elemental/Energy " + \
+                                                prompt=ability_template.details(width=-1) + \
+                                                "\n\n" + "Choose one of your Elemental/Energy " + \
                                                 "Powers for this ability:",
                                                 title=display_str,
                                                 inputs=inputs)
@@ -7355,7 +7365,7 @@ class Hero:
             else:
                 decision = self.ChooseIndex([mixed_collection[1][1][i] \
                                              for i in range(len(mixed_collection[1][1]))],
-                                            prompt=ability_template.details() + "\n\n" +
+                                            prompt=ability_template.details(width=-1) + "\n\n" + \
                                             "Choose an energy or element for this Ability:",
                                             title=display_str,
                                             inputs=inputs,
@@ -7370,10 +7380,12 @@ class Hero:
                 if ("%a" + str(i)) in ability_template.text:
                     decision = self.ChooseIndex([basic_actions[j] \
                                                  for j in ability_template.action_options[i]],
-                                                prompt=ability_template.details() + "\n\n" +
-                                                "Choose a basic action for this Ability:",
+                                                prompt=ability_template.details(width=-1) + \
+                                                "\n\n" + "Choose a basic action for this Ability:",
                                                 title=display_str,
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     action_ids[i] = ability_template.action_options[i][entry_index]
@@ -7445,8 +7457,8 @@ class Hero:
                     else:
                         # More than 1 valid option? Prompt the user to choose
                         decision = self.ChooseIndex([str(d) for d in die_options],
-                                                    prompt=ability_template.details() + "\n\n" + \
-                                                    "Choose a " + category + \
+                                                    prompt=ability_template.details(width=-1) + \
+                                                    "\n\n" + "Choose a " + category + \
 						    " die for this Ability:",
                                                     title=display_str,
                                                     inputs=inputs,
@@ -7849,7 +7861,9 @@ class Hero:
                     if entry_choice.upper() in entry_options[:-1] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPowerSource(ps_indices[entry_index], "    ", width=100-len("    "))
+                        DisplayPowerSource(ps_indices[entry_index],
+                                           width=100,
+                                           prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(ps_options):
@@ -7907,7 +7921,8 @@ class Hero:
         else:
             print("Choose a Power Source from the list:")
             for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + ")")
+                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + \
+                      ")")
             while entry_choice not in entry_options:
                 if len(inputs) > 0:
                     print("Enter a lowercase letter to see a Power Source expanded, " + \
@@ -7915,12 +7930,12 @@ class Hero:
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Power Source expanded, " + \
-                                         "or an uppercase letter to select it.\n")[0]
+                    entry_choice = input("Enter a lowercase letter to see a Power Source " + \
+                                         "expanded, or an uppercase letter to select it.\n")[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayPowerSource(entry_index,
-                                       width=100-len("    "),
+                                       width=100,
                                        prefix="    ")
             entry_index = entry_options.find(entry_choice)
         print(ps_collection[entry_index][0] + " Power Source selected.")
@@ -7930,7 +7945,8 @@ class Hero:
                 index,
                 stepnum=0,
                 inputs=[]):
-        # Walks the user through adding a Mode based on the mode_template specified by zone and index.
+        # Walks the user through adding a Mode based on the mode_template specified by zone and
+        #  index.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
@@ -7945,7 +7961,10 @@ class Hero:
         t_prohibited_actions = mode_template[4]
         t_ability_template = mode_template[5]
         print("OK! Let's fill in your new Mode:")
-        DisplayModeTemplate(zone, index, prefix="    ", width=96)
+        DisplayModeTemplate(zone,
+                            index,
+                            width=100,
+                            prefix="    ")
         # For each die size in t_die_sizes, prompt the user to choose a Power to add at that size.
         mode_power_dice = []
         print(self.hero_name + " has the following Power dice:")
@@ -7955,18 +7974,26 @@ class Hero:
             remaining_dice = [d for d in self.power_dice if d.name not in \
                               [e.name for e in mode_power_dice]]
             entry_die = ""
+            die_prompt = ""
+            if len(mode_power_dice) > 0:
+                die_prompt = self.hero_name + "'s current Powers in " + t_name + " are...\n"
+                for d in mode_power_dice:
+                    die_prompt += "    " + str(d) + "\n"
+                die_prompt += "\n"
+            die_prompt += "Choose a Power to add to this mode at d" + str(die_size) + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
                 entry_options = string.ascii_uppercase[0:len(remaining_dice)]
                 entry_choice = ' '
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
-                                            prompt="Choose a Power to add to this mode at d" + \
-                                            str(die_size) + ":",
-                                            inputs=inputs)
+                                            prompt=die_prompt,
+                                            inputs=inputs,
+                                            title="Create Mode: " + t_name,
+                                            width=45,
+                                            buffer=10)
                 entry_index = decision[0]
                 inputs = decision[1]
-                entry_index = entry_options.find(entry_choice)
                 entry_die = remaining_dice[entry_index]
             mp_die = PQDie(entry_die.ispower,
                            entry_die.category,
@@ -7991,15 +8018,24 @@ class Hero:
             remaining_dice = [d for d in self.power_dice if d.name not in \
                               [e.name for e in mode_power_dice]]
             entry_die = ""
+            die_prompt = ""
+            if len(mode_power_dice) > 0:
+                die_prompt = self.hero_name + "'s current Powers in " + t_name + " are...\n"
+                for d in mode_power_dice:
+                    die_prompt += "    " + str(d) + "\n"
+                die_prompt += "\n"
+            die_prompt += "Choose a Power to add to this mode at " + mod_text + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
                 entry_options = string.ascii_uppercase[0:len(remaining_dice)]
                 entry_choice = ' '
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
-                                            prompt="Choose a Power to add to this mode at " + \
-                                            mod_text + ":",
-                                            inputs=inputs)
+                                            prompt=die_prompt,
+                                            inputs=inputs,
+                                            title="Create Mode: " + t_name,
+                                            width=45,
+                                            buffer=10)
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -9599,7 +9635,9 @@ class Hero:
                     if entry_choice.upper() in entry_options[:len(arc_options)] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(arc_indices[entry_index], "    ", 96)
+                        DisplayArchetype(arc_indices[entry_index],
+                                         width=100,
+                                         prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(arc_options):
@@ -9728,7 +9766,9 @@ class Hero:
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayArchetype(arc_indices[entry_index], "    ", 96)
+                            DisplayArchetype(arc_indices[entry_index],
+                                             width=100,
+                                             prefix="    ")
                     entry_index = entry_options.find(entry_choice)
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
@@ -9770,7 +9810,9 @@ class Hero:
                                          "expanded, or an uppercase letter to select it.\n")[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
-                    DisplayArchetype(entry_index, "    ", 96)
+                    DisplayArchetype(entry_index,
+                                     width=100,
+                                     prefix="    ")
             entry_index = entry_options.find(entry_choice)
         print(arc_collection[entry_index][0] + " Archetype selected.")
         if entry_index in range(len(arc_simple)):
@@ -9810,7 +9852,9 @@ class Hero:
                                              "expanded, or an uppercase letter to select it.\n")[0]
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(entry_index, "    ", 96)
+                        DisplayArchetype(entry_index,
+                                         width=100,
+                                         prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
@@ -10128,7 +10172,8 @@ class Hero:
                         if entry_choice.upper() in entry_options[:-1] and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(pn_indices[entry_index], "    ")
+                            DisplayPersonality(pn_indices[entry_index],
+                                               prefix="    ")
                     entry_index = entry_options.find(entry_choice)
                 # Now we have a commitment to a valid choice from the list.
                 if entry_index == len(pn_options):
@@ -10136,7 +10181,8 @@ class Hero:
                     entry_options = "YN"
                     decision = choose_letter(entry_options,
                                              ' ',
-                                             prompt="Do you want to keep any of the previous results? (y/n)",
+                                             prompt="Do you want to keep any of the previous " + \
+                                             "results? (y/n)",
                                              repeat_message="Please enter Y or N.",
                                              inputs=inputs)
                     entry_choice = decision[0]
@@ -10900,7 +10946,9 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in pq_options],
                                             prompt="Choose a Power or Quality to use for " + \
                                             self.hero_name + "'s max Health:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 pq_report = "Using " + str(pq_options[entry_index]) + " from " + self.hero_name + \
@@ -14575,6 +14623,11 @@ class ExpandFrame(Frame):
                                   width=self.myDispWrap)
         self.myDispLabel.config(text=dispText,
                                 width=self.myDispWidth)
+        detailsHeight = max([1 + len([x for x in split_text(y,
+                                                            width=self.myDispWrap) \
+                                      if x == "\n"]) for y in self.myDetails])
+        if detailsHeight < 40:
+            self.myDispLabel.config(height=detailsHeight)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
               ", myDispBuffer = " + str(self.myDispBuffer))
         self.myAnswer.set(index)
@@ -14849,7 +14902,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori(step=2)
+firstHero = factory.getJo(step=4)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

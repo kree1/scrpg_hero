@@ -125,13 +125,13 @@ Assign width/buffer values to existing SelectWindow calls
 .   Hero.ChooseAbility, line 7179 (choose a damage category) width=50, buffer=15
    Hero.ChooseAbility, line 7210 (choose an elemental/energy power)
 .   Hero.ChooseAbility, line 7224 (choose an energy/element) width=50, buffer=10
->   Hero.ChooseAbility, line 7241 (choose a basic action) width=50, buffer=10
+.   Hero.ChooseAbility, line 7241 (choose a basic action) width=50, buffer=10
 .   Hero.ChooseAbility, line 7302 (choose a power/quality for this ability) width=50, buffer=15
 .   Hero.AddPowerSource, line 7533 (choose a d6 power/quality to upgrade) width=45, buffer=10
 .   Hero.AddPowerSource, line 7565 (choose a power to downgrade) width=40, buffer=10
 .   Hero.AddPowerSource, line 7583 (choose a power to upgrade) width=40, buffer=10
-   Hero.AddMode, line 7806 (choose a power for this die size)
-   Hero.AddMode, line 7842 (choose a power for this modifier)
+.   Hero.AddMode, line 7806 (choose a power for this die size) width=45, buffer=10
+.   Hero.AddMode, line 7842 (choose a power for this modifier) width=45, buffer=10
 .   Hero.ChooseForm, line 8241 (choose how to modify your power list in this form) width=50, buffer=15
 .   Hero.ChooseForm, line 8237 (choose the first power to swap if not UseGUI)
 .   Hero.ChooseForm, line 8246 (choose the second power to swap if not UseGUI)
@@ -156,7 +156,7 @@ Assign width/buffer values to existing SelectWindow calls
 .   Hero.AddRetcon, line 10271 (choose the second quality to swap if not UseGUI)
    Hero.AddRetcon, line 10344 (choose which power/quality from this ability to change)
    Hero.AddRetcon, line 10375 (choose which power/quality to replace it with)
-   Hero.AddHealth, line 10615 (choose which power/quality to use for health)
+.   Hero.AddHealth, line 10615 (choose which power/quality to use for health) width=50, buffer=15
    Hero.AddHealth, line 10642 (choose which red status to use for health)
 .   Hero.AddHealth, line 10659 (choose whether to use 4 or 1d8 for health) width=50, buffer=25
 .   Hero.CreateHero, line 10697 (use guided or constructed for background) width=50, buffer=15
@@ -170,15 +170,35 @@ Assign width/buffer values to existing SelectWindow calls
  
 ? Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows
 
-Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
+DisplayTransitionMethod and DisplayModeTemplate need to stop duplicating code with TransitionDetails and ModeTemplateDetails
 
-If max height of DispLabel in ExpandFrame is reasonable, expand() should set height to max, not to the height of the current value
+Assign indented/breaks values to existing DisplayBackground, BackgroundDetails, DisplayPowerSource, PowerSourceDetails, DisplayArchetype, ArchetypeDetails, etc. calls
+  Display() methods
+	Hero.GuidedBackground, line 7015 (expand this background if not UseGUI)
+	Hero.ConstructedBackground, line 7080 (expand this background if not UseGUI)
+	Hero.GuidedPowerSource, line 7864 (expand this power source if not UseGUI)
+	Hero.ConstructedPowerSource, line 7937 (expand this power source if not UseGUI)
+	Hero.GuidedArchetype, line 9634 (expand this archetype if not UseGUI)
+	Hero.GuidedArchetype, line 9765 (expand this archetype if not UseGUI)
+	Hero.ConstructedArchetype, line 9809 (expand this archetype if not UseGUI)
+	Hero.ConstructedArchetype, line 9851 (expand this archetype if not UseGUI)
+	Hero.GuidedPersonality, line 10171 (expand this personality if not UseGUI)
+	Hero.ConstructedPersonality, line 10260 (expand this personality if not UseGUI)
+	Hero.ConstructedPersonality, line 10319 (expand this personality if not UseGUI)
+	Hero.AddArchetype, line 9298 (expand this transition method if not UseGUI)
+	Hero.AddMode, line 7964 (expand this mode template)
+	Hero.AddArchetype, line 8883 (expand Powerless Mode)
+	Hero.AddArchetype, line 8931 (expand this mode template if not UseGUI)
+	Hero.AddArchetype, line 8980 (expand this mode template if not UseGUI)
+	Hero.AddArchetype, line 9022 (expand this mode template if not UseGUI)
+
+Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
 
 When AddArchetype asks "do you want another Power from this list", what it's really asking is "you have these dice left- do you want to put the next one in THIS list or THAT one?"
 
 Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use UseGUI to determine whether they need a messagebox
 
-Only the first line of ability text adjusts when buffer/width changes in SelectWindow
+Can EntryFrame have the existing text selected by default, so it's there if the user hits Enter but vanishes if the user starts typing?
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
