@@ -117,7 +117,7 @@ Assign width/buffer values to existing SelectWindow calls
 . HeroFrame.AddHeroNames, line 12734: width=40, buffer=6
  Hero.ChooseIndex (line 6075) now accepts a width argument
   Assign width values to existing ChooseIndex calls...
-.   Hero.ChoosePQDieSize, line 6281 (choose a die for this power/quality) width=35, buffer=10
+.   Hero.ChoosePQDieSize, line 6281 (choose a die for this power/quality) width=40, buffer=10
 .   Hero.ChoosePQ, line 6418 (choose a section of the power/quality list if not UseGUI)
 .   Hero.ChoosePQ, line 6430 (choose a power/quality to add) width=50, buffer=15
 .   Hero.GuidedBackground, line 6891 (choose which die result to keep) width=25, buffer=*
@@ -193,8 +193,6 @@ Assign indented/breaks values to existing DisplayBackground, BackgroundDetails, 
 	...
 
 Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
-
-When AddArchetype asks "do you want another Power from this list", what it's really asking is "you have these dice left- do you want to put the next one in THIS list or THAT one?"
 
 Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use UseGUI to determine whether they need a messagebox
 

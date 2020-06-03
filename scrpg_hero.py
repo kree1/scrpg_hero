@@ -6374,7 +6374,7 @@ class Hero:
         decision = self.ChooseIndex([str(d) for d in valid_dice],
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
-                                    width=35,
+                                    width=40,
                                     buffer=10)
         entry_index = decision[0]
         inputs = decision[1]
@@ -6451,6 +6451,13 @@ class Hero:
             dice_report = "You have the following " + print_type + " dice available: " + \
                           str(valid_dice)
             section_length = 25
+            if self.UseGUI(inputs):
+                # We'll be using a SelectWindow instead of a text entry to choose the Power/Quality,
+                #  so we don't need to limit section_length by the number of letters available.
+                #  If the list only requires two sections and the second one is much smaller than
+                #  the first, just stretch section_length to fit.
+                if len(valid_triplets) - section_length < 10:
+                    section_length = len(valid_triplets)
             if len(valid_triplets) > section_length:
                 sections = math.ceil(len(valid_triplets)/section_length)
                 section_bounds = [print_names[s*section_length] + \
@@ -6484,8 +6491,6 @@ class Hero:
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:sections]
-                    section_list = [entry_options[s] + ": " + section_bounds[s] \
-                                    for s in range(sections)]
                     col_num = 4
                     columns = [0] * col_num
                     for c in range(len(columns)):
@@ -6516,7 +6521,7 @@ class Hero:
                             print(pq_text)
                         else:
                             print(pq_text, end="")
-                    decision = self.ChooseIndex(section_list,
+                    decision = self.ChooseIndex(section_bounds,
                                                 prompt=dice_report + "\n" + options_report + \
                                                 "\n" + choice_request,
                                                 inputs=inputs,
@@ -7193,6 +7198,9 @@ class Hero:
                 prompt = "Choose one of these Abilities to add in " + status_zones[zone] + ":"
             printlong(prompt, 100)
             col_num = 3
+            # Abilities take up much more space to display than simpler concepts like Powers and
+            #  Qualities, so section_length here needs to be fairly short so that an expanded
+            #  section can be viewed all at once.
             section_length = 9
             if len(template_options) > section_length:
                 sections = math.ceil(len(template_options)/section_length)
@@ -7490,7 +7498,7 @@ class Hero:
             if entry_choice == "Y":
                 decision = self.EnterText(new_ability.details(width=-1,
                                                               indented=True) + "\n\n" + \
-                                          "Enter the new name for this Ability:",
+                                          "Enter a new name for this Ability:",
                                           title=display_str,
                                           default=new_ability.name,
                                           inputs=inputs)
@@ -8788,41 +8796,67 @@ class Hero:
                                            inputs=pass_inputs)
                 a_dice = remainders[1]
                 entry_choice = ' '
-                # If secondary_count is 2 and there are dice remaining, the user can add as many
-                #  more secondary Powers/Qualities as they like
-                while secondary_count > 1 and len(a_dice) > 0 and entry_choice != 'N':
-                    entry_options = "YN"
-                    prompt = "Do you want to add another " + \
-                             categories_singular[DieCategory(secondary_pqs)] + \
-                             " from this list? (y/n)"
-                    names = MixedPQ(secondary_pqs[0])
-                    for triplet in secondary_pqs[1:]:
-                        names += ", " + MixedPQ(triplet)
-                    names = split_text(names, width=100)
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=prompt + "\n\n" + names,
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
-                    entry_choice = decision[0]
-                    inputs = decision[1]
-                    if entry_choice == "Y":
-                        pass_inputs = []
-                        if len(inputs) > 0:
-                            if str(inputs[0]) != inputs[0]:
-                                pass_inputs = inputs.pop(0)
-                        remainders = self.ChoosePQ(secondary_pqs,
-                                                   a_dice,
-                                                   stepnum=this_step,
-                                                   inputs=pass_inputs)
-                        a_dice = remainders[1]
+                # If secondary_count is >1, the user gets to assign any number of dice to
+                #  Powers/Qualities from secondary_pqs, then assign the rest within tertiary_pqs...
+                #  which is the same as saying that each remaining die should be assigned within one
+                #  of those lists.
+                if secondary_count > 1 and len(a_dice) > 0:
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.AssignAllPQ(secondary_pqs + tertiary_pqs,
+                                     a_dice,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                    a_dice = []
+##                entry_index = -1
+##                while secondary_count > 1 and len(a_dice) > 0 and entry_choice != 'N':
+##                    entry_options = "YN"
+##                    combined_type = categories_singular[DieCategory(secondary_pqs+tertiary_pqs)]
+##                    dice_report = "You have the following " + combined_type + \
+##                                  " dice available: " + str(a_dice)
+##                    prompt = dice_report + "\n\nDo you want to continue adding " + \
+##                             categories_plural[DieCategory(secondary_pqs)] + \
+##                             " from this list? (y/n)"
+##                    # Prepare both of the lists they're choosing between...
+##                    secondaryNames = MixedPQ(secondary_pqs[0])
+##                    for triplet in secondary_pqs[1:]:
+##                        secondaryNames += ", " + MixedPQ(triplet)
+##                    prompt += "\n\n" + secondaryNames
+##                    tertiaryNames = MixedPQ(tertiary_pqs[0])
+##                    for triplet in tertiary_pqs[1:]:
+##                        tertiaryNames += ", " + MixedPQ(triplet)
+##                    prompt += "\n\n" + "If you are done with the above list, your remaining " + \
+##                              "dice will go to " + categories_plural[DieCategory(tertiary_pqs)] + \
+##                              " from this list:\n\n" + tertiaryNames
+##                    decision = choose_letter(entry_options,
+##                                             ' ',
+##                                             prompt=prompt,
+##                                             repeat_message="Please enter Y or N.",
+##                                             inputs=inputs)
+##                    entry_choice = decision[0]
+##                    inputs = decision[1]
+##                    if entry_choice == "Y":
+##                        pass_inputs = []
+##                        if len(inputs) > 0:
+##                            if str(inputs[0]) != inputs[0]:
+##                                pass_inputs = inputs.pop(0)
+##                        remainders = self.ChoosePQ(secondary_pqs,
+##                                                   a_dice,
+##                                                   stepnum=this_step,
+##                                                   inputs=pass_inputs)
+##                        a_dice = remainders[1]
             # Finally, if there are dice remaining, assign them to the tertiary Powers/Qualities:
             if len(a_dice) > 0:
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AssignAllPQ(tertiary_pqs, a_dice, stepnum=this_step, inputs=pass_inputs)
+                self.AssignAllPQ(tertiary_pqs,
+                                 a_dice,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
             #  the time to choose it.
             if self.arc_bonus_quality in legal_dice:
@@ -11553,7 +11587,7 @@ def Create_Shikari(step=len(step_names)):
         arc = shikari.ConstructedArchetype(inputs=["H"])
         shikari.AddArchetype(arc[0],
                              arc[1],
-                             inputs=[["a",["b"]],["b",["a"]],"n",[["i"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]])
+                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]])
     if step >= 4:
         pn = shikari.ConstructedPersonality(inputs=["I"])
         shikari.AddPersonality(pn[0],
@@ -11632,8 +11666,7 @@ def Create_Chameleon(step=len(step_names)):
                           arc[1],
                           inputs=[["h"],
                                   ["n"],
-                                  "n",
-                                  [["n"]],
+                                  [["b","j"]],
                                   ["a","n"],
                                   ["y","Improvise"],
                                   ["B", "a", "y", "Distracting Strike"],
@@ -11673,8 +11706,7 @@ def Create_Future_Girl(step=len(step_names)):
                           arc[1],
                           inputs=[["H",["A"]],
                                   ["T",["A"]],
-                                  "N",
-                                  [["C"]],
+                                  [["A","Y"]],
                                   ["y","Redial"],
                                   ["y","Dial ICE"],
                                   ["B","Y","Collect Call"],
@@ -11719,7 +11751,7 @@ def Create_Knockout(step=len(step_names)):
         arc = knockout.ConstructedArchetype(inputs=["S","J"])
         knockout.AddArchetype(arc[0],
                               arc[1],
-                              inputs=[["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]])
+                              inputs=[["a","a"],[["a","h"],["b","c"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]])
     if step >= 4:
         pn = knockout.ConstructedPersonality(inputs=["N","T"])
         knockout.AddPersonality(pn[0],
@@ -11731,22 +11763,6 @@ def Create_Knockout(step=len(step_names)):
         knockout.AddRetcon(inputs=["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]])
     if step >= 7:
         knockout.AddHealth(inputs=["c","a"])
-##    knockout.CreateHero(inputs=["b",
-##                                ["M"],
-##                                [["b"],[["b",["a"]],["f"]],["E","n"]],
-##                                "b",
-##                                ["N"],
-##                                [[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]],
-##                                "b",
-##                                ["S","J"],
-##                                [["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
-##                                "b",
-##                                ["N","T"],
-##                                [[["Y","Mad Doctor"]],["e"]],
-##                                ["D",["C","y","Peel Out"]],
-##                                ["D",["A","y","Anesthetic"]],
-##                                ["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]],
-##                                ["c","a"]])
     print()
     knockout.display()
     return knockout
@@ -11766,7 +11782,7 @@ def Create_Architect(step=len(step_names)):
         arc = kim.ConstructedArchetype(inputs=["N"])
         kim.AddArchetype(arc[0],
                          arc[1],
-                         inputs=[["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+                         inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
     if step >= 4:
         pn = kim.ConstructedPersonality(inputs=["G"])
         kim.AddPersonality(pn[0],
@@ -14928,8 +14944,8 @@ class PrincipleFrame(Frame):
 
 factory = SampleMaker()
 
-root = Tk()
-root.geometry("+0+0")
+##root = Tk()
+##root.geometry("+0+0")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -14937,7 +14953,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getJo(step=4)
+firstHero = factory.getKim(step=3)
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
@@ -14965,6 +14981,6 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
