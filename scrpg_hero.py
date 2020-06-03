@@ -1050,18 +1050,21 @@ class Principle:
                 width=100,
                 green=True,
                 indented=True,
-                breaks=2):
+                breaks=2,
+                hanging=True):
         print(self.details(prefix=prefix,
                            width=width,
                            green=green,
                            indented=indented,
-                           breaks=breaks))
+                           breaks=breaks,
+                           hanging=hanging))
     def details(self,
                 prefix="",
                 width=100,
                 green=True,
                 indented=True,
-                breaks=2):
+                breaks=2,
+                hanging=True):
         if indented:
             indent = "    "
         else:
@@ -1069,19 +1072,21 @@ class Principle:
         text = split_text("Principle of " + self.title,
                           width=width,
                           prefix=prefix)
+        if hanging:
+            prefix += "    "
         text += "\n" * breaks + split_text(self.during_roleplaying,
                                            width=width,
-                                           prefix=prefix+indent)
+                                           prefix=prefix)
         text += "\n" * breaks + split_text("Minor Twist: " + self.minor_twist,
                                            width=width,
-                                           prefix=prefix+indent*2)
+                                           prefix=prefix+indent)
         text += "\n" * breaks + split_text("Major Twist: " + self.major_twist,
                                            width=width,
-                                           prefix=prefix+indent*2)
+                                           prefix=prefix+indent)
         if green:
             text += "\n" * breaks + split_text("Green Ability: " + self.green_ability,
                                                width=width,
-                                               prefix=prefix+indent*2)
+                                               prefix=prefix+indent)
         return text
 
 global hp_bounds
@@ -5468,20 +5473,38 @@ def DisplayBackground(index,
                       prefix="",
                       indented=True,
                       breaks=1,
-                      grid=True):
+                      grid=True,
+                      hanging=False):
     print(BackgroundDetails(index,
                             width=width,
                             prefix=prefix,
                             indented=indented,
                             breaks=breaks,
-                            grid=grid))
+                            grid=grid,
+                            hanging=hanging))
 
 def BackgroundDetails(index,
                       width=100,
                       prefix="",
                       indented=False,
                       breaks=2,
-                      grid=False):
+                      grid=False,
+                      hanging=False):
+    # There are a lot of Display*() and *Details() methods in this file and they use a lot of the
+    #  same keyword arguments. Here's what they generally mean.
+    # width: Int. The maximum length, in characters, of a single line in the resulting text.
+    #  Enforced using split_text.
+    # prefix: String. A string to be inserted at the start of each new line in the resulting text.
+    #  Usually whitespace. Inserted using split_text.
+    # indented: Boolean. Whether the resulting text should use horizontal indentation to visually
+    #  separate its subsections.
+    # breaks: Int. The number of line breaks the resulting text should include between sections.
+    # grid: Boolean. Whether the resulting text, when it includes a large list of short values such
+    #  as the names of Powers and Qualities, should present the list in columnar format. If false,
+    #  the list is presented as a long sequence of comma-separated values with the proper
+    #  indentation.
+    # hanging: Boolean. Whether the resulting text should give initial indentation to EVERY section
+    #  other than the first one.
     if index in range(len(bg_collection)):
         if indented:
             indent = "    "
@@ -5491,16 +5514,18 @@ def BackgroundDetails(index,
         bgText = split_text(bg[0] + ": " + bg[1],
                             width=width,
                             prefix=prefix)
+        if hanging:
+            prefix += "    "
         bgText += "\n" * breaks + split_text("Quality Dice: " + str(bg[2]),
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         if len(bg[3]) > 0:
             bgText += "\n" * breaks + split_text("Required Quality: " + MixedPQ(bg[3][0]),
                                                  width=width,
-                                                 prefix=prefix+indent)
+                                                 prefix=prefix)
         bgText += "\n" * breaks + split_text("Optional Qualities: ",
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         quality_choices = bg[4]
         if grid:
             # Include Quality options spaced in equal columns
@@ -5516,7 +5541,7 @@ def BackgroundDetails(index,
                 while len(qualityText) < maxWidth:
                     qualityText += " "
                 if i%numCols == 0:
-                    bgText += "\n" + prefix + indent*2
+                    bgText += "\n" + prefix + indent
                 bgText += qualityText
         else:
             # Include Quality options as a simple list
@@ -5528,13 +5553,13 @@ def BackgroundDetails(index,
                     this_line += ", "
             bgText += "\n" + split_text(this_line,
                                         width=width,
-                                        prefix=prefix+indent*2)
+                                        prefix=prefix+indent)
         bgText += "\n" * breaks + split_text(rc_names[bg[5]] + " Principle",
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         bgText += "\n" * breaks + split_text("Power Source Dice: " + str(bg[6]),
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         return bgText
     else:
         return split_text("Invalid Background index: " + str(index),
@@ -5546,20 +5571,23 @@ def DisplayPowerSource(index,
                        prefix="",
                        indented=True,
                        breaks=1,
-                       grid=True):
+                       grid=True,
+                       hanging=False):
     print(PowerSourceDetails(index,
                              width=width,
                              prefix=prefix,
                              indented=indented,
                              breaks=breaks,
-                             grid=grid))
+                             grid=grid,
+                             hanging=hanging))
 
 def PowerSourceDetails(index,
                        width=100,
                        prefix="",
                        indented=False,
                        breaks=2,
-                       grid=False):
+                       grid=False,
+                       hanging=False):
     if index in range(len(ps_collection)):
         if indented:
             indent = "    "
@@ -5570,13 +5598,15 @@ def PowerSourceDetails(index,
         psText += split_text(powersource[0] + ": " + powersource[1],
                              width=width,
                              prefix=prefix)
+        if hanging:
+            prefix += "    "
         if len(powersource[2]) > 0:
             psText += "\n" * breaks + split_text("Required Power: " + MixedPQ(powersource[2][0]),
                                                  width=width,
-                                                 prefix=prefix+indent)
+                                                 prefix=prefix)
         psText += "\n" * breaks + split_text("Optional Powers: ",
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         power_choices = powersource[3]
         if grid:
             # Include Power options spaced in equal columns
@@ -5592,7 +5622,7 @@ def PowerSourceDetails(index,
                 while len(powerText) < maxWidth:
                     powerText += " "
                 if i%numCols == 0:
-                    psText += "\n" + prefix + indent*2
+                    psText += "\n" + prefix + indent
                 psText += powerText
         else:
             # Include Power options as a simple list
@@ -5604,42 +5634,42 @@ def PowerSourceDetails(index,
                     this_line += ", "
             psText += "\n" + split_text(this_line,
                                         width=width,
-                                        prefix=prefix+indent*2)
+                                        prefix=prefix+indent)
         if powersource[4] > 0:
             if powersource[4] == 1:
                 psText += "\n" * breaks + split_text(str(powersource[4]) + " Yellow Ability from:",
                                                      width=width,
-                                                     prefix=prefix+indent)
+                                                     prefix=prefix)
             else:
                 psText += "\n" * breaks + split_text(str(powersource[4]) + \
                                                      " Yellow Abilities from:",
                                                      width=width,
-                                                     prefix=prefix+indent)
+                                                     prefix=prefix)
             for ability in powersource[5]:
                 psText += "\n" + ability.details(width=width,
-                                                 prefix=prefix+indent*2,
+                                                 prefix=prefix+indent,
                                                  indented=indented)
         if powersource[6] > 0:
             if powersource[6] == 1:
                 psText += "\n" * breaks + split_text(str(powersource[6]) + " Green Ability from:",
                                                      width=width,
-                                                     prefix=prefix+indent)
+                                                     prefix=prefix)
             else:
                 psText += "\n" * breaks + split_text(str(powersource[6]) + \
                                                      " Green Abilities from:",
                                                      width=width,
-                                                     prefix=prefix+indent)
+                                                     prefix=prefix)
             for ability in powersource[7]:
                 psText += "\n" + ability.details(width=width,
-                                                 prefix=prefix+indent*2,
+                                                 prefix=prefix+indent,
                                                  indented=indented)
         if powersource[8] > 0:
             psText += "\n" * breaks + split_text(ps_special[powersource[8]],
                                                  width=width,
-                                                 prefix=prefix+indent)
+                                                 prefix=prefix)
         psText += "\n" * breaks + split_text("Archetype Dice: " + str(powersource[9]),
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
         return psText
     else:
         return split_text("Invalid Power Source index: " + str(index),
@@ -5652,16 +5682,19 @@ def MinionFormStr(min_form):
 def DisplayTransitionMethod(index,
                             width=100,
                             prefix="",
-                            indented=True):
+                            indented=True,
+                            hanging=False):
     print(TransitionDetails(index,
                             width=width,
                             prefix=prefix,
-                            indented=indented))
+                            indented=indented,
+                            hanging=hanging))
 
 def TransitionDetails(index,
                       width=100,
                       prefix="",
-                      indented=True):
+                      indented=True,
+                      hanging=False):
     if index in range(len(tr_collection)):
         if indented:
             indent = "    "
@@ -5671,17 +5704,19 @@ def TransitionDetails(index,
         trText = split_text(transition[0] + ": " + transition[1],
                             width=width,
                             prefix=prefix)
+        if hanging:
+            prefix += "    "
         if len(transition[2]) > 1:
             trText += "\n" + split_text("Optional Green Abilities:",
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         else:
             trText += "\n" + split_text("Required Green Ability:",
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         for i in range(len(transition[2])):
             trText += "\n" + transition[2][i].details(width=width,
-                                                      prefix=prefix+indent*2,
+                                                      prefix=prefix+indent,
                                                       indented=indented)
         return trText
     else:
@@ -5693,18 +5728,21 @@ def DisplayModeTemplate(zone,
                         index,
                         width=100,
                         prefix="",
-                        indented=True):
+                        indented=True,
+                        hanging=False):
     print(ModeTemplateDetails(zone,
                               index,
                               width=width,
                               prefix=prefix,
-                              indented=indented))
+                              indented=indented,
+                              hanging=hanging))
 
 def ModeTemplateDetails(zone,
                         index,
                         width=100,
                         prefix="",
-                        indented=True):
+                        indented=True,
+                        hanging=False):
     mode = []
     if zone in [-1,3]:
         mode = mt_powerless
@@ -5726,16 +5764,18 @@ def ModeTemplateDetails(zone,
     modeText = split_text(mode[0] + " [" + status_zones[zone] + "]:",
                           width=width,
                           prefix=prefix)
+    if hanging:
+        prefix += "    "
     for d in legal_dice:
         matching_dice = [size for size in mode[2] if size==d]
         if len(matching_dice) == 1:
             modeText += "\n" + split_text(str(len(matching_dice)) + " Power at d" + str(d),
                                           width=width,
-                                          prefix=prefix+indent)
+                                          prefix=prefix)
         elif len(matching_dice) > 1:
             modeText += "\n" + split_text(str(len(matching_dice)) + " Powers at d" + str(d),
                                           width=width,
-                                          prefix=prefix+indent)
+                                          prefix=prefix)
     for modifier in range(-2, 3):
         mod_text = str(modifier)
         if modifier >=0:
@@ -5748,11 +5788,11 @@ def ModeTemplateDetails(zone,
         if len(matching_mods) == 1:
             modeText += "\n" + split_text(str(len(matching_mods)) + " Power at " + mod_text,
                                           width=width,
-                                          prefix=prefix+indent)
+                                          prefix=prefix)
         elif len(matching_mods) > 1:
             modeText += "\n" + split_text(str(len(matching_mods)) + " Powers at " + mod_text,
                                           width=width,
-                                          prefix=prefix+indent)
+                                          prefix=prefix)
     if len(mode[4]) > 0:
         prohibited_text = mode[4][0]
         for i in range(1, len(mode[4])-1):
@@ -5763,13 +5803,13 @@ def ModeTemplateDetails(zone,
             prohibited_text += " or " + mode[4][len(mode[4])-1]
         modeText += "\n" + split_text("You cannot " + prohibited_text + " while in this mode.",
                                       width=width,
-                                      prefix=prefix+indent)
+                                      prefix=prefix)
     if mode[5]:
         modeText += "\n" + split_text("You gain access to this Ability:",
                                       width=width,
-                                      prefix=prefix+indent)
+                                      prefix=prefix)
         modeText += "\n" + mode[5].details(width=width,
-                                           prefix=prefix+indent*2,
+                                           prefix=prefix+indent,
                                            indented=indented)
     return modeText
         
@@ -5778,20 +5818,23 @@ def DisplayArchetype(index,
                      prefix="",
                      indented=True,
                      breaks=1,
-                     grid=True):
+                     grid=True,
+                     hanging=False):
     print(ArchetypeDetails(index,
                            width=width,
                            prefix=prefix,
                            indented=indented,
                            breaks=breaks,
-                           grid=grid))
+                           grid=grid,
+                           hanging=hanging))
 
 def ArchetypeDetails(index,
                      width=100,
                      prefix="",
                      indented=False,
                      breaks=2,
-                     grid=False):
+                     grid=False,
+                     hanging=False):
     if index in range(len(arc_collection)):
         if indented:
             indent = "    "
@@ -5802,6 +5845,8 @@ def ArchetypeDetails(index,
         arcText += split_text(archetype[0] + ": " + archetype[1],
                               width=width,
                               prefix=prefix)
+        if hanging:
+            prefix += "    "
         if index in range(18):
             # A normal standalone archetype
             # Include the primary power(s)/quality(ies) from archetype[2]
@@ -5810,23 +5855,23 @@ def ArchetypeDetails(index,
                 arcText += "\n" * breaks + split_text("Primary " + categories_singular[pcat] + \
                                                       ": " + MixedPQ(archetype[2][0]),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
             elif len(archetype[2])>1:
                 arcText += "\n" * breaks + split_text("Primary " + categories_plural[pcat] + \
                                                       " (choose 1):",
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
                 primary_choices = archetype[2]
                 if grid:
                     # Include primary choices spaced in equal columns
                     maxWidth = 2 + max([len(x) for x in MixedPQs(primary_choices)])
-                    numCols = math.floor((width-len(prefix+indent*2))/maxWidth)
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
                     for i in range(len(primary_choices)):
                         pqText = MixedPQ(primary_choices[i])
                         while len(pqText) < maxWidth:
                             pqText += " "
                         if i%numCols == 0:
-                            arcText += "\n" + prefix + indent*2
+                            arcText += "\n" + prefix + indent
                         arcText += pqText
                 else:
                     # Include primary choices as a simple list
@@ -5837,13 +5882,13 @@ def ArchetypeDetails(index,
                             this_line += ", "
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
-                                                 prefix=prefix+indent*2)
+                                                 prefix=prefix+indent)
             if archetype[3] > 0:
                 alternatives = ["", "skip it or choose another", "skip it or swap in a new die"]
                 arcText += "\n" + split_text("(If already present: " + \
                                              alternatives[archetype[3]] + ")",
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
             # Include the secondary power(s)/quality(ies) from archetype[5]
             secondary_count = "1"
             if archetype[4] > 1:
@@ -5852,18 +5897,18 @@ def ArchetypeDetails(index,
                 arcText += "\n" * breaks + split_text("Required Powers/Qualities (choose " + \
                                                       secondary_count + "):",
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
                 secondary_choices = archetype[5]
                 if grid:
                     # Include secondary choices spaced in equal columns
                     maxWidth = 2 + max([len(x) for x in MixedPQs(secondary_choices)])
-                    numCols = math.floor((width-len(prefix+indent*2))/maxWidth)
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
                     for i in range(len(secondary_choices)):
                         pqText = MixedPQ(secondary_choices[i])
                         while len(pqText) < maxWidth:
                             pqText += " "
                         if i%numCols == 0:
-                            arcText += "\n" + prefix + indent*2
+                            arcText += "\n" + prefix + indent
                         arcText += pqText
                 else:
                     # Include secondary choices as a simple list
@@ -5874,23 +5919,23 @@ def ArchetypeDetails(index,
                             this_line += ", "
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
-                                                 prefix=prefix+indent*2)
+                                                 prefix=prefix+indent)
             # Include the tertiary power(s)/quality(ies) from archetype[6]
             if len(archetype[6]) > 0:
                 arcText += "\n" * breaks + split_text("Optional Powers/Qualities:",
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
                 tertiary_choices = archetype[6]
                 if grid:
                     # Include tertiary choices spaced in equal columns
                     maxWidth = 2 + max([len(x) for x in MixedPQs(tertiary_choices)])
-                    numCols = math.floor((width-len(prefix+indent*2))/maxWidth)
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
                     for i in range(len(tertiary_choices)):
                         pqText = MixedPQ(tertiary_choices[i])
                         while len(pqText) < maxWidth:
                             pqText += " "
                         if i%numCols == 0:
-                            arcText += "\n" + prefix + indent*2
+                            arcText += "\n" + prefix + indent
                         arcText += pqText
                 else:
                     # Include tertiary choices as a simple list
@@ -5901,20 +5946,20 @@ def ArchetypeDetails(index,
                             this_line += ", "
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
-                                                 prefix=prefix+indent*2)
+                                                 prefix=prefix+indent)
             # Include the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
                     arcText += "\n" * breaks + split_text("Required Ability:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                 else:
                     arcText += "\n" * breaks + split_text("Required Abilities:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                 for ability in archetype[7]:
                     arcText += "\n" + ability.details(width=width,
-                                                      prefix=prefix+indent*2,
+                                                      prefix=prefix+indent,
                                                       indented=indented)
             green_text = "Green Ability"
             yellow_text = "Yellow Ability"
@@ -5961,15 +6006,15 @@ def ArchetypeDetails(index,
                                                       " and " + str(archetype[9]) + " " + \
                                                       yellow_text + " from:",
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
                 for ability in archetype[12]:
                     arcText += "\n" + ability.details(width=width,
-                                                      prefix=prefix+indent*2,
+                                                      prefix=prefix+indent,
                                                       indented=indented)
                 if len(gtext) > 0:
                     arcText += "\n" + split_text(gtext,
                                                  width=width,
-                                                 prefix=prefix+indent)
+                                                 prefix=prefix)
             else:
                 # Green and Yellow Abilities are listed separately
                 # Add list of Green Abilities from archetype[10], then add Green restrictions if
@@ -5978,81 +6023,82 @@ def ArchetypeDetails(index,
                     arcText += "\n" * breaks + split_text(str(archetype[8]) + " " + green_text + \
                                                           " from:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                     for ability in archetype[10]:
                         arcText += "\n" + ability.details(width=width,
-                                                          prefix=prefix+indent*2,
+                                                          prefix=prefix+indent,
                                                           indented=indented)
                     if len(gtext) > 0:
                         arcText += "\n" + split_text(gtext,
                                                      width=width,
-                                                     prefix=prefix+indent)
+                                                     prefix=prefix)
                 if archetype[9] > 0:
                     arcText += "\n" * breaks + split_text(str(archetype[9]) + " " + yellow_text + \
                                                           " from:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                     for ability in archetype[11]:
                         arcText += "\n" + ability.details(width=width,
-                                                          prefix=prefix+indent*2,
+                                                          prefix=prefix+indent,
                                                           indented=indented)
             # Add Principle category from archetype[18]
             arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
             # Add bonus effects, if applicable
             if archetype[19] > 0:
                 arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
         elif index == 18:
             # Divided
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
             arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
             # Include the Transition Types and their associated Green Abilities.
             arcText += "\n" * breaks + split_text("Transition Types (choose 1):",
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
             for i in range(len(tr_collection)):
                 arcText += "\n" + TransitionDetails(i,
                                                     width=width,
-                                                    prefix=prefix+indent*2,
-                                                    indented=indented)
+                                                    prefix=prefix+indent,
+                                                    indented=indented,
+                                                    hanging=hanging)
             # Include the Build Options and the Green Ability associated with Split Form.
             build_options = [a_divided_psyche, a_split_form]
             arcText += "\n" * breaks + split_text("Divided Nature (choose 1):",
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
             for i in range(len(build_options)):
                 arcText += "\n" + build_options[i].details(width=width,
-                                                           prefix=prefix+indent*2)
+                                                           prefix=prefix+indent)
             # Include the Principle category from archetype[18]
             arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
         elif index == 19:
             # Modular
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
             arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
                                                   width=width,
-                                                  prefix=prefix+indent)
+                                                  prefix=prefix)
             # Include the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
                     arcText += "\n" * breaks + split_text("Required Ability:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                 else:
                     arcText += "\n" * breaks + split_text("Required Abilities:",
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=prefix)
                 for ability in archetype[7]:
                     arcText += "\n" + ability.details(width=width,
-                                                      prefix=prefix+indent*2,
+                                                      prefix=prefix+indent,
                                                       indented=indented)
         return arcText
 
@@ -6060,19 +6106,22 @@ def DisplayPersonality(index,
                        width=100,
                        prefix="",
                        indented=True,
-                       breaks=1):
+                       breaks=1,
+                       hanging=False):
     # Display the attributes of the Personality specified by index.
     print(PersonalityDetails(index,
                              width=width,
                              prefix=prefix,
                              indented=indented,
-                             breaks=breaks))
+                             breaks=breaks,
+                             hanging=hanging))
 
 def PersonalityDetails(index,
                        width=100,
                        prefix="",
                        indented=False,
-                       breaks=2):
+                       breaks=2,
+                       hanging=False):
     if indented:
         indent = "    "
     else:
@@ -6082,19 +6131,21 @@ def PersonalityDetails(index,
     pnText = split_text(personality[0],
                         width=width,
                         prefix=prefix)
+    if hanging:
+        prefix += "    "
     # Status Dice
     pnText += "\n" * breaks + split_text("Status Dice: " + str(personality[1]),
                                          width=width,
-                                         prefix=prefix+indent)
+                                         prefix=prefix)
     # Out Ability
     pnText += "\n" * breaks + personality[2].details(width=width,
-                                                     prefix=prefix+indent,
+                                                     prefix=prefix,
                                                      indented=indented)
     # Bonus content
     if personality[3] > 0:
         pnText += "\n" * breaks + split_text("Bonus: " + pn_special[personality[3]],
                                              width=width,
-                                             prefix=prefix+indent)
+                                             prefix=prefix)
     return pnText
 
 class Hero:
@@ -6599,14 +6650,15 @@ class Hero:
             print("### AddPrinciple: inputs=" + str(inputs))
         if len(self.principles) > 1:
             # Can't have more than 2 Principles.
+            dispWidth = 100
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user to choose.
                 answer = IntVar()
-                dispWidth = 100
                 options = [str(x) for x in self.principles] + ["Cancel"]
-                details = [x.details(width=dispWidth,
+                details = [x.details(width=-1,
                                      breaks=2,
-                                     indented=False) for x in self.principles]
+                                     indented=False,
+                                     hanging=False) for x in self.principles]
                 question = ExpandWindow(self.myWindow,
                                         "Choose a Principle to replace: ",
                                         options,
@@ -6618,7 +6670,10 @@ class Hero:
             else:
                 print(self.hero_name + " already has 2 Principles: ")
                 for ex in self.principles:
-                    ex.display(prefix="    ")
+                    ex.display(width=dispWidth,
+                               prefix="    ",
+                               indented=True,
+                               hanging=True)
                 if len(inputs) > 0:
                     print("Enter A to replace the first one, B to replace the second one, or " + \
                           "anything else to cancel.")
@@ -6692,8 +6747,9 @@ class Hero:
                                         prompt,
                                         [x.title for x in r_options],
                                         [x.details(width=-1,
+                                                   indented=False,
                                                    breaks=2,
-                                                   indented=False) for x in r_options],
+                                                   hanging=False) for x in r_options],
                                         var=answer,
                                         title="Principle Selection")
                 entry_index = answer.get()
@@ -6715,7 +6771,10 @@ class Hero:
                                              "expanded, or an uppercase letter to select it.\n")
                     if entry_choice.upper() in entry_options and not entry_choice in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        r_options[entry_index].display("    ", width=96)
+                        r_options[entry_index].display(width=100,
+                                                       prefix="    ",
+                                                       indented=True,
+                                                       hanging=False)
                 entry_index = entry_options.find(entry_choice)
             ri = r_options[entry_index]
             print(str(ri) + " selected!")
@@ -8109,33 +8168,29 @@ class Hero:
                     width=100,
                     prefix="",
                     indented=True,
-                    inputs=[]):
+                    hanging=True):
         # Displays the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
         notePrefix = "### Hero.DisplayMode: "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
         print(self.ModeDetails(index,
                                codename=codename,
                                width=width,
                                prefix=prefix,
                                indented=indented,
-                               inputs=inputs))
+                               hanging=hanging))
     def ModeDetails(self,
                     index,
                     codename=True,
                     width=100,
                     prefix="",
                     indented=True,
-                    inputs=[]):
+                    hanging=True):
         # Returns a string containing the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### Hero.ModeDetails: "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
         if indented:
             indent = "    "
         else:
@@ -8157,39 +8212,41 @@ class Hero:
             modeString += split_text(mode[0] + " (" + status_zones[mode[1]] + " Mode)",
                                      width=width,
                                      prefix=prefix)
+            if hanging:
+                prefix += "    "
             if mode[2] == self.power_dice:
                 modeString += "\n" + split_text("[Standard Powers]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 modeString += "\n" + split_text("Powers:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
                 for d in mode[2]:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
-                                                    prefix=prefix+indent*2)
+                                                    prefix=prefix+indent)
             if mode[3] == self.quality_dice:
                 modeString += "\n" + split_text("[Standard Qualities]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 modeString += "\n" + split_text("Qualities:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
                 for d in mode[3]:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
-                                                    prefix=prefix+indent*2)
+                                                    prefix=prefix+indent)
             if mode[4] in [[0,0,0], self.status_dice]:
                 modeString += "\n" + split_text("[Standard Status]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 for i in range(3):
                     modeString += "\n" + split_text(status_zones[i] + ": " + str(mode[4][i]),
                                                     width=width,
-                                                    prefix=prefix+indent)
+                                                    prefix=prefix)
             if len(mode[6]) > 0:
                 prohibited_text = mode[6][0]
                 for i in range(1, len(mode[6])-1):
@@ -8200,12 +8257,12 @@ class Hero:
                     prohibited_text += " or " + mode[6][len(mode[6])-1]
                 modeString += "\n" + split_text("You cannot " + prohibited_text + " in this Mode.",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             modeString += "\n" + split_text("You gain access to this Ability:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             modeString += "\n" + mode[5].details(width=width,
-                                                 prefix=prefix+indent*2,
+                                                 prefix=prefix+indent,
                                                  indented=indented)
         return modeString
     def DisplayForm(self,
@@ -8213,28 +8270,26 @@ class Hero:
                     width=100,
                     prefix="",
                     indented=True,
-                    codename=True,
-                    inputs=[]):
+                    hanging=True,
+                    codename=True):
         # Displays the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
         notePrefix = "### Hero.DisplayForm: "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
         print(self.FormDetails(index,
                                width=width,
                                prefix=prefix,
                                indented=indented,
-                               codename=codename,
-                               inputs=inputs))
+                               hanging=hanging,
+                               codename=codename))
     def FormDetails(self,
                     index,
                     width=100,
                     prefix="",
                     indented=True,
-                    codename=True,
-                    inputs=[]):
+                    hanging=True,
+                    codename=True):
         # Returns a string containing the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -8243,8 +8298,6 @@ class Hero:
             indent = "    "
         else:
             indent = ""
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
         formString = ""
         if index not in range(len(self.other_forms)):
             print(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
@@ -8276,58 +8329,60 @@ class Hero:
                 formString += split_text(form[0] + " (" + status_zones[form[1]] + " Form)",
                                          width=width,
                                          prefix=prefix)
+            if hanging:
+                prefix += "    "
             if form[2] == self.power_dice:
                 formString += "\n" + split_text("[Standard Powers]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             elif form[2] == [] and dv_ps:
                 formString += "\n" + split_text("[No Powers (see " + dv_ps.flavorname + ")]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 formString += "\n" + split_text("Powers:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
                 for d in form[2]:
                     formString += "\n" + split_text(str(d),
                                                     width=width,
-                                                    prefix=prefix+indent*2)
+                                                    prefix=prefix+indent)
             if form[3] == self.quality_dice:
                 formString += "\n" + split_text("[Standard Qualities]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             elif form[3] == [] and dv_ps:
                 formString += "\n" + split_text("[No Qualities (see " + dv_ps.flavorname + ")]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 formString += "\n" + split_text("Qualities:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
                 for d in form[3]:
                     formString += "\n" + split_text(str(d),
                                                     width=width,
-                                                    prefix=prefix+indent*2)
+                                                    prefix=prefix+indent)
             if form[4] in [[0,0,0], self.status_dice]:
                 formString += "\n" + split_text("[Standard Status]",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             else:
                 for i in range(3):
                     formString += "\n" + split_text(status_zones[i] + ": " + str(form[4][i]),
                                                     width=width,
-                                                    prefix=prefix+indent)
+                                                    prefix=prefix)
             if len(form[5]) > 1:
                 formString += "\n" + split_text("You gain access to the following Abilities:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             elif len(form[5]) == 1:
                 formString += "\n" + split_text("You gain access to the following Ability:",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
             for i in range(len(form[5])):
                 formString += "\n" + form[5][i].details(width=width,
-                                                        prefix=prefix+indent*2,
+                                                        prefix=prefix+indent,
                                                         indented=indented)
         return formString
     def ChooseForm(self,
@@ -11281,16 +11336,32 @@ class Hero:
         return [a for a in self.abilities if a.zone == zone]
     def DisplayStep(self,
                     stepnum,
-                    prefix="",
                     width=100,
-                    indented=True):
+                    prefix="",
+                    indented=True,
+                    hanging=False):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in the specified step of hero creation.
         # No return value.
+        print(self.StepDetails(stepnum,
+                               width=width,
+                               prefix=prefix,
+                               indented=indented,
+                               hanging=hanging))
+    def StepDetails(self,
+                    stepnum,
+                    width=100,
+                    prefix="",
+                    indented=True,
+                    hanging=True):
+        # Returns a formatted list of attributes (Powers, Qualities, Principles, Abilities, Modes,
+        #  Forms, etc.) that the hero gained or modified during the specified step of hero
+        #  creation.
         if indented:
             indent = "    "
         else:
             indent = ""
+        stepText = ""
         if stepnum in range(1,len(step_names)):
             step_powers = [d for d in self.power_dice if d.step == stepnum]
             step_qualities = [d for d in self.quality_dice if d.step == stepnum]
@@ -11308,62 +11379,94 @@ class Hero:
                (stepnum == self.mf_step and len(self.min_forms) > 0):
                 any_added = 1
             if any_added > 0:
-                print(prefix + "Step " + str(stepnum) + " (" + step_names[stepnum] + ") provided:")
+                stepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
+                                       ") provided:",
+                                       width=width,
+                                       prefix=prefix)
+                if hanging:
+                    prefix += "    "
                 if len(step_principles) > 0:
-                    print(prefix + indent + "Principles:")
+                    stepText += "\n" + split_text("Principles:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for pri in step_principles:
-                        pri.display(prefix=prefix+indent*2,
-                                    width=width,
-                                    green=False,
-                                    indented=indented,
-                                    breaks=1)
+                        stepText += "\n" + pri.details(width=width,
+                                                       prefix=prefix+indent*2,
+                                                       green=False,
+                                                       indented=indented,
+                                                       breaks=1)
                 if len(step_powers) > 0:
-                    print(prefix + indent + "Powers:")
+                    stepText += "\n" + split_text("Powers:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for d in step_powers:
-                        print(prefix + indent*2 + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if len(step_qualities) > 0:
-                    print(prefix + indent + "Qualities:")
+                    stepText += "\n" + split_text("Qualities:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for d in step_qualities:
-                        print(prefix + indent*2 + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if stepnum == self.status_step:
-                    print(prefix + indent + "Status:")
+                    stepText += "\n" + split_text("Status:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for x in range(len(self.status_dice)):
-                        print(prefix + indent*2 + status_zones[x] + ": " + \
-                              str(self.status_dice[x]))
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(self.status_dice[x]),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if stepnum == self.health_step:
-                    print(prefix + indent + "Health:")
+                    stepText += "\n" + split_text("Health:",
+                                                  width=width,
+                                                  prefix=prefix)
                     rn = self.HealthRanges()
                     for i in range(len(rn)):
-                        print(prefix + indent*2 + status_zones[i] + " Zone: " + \
-                              str(rn[i][0]) + "-" + str(rn[i][1]))
+                        stepText += "\n" + split_text(status_zones[i] + " Zone: " + \
+                                                      str(rn[i][0]) + "-" + str(rn[i][1]),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 for z in range(len(status_zones)):
                     step_zone_abilities = [ab for ab in step_abilities if ab.zone == z]
                     if len(step_zone_abilities) > 0:
-                        print(prefix + indent + "Abilities (" + status_zones[z] + "):")
+                        stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
+                                                      width=width,
+                                                      prefix=prefix)
                         for a in step_zone_abilities:
-                            a.RetrievePrior(stepnum+1).display(prefix=prefix+indent*2,
-                                                               width=width,
-                                                               indented=indented)
+                            aPrime = a.RetrievePrior(stepnum+1)
+                            stepText += "\n" + aPrime.details(prefix=prefix+indent,
+                                                              width=width,
+                                                              indented=indented)
                 if stepnum == self.mf_step and len(self.min_forms) > 0:
-                    print(prefix + indent + "Minion Forms:")
+                    stepText += "\n" + split_text("Minion Forms:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for x in range(len(self.min_forms)):
-                        printlong(MinionFormStr(self.min_forms[x]),
-                                  width=width,
-                                  prefix=prefix+indent*2)
+                        stepText += "\n" + split_text(MinionFormStr(self.min_forms[x]),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if len(step_forms) > 0:
-                    print(prefix + indent + "Forms:")
+                    stepText += "\n" + split_text("Forms:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for x in range(len(step_forms)):
-                        self.DisplayForm(x,
-                                         codename=False,
-                                         prefix=prefix+indent*2,
-                                         width=width)
+                        stepText += "\n" + self.FormDetails(x,
+                                                            codename=False,
+                                                            width=width,
+                                                            prefix=prefix+indent)
                 if len(step_modes) > 0:
-                    print(prefix + indent + "Modes:")
+                    stepText += "\n" + split_text("Modes:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for x in range(len(step_modes)):
-                        self.DisplayMode(x,
-                                         codename=False,
-                                         prefix=prefix+indent*2,
-                                         width=width)
+                        stepText += "\n" + self.ModeDetails(x,
+                                                            codename=False,
+                                                            width=width,
+                                                            prefix=prefix+indent)
             modified_powers = [d for d in self.power_dice if stepnum in d.steps_modified and \
                                d not in step_powers]
             modified_qualities = [d for d in self.quality_dice if stepnum in d.steps_modified and \
@@ -11376,42 +11479,82 @@ class Hero:
             if stepnum in self.status_steps_modified:
                 any_modified = 1
             if any_modified > 0:
-                print(prefix + "Step " + str(stepnum) + " modified:")
+                stepText += "\n" + split_text("Step " + str(stepnum) + " modified:",
+                                              width=width,
+                                              prefix=prefix)
+                if hanging and any_added <= 0:
+                    prefix += "    "
                 if len(modified_powers) > 0:
-                    print(prefix + indent + "Powers:")
+                    stepText += "\n" + split_text("Powers:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for d in modified_powers:
-                        print(prefix + indent*2 + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if len(modified_qualities) > 0:
-                    print(prefix + indent + "Qualities:")
+                    stepText += "\n" + split_text("Qualities:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for d in modified_qualities:
-                        print(prefix + indent*2 + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 if stepnum in self.status_steps_modified:
-                    print(prefix + indent + "Status:")
+                    stepText += "\n" + split_text("Status:",
+                                                  width=width,
+                                                  prefix=prefix)
                     for x in range(len(self.status_dice)):
-                        print(prefix + indent*2 + status_zones[x] + ": " + \
-                              str(self.status_dice[x]))
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(self.status_dice[x]),
+                                                      width=width,
+                                                      prefix=prefix+indent)
                 for z in range(len(status_zones)):
                     modified_zone_abilities = [ab for ab in modified_abilities if ab.zone == z]
                     if len(modified_zone_abilities) > 0:
-                        print(prefix + indent + "Abilities (" + status_zones[z] + "):")
+                        stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
+                                                      width=width,
+                                                      prefix=prefix)
                         for a in modified_zone_abilities:
-                            a.RetrievePrior(stepnum+1).display(prefix=prefix+indent*2,
-                                                               width=width,
-                                                               indented=indented)
+                            aPrime = a.RetrievePrior(stepnum+1)
+                            stepText += "\n" + aPrime.details(width=width,
+                                                              prefix=prefix+indent*2,
+                                                              indented=indented)
             # ...
         else:
-            print(prefix + "Error! " + str(stepnum) + " is not a valid step of hero creation.")
+            stepText += split_text("Error! " + str(stepnum) + \
+                                   " is not a valid step of hero creation.",
+                                   width=width,
+                                   prefix=prefix)
+        # ...
+        return stepText
     def DisplaySteps(self,
-                     prefix="",
                      width=100,
-                     indented=True):
+                     prefix="",
+                     indented=True,
+                     hanging=True):
         # Iterates through DisplayStep for all steps of hero creation
         # No return value
+        print(self.AllStepDetails(width=width,
+                                  prefix=prefix,
+                                  indented=indented,
+                                  hanging=hanging))
+    def AllStepDetails(self,
+                       width=100,
+                       prefix="",
+                       indented=True,
+                       hanging=True):
+        # Compiles the output of StepDetails for all steps of hero creation
+        stepsText = ""
         for i in range(1, len(step_names)):
-            self.DisplayStep(i,
-                             prefix=prefix,
-                             width=width,
-                             indented=indented)
+            if len(stepsText) > 0:
+                stepsText += "\n"
+            stepsText += self.StepDetails(i,
+                                          width=width,
+                                          prefix=prefix,
+                                          indented=indented,
+                                          hanging=hanging)
+        return stepsText
     def display(self,
                 width=100,
                 prefix="",
@@ -11425,7 +11568,8 @@ class Hero:
     def details(self,
                 width=100,
                 prefix="",
-                indented=True):
+                indented=True,
+                hanging=False):
         # Returns a string containing a full list of the hero's mechanical attributes: codename,
         #  name, characteristics, Principles, Powers, Qualities, Status, Health ranges, Abilities,
         #  etc.
@@ -11436,11 +11580,19 @@ class Hero:
         notePrefix = "### Hero.details: "
         heroString = ""
         if self.hero_name == "":
-            heroString += prefix + "[unnamed hero]"
+            heroString += split_text("[unnamed hero]",
+                                     width=width,
+                                     prefix=prefix)
         else:
-            heroString += prefix + "Hero Name:  " + self.hero_name
+            heroString += split_text("Hero Name:  " + self.hero_name,
+                                     width=width,
+                                     prefix=prefix)
         if self.alias != "":
-            heroString += "\n" + prefix + "Alias:      " + self.alias
+            heroString += "\n" + split_text("Alias:      " + self.alias,
+                                            width=width,
+                                            prefix=prefix)
+        if hanging:
+            prefix += "    "
         bg_text = ps_text = arc_text = pn_text = "[none]"
 ##        print(notePrefix + "self.background = " + str(self.background))
         if self.background in range(len(bg_collection)):
@@ -11464,82 +11616,84 @@ class Hero:
                           ")"
         heroString += "\n" + split_text("Background:    " + bg_text,
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         heroString += "\n" + split_text("Power Source:  " + ps_text,
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         heroString += "\n" + split_text("Archetype:     " + arc_text,
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         heroString += "\n" + split_text("Personality:   " + pn_text,
                                         width=width,
-                                        prefix=prefix+indent)
+                                        prefix=prefix)
         if len(self.principles) > 0:
             heroString += "\n" + split_text("Principles:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for pri in self.principles:
                 heroString += "\n" + pri.details(width=width,
-                                                 prefix=prefix+indent*2,
+                                                 prefix=prefix+indent,
                                                  indented=indented,
                                                  green=False,
                                                  breaks=1)
         if len(self.power_dice) > 0:
             heroString += "\n" + split_text("Powers:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for d in self.power_dice:
                 heroString += "\n" + split_text(str(d),
                                                 width=width,
-                                                prefix=prefix+indent*2)
+                                                prefix=prefix+indent)
         if len(self.quality_dice) > 0:
             heroString += "\n" + split_text("Qualities:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for d in self.quality_dice:
                 heroString += "\n" + split_text(str(d),
                                                 width=width,
-                                                prefix=prefix+indent*2)
+                                                prefix=prefix+indent)
         if self.status_dice != [0,0,0]:
             heroString += "\n" + split_text("Status:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for i in range(len(self.status_dice)):
                 heroString += "\n" + split_text(status_zones[i] + ": " + str(self.status_dice[i]),
                                                 width=width,
-                                                prefix=prefix+indent*2)
+                                                prefix=prefix+indent)
         if self.health_zones != [0,0,0]:
             heroString += "\n" + split_text("Health:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             rn = self.HealthRanges()
             for i in range(len(rn)):
                 heroString += "\n" + split_text(status_zones[i] + " Zone: " + str(rn[i][0]) + \
                                                 "-" + str(rn[i][1]),
                                                 width=width,
-                                                prefix=prefix+indent*2)
+                                                prefix=prefix+indent)
         for z in range(len(status_zones)):
             zone_abilities = self.Abilities(z)
             if len(zone_abilities) > 0:
                 heroString += "\n" + split_text("Abilities (" + status_zones[z] + "):",
                                                 width=width,
-                                                prefix=prefix+indent)
+                                                prefix=prefix)
                 for a in zone_abilities:
                     heroString += "\n" + a.details(width=width,
-                                                   prefix=prefix+indent*2,
+                                                   prefix=prefix+indent,
                                                    indented=indented)
         if len(self.min_forms) > 0:
             heroString += "\n" + split_text("Minion Forms:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for x in range(len(self.min_forms)):
                 heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
                                                 width=width,
-                                                prefix=prefix+indent*2)
+                                                prefix=prefix+indent)
+        # Modes and Forms get hanging=True even if hanging=False in this method, because it's
+        #  important to see where each one stops and the next one begins
         if len(self.other_forms) > 0:
             heroString += "\n" + split_text("Forms:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
             # Divided grants 2 Green Forms, each with no Abilities
             # To separate the two categories, display Forms with no Abilities before ones with
@@ -11549,25 +11703,28 @@ class Hero:
                     heroString += "\n" + self.FormDetails(x,
                                                           codename=False,
                                                           width=width,
-                                                          prefix=prefix+indent*2,
-                                                          indented=indented)
+                                                          prefix=prefix+indent,
+                                                          indented=indented,
+                                                          hanging=True)
             for x in range(len(self.other_forms)):
                 if len(self.other_forms[x][5]) > 0:
                     heroString += "\n" + self.FormDetails(x,
                                                           codename=False,
                                                           width=width,
-                                                          prefix=prefix+indent*2,
-                                                          indented=indented)
+                                                          prefix=prefix+indent,
+                                                          indented=indented,
+                                                          hanging=True)
         if len(self.other_modes) > 0:
             heroString += "\n" + split_text("Modes:",
                                             width=width,
-                                            prefix=prefix+indent)
+                                            prefix=prefix)
             for x in range(len(self.other_modes)):
                 heroString += "\n" + self.ModeDetails(x,
                                                       codename=False,
                                                       width=width,
-                                                      prefix=prefix+indent*2,
-                                                      indented=indented)
+                                                      prefix=prefix+indent,
+                                                      indented=indented,
+                                                      hanging=True)
         return heroString
         
 
@@ -12525,7 +12682,7 @@ class HeroFrame(Frame):
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  command=lambda arg1=-1 : \
+                                  command=lambda arg1=100 : \
                                   print(self.myHero.details(width=arg1)))
         self.printButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
                               column=buttonColumn,
@@ -13328,7 +13485,7 @@ class HeroFrame(Frame):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
         if isinstance(self.myHero, Hero):
-            self.myHero.DisplaySteps()
+            self.myHero.DisplaySteps(width=100)
     def SaveTxt(self, inputs=[]):
         # Let the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
@@ -14955,7 +15112,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getJo(step=4)
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
@@ -14986,3 +15143,21 @@ root.mainloop()
 ##dispFrame = HeroFrame(root)
 ##dispFrame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
+
+##w=40
+##pf="123  "
+##ind=True
+##hg=True
+##
+##for s in range(1,len(step_names)):
+##    print()
+##    firstHero.DisplayStep(s,
+##                          width=w,
+##                          prefix=pf,
+##                          indented=ind,
+##                          hanging=hg)
+##    print(firstHero.StepDetails(s,
+##                                width=w,
+##                                prefix=pf,
+##                                indented=ind,
+##                                hanging=hg))

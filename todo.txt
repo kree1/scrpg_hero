@@ -190,7 +190,7 @@ Assign indented/breaks values to existing DisplayBackground, BackgroundDetails, 
 	Hero.AddArchetype, line 8980 (expand this mode template if not UseGUI)
 	Hero.AddArchetype, line 9022 (expand this mode template if not UseGUI)
   Details() methods
-	...
+	done!
 
 Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
 
