@@ -14457,6 +14457,8 @@ class EntryFrame(Frame):
                               rowspan=1,
                               columnspan=3,
                               sticky=N+E+S+W)
+        # Select all text
+        self.myTextEntry.select_range(0,"end")
         # ...
         self.myOKButton = Button(self,
                                  anchor=CENTER,
@@ -14944,8 +14946,8 @@ class PrincipleFrame(Frame):
 
 factory = SampleMaker()
 
-##root = Tk()
-##root.geometry("+0+0")
+root = Tk()
+root.geometry("+0+0")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -14953,10 +14955,10 @@ factory = SampleMaker()
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKim(step=3)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getJo(step=4)
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")

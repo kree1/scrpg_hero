@@ -196,8 +196,6 @@ Hitting Enter in EntryFrame to give an Ability a new name keeps making Python fr
 
 Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use UseGUI to determine whether they need a messagebox
 
-Can EntryFrame have the existing text selected by default, so it's there if the user hits Enter but vanishes if the user starts typing?
-
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
     def ChooseIndex(self,
