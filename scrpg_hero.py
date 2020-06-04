@@ -7206,22 +7206,60 @@ class Hero:
                 triplet_options = []
         # ... then remove any template_options with incompatible requirements
         matching_templates = []
+        template_restricted_slots = []
+##        print(notePrefix + "triplet_options: " + str(triplet_options) + " (" + \
+##              str(MixedPQs(triplet_options)) + ")")
+##        print(notePrefix + "category_req: " + str(category_req))
         for a in template_options:
-            a_matches = True
-            for i in [j for j in range(len(a.pq_options)) if len(a.pq_options[j]) > 0]:
+            # To be added, a must have EITHER:
+            #  * no power/quality slots
+            #  * >=1 power/quality slot that can match both triplet_options and category_req
+##            print(notePrefix + str(a) + ".pq_options = " + str(a.pq_options))
+            a_isMatch = False
+            a_check_slots = []
+            a_matching_slots = []
+            for i in range(len(a.pq_options)):
+                if ("%p" + str(i)) in a.text:
+                    if len(a.pq_options[i]) > 0:
+                        a_check_slots += [i]
+##                        print(notePrefix + "slot " + str(i) + " of " + str(a) + \
+##                              " is used with restrictions")
+                    else:
+                        a_matching_slots += [i]
+##                        print(notePrefix + "slot " + str(i) + " of " + str(a) + \
+##                              " is used without restrictions")
+            if len(a_check_slots) == 0:
+                a_isMatch = True
+##                print(notePrefix + str(a) + " has no Power/Quality slots; included in ability " + \
+##                      "options")
+            for i in a_check_slots:
+##                print(notePrefix + "evaluating " + str(a) + ": slot " + str(i))
+##                print(notePrefix + "pq_options[" + str(i) + ": " + str(a.pq_options[i]) + " (" + \
+##                      str(MixedPQs(a.pq_options[i])) + ")")
                 a_matching_options = [t for t in a.pq_options[i]]
                 if len(triplet_options) > 0:
-                    # If triplet_options are specified, and pq_options[i] are specified, then the
-                    #  only matching options are the ones that fit both
+                    # If triplet_options are specified, and pq_options[i] are specified, then
+                    #  the only matching options are the ones that fit both
                     a_matching_options = [t for t in a.pq_options[i] if t in triplet_options]
+##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                              " that match triplet_options: " + str(MixedPQs(a_matching_options)))
                 if category_req in [0,1]:
-                    # If category_req is specified, and pq_options[i] are specified, then the only
-                    #  matching options are the ones that fit both
+                    # If category_req is specified, and pq_options[i] are specified, then the
+                    #  only matching options are the ones that fit both
                     a_matching_options = [t for t in a.pq_options[i] if t[0]==category_req]
-                if len(a_matching_options) == 0:
-                    a_matches = False
-            if a_matches:
+##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                              " that match triplet_options and category_req: " + \
+##                              str(MixedPQs(a_matching_options)))
+                if len(a_matching_options) > 0:
+                    a_isMatch = True
+                    a_matching_slots.append(i)
+##                    print(notePrefix + ">0 matching options for slot " + str(i) + " of " + \
+##                          str(a))
+            if a_isMatch:
                 matching_templates.append(a)
+                template_restricted_slots.append(a_matching_slots)
+##                print(notePrefix + ">0 matching options for slots " + str(a_matching_slots) + \
+##                      " of " + str(a) + "; included in ability options")
         if len(matching_templates) == 0:
             print("Error! All of the ability templates had power/quality requirements " + \
                   "incompatible with the specified options (" + str(triplet_options) + ").")
@@ -7231,7 +7269,8 @@ class Hero:
                 return []
         else:
             template_options = matching_templates
-        ability_template = ""
+        ability_template = None
+        ability_matching_slots = []
         if len(template_options) == 0:
             print("Error! No Abilities were provided.")
             if add==1:
@@ -7240,6 +7279,7 @@ class Hero:
                 return []
         elif len(template_options) == 1:
             ability_template = template_options[0]
+            ability_matching_slots = template_restricted_slots[0]
         else:
             if len(triplet_options) > 0:
                 option_text = MixedPQ(triplet_options[0])
@@ -7249,14 +7289,14 @@ class Hero:
                     option_text += ","
                 if len(triplet_options) > 1:
                     option_text += " or " + MixedPQ(triplet_options[len(triplet_options)-1])
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
-                          ", using " + option_text + ":"
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ", using " + option_text + ":"
             elif category_req in [0,1]:
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
-                         ", using a " + categories_singular[category_req] + ":"
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ", using a " + categories_singular[category_req] + ":"
             else:
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + ":"
-            printlong(prompt, 100)
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ":"
             col_num = 3
             # Abilities take up much more space to display than simpler concepts like Powers and
             #  Qualities, so section_length here needs to be fairly short so that an expanded
@@ -7318,11 +7358,12 @@ class Hero:
                 entry_start = entry_index * section_length
                 entry_end = min(entry_start + section_length, len(template_options))
                 template_options = template_options[entry_start:entry_end]
+                template_restricted_slots = template_restricted_slots[entry_start:entry_end]
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to ask the user to choose an ability
                 answer = IntVar()
                 question = ExpandWindow(self.myWindow,
-                                        prompt,
+                                        choose_prompt,
                                         [str(x) for x in template_options],
                                         [x.details(width=-1,
                                                    indented=True) for x in template_options],
@@ -7333,6 +7374,7 @@ class Hero:
             else:
                 entry_options = string.ascii_uppercase[0:len(template_options)]
                 entry_choice = ' '
+                printlong(choose_prompt, 100)
                 for i in range(len(template_options)):
                     print("    " + entry_options[i] + ": " + str(template_options[i]))
                 while entry_choice not in entry_options:
@@ -7349,6 +7391,7 @@ class Hero:
                         template_options[entry_index].display(prefix="    ")
                 entry_index = entry_options.find(entry_choice)
             ability_template = template_options[entry_index]
+            ability_matching_slots = template_restricted_slots[entry_index]
         notePrefix += ability_template.name + ": "
         display_str = str(ability_template)
         if ability_template.zone == 3:
@@ -7409,7 +7452,9 @@ class Hero:
                                                 "\n\n" + "Choose one of your Elemental/Energy " + \
                                                 "Powers for this ability:",
                                                 title=display_str,
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
@@ -7478,16 +7523,29 @@ class Hero:
 ##                              str([str(d) for d in die_options]))
 ##                    else:
 ##                        print(notePrefix + "didn't filter by pq_options at i=" + str(i))
-                    # If triplet_options was specified, narrow the field to dice that match those
+                    # If triplet_options was specified, AND no dice have been selected so far that
+                    #  match that requirement, AND there are no later slots where that requirement
+                    #  COULD be met, narrow the field to dice that match those
+                    used_triplets = []
+                    for j in ability_matching_slots:
+                        used_triplets += pq_triplets[j]
+##                    print(notePrefix + "used_triplets: " + str(used_triplets))
                     if len(triplet_options) > 0:
-                        die_options = [d for d in die_options if d.triplet() in triplet_options]
-                        if len(die_options) == 0:
-                            error = self.hero_name + " doesn't have any " + category + \
-                                    " dice matching the specified triplet options (" + \
-                                    str(MixedPQs(triplet_options)) + ")."
-##                        print(notePrefix + "filtered by triplet_options")
-##                        print(notePrefix + "die_options for i=" + str(i) + ": " + \
-##                              str([str(d) for d in die_options]))
+                        if len([d for d in used_triplets if d in triplet_options]) == 0 and \
+                           i == max(ability_matching_slots):
+##                            print(notePrefix + str(i) + " is the last slot of " + \
+##                                  str(ability_template) + " that matches triplet_options and " + \
+##                                  "required_pqs, and no matching Powers/Qualities have been " + \
+##                                  "used yet")
+                            die_options = [d for d in die_options \
+                                           if d.triplet() in triplet_options]
+                            if len(die_options) == 0:
+                                error = self.hero_name + " doesn't have any " + category + \
+                                        " dice matching the specified triplet options (" + \
+                                        str(MixedPQs(triplet_options)) + ")."
+##                            print(notePrefix + "filtered by triplet_options")
+##                            print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                                  str([str(d) for d in die_options]))
                     if len(die_options) == 0:
                         # No valid options? Fail with an error
                         print("Error! " + error)
@@ -9292,7 +9350,9 @@ class Hero:
                                                 prompt="Choose a Quality to determine the " + \
                                                 "number of Minion Forms " + self.hero_name + \
                                                 " has access to:",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=15)
                     entry_index = decision[0]
                     inputs = decision[1]
                     max_forms = self.quality_dice[entry_index].diesize
@@ -9522,7 +9582,9 @@ class Hero:
                                                         self.hero_name + " to have access to " + \
                                                         "in both " + self.dv_tags[0] + " and " + \
                                                         self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs)
+                                                        inputs=inputs,
+                                                        width=50,
+                                                        buffer=15)
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(unassigned_powers[entry_index]) + \
@@ -9536,7 +9598,9 @@ class Hero:
                                                         self.hero_name + " to have access to " + \
                                                         "in both " + self.dv_tags[0] + " and " + \
 							self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs)
+                                                        inputs=inputs,
+                                                        width=50,
+                                                        buffer=15)
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
@@ -9551,7 +9615,9 @@ class Hero:
                                                         prompt="Which of " + self.hero_name + \
                                                         "'s Divided Forms should have access " + \
                                                         "to " + str(assigning_die) + "?",
-                                                        inputs=inputs)
+                                                        inputs=inputs,
+                                                        width=50,
+                                                        buffer=10)
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -10803,7 +10869,9 @@ class Hero:
                     decision = self.ChooseIndex([MixedPQ(x) for x in non_empty_inserts],
                                                 prompt="Which Power/Quality would you like to " + \
                                                 "replace?",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=40,
+                                                buffer=10)
                     edit_index = decision[0]
                     inputs = decision[1]
                 # Find the correct list of powers and qualities to choose a replacement from
@@ -10834,7 +10902,9 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in pq_options],
                                             prompt="Choose a Power or Quality to replace " + \
                                             str(replaced_pq) + " in " + str(edit_ability) + ":",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
@@ -14934,7 +15004,7 @@ class ExpandFrame(Frame):
     def finish(self, *args):
         if len(self.myOptions) > 0:
             if self.myAnswer.get() in range(len(self.myOptions)):
-                print(self.myPrompt)
+##                print(self.myPrompt)
 ##                for i in range(len(self.myOptions)):
 ##                    print(str(i) + ": " + self.myOptions[i])
 ##                print(str(self.myAnswer.get()))
@@ -15190,7 +15260,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori(step=3)
+firstHero = factory.getCham(step=4)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
