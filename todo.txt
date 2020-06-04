@@ -106,10 +106,20 @@ Finding proper display sizes...
   buffer = -0.00201007 * width^2 + 0.907185 * width - 46.6979
  Entered as:
   buffer = math.floor(0.43 * width - 20)
+  
+Assign rwidth values to existing ExpandWindow calls
+ Hero.ChoosePrinciple, line 6747 (choose a Principle from the list)
+ Hero.ChooseAbility, line 7327 (choose a section of the ability list)
 
 Assign lwidth values to existing ExpandWindow calls
+ Switch +/- B/W buttons to affect the prompt instead of details
 
 Assign width/buffer values to existing EnterText calls
+ Hero.AddPQDie, line 6326 (rename this power/quality)
+ Hero.ChooseAbility, line 7617 (rename this ability)
+ Hero.AddMode, line 8202 (rename this Mode)
+ Hero.ChooseForm, line 8670 (rename this Form)
+ Hero.AddArchetype, line 9419 (rename this Divided form)
  
 ? Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows ?
 

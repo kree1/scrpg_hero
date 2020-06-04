@@ -8201,7 +8201,8 @@ class Hero:
         if entry_choice == 'Y':
             decision = self.EnterText("Enter the new name for this Mode:",
                                       inputs=inputs,
-                                      default=t_name)
+                                      default=t_name,
+                                      title="Mode Creation: " + t_name)
             mode_name = decision[0]
             inputs = decision[1]
 ##            if len(inputs) > 0:
@@ -9417,7 +9418,8 @@ class Hero:
                     for i in range(len(self.dv_tags)):
                         decision = self.EnterText("Enter a new name for your " + self.dv_tags[i] + \
                                                   " form.",
-                                                  inputs=inputs)
+                                                  inputs=inputs,
+                                                  title="Archetype Selection: Divided")
                         self.dv_tags[i] = decision[0]
                         inputs = decision[1]
                         if len(self.dv_tags[i]) == 0:
