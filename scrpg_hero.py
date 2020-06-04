@@ -14603,16 +14603,16 @@ class SelectFrame(Frame):
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-        self.myBPlusButton.grid(row=4,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myBMinusButton.grid(row=4,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myBPlusButton.grid(row=4,
+##                                column=0,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myBMinusButton.grid(row=4,
+##                                 column=1,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         self.myWPlusButton = Button(self,
                                     anchor=CENTER,
                                     justify=CENTER,
@@ -14625,16 +14625,16 @@ class SelectFrame(Frame):
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-        self.myWPlusButton.grid(row=5,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myWMinusButton.grid(row=5,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myWPlusButton.grid(row=5,
+##                                column=0,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myWMinusButton.grid(row=5,
+##                                 column=1,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def update(self, event=None):
@@ -15262,10 +15262,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getAyla(step=1)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getAyla(step=1)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -15290,9 +15290,9 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 ##w=40
 ##pf="123  "
