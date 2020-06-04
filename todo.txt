@@ -109,62 +109,6 @@ Finding proper display sizes...
 
 Assign lwidth values to existing ExpandWindow calls
 
-Assign width/buffer values to existing SelectWindow calls
-. HeroFrame.AddHeroNames, line 12734: width=40, buffer=6
- Hero.ChooseIndex (line 6075) now accepts a width argument
-  Assign width values to existing ChooseIndex calls...
-.   Hero.ChoosePQDieSize, line 6281 (choose a die for this power/quality) width=40, buffer=10
-.   Hero.ChoosePQ, line 6418 (choose a section of the power/quality list if not UseGUI)
-.   Hero.ChoosePQ, line 6430 (choose a power/quality to add) width=50, buffer=15
-.   Hero.GuidedBackground, line 6891 (choose which die result to keep) width=25, buffer=*
-.   Hero.ChooseAbility, line 7103 (choose a section of the ability list if not UseGUI)
-.   Hero.ChooseAbility, line 7179 (choose a damage category) width=50, buffer=15
-.   Hero.ChooseAbility, line 7210 (choose an elemental/energy power) width=50, buffer=10
-.   Hero.ChooseAbility, line 7224 (choose an energy/element) width=50, buffer=10
-.   Hero.ChooseAbility, line 7241 (choose a basic action) width=50, buffer=10
-.   Hero.ChooseAbility, line 7302 (choose a power/quality for this ability) width=50, buffer=15
-.   Hero.AddPowerSource, line 7533 (choose a d6 power/quality to upgrade) width=45, buffer=10
-.   Hero.AddPowerSource, line 7565 (choose a power to downgrade) width=40, buffer=10
-.   Hero.AddPowerSource, line 7583 (choose a power to upgrade) width=40, buffer=10
-.   Hero.AddMode, line 7806 (choose a power for this die size) width=45, buffer=10
-.   Hero.AddMode, line 7842 (choose a power for this modifier) width=45, buffer=10
-.   Hero.ChooseForm, line 8241 (choose how to modify your power list in this form) width=50, buffer=15
-.   Hero.ChooseForm, line 8237 (choose the first power to swap if not UseGUI)
-.   Hero.ChooseForm, line 8246 (choose the second power to swap if not UseGUI)
-.   Hero.ChooseForm, line 8270 (choose a power to replace) width=40, buffer=10
-.   Hero.ChooseForm, line 8278 (choose a new power to replace it) width=40, buffer=10
-.   Hero.ChooseForm, line 8295 (choose a power to upgrade for this form) width=50, buffer=15
-.   Hero.ChooseForm, line 8373 (choose a divided tag for this form) width=50, buffer=20
-   Hero.AddArchetype, line 8522 (choose an existing primary power/quality to swap dice with)
-.   Hero.AddArchetype, line 8530 (choose a new die to give to the primary power/quality) width=40, buffer=10
-.   Hero.AddArchetype, line 8984 (choose a quality to determine the number of minion forms) width=50, buffer=15
-.   Hero.AddArchetype, line 9167 (choose a constant power for Split Form) width=50, buffer=15
-.   Hero.AddArchetype, line 9181 (choose a constant quality for Split Form) width=50, buffer=15
-.   Hero.AddArchetype, line 9197 (choose a divided tag for this power/quality) width=50, buffer=15
-.   Hero.AddArchetype, line 9258 (choose a divided tag for this form) width=50, buffer=20
-.   Hero.AddPersonality, line 9708 (choose a power/quality to upgrade) width=40, buffer=10
-.   Hero.GuidedPersonality, line 9871 (choose which die result to keep) width=25, buffer=*
-.   Hero.ConstructedPersonality, line 9954 (choose which out ability to use) width=50, buffer=15
-.   Hero.AddRetcon, line 10194 (choose a retcon option) width=60, buffer=*
-.   Hero.AddRetcon, line 10219 (choose the first power to swap if not UseGUI)
-.   Hero.AddRetcon, line 10224 (choose the second power to swap if not UseGUI)
-.   Hero.AddRetcon, line 10266 (choose the first quality to swap if not UseGUI)
-.   Hero.AddRetcon, line 10271 (choose the second quality to swap if not UseGUI)
-.   Hero.AddRetcon, line 10344 (choose which power/quality from this ability to change) width=40, buffer=10
-.   Hero.AddRetcon, line 10375 (choose which power/quality to replace it with) width=50, buffer=15
-.   Hero.AddRetcon, line 10918 (choose which red status die/dice to upgrade) width=50, buffer=15
-.   Hero.AddHealth, line 10615 (choose which power/quality to use for health) width=50, buffer=15
-.   Hero.AddHealth, line 10642 (choose which red status to use for health) width=50, buffer=15
-.   Hero.AddHealth, line 10659 (choose whether to use 4 or 1d8 for health) width=50, buffer=25
-.   Hero.CreateHero, line 10697 (use guided or constructed for background) width=50, buffer=15
-.   Hero.CreateHero, line 10725 (use guided or constructed for power source) width=50, buffer=15
-.   Hero.CreateHero, line 10755 (use guided or constructed for archetype) width=50, buffer=15
-.   Hero.CreateHero, line 10793 (use guided or constructed for personality) width=50, buffer=15
-.   HeroFrame.AddHeroBackground, line 12498 (use guided or constructed for background) width=50, buffer=15
-.   HeroFrame.AddHeroPowerSource, line 12534 (use guided or constructed for power source) width=50, buffer=15
-.   HeroFrame.AddHeroArchetype, line 12572 (use guided or constructed for archetype) width=50, buffer=15
-.   HeroFrame.AddHeroPersonality, line 12619 (use guided or constructed for personality) width=50, buffer=15
-
 Assign width/buffer values to existing EnterText calls
  
 ? Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows ?

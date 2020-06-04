@@ -8851,7 +8851,9 @@ class Hero:
                             decision = self.ChooseIndex([str(x) for x in primary_matches],
                                                         prompt="Choose a " + cat_text + \
                                                         " to change die size:",
-                                                        inputs=inputs)
+                                                        inputs=inputs,
+                                                        width=40,
+                                                        buffer=10)
                             swap_index = decision[0]
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
@@ -15260,7 +15262,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham(step=4)
+firstHero = factory.getAyla(step=1)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
