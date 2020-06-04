@@ -6673,6 +6673,7 @@ class Hero:
                     ex.display(width=dispWidth,
                                prefix="    ",
                                indented=True,
+                               breaks=1,
                                hanging=True)
                 if len(inputs) > 0:
                     print("Enter A to replace the first one, B to replace the second one, or " + \
@@ -8800,7 +8801,9 @@ class Hero:
                         decision = self.ChooseIndex([str(x) for x in a_dice],
                                                     prompt="Choose a new die size for " + \
                                                     str(primary_matches[swap_index]) + ":",
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=40,
+                                                    buffer=10)
                         a_die_index = decision[0]
                         inputs = decision[1]
                         primary_matches[swap_index].SetPrevious(this_step)
@@ -10623,7 +10626,8 @@ class Hero:
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
                                inputs=pass_inputs)
-    def AddRetcon(self, inputs=[]):
+    def AddRetcon(self,
+                  inputs=[]):
         # Walks the user through choosing and implementing one of the AddRetcon options defined in
         #  the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -10863,13 +10867,22 @@ class Hero:
                 #  sizes in red_upgrade_sizes
                 red_upgrade_forms = []
                 base_form = "Base Form"
+                alt_pn_form = self.dv_tags[0] + " Form"
+                alt_pn_indices = []
+                alt_pn_status = [99] * 3
                 if self.status_dice[2] < max(legal_dice):
                     # The Red die in the base form is small enough that it can be upgraded
                     red_upgrade_sizes.append(self.status_dice[2])
                     # Include it in the list of form indices as 99
                     red_upgrade_forms.append(99)
                 if self.archetype_modifier == 1:
-                    base_form = self.dv_tags[1]
+                    # Divided heroes don't have a "base" form, just two forms/sets of forms that
+                    #  they switch between
+                    base_form = ""
+                    # They also have the option to have two distinct personalities, each of which
+                    #  may define the status dice of more than one form
+                    if self.dv_personality in range(len(pn_collection)):
+                        alt_pn_status = pn_collection[self.dv_personality][1]
                 # Check each alternate Form to see if its Red status die is individually defined,
                 #  and if so, whether it can be upgraded
                 for i in range(len(self.other_forms)):
@@ -10877,7 +10890,22 @@ class Hero:
                     if fm[4][2] == 0:
                         # This form relies on the base form for its status dice, and won't need to
                         #  be updated if that die is changed
-                        base_form += "/" + fm[0]
+                        if len(fm[5]) > 0:
+                            # This form has an Ability, which means it's from Form-Changer, so its
+                            #  name goes at the end of the list
+                            if len(base_form) > 0:
+                                base_form += "/"
+                            base_form += fm[0]
+                        else:
+                            # This form has no Ability, which means it's from Divided, so its name
+                            #  goes at the start of the list
+                            if len(base_form) > 0:
+                                base_form = "/" + base_form
+                            base_form = fm[0] + base_form
+                        # TODO: add a clause here that collects all forms using the hero's
+                        #  alternate Divided personality's status dice under one option. Since they
+                        #  get their Red status from the same place, upgrading any of them should
+                        #  upgrade all of them.
                     elif fm[4][2] < max(legal_dice):
                         # This form's status dice are individually defined (fm[4][2] != 0)...
                         # ... and the Red one is small enough that it can be upgraded
@@ -10895,23 +10923,30 @@ class Hero:
                     #  one?
                     # For now, let the user choose.
                     entry_options = string.ascii_uppercase[0:len(red_upgrade_sizes)+1]
-                    print("Which Red status die should be upgraded?")
+                    prompt = "Which Red status die should be upgraded?"
                     # Options for upgrading the Red die of a specific non-base form
+                    upgrade_options = []
                     for i in range(len(red_upgrade_sizes)):
                         if red_upgrade_forms[i] == 99:
-                            print("    " + entry_options[i] + ": d" + str(red_upgrade_sizes[i]) + \
-                                  " (" + base_form + ")")
+                            upgrade_options.append("d" + str(red_upgrade_sizes[i]) + " (" + \
+                                                   base_form + ")")
                         else:
-                            print("    " + entry_options[i] + ": d" + str(red_upgrade_sizes[i]) + \
-                                  " (" + self.other_forms[red_upgrade_forms[i]][0] + ")")
+                            upgrade_options.append("d" + str(red_upgrade_sizes[i]) + " (" + \
+                                                   self.other_forms[red_upgrade_forms[i]][0] + ")")
                     # Last option: upgrade all Red dice
-                    print("    " + entry_options[-1] + ": All")
-                    decision = choose_letter(entry_options, ' ', inputs=inputs)
-                    entry_choice = decision[0]
+                    upgrade_options.append("All")
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    decision = self.ChooseIndex(upgrade_options,
+                                                prompt,
+                                                title="Retcon: Upgrade Red status die",
+                                                inputs=pass_inputs,
+                                                width=50,
+                                                buffer=15)
+                    entry_index = decision[0]
                     inputs = decision[1]
-                    entry_index = entry_options.find(entry_choice)
-                    # EDIT: Use choose_index(), not find()? print_options would be complex...
-                    # ...
                     if entry_index == len(entry_options) - 1:
                         # User chose to upgrade all Red status dice
                         print("Upgrading all of " + self.hero_name + "'s Red status dice...")
@@ -11100,7 +11135,9 @@ class Hero:
                                              for i in range(len(red_options))],
                                             prompt="Choose a Red status die to use for " + \
                                             self.hero_name + "'s max Health:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 red_report = "Using d" + str(red_options[entry_index]) + " from " + \
@@ -14571,14 +14608,24 @@ class SelectFrame(Frame):
         # ...
 
 class EntryWindow(SubWindow):
-    def __init__(self, parent, prompt, var=None, title=None):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 var=None,
+                 title="",
+                 width=60,
+                 buffer=15):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
         if isinstance(var, StringVar):
             self.myVariable = var
         else:
             self.myVariable = None
-        self.myEntryFrame = EntryFrame(self, self.myPrompt, self.myVariable)
+        self.myEntryFrame = EntryFrame(self,
+                                       self.myPrompt,
+                                       self.myVariable,
+                                       width=width,
+                                       buffer=buffer)
         self.activate(self.myEntryFrame)
     def body(self, master):
         self.container = master
@@ -14589,10 +14636,21 @@ class EntryFrame(Frame):
     # A frame that asks the user for a line of text and returns the answer.
     # prompt -> self.myPrompt: the text of the question.
     # destination -> self.myDestination: the variable to save the user's response to
-    def __init__(self, parent, prompt, destination, printing=False):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 destination,
+                 printing=False,
+                 width=60,
+                 buffer=15):
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myPrompt = prompt
+        self.myWidth = width
+        self.myBuffer = buffer
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myRawPrompt = str(prompt)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
         self.myText = StringVar(self, destination.get())
         self.myDestination = destination
         self.myPromptLabel = Label(self,
@@ -14616,7 +14674,6 @@ class EntryFrame(Frame):
                               sticky=N+E+S+W)
         # Select all text
         self.myTextEntry.select_range(0,"end")
-        # ...
         self.myOKButton = Button(self,
                                  anchor=CENTER,
                                  justify=CENTER,
@@ -14634,6 +14691,27 @@ class EntryFrame(Frame):
         # Give focus to myTextEntry immediately
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
+    def update(self, event=None):
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
+        self.myPromptLabel.config(text=self.myPrompt,
+                                  width=self.myWidth,
+                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
+        print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
+              str(self.myBuffer))
+    def plusbuffer(self, event=None):
+        self.myBuffer += 5
+        self.update()
+    def minusbuffer(self, event=None):
+        self.myBuffer -= 5
+        self.update()
+    def pluswidth(self, event=None):
+        self.myWidth += 5
+        self.update()
+    def minuswidth(self, event=None):
+        self.myWidth -= 5
+        self.update()
     def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
@@ -15112,7 +15190,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKim()
+firstHero = factory.getLori(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
@@ -15124,7 +15202,7 @@ root.mainloop()
 ##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
 ##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
 ##                                   ["B","A","y","Recalculate"],
-##                                   ["A","B","y","Raise the Mirror"],
+##                                   ["A","y","Raise the Mirror"],
 ##                                   ["A","A","y","Statistical Inference"]])
 ##platypus.AddArchetype(1, inputs=[["b"],
 ##                                 [["g",["b"]],["b"]],
