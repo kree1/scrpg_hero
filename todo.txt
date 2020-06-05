@@ -176,13 +176,35 @@ Hitting Enter in EntryFrame to give an Ability a new name keeps making Python fr
 ? Consolidate mode selection process into a single loop, like form selection ?
  This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
 
+Edit Hero.ChooseIndex to recognize questions where the only answers are "Yes" and "No" and use a messagebox
+
 Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use UseGUI to determine whether they need a messagebox
+.	Hero.AddPQDie, 6317 (give this die a custom name?)
+.	Hero.ChoosePrinciple, 6794 (customize this principle?)
+	Hero.GuidedBackground, 7071 (keep any previous die results?)
+.	Hero.ChooseAbility, 7626 (give this ability a custom name?)
+	Hero.GuidedPowerSource, 8015 (keep any previous die results?)
+.	Hero.AddMode, 8219 (give this mode a custom name?)
+.	Hero.ChooseForm, 8690 (give this form a custom name?)
+	Hero.AddArchetype, 8838 (add another primary power/quality?)
+	Hero.AddArchetype, 8863 (swap out existing primary power/quality?)
+	Hero.AddArchetype, 9062 (add a Powerless Mode?)
+	Hero.AddArchetype, 9443 (give your divided forms custom names?)
+	Hero.GuidedArchetype, 9859 (keep any previous die results?)
+	Hero.GuidedArchetype, 9869 (keep this previous die result?)
+	Hero.GuidedArchetype, 9896 (reroll for subordinate archetype under modular?)
+	Hero.GuidedPersonality, 10327 (use two different personalities?)
+	Hero.GuidedPersonality, 10416 (keep any previous die results?)
+	Hero.ConstructedPersonality, 10454 (use two different personalities?)
 
 Using AddRetcon to upgrade Red status should check if the hero gets multiple alternate Red dice from the same alternate Divided personality, and collect them into a single upgrade option
 
 When implementing Split Form for Form-Changers, any Power that only appears in a [Heroic/Civilian] form can automatically be given the matching tag; it's the ones that appear in both that are undefined
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
+
+You have the following Power dice available: [10]
+You have the following Quality dice available: [10]
 
     def ChooseIndex(self,
                     print_options,
@@ -192,3 +214,4 @@ Ability text wrap in HeroFrame is too big, Command Power overruns the box
                     width=40,
                     buffer=5,
                     inputs=[]):
+					

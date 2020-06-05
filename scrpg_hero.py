@@ -6207,9 +6207,20 @@ class Hero:
         # Returns [index of user's response, any remaining inputs]
         if len(inputs) > 0:
             print("### choose_index: inputs=" + str(inputs))
-        # If we have a GUI and no text inputs, create a SelectWindow to ask the question
-        # Otherwise, use the text shell
         if self.UseGUI(inputs):
+            if len(print_options) == 2:
+                if "Yes" in print_options:
+                    if "No" in print_options:
+                        # Exactly 2 options, one of which is Yes and the other is No, and this hero
+                        #  has an associated GUI? Use a messagebox to give the user a Yes button
+                        #  and a No button side-by-side
+                        msg_prompt = prompt.replace(" (y/n)","")
+                        if messagebox.askyesno(title, msg_prompt):
+                            return [print_options.index("Yes"), inputs]
+                        else:
+                            return [print_options.index("No"), inputs]
+            # A more complicated question with a GUI available and no text inputs? Use a
+            #  SelectWindow to give the user a list of options to pick from
             print("Using SelectWindow")
             answer = IntVar()
             question = SelectWindow(self.myWindow,
@@ -6221,30 +6232,47 @@ class Hero:
                                     buffer=buffer)
             return [answer.get(), inputs]
         else:
+            # There's no GUI for this hero, or the user's inputs have been specified ahead of time?
+            #  Use the CLI to get the answer
             indent = "    "
             dispWidth = 100
             entry_options = string.ascii_uppercase[0:len(print_options)]
             entry_choice = ' '
             if len(prompt) > 0:
+                # Display the prompt to the user
                 print(split_text(prompt,
                                  width=dispWidth))
             for i in range(len(print_options)):
+                # Display each of print_options with its associated letter key
                 print(indent + entry_options[i] + ": " + print_options[i])
             if len(inputs) > 0:
+                # If a text input was specified ahead of time, display that and use it as the
+                #  initial entry
                 print("> " + inputs[0])
                 entry_choice = inputs.pop(0)[0].upper()
             else:
+                # If not, wait for the user to enter something and use their input as the initial
+                #  entry
                 entry_choice = input()[0].upper()
             while entry_choice not in entry_options:
+                # As long as the current entry doesn't match any of the options...
                 if len(inputs) > 0:
+                    # If a text input was specified ahead of time, display the "try again" message
+                    #  and then that input, and use that input as the next entry
                     print(split_text(repeat_message,
                                      width=dispWidth))
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
+                    # If not, use the "try again" message to prompt the user to enter something
+                    #  new, and use their input as the next entry
                     entry_choice = input(split_text(repeat_message,
                                                     width=dispWidth) + "\n")[0].upper()
+            # Now that the latest entry matches one of the options, use find() to determine which
+            #  one.
             entry_index = entry_options.find(entry_choice)
+            # The resulting index goes in our return value, along with any remaining prepared
+            #  inputs.
             return [entry_index, inputs]
     def EnterText(self,
                   prompt="",
@@ -6313,17 +6341,14 @@ class Hero:
         # If the power or quality is a Hallmark or Unlisted Power or a Special Quality, and no new
         #  name is provided, prompt the user to rename it
         if ([ispower, category] in [[0,4],[1,2],[1,9]] or custom_name==True) and flavorname=="":
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to give " + \
-                                     MixedPQ([ispower, category, index]) + \
-                                     " a new name? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to give " + \
+                                        MixedPQ([ispower, category, index]) + " a new name?",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == 'Y':
+            if entry_choice == 0:
                 decision = self.EnterText("Enter a new name for " + \
                                           MixedPQ([ispower, category, index]) + ":",
                                           inputs=inputs)
@@ -6787,18 +6812,16 @@ class Hero:
                 entry_index = entry_options.find(entry_choice)
             ri = r_options[entry_index]
             print(str(ri) + " selected!")
-            entry_choice = ' '
-            entry_options = "YN"
             entry_title = ri.title
             rename_prompt = "Do you want to customize " + str(ri) + "?"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt=rename_prompt,
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes","No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt=rename_prompt,
+                                        title="Principle Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == "N":
+            if entry_choice == 1:
                 print("Standard " + str(ri) + " selected.")
                 pass_inputs = []
                 if len(inputs) > 0:
@@ -7621,16 +7644,15 @@ class Hero:
             rename_prompt += "\n\n" + new_ability.details(width=-1,
                                                           indented=True)
             # Green/Yellow/Red Abilities can have custom names
-            entry_options = "YN"
-            rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name (y/n)?"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt=rename_prompt,
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name?"
+            decision = self.ChooseIndex(entry_options,
+                                        prompt=rename_prompt,
+                                        title=display_str,
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == "Y":
+            if entry_choice == 0:
                 decision = self.EnterText(new_ability.details(width=-1,
                                                               indented=True) + "\n\n" + \
                                           "Enter a new name for this Ability:",
@@ -8215,27 +8237,20 @@ class Hero:
                                        inputs=pass_inputs)
         # Let the user choose whether to customize the name.
         mode_name = t_name
-        entry_options = "YN"
-        decision = choose_letter(entry_options,
-                                 ' ',
-                                 prompt="Do you want to give " + t_name + " a new name? (y/n)",
-                                 repeat_message="Please enter Y or N.",
-                                 inputs=inputs)
+        entry_options = ["Yes", "No"]
+        decision = self.ChooseIndex(entry_options,
+                                    prompt="Do you want to give " + t_name + " a new name?",
+                                    title="Mode Creation: " + t_name,
+                                    inputs=inputs)
         entry_choice = decision[0]
         inputs = decision[1]
-        if entry_choice == 'Y':
+        if entry_choice == 0:
             decision = self.EnterText("Enter the new name for this Mode:",
                                       inputs=inputs,
                                       default=t_name,
                                       title="Mode Creation: " + t_name)
             mode_name = decision[0]
             inputs = decision[1]
-##            if len(inputs) > 0:
-##                print("Enter the new name for this Mode:")
-##                print("> " + inputs[0])
-##                mode_name = inputs.pop(0)
-##            else:
-##                mode_name = input("Enter the new name for this Mode:\n")
         new_mode = [mode_name,
                     zone,
                     mode_power_dice,
@@ -8686,19 +8701,18 @@ class Hero:
                                        inputs=pass_inputs)
         # Let the user choose whether to customize the name.
         form_name = form_ability_template.name
-        entry_options = "YN"
-        decision = choose_letter(entry_options,
-                                 ' ',
-                                 prompt="Do you want to give " + form_name + " a new name? (y/n)",
-                                 repeat_message="Please enter Y or N",
-                                 inputs=inputs)
+        entry_options = ["Yes", "No"]
+        decision = self.ChooseIndex(entry_options,
+                                    prompt="Do you want to give " + form_name + " a new name?",
+                                    title="Form Creation: " + form_name,
+                                    inputs=inputs)
         entry_choice = decision[0]
         inputs = decision[1]
-        if entry_choice == 'Y':
+        if entry_choice == 0:
             decision = self.EnterText("Enter the new name for this Form:",
                                       inputs=inputs,
                                       default=form_name,
-                                      title="Create Form: " + form_ability_template.name)
+                                      title="Form Creation: " + form_ability_template.name)
             form_name = decision[0]
             inputs = decision[1]
         new_form = [form_name,
@@ -11905,25 +11919,25 @@ def Create_Shikari(step=len(step_names)):
     if step >= 1:
         bg = shikari.ConstructedBackground(inputs=["Q"])
         shikari.AddBackground(bg,
-                              inputs=[[["i",["a"]],["b"]],["K","y","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+                              inputs=[[["i",["a"]],["b"]],["K","a","d","What new threat is as prepared for this harsh environment as you are?","f"]])
     if step >= 2:
         ps = shikari.ConstructedPowerSource(inputs=["C"])
         shikari.AddPowerSource(ps,
-                               inputs=[[["o",["a"]],["h",["a"]],["c",[["y","Warskin"]]]],["A","b","y","Advance Tracking"],["A","a","y","Know the Way"],["A","a","y","Warrior's Instinct"]])
+                               inputs=[[["o",["a"]],["h",["a"]],["c",[["a","Warskin"]]]],["A","b","a","Advance Tracking"],["A","a","a","Know the Way"],["A","a","a","Warrior's Instinct"]])
     if step >= 3:
         arc = shikari.ConstructedArchetype(inputs=["H"])
         shikari.AddArchetype(arc[0],
                              arc[1],
-                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]])
+                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","a","Watch Your Sprocking Head"],["A","f","a","Coming Through!"],["A","d","a","Follow Me!"],["J","b"]])
     if step >= 4:
         pn = shikari.ConstructedPersonality(inputs=["I"])
         shikari.AddPersonality(pn[0],
-                               inputs=[[["Y","Lone Star Legion"]]])
+                               inputs=[[["a","Lone Star Legion"]]])
     if step >= 5:
-        shikari.AddRedAbility(inputs=["F",["D","y","End of the Road"]])
-        shikari.AddRedAbility(inputs=["H",["E","y","Obstacle Avoidance"]])
+        shikari.AddRedAbility(inputs=["F",["D","a","End of the Road"]])
+        shikari.AddRedAbility(inputs=["H",["E","a","Obstacle Avoidance"]])
     if step >= 6:
-        shikari.AddRetcon(inputs=["g",["C",["D","y","Protective Escort"]]])
+        shikari.AddRetcon(inputs=["g",["C",["D","a","Protective Escort"]]])
     if step >= 7:
         shikari.AddHealth(roll=2,
                           inputs=["b","b"])
@@ -11937,36 +11951,36 @@ def Create_Ultra_Boy(step=len(step_names)):
     if step >= 1:
         bg = jo.ConstructedBackground(inputs=["L"])
         jo.AddBackground(bg,
-                         inputs=[[["a",["a"]],["c"]],["L","n"]])
+                         inputs=[[["a",["a"]],["c"]],["L","b"]])
     if step >= 2:
         ps = jo.ConstructedPowerSource(inputs=["I"])
         jo.AddPowerSource(ps,
-                          inputs=[[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","b","y","That Tickles"],["C","a","y","Zap!"]])
+                          inputs=[[["a"],["a",[["a","Legion Flight Ring"]]],["e"]],["C","b","a","Yoink!"],["A","b","a","That Tickles"],["C","a","a","Zap!"]])
     if step >= 3:
         arc = jo.ConstructedArchetype(inputs=["T","C"])
         jo.AddArchetype(arc[0],
                         arc[1],
                         inputs=[["a"],["f",["b"]],[["f"]],
-                                ["f","y","I'm On It"],
-                                ["y","'Scuse Me"],
-                                ["y","Now I'm Mad"],
+                                ["f","a","I'm On It"],
+                                ["a","'Scuse Me"],
+                                ["a","Now I'm Mad"],
                                 "n",
                                 "A",
-                                ["a","b","c","a",["c","y","Who Let You Play With These?"],"y","Ultra Speed"],
+                                ["a","b","c","a",["c","a","Who Let You Play With These?"],"a","Ultra Speed"],
                                 "D",
-                                ["b","c","a","b",["c","y","Sprock These Two In Particular"],"y","Flash Vision"],
+                                ["b","c","a","b",["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
                                 "D",
-                                ["d","a","a","a",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
+                                ["d","a","a","a",["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
                                 "B",
-                                ["d","b",["a","y","Was That Important?"],"y","Ultra Strength"],
-                                ["D","n"]])
+                                ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
+                                ["D","b"]])
     if step >= 4:
         pn = jo.ConstructedPersonality(inputs=["O"])
         jo.AddPersonality(pn[0],
-                          inputs=[[["y","Gangster Made Good"]],["c"]])
+                          inputs=[[["a","Gangster Made Good"]],["c"]])
     if step >= 5:
-        jo.AddRedAbility(inputs=["F",["C","y","Ring-Sling"]])
-        jo.AddRedAbility(inputs=["A",["A","y","Street Smarts"]])
+        jo.AddRedAbility(inputs=["F",["C","a","Ring-Sling"]])
+        jo.AddRedAbility(inputs=["A",["A","a","Street Smarts"]])
     if step >= 6:
         jo.AddRetcon(inputs=["e"])
     if step >= 7:
@@ -11982,11 +11996,11 @@ def Create_Chameleon(step=len(step_names)):
     if step >= 1:
         bg = cham.ConstructedBackground(inputs=["Q"])
         cham.AddBackground(bg,
-                           inputs=[[["k",["a"]],["k"]],["D", "n"]])
+                           inputs=[[["k",["a"]],["k"]],["D", "b"]])
     if step >= 2:
         ps = cham.ConstructedPowerSource(inputs=["N"])
         cham.AddPowerSource(ps,
-                            inputs=[[["a","p",["a"]],["a","a",["b", ["y","Legion Flight Ring"]]],["a","b"]],["C","c","y","Slippery"],["A","a","y","Excellent Listener"],"b"])
+                            inputs=[[["a","p",["a"]],["a","a",["b", ["a","Legion Flight Ring"]]],["a","b"]],["C","c","a","Slippery"],["A","a","a","Excellent Listener"],"b"])
     if step >= 3:
         arc = cham.ConstructedArchetype(inputs=["P"])
         cham.AddArchetype(arc[0],
@@ -11994,22 +12008,22 @@ def Create_Chameleon(step=len(step_names)):
                           inputs=[["h"],
                                   ["n"],
                                   [["b","j"]],
-                                  ["a","n"],
-                                  ["y","Improvise"],
-                                  ["B", "a", "y", "Distracting Strike"],
-                                  ["C","a","a","b","a","b","e","b","e","b","c",["e","y","Natural Weaponry"],"y","Beast Form"],
-                                  ["D","a","b","e","b","e","q","c",["a","y","Critical Discovery"],"y","Stealth Form"],
-                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
-                                  ["K","n"]])
+                                  ["a","b"],
+                                  ["a","Improvise"],
+                                  ["B", "a", "a", "Distracting Strike"],
+                                  ["C","a","a","b","a","b","e","b","e","b","c",["e","a","Natural Weaponry"],"a","Beast Form"],
+                                  ["D","a","b","e","b","e","q","c",["a","a","Critical Discovery"],"a","Stealth Form"],
+                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","a","Who Do You Think I Am!?"],"a","Imitation Form"],
+                                  ["K","b"]])
     if step >= 4:
         pn = cham.ConstructedPersonality(inputs=["O"])
         cham.AddPersonality(pn[0],
-                            inputs=[[["y","Frontline Ambassador"]],["a"]])
+                            inputs=[[["a","Frontline Ambassador"]],["a"]])
     if step >= 5:
-        cham.AddRedAbility(inputs=["A",["B","a","y","Lateral Thinking"]])
-        cham.AddRedAbility(inputs=["F",["B","a","y","Change for the Better"]])
+        cham.AddRedAbility(inputs=["A",["B","a","a","Lateral Thinking"]])
+        cham.AddRedAbility(inputs=["F",["B","a","a","Change for the Better"]])
     if step >= 6:
-        cham.AddRetcon(inputs=["f","c",["E","n",["B"]]])
+        cham.AddRetcon(inputs=["f","c",["E","b",["B"]]])
     if step >= 7:
         cham.AddHealth(inputs=["b","a"])
     print()
@@ -12022,11 +12036,11 @@ def Create_Future_Girl(step=len(step_names)):
     if step >= 1:
         bg = lori.ConstructedBackground(inputs=["N"])
         lori.AddBackground(bg,
-                           inputs=[[["C",["A"]],["H"]],["L","N"]])
+                           inputs=[[["C",["A"]],["H"]],["L","B"]])
     if step >= 2:
         ps = lori.ConstructedPowerSource(inputs=["G"])
         lori.AddPowerSource(ps,
-                            inputs=[[["A","D",["A",["Y","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","Y","Natural Heroism"],["B","B","Y","Synthetic Power"],["A","A","Y","One-Hour Superpower"]])
+                            inputs=[[["A","D",["A",["A","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","A","Natural Heroism"],["B","B","A","Synthetic Power"],["A","A","A","One-Hour Superpower"]])
     if step >= 3:
         arc = lori.ConstructedArchetype(inputs=["S","P"])
         lori.AddArchetype(arc[0],
@@ -12034,26 +12048,26 @@ def Create_Future_Girl(step=len(step_names)):
                           inputs=[["H",["A"]],
                                   ["T",["A"]],
                                   [["A","Y"]],
-                                  ["y","Redial"],
-                                  ["y","Dial ICE"],
-                                  ["B","Y","Collect Call"],
-                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","y","Where Was I?"],"y","Mobile Hero","B"],
-                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","y","Wrap It Up"],"y","Capture Hero","C"],
-                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
+                                  ["A","Redial"],
+                                  ["A","Dial ICE"],
+                                  ["B","A","Collect Call"],
+                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","A","Where Was I?"],"a","Mobile Hero","B"],
+                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","A","Wrap It Up"],"a","Capture Hero","C"],
+                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","A","Lights Out"],"a","Powerhouse Hero","B"],
                                   "N",
                                   "B",
-                                  ["y","Dial H for Hero"],
+                                  ["A","Dial H for Hero"],
                                   "A",
-                                  ["Y","Unlisted Numbers"],
+                                  ["A","Unlisted Numbers"],
                                   "B",
-                                  ["H","n"]])
+                                  ["H","b"]])
     if step >= 4:
         pn = lori.ConstructedPersonality(inputs=["N","D"])
         lori.AddPersonality(pn[0],
-                            inputs=[[["Y","Future Girl"]],["e"]])
+                            inputs=[[["A","Future Girl"]],["e"]])
     if step >= 5:
-        lori.AddRedAbility(inputs=["B",["B","Y","Please Hold"]])
-        lori.AddRedAbility(inputs=["F",["A","Y","Wrong Number"]])
+        lori.AddRedAbility(inputs=["B",["B","A","Please Hold"]])
+        lori.AddRedAbility(inputs=["F",["A","A","Wrong Number"]])
     if step >= 6:
         lori.AddRetcon(inputs=["e"])
     if step >= 7:
@@ -12069,25 +12083,25 @@ def Create_Knockout(step=len(step_names)):
     if step >= 1:
         bg = knockout.ConstructedBackground(inputs=["M"])
         knockout.AddBackground(bg,
-                               inputs=[["b"],[["b",["a"]],["f"]],["E","n"]])
+                               inputs=[["b"],[["b",["a"]],["f"]],["E","b"]])
     if step >= 2:
         ps = knockout.ConstructedPowerSource(inputs=["N"])
         knockout.AddPowerSource(ps,
-                                inputs=[[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]])
+                                inputs=[[["a","b",["b",["a","Doctor's Tools"]]],["a","a",["a",["a","Aston Martin"]]],["b","l"]],["B","c","a","Field Treatment"],["B","b","a","Watch the Paint!"]])
     if step >= 3:
         arc = knockout.ConstructedArchetype(inputs=["S","J"])
         knockout.AddArchetype(arc[0],
                               arc[1],
-                              inputs=[["a","a"],[["a","h"],["b","c"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]])
+                              inputs=[["a","a"],[["a","h"],["b","c"]],["b"],["D","e","a","Touch Up"],["D","b","a","12-Car Pileup"],["B","a","a",'Say "Ahh!"'],"y","Vehicle","Robot","B",["a","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","b"]])
     if step >= 4:
         pn = knockout.ConstructedPersonality(inputs=["N","T"])
         knockout.AddPersonality(pn[0],
-                                inputs=[[["Y","Mad Doctor"]],["e"]])
+                                inputs=[[["A","Mad Doctor"]],["e"]])
     if step >= 5:
-        knockout.AddRedAbility(inputs=["D",["C","y","Peel Out"]])
-        knockout.AddRedAbility(inputs=["D",["A","y","Anesthetic"]])
+        knockout.AddRedAbility(inputs=["D",["C","a","Peel Out"]])
+        knockout.AddRedAbility(inputs=["D",["A","a","Anesthetic"]])
     if step >= 6:
-        knockout.AddRetcon(inputs=["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]])
+        knockout.AddRetcon(inputs=["g",["C",["C","a","You Scratch My Paint, I Scratch Yours"]]])
     if step >= 7:
         knockout.AddHealth(inputs=["c","a"])
     print()
@@ -12100,45 +12114,28 @@ def Create_Architect(step=len(step_names)):
     if step >= 1:
         bg = kim.ConstructedBackground(inputs=["R"])
         kim.AddBackground(bg,
-                          inputs=[[["b"],["b"]],["K","n"]])
+                          inputs=[[["b"],["b"]],["K","b"]])
     if step >= 2:
         ps = kim.ConstructedPowerSource(inputs=["E"])
         kim.AddPowerSource(ps,
-                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]])
+                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","a","Environmental Planning"],["B","a","a","Aerial Survey"],["c"]])
     if step >= 3:
         arc = kim.ConstructedArchetype(inputs=["N"])
         kim.AddArchetype(arc[0],
                          arc[1],
-                         inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+                         inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","a","Concept Art"],["a","a","Detailing"],["C","d","a","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","a","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
     if step >= 4:
         pn = kim.ConstructedPersonality(inputs=["G"])
         kim.AddPersonality(pn[0],
-                           inputs=[[["Y", "Super Mom"]],["D"]])
+                           inputs=[[["A", "Super Mom"]],["D"]])
     if step >= 5:
-        kim.AddRedAbility(inputs=["H",["A","D","y","Economy of Scale"]])
-        kim.AddRedAbility(inputs=["E",["A","y","Blot Out"]])
+        kim.AddRedAbility(inputs=["H",["A","D","a","Economy of Scale"]])
+        kim.AddRedAbility(inputs=["E",["A","a","Blot Out"]])
     if step >= 6:
-        kim.AddRetcon(inputs=["G",["G",["F","y","Constructive Criticism"]]])
+        kim.AddRetcon(inputs=["G",["G",["F","a","Constructive Criticism"]]])
     if step >= 7:
         kim.AddHealth(roll=6,
                       inputs=["A","B"])
-##    kim.CreateHero(health_roll=6,
-##                   inputs=["B",
-##                           ["R"],
-##                           [[["b"],["b"]],["K","n"]],
-##                           "B",
-##                           ["E"],
-##                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]],
-##                           "B",
-##                           ["N"],
-##                           [["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]],
-##                           "B",
-##                           ["G"],
-##                           [[["Y", "Super Mom"]],["D"]],
-##                           ["H",["A","D","y","Economy of Scale"]],
-##                           ["E",["A","y","Blot Out"]],
-##                           ["G",["G",["F","y","Constructive Criticism"]]],
-##                           ["A","B"]])
     print()
     kim.display()
     return kim
@@ -12149,45 +12146,28 @@ def Create_Spark(step=len(step_names)):
     if step >= 1:
         bg = spark.ConstructedBackground(inputs=["E"])
         spark.AddBackground(bg,
-                            inputs=[[["i",["b"]],["d"]],["e","E","n"]])
+                            inputs=[[["i",["b"]],["d"]],["e","E","b"]])
     if step >= 2:
         ps = spark.ConstructedPowerSource(inputs=["a","A"])
         spark.AddPowerSource(ps,
-                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]])
+                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","a","Charge!"],["A","b","a","Made You Look"],["B","a","a","Electric Atmosphere"]])
     if step >= 3:
         arc = spark.ConstructedArchetype(inputs=["E"])
         spark.AddArchetype(arc[0],
                            arc[1],
-                           inputs=[["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+                           inputs=[["c",["a"]],["j"],["D","b","a","Thread the Needle"],["C","a","a","Enough for Everyone"],["B","d","a","Complete Circuit"],["A","a","No Fear"],["B","a","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
     if step >= 4:
         pn = spark.ConstructedPersonality(inputs=["P"])
         spark.AddPersonality(pn[0],
-                             inputs=[[["Y","Bright Lights"]],["d"]])
+                             inputs=[[["a","Bright Lights"]],["d"]])
     if step >= 5:
-        spark.AddRedAbility(inputs=["D",["A","y","Finishing Strike"]])
-        spark.AddRedAbility(inputs=["G",["B","y","Living Battery"]])
+        spark.AddRedAbility(inputs=["D",["A","a","Finishing Strike"]])
+        spark.AddRedAbility(inputs=["G",["B","a","Living Battery"]])
     if step >= 6:
-        spark.AddRetcon(inputs=["G",["A",["B","y","Struck by Inspiration"]]])
+        spark.AddRetcon(inputs=["G",["A",["B","a","Struck by Inspiration"]]])
     if step >= 7:
         spark.AddHealth(roll=7,
                         inputs=["b","b"])
-##    spark.CreateHero(health_roll=7,
-##                     inputs=["b",
-##                             ["E"],
-##                             [[["i",["b"]],["d"]],["e","E","n"]],
-##                             "b",
-##                             ["a","A"],
-##                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
-##                             "b",
-##                             ["E"],
-##                             [["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]],
-##                             "b",
-##                             ["P"],
-##                             [[["Y","Bright Lights"]],["d"]],
-##                             ["D",["A","y","Finishing Strike"]],
-##                             ["G",["B","y","Living Battery"]],
-##                             ["G",["A",["B","y","Struck by Inspiration"]]],
-##                             ["b","b"]])
     print()
     spark.display()
     return spark
@@ -15362,10 +15342,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getCham(step=0)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getCham()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -15390,9 +15370,9 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "
