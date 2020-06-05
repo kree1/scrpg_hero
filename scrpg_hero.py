@@ -987,9 +987,10 @@ rc_responsibility = [r_business,
                      r_veteran,
                      r_youth]
 
-global rc_master, rc_names
+global rc_master, rc_names, ri_width
 rc_master = [rc_esoteric, rc_expertise, rc_ideals, rc_identity, rc_responsibility]
 rc_names = ["Esoteric", "Expertise", "Ideals", "Identity", "Responsibility"]
+ri_width = 90
 
 # Class representing a Principle
 class Principle:
@@ -6425,7 +6426,7 @@ class Hero:
         decision = self.ChooseIndex([str(d) for d in valid_dice],
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
-                                    width=40,
+                                    width=45,
                                     buffer=10)
         entry_index = decision[0]
         inputs = decision[1]
@@ -6538,6 +6539,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title=print_type + " Selection",
+                                            lwidth=40,
+                                            lbuffer=5,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -6665,6 +6668,8 @@ class Hero:
                                         details,
                                         var=answer,
                                         title="Principle Selection",
+                                        lwidth=30,
+                                        lbuffer=5,
                                         rwidth=dispWidth)
                 entry_index = answer.get()
             else:
@@ -6752,7 +6757,10 @@ class Hero:
                                                    breaks=2,
                                                    hanging=False) for x in r_options],
                                         var=answer,
-                                        title="Principle Selection")
+                                        title="Principle Selection",
+                                        lwidth=30,
+                                        lbuffer=5,
+                                        rwidth=ri_width)
                 entry_index = answer.get()
             else:
                 print(prompt)
@@ -7029,6 +7037,7 @@ class Hero:
                                                            grid=False) for x in bg_indices],
                                         var=answer,
                                         title="Background Selection",
+                                        lwidth=30,
                                         rwidth=bg_width)
                 entry_index = answer.get()
             else:
@@ -7098,10 +7107,13 @@ class Hero:
                                                        width=-1,
                                                        breaks=2,
                                                        indented=True,
+                                                       hanging=False,
                                                        grid=False) \
                                      for i in range(len(bg_collection))],
                                     var=answer,
                                     title="Background Selection",
+                                    lwidth=30,
+                                    lbuffer=5,
                                     rwidth=bg_width)
             entry_index = answer.get()
         else:
@@ -7329,7 +7341,10 @@ class Hero:
                                             section_list,
                                             details,
                                             var=answer,
-                                            title="Ability Selection")
+                                            title="Ability Selection",
+                                            lwidth=40,
+                                            lbuffer=15,
+                                            rwidth=a_width)
                     entry_index = answer.get()
                 else:
                     print(options_report)
@@ -7369,6 +7384,8 @@ class Hero:
                                                    indented=True) for x in template_options],
                                         var=answer,
                                         title="Ability Selection",
+                                        lwidth=40,
+                                        lbuffer=15,
                                         rwidth=a_width)
                 entry_index = answer.get()
             else:
@@ -7652,9 +7669,9 @@ class Hero:
         #  If not specified here, uses self.ps_dice.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the set of dice they'll use in the Archetype step.
-        prefix = "### AddPowerSource: "
+        notePrefix = "### AddPowerSource: "
         if len(inputs) > 0:
-            print(prefix + "inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if pdice == []:
             pdice = self.ps_dice
         # This is Step 2 of hero creation!
@@ -7719,7 +7736,7 @@ class Hero:
                 # Make a list of abilities the hero has in this zone from this Archetype
                 ps_zone_abilities = [x for x in self.abilities \
                                      if x.step == this_step and x.zone == 1]
-##                print(prefix + "ps_zone_abilities = " + \
+##                print(notePrefix + "ps_zone_abilities = " + \
 ##                      str([str(x) for x in ps_zone_abilities]))
                 if len(ps_zone_abilities) > 0:
                     # Start by making a list of the Powers/Qualities already used in
@@ -7733,16 +7750,16 @@ class Hero:
                         for j in range(i + 1, len(ps_triplets)):
                             if ps_triplets[j] == trip:
                                 del ps_triplets[j]
-##                    print(prefix + "ps_triplets = " + str(ps_triplets))
-##                    print(prefix + "(" + str(MixedPQs(ps_triplets)) + ")")
+##                    print(notePrefix + "ps_triplets = " + str(ps_triplets))
+##                    print(notePrefix + "(" + str(MixedPQs(ps_triplets)) + ")")
                     # Remove those previously-used triplets from the list of triplets that can be
                     #  used in this ability:
                     while len([x for x in legal_triplets if x in ps_triplets]) > 0:
                         for x in ps_triplets:
                             if x in legal_triplets:
                                 legal_triplets.remove(x)
-##                    print(prefix + "legal_triplets = " + str(legal_triplets))
-##                    print(prefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+##                    print(notePrefix + "legal_triplets = " + str(legal_triplets))
+##                    print(notePrefix + "(" + str(MixedPQs(legal_triplets)) + ")")
                 yellow_options = self.ChooseAbility(yellow_options,
                                                     1,
                                                     triplet_options=legal_triplets,
@@ -7897,6 +7914,9 @@ class Hero:
         # Walks the user through randomly selecting a Power Source as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the selected Power Source.
+        notePrefix = "### Hero.GuidedPowerSource: "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
         if pdice == [] and self.ps_dice == []:
             print("Error! No dice have been specified for this step.")
             return
@@ -7937,16 +7957,18 @@ class Hero:
                             if ps_options[i] == ps_options[j]:
                                 del ps_options[j]
             print(roll_report)
+##            print(notePrefix + "ps_options: " + str(ps_options))
             # To convert to 0-index, subtract 1 from each option:
             ps_indices = [x-1 for x in ps_options]
+##            print(notePrefix + "ps_indices: " + str(ps_indices))
             # Let the user choose from the options provided by their roll...
             entry_choice = ' '
             entry_options = string.ascii_uppercase[0:len(ps_options) + rerolls]
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                options = [ps_collection[i][0] + " (" + str(ps_options[i]) + ")" \
-                           for i in ps_indices]
+                options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
+                           for i in range(len(ps_indices))]
                 if rerolls > 0:
                     options += ["REROLL"]
                 question = ExpandWindow(self.myWindow,
@@ -7959,6 +7981,7 @@ class Hero:
                                                             grid=False) for i in ps_indices],
                                         var=answer,
                                         title="Power Source Selection",
+                                        lwidth=35,
                                         rwidth=ps_width)
                 entry_index = answer.get()
             else:
@@ -8038,6 +8061,8 @@ class Hero:
                                      for i in range(len(ps_collection))],
                                     var=answer,
                                     title="Power Source Selection",
+                                    lwidth=35,
+                                    lbuffer=5,
                                     rwidth=ps_width)
             entry_index = answer.get()
         else:
@@ -8480,6 +8505,8 @@ class Hero:
                                     details,
                                     var=answer,
                                     title="Form Selection",
+                                    lwidth=30,
+                                    lbuffer=5,
                                     rwidth=dispWidth)
             entry_index = answer.get()
         else:
@@ -9060,6 +9087,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype Selection: Modular",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -9110,6 +9139,8 @@ class Hero:
                                                 details,
                                                 var=answer,
                                                 title="Archetype Selection: Modular",
+                                                lwidth=30,
+                                                lbuffer=5,
                                                 rwidth=rwidth)
                         entry_index = answer.get()
                     else:
@@ -9157,6 +9188,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype Selection: Modular",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -9440,6 +9473,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype: Divided - Transition Selection",
+                                            lwidth=35,
+                                            lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
                     # ...
@@ -9498,6 +9533,7 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype: Divided - Divided Nature",
+                                            lwidth=30,
                                             rwidth=100)
                     dv_nature = build_options[answer.get()]
                     # ...
@@ -9788,6 +9824,7 @@ class Hero:
                                                           grid=False) for i in arc_indices],
                                         var=answer,
                                         title="Archetype Selection",
+                                        lwidth=35,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -9925,6 +9962,8 @@ class Hero:
                                              for i in arc_indices],
                                             var=answer,
                                             title="Archetype Selection",
+                                            lwidth=35,
+                                            lbuffer=5,
                                             rwidth=arc_width)
                     entry_index = answer.get()
                 else:
@@ -9975,6 +10014,7 @@ class Hero:
                                      for i in range(len(arc_collection))],
                                     var=answer,
                                     title="Archetype Selection",
+                                    lwidth=35,
                                     rwidth=arc_width)
             entry_index = answer.get()
         else:
@@ -10020,6 +10060,8 @@ class Hero:
                                          for i in range(len(arc_simple))],
                                         var=answer,
                                         title="Archetype Selection",
+                                        lwidth=35,
+                                        lbuffer=5,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -10342,7 +10384,9 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Personality Selection",
-                                            rwidth=pn_Width)
+                                            lwidth=20,
+                                            lbuffer=0,
+                                            rwidth=pn_width)
                     entry_index = answer.get()
                 else:
                     for i in range(len(entry_options)-rerolls):
@@ -10378,8 +10422,12 @@ class Hero:
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 'Y':
+                        # Only two dice were rolled. There's no point in rolling again if you want
+                        #  to keep both, and no point in keeping anything if you want to keep
+                        #  neither. Therefore, the user wants to keep exactly one.
                         entry_options = string.ascii_uppercase[0:len(die_results)]
-                        decision = self.ChooseIndex([str(x) for x in die_results],
+                        decision = self.ChooseIndex([str(x) + " (" + pn_collection[x-1][0] + \
+                                                     ")" for x in die_results],
                                                     prompt="Choose which result to keep:",
                                                     inputs=inputs,
                                                     width=25)
@@ -10435,6 +10483,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Personality Selection",
+                                            lwidth=30,
+                                            lbuffer=10,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -10499,6 +10549,8 @@ class Hero:
                                         details,
                                         var=answer,
                                         title="Personality Selection",
+                                        lwidth=35,
+                                        lbuffer=10,
                                         rwidth=pn_width)
                 entry_index = answer.get()
             else:
@@ -10641,6 +10693,8 @@ class Hero:
                                         details,
                                         var=answer,
                                         title="Red Ability Selection",
+                                        lwidth=35,
+                                        lbuffer=15,
                                         rwidth=100)
                 entry_index = answer.get()
             else:
@@ -10841,7 +10895,10 @@ class Hero:
                                             options,
                                             details,
                                             var=answer,
-                                            title="Retcon",
+                                            title="Retcon: Change an Ability's related " + \
+                                            "Power/Quality",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
                 else:
@@ -11090,6 +11147,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Retcon: Change a Principle",
+                                            lwidth=25,
+                                            lbuffer=5,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -12135,13 +12194,14 @@ def Create_Spark(step=len(step_names)):
 
 class SampleMaker:
     def __init__(self):
-        self.shikari = [None, 0]
-        self.jo = [None, 0]
-        self.cham = [None, 0]
-        self.lori = [None, 0]
-        self.knockout = [None, 0]
-        self.kim = [None, 0]
-        self.ayla = [None, 0]
+        self.stepRange = range(0, len(step_names) + 1)
+        self.shikari = [None, -1]
+        self.jo = [None, -1]
+        self.cham = [None, -1]
+        self.lori = [None, -1]
+        self.knockout = [None, -1]
+        self.kim = [None, -1]
+        self.ayla = [None, -1]
         self.codenames = ["Shikari",
                           "Ultra Boy",
                           "Chameleon",
@@ -12154,12 +12214,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getShikari: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.shikari[1]))
-        if step in range(1, len(step_names) + 1) and step != self.shikari[1]:
+        if step in self.stepRange and step != self.shikari[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.shikari[0] = Create_Shikari(step=step)
             self.shikari[1] = step
-        if step not in range(1, len(step_names) + 1) and self.shikari[1] != len(step_names):
+        if step not in self.stepRange and self.shikari[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.shikari[0] = Create_Shikari()
@@ -12170,12 +12230,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getJo: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.jo[1]))
-        if step in range(1, len(step_names) + 1) and step != self.jo[1]:
+        if step in self.stepRange and step != self.jo[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.jo[0] = Create_Ultra_Boy(step=step)
             self.jo[1] = step
-        if step not in range(1, len(step_names) + 1) and self.jo[1] != len(step_names):
+        if step not in self.stepRange and self.jo[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.jo[0] = Create_Ultra_Boy()
@@ -12186,12 +12246,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getCham: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.cham[1]))
-        if step in range(1, len(step_names) + 1) and step != self.cham[1]:
+        if step in self.stepRange and step != self.cham[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.cham[0] = Create_Chameleon(step=step)
             self.cham[1] = step
-        if step not in range(1, len(step_names) + 1) and self.cham[1] != len(step_names):
+        if step not in self.stepRange and self.cham[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.cham[0] = Create_Chameleon()
@@ -12202,12 +12262,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getLori: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.lori[1]))
-        if step in range(1, len(step_names) + 1) and step != self.lori[1]:
+        if step in self.stepRange and step != self.lori[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.lori[0] = Create_Future_Girl(step=step)
             self.lori[1] = step
-        if step not in range(1, len(step_names) + 1) and self.lori[1] != len(step_names):
+        if step not in self.stepRange and self.lori[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.lori[0] = Create_Future_Girl()
@@ -12218,12 +12278,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getKnockout: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.knockout[1]))
-        if step in range(1, len(step_names) + 1) and step != self.knockout[1]:
+        if step in self.stepRange and step != self.knockout[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.knockout[0] = Create_Knockout(step=step)
             self.knockout[1] = step
-        if step not in range(1, len(step_names) + 1) and self.knockout[1] != len(step_names):
+        if step not in self.stepRange and self.knockout[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.knockout[0] = Create_Knockout()
@@ -12234,12 +12294,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getKim: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.kim[1]))
-        if step in range(1, len(step_names) + 1) and step != self.kim[1]:
+        if step in self.stepRange and step != self.kim[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.kim[0] = Create_Architect(step=step)
             self.kim[1] = step
-        if step not in range(1, len(step_names) + 1) and self.kim[1] != len(step_names):
+        if step not in self.stepRange and self.kim[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.kim[0] = Create_Architect()
@@ -12250,12 +12310,12 @@ class SampleMaker:
         notePrefix = "### SampleMaker.getAyla: "
         print(notePrefix + "step=" + str(step))
         print(notePrefix + "prev step=" + str(self.ayla[1]))
-        if step in range(1, len(step_names) + 1) and step != self.ayla[1]:
+        if step in self.stepRange and step != self.ayla[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.ayla[0] = Create_Spark(step=step)
             self.ayla[1] = step
-        if step not in range(1, len(step_names) + 1) and self.ayla[1] != len(step_names):
+        if step not in self.stepRange and self.ayla[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.ayla[0] = Create_Spark()
@@ -14640,6 +14700,8 @@ class SelectFrame(Frame):
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def update(self, event=None):
+        # Make sure myWidth never gets narrower than the widest option
+        self.myWidth = max(self.myWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
@@ -14807,7 +14869,9 @@ class ExpandWindow(SubWindow):
                  var=None,
                  title=None,
                  lwidth=40,
-                 rwidth=100):
+                 lbuffer=-1,
+                 rwidth=100,
+                 rbuffer=-1):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
@@ -14822,7 +14886,9 @@ class ExpandWindow(SubWindow):
                                          self.myDetails,
                                          self.myVariable,
                                          lwidth=lwidth,
-                                         rwidth=rwidth)
+                                         lbuffer=lbuffer,
+                                         rwidth=rwidth,
+                                         rbuffer=rbuffer)
         self.activate(self.myExpandFrame)
     def body(self, master):
         self.container = master
@@ -14845,7 +14911,9 @@ class ExpandFrame(Frame):
                  expand_options,
                  destination,
                  lwidth=40,
+                 lbuffer=-1,
                  rwidth=100,
+                 rbuffer=-1,
                  printing=False):
         Frame.__init__(self, parent)
         notePrefix = "### ExpandFrame.__init__: "
@@ -14864,13 +14932,19 @@ class ExpandFrame(Frame):
 ##        print(notePrefix + "max len = " + str(max([len(x) for x in self.myOptions])))
         self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
 ##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
-        self.myPromptBuffer = math.floor(0.43 * self.myPromptWidth - 20)
+        # If lbuffer isn't specified, use this formula
+        self.myPromptBuffer = max(0, math.floor(0.43 * self.myPromptWidth - 20))
+        if isinstance(lbuffer, int) and lbuffer >= 0:
+            self.myPromptBuffer = lbuffer
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
         self.myRawPrompt = str(prompt)
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myPromptWrap)
         self.myDispWidth = rwidth
-        self.myDispBuffer = math.floor(0.43 * self.myDispWidth - 20)
+        # If rbuffer isn't specified, use this formula
+        self.myDispBuffer = max(0, math.floor(0.43 * self.myDispWidth - 20))
+        if isinstance(rbuffer, int) and rbuffer >= 0:
+            self.myDispBuffer = rbuffer
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.myDetails = [str(x) for x in expand_options]
         self.myPromptLabel = Label(self,
@@ -14926,16 +15000,16 @@ class ExpandFrame(Frame):
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-        self.myBPlusButton.grid(row=4,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myBMinusButton.grid(row=4,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myBPlusButton.grid(row=4,
+##                                column=0,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myBMinusButton.grid(row=4,
+##                                 column=1,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         self.myWPlusButton = Button(self,
                                     anchor=CENTER,
                                     justify=CENTER,
@@ -14948,16 +15022,16 @@ class ExpandFrame(Frame):
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-        self.myWPlusButton.grid(row=5,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myWMinusButton.grid(row=5,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myWPlusButton.grid(row=5,
+##                                column=0,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myWMinusButton.grid(row=5,
+##                                 column=1,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         detailsHeight = max([1 + len([x for x in split_text(y,
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
@@ -14977,6 +15051,14 @@ class ExpandFrame(Frame):
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def expand(self, event=None):
+        # Make sure myPromptWidth never gets narrower than the widest option
+        self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
+        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myPromptWrap)
+        self.myPromptLabel.config(text=self.myPrompt,
+                                  width=self.myPromptWidth,
+                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
@@ -14992,6 +15074,8 @@ class ExpandFrame(Frame):
             self.myDispLabel.config(height=detailsHeight)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
               ", myDispBuffer = " + str(self.myDispBuffer))
+##        print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
+##              ", myPromptBuffer = " + str(self.myPromptBuffer))
         self.myAnswer.set(index)
     def plusbuffer(self, event=None):
         self.myDispBuffer += 5
@@ -15264,10 +15348,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getAyla(step=1)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getCham(step=0)
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -15292,9 +15376,9 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "

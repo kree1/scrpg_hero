@@ -108,11 +108,37 @@ Finding proper display sizes...
   buffer = math.floor(0.43 * width - 20)
   
 Assign rwidth values to existing ExpandWindow calls
- Hero.ChoosePrinciple, line 6747 (choose a Principle from the list)
- Hero.ChooseAbility, line 7327 (choose a section of the ability list)
+	Hero.ChoosePQ, 6534 (choose a section of the power/quality list)
+	Hero.AddPrinciple, 6663 (choose a principle to replace)
+	Hero.ChoosePrinciple, 6748 (choose a principle to add)
+	Hero.GuidedBackground, 7024 (choose a die result or reroll)
+	Hero.ConstructedBackground, 7096 (choose a background from the list)
+	Hero.ChooseAbility, 7330 (choose a section of the ability list)
+	Hero.ChooseAbility, 7369 (choose an ability from the list)
+	Hero.GuidedPowerSource, 7956 (choose a die result or reroll)
+	Hero.ConstructedPowerSource, 8034 (choose a power source from the list)
+	Hero.ChooseForm, 8481 (choose a form from the list)
+	Hero.AddArchetype, 9061 (choose a green mode from the list)
+	Hero.AddArchetype, 9111 (choose a yellow mode from the list)
+	Hero.AddArchetype, 9158 (choose a red mode from the list)
+	Hero.AddArchetype, 9441 (choose a transition type)
+	Hero.AddArchetype, 9499 (choose a build option for divided)
+	Hero.GuidedArchetype, 9785 (choose a die result or reroll for initial archetype)
+	Hero.GuidedArchetype, 9921 (choose a die result or reroll for subordinate archetype)
+	Hero.ConstructedArchetype, 9971 (choose an initial archetype from the list)
+	Hero.ConstructedArchetype, 10015 (choose a subordinate archetype from the list)
+	Hero.GuidedPersonality, 10343 (choose a die result or reroll)
+	Hero.ConstructedPersonality, 10436 (choose one of your two personalities from the list)
+	Hero.ConstructedPersonality, 10500 (choose your single personality from the list)
+	Hero.AddRedAbility, 10642 (choose a category of red ability)
+	Hero.AddRetcon, 10843 (choose an ability to edit)
+	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
-Assign lwidth values to existing ExpandWindow calls
- Switch +/- B/W buttons to affect the prompt instead of details
+Assigning Powers and Qualities for Split Form could just be a single window with a set of radiobuttons for each die
+
+Make SubWindow classes that take a title argument check the length of that title when they pass a width argument to their Frame counterpart
+
+ChoosePrinciple should check whether the hero already has any of these Principles
 
 Assign width/buffer values to existing EnterText calls
  Hero.AddPQDie, line 6326 (rename this power/quality)
@@ -146,6 +172,9 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 	done!
 
 Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
+
+? Consolidate mode selection process into a single loop, like form selection ?
+ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
 
 Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use UseGUI to determine whether they need a messagebox
 
