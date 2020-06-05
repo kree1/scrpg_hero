@@ -14586,7 +14586,8 @@ class SelectWindow(SubWindow):
                                          self.myOptions,
                                          self.myVariable,
                                          width=width,
-                                         buffer=buffer)
+                                         buffer=buffer,
+                                         titleWidth=len(str(title)))
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
     def body(self, master):
@@ -14606,12 +14607,14 @@ class SelectFrame(Frame):
                  destination,
                  printing=False,
                  width=40,
-                 buffer=5):
+                 buffer=5,
+                 titleWidth=-1):
         Frame.__init__(self, parent)
         notePrefix = "### SelectFrame.__init__: "
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
-        self.myWidth = max(width, max([len(x) for x in self.myOptions]))
+        self.myTitleWidth = titleWidth
+        self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
 ##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
@@ -14701,7 +14704,7 @@ class SelectFrame(Frame):
         self.bind("<Return>", self.finish)
     def update(self, event=None):
         # Make sure myWidth never gets narrower than the widest option
-        self.myWidth = max(self.myWidth, max([len(x) for x in self.myOptions]))
+        self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
@@ -14761,7 +14764,8 @@ class EntryWindow(SubWindow):
                                        self.myPrompt,
                                        self.myVariable,
                                        width=width,
-                                       buffer=buffer)
+                                       buffer=buffer,
+                                       titleWidth=len(str(title)))
         self.activate(self.myEntryFrame)
     def body(self, master):
         self.container = master
@@ -14778,10 +14782,12 @@ class EntryFrame(Frame):
                  destination,
                  printing=False,
                  width=60,
-                 buffer=15):
+                 buffer=15,
+                 titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myWidth = width
+        self.myTitleWidth = titleWidth
+        self.myWidth = max(width, self.myTitleWidth)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
         self.myRawPrompt = str(prompt)
@@ -14828,6 +14834,7 @@ class EntryFrame(Frame):
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
     def update(self, event=None):
+        self.myWidth = max(self.myWidth, self.myTitleWidth)
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
@@ -14872,7 +14879,7 @@ class ExpandWindow(SubWindow):
                  lbuffer=-1,
                  rwidth=100,
                  rbuffer=-1):
-        SubWindow.__init__(self, parent, title)
+        SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
         self.myDetails = [str(x) for x in details]
@@ -15117,7 +15124,7 @@ class SwapWindow(SubWindow):
                  var1,
                  title=None,
                  width=100):
-        SubWindow.__init__(self, parent, title)
+        SubWindow.__init__(self, parent, str(title))
         self.myPrompt = str(prompt)
         self.myOptions = [str(x) for x in options]
         self.myVariables = [None, None]
@@ -15133,7 +15140,8 @@ class SwapWindow(SubWindow):
                                      self.myPrompt,
                                      self.myOptions,
                                      self.myVariables,
-                                     width=width)
+                                     width=width,
+                                     titleWidth=len(str(title)))
         self.activate(self.mySwapFrame)
     def body(self, master):
         self.container = master
@@ -15152,11 +15160,13 @@ class SwapFrame(Frame):
                  options,
                  destinations,
                  width=100,
+                 titleWidth=-1,
                  printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myOptions = [str(x) for x in options]
-        self.myWidth = max(width, max([len(s) for s in self.myOptions]))
+        self.myTitleWidth = titleWidth
+        self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
         self.myPrompt = split_text(str(prompt),
                                    width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
@@ -15231,7 +15241,7 @@ class PrincipleWindow(SubWindow):
                  greenVar,
                  title=None,
                  width=100):
-        SubWindow.__init__(self, parent, title)
+        SubWindow.__init__(self, parent, str(title))
         if isinstance(principle, Principle):
             self.myPrinciple = principle
         else:
@@ -15243,7 +15253,8 @@ class PrincipleWindow(SubWindow):
                                                minorVar,
                                                majorVar,
                                                greenVar,
-                                               width=width)
+                                               width=width,
+                                               titleWidth=len(str(title)))
         self.activate(self.myPrincipleFrame)
     def body(self, master):
         self.container = master
@@ -15259,7 +15270,8 @@ class PrincipleFrame(Frame):
                  minorVar,
                  majorVar,
                  greenVar,
-                 width=100):
+                 width=100,
+                 titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myPrinciple = principle
@@ -15278,7 +15290,9 @@ class PrincipleFrame(Frame):
         self.prinSectionVars[2].set(self.myPrinciple.minor_twist)
         self.prinSectionVars[3].set(self.myPrinciple.major_twist)
         self.prinSectionVars[4].set(self.myPrinciple.green_ability)
-        self.entryWidth = max(width, max([len(x.get()) for x in self.prinSectionVars]))
+        self.myTitleWidth = titleWidth
+        self.entryWidth = max(width, self.myTitleWidth,
+                              max([len(x.get()) for x in self.prinSectionVars]))
         self.mySectionLabels = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
@@ -15348,10 +15362,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham(step=0)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getCham(step=0)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -15376,9 +15390,9 @@ root.mainloop()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 ##w=40
 ##pf="123  "

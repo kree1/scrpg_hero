@@ -136,9 +136,9 @@ Assign rwidth values to existing ExpandWindow calls
 
 Assigning Powers and Qualities for Split Form could just be a single window with a set of radiobuttons for each die
 
-Make SubWindow classes that take a title argument check the length of that title when they pass a width argument to their Frame counterpart
-
 ChoosePrinciple should check whether the hero already has any of these Principles
+
+? Make AddHeroNames automatically recognize substrings like "girl", "man", etc. in codename and change default pronouns to suit ?
 
 Assign width/buffer values to existing EnterText calls
  Hero.AddPQDie, line 6326 (rename this power/quality)
