@@ -147,8 +147,15 @@ mixed_categories = [q_categories, p_categories]
 global legal_dice
 legal_dice = [4, 6, 8, 10, 12]
 
-global print_issue
+global print_issue, track_inputs, tracker_open, tracker_close
+# Variables to modify for testing/debugging purposes
+#  print_issue: if True, activates diagnostic statements in split_text
+#  track_inputs: if True, activates reporting statements throughout Hero intended to help convert
+#                 manual inputs into automatic ones
 print_issue = False
+track_inputs = True
+tracker_open = "~~~ ["
+tracker_close = "~~~ ]"
 
 def printlong(text,
               width=100,
@@ -6205,8 +6212,9 @@ class Hero:
         # title: a string to display in the title bar of the SelectWindow, if there is one
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [index of user's response, any remaining inputs]
+        notePrefix = "### ChooseIndex: "
         if len(inputs) > 0:
-            print("### choose_index: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if self.UseGUI(inputs):
             if len(print_options) == 2:
                 if "Yes" in print_options:
@@ -6283,8 +6291,9 @@ class Hero:
         # title: a string to display in the title bar of the EntryWindow, if there is one
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [user's response, any remaining inputs]
+        notePrefix = "### EnterText: "
         if len(inputs) > 0:
-            print("### EnterText: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_line = ""
         if len(inputs) > 0:
             print(prompt)
@@ -6316,8 +6325,9 @@ class Hero:
         # custom_name: should the user be prompted to customize the name of this die?
         # stepnum: the number of the step of hero creation (1-7) at which this die is being added
         # inputs: a set of text inputs to use instead of prompting the user
+        notePrefix = "### AddPQDie: "
         if len(inputs) > 0:
-            print("### AddPQDie: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         category = pair[0]
         index = pair[1]
         if ispower:
@@ -6380,8 +6390,9 @@ class Hero:
         # custom_name: should the user be prompted to customize the name of this die?
         # stepnum: the number of the step of hero creation (1-7) at which this die is being added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ChoosePQDieSize: "
         if len(inputs) > 0:
-            print("### ChoosePQDieSize: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # Validate each entry in die_options:
         valid_dice = [diesize for diesize in die_options if diesize in legal_dice]
         print_name = ""
@@ -6417,6 +6428,8 @@ class Hero:
         elif len(valid_dice) == 1:
             # Only one die available? Just assign it
             print("d" + str(valid_dice[0]) + " assigned to " + print_name)
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6427,6 +6440,8 @@ class Hero:
                           flavorname,
                           stepnum=max([0, stepnum]),
                           inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             return []
         else:
             # Are all of valid_dice matching values? If so, just assign that die size.
@@ -6436,6 +6451,8 @@ class Hero:
                     break
             else:
                 print("d" + str(valid_dice[0]) + " assigned to " + print_name)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6446,6 +6463,8 @@ class Hero:
                               flavorname,
                               stepnum=max([0, stepnum]),
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 return valid_dice[1:]
         # Now we know there are multiple valid_dice with different values. Time to make a choice.
         decision = self.ChooseIndex([str(d) for d in valid_dice],
@@ -6455,6 +6474,8 @@ class Hero:
                                     buffer=10)
         entry_index = decision[0]
         inputs = decision[1]
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -6464,7 +6485,9 @@ class Hero:
                       valid_dice[entry_index],
                       flavorname,
                       stepnum=max([0, stepnum]),
-                      inputs=pass_inputs)    
+                      inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         print("d" + str(valid_dice[entry_index]) + " assigned to " + print_name)
         valid_dice.remove(valid_dice[entry_index])
         return valid_dice
@@ -6507,15 +6530,20 @@ class Hero:
 ##            print(notePrefix + "valid_triplets[0][0]: " + str(valid_triplets[0][0]))
 ##            print(notePrefix + "valid_triplets[0][1:3]: " + str(valid_triplets[0][1:3]))
 ##            print(notePrefix + "die_options: " + str(die_options))
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            return [[], self.ChoosePQDieSize(valid_triplets[0][0],
-                                             valid_triplets[0][1:3],
-                                             die_options,
-                                             stepnum=max([0, stepnum]),
-                                             inputs=pass_inputs)]
+            remaining_dice = self.ChoosePQDieSize(valid_triplets[0][0],
+                                                  valid_triplets[0][1:],
+                                                  die_options,
+                                                  stepnum=max([0, stepnum]),
+                                                  inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
+            return [[], remaining_dice]
         else:
             # If none of these, the user has to make a choice...
             # Define some useful text variables:
@@ -6625,6 +6653,8 @@ class Hero:
             # Now we have the user's choice.
             # We can have them assign a die to it using ChoosePQDieSize.
             remaining_dice = []
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6634,6 +6664,8 @@ class Hero:
                                                   valid_dice,
                                                   stepnum=max([0, stepnum]),
                                                   inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             valid_triplets.remove(triplet_choice)
             return [valid_triplets, remaining_dice]
     def AssignAllPQ(self, triplets, dice_options, stepnum=0, inputs=[]):
@@ -6642,12 +6674,15 @@ class Hero:
         # inputs: a set of text inputs to use automatically instead of prompting the user
         # stepnum: the number of the step of hero creation (1-7) at which these dice are being added
         # No return value
+        notePrefix = "### AssignAllPQ: "
         if len(inputs) > 0:
-            print("### AssignAllPQ: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         remaining_triplets = [entry for entry in triplets]
         remaining_dice = [die_size for die_size in dice_options]
         while len(remaining_dice) > 0:
             # Use ChoosePQ to have the user assign one of the dice to one of the powers/qualities
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6656,6 +6691,8 @@ class Hero:
                                        remaining_dice,
                                        stepnum=max([0, stepnum]),
                                        inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             remaining_triplets = remainders[0]
             remaining_dice = remainders[1]
             # Repeat until there are no more dice.
@@ -6674,8 +6711,10 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        # No return value.
+        notePrefix = "### AddPrinciple: "
         if len(inputs) > 0:
-            print("### AddPrinciple: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if len(self.principles) > 1:
             # Can't have more than 2 Principles.
             dispWidth = 100
@@ -6760,9 +6799,9 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ChoosePrinciple: "
         if len(inputs) > 0:
-            print("### ChoosePrinciple: category=" + str(category))
-            print("### ChoosePrinciple: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if category not in range(len(rc_master)):
             print("Error! Invalid category: " + str(category))
         else:
@@ -6823,6 +6862,8 @@ class Hero:
             inputs = decision[1]
             if entry_choice == 1:
                 print("Standard " + str(ri) + " selected.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6831,6 +6872,8 @@ class Hero:
                                   entry_index,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # Copy the values in ri so they can be edited or left alone.
                 entry_title = ri.title
@@ -6930,6 +6973,8 @@ class Hero:
                             printlong("New Green Ability: " + entry_green, 100)
                         del entry_dict[entry_id]
                     print("OK!")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6943,13 +6988,16 @@ class Hero:
                                   entry_green,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
     def AddBackground(self, bg_index, inputs=[]):
         # Walks the user through adding the quality dice and Principle that they get from the
         #  Background specified by bg_index.
         # inputs: a set of text inputs to use automatically instead of prompting the user
         # Returns the set of dice they'll use in the Power Source step.
+        notePrefix = "### AddBackground: "
         if len(inputs) > 0:
-            print("### AddBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is Step 1 of hero creation!
         this_step = 1
         your_bg = bg_collection[bg_index]
@@ -6983,6 +7031,8 @@ class Hero:
                 #  required quality.
                 # ChoosePQDieSize returns the list of unused dice, so update remaining_dice with
                 #  that list.
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6992,22 +7042,34 @@ class Hero:
                                                       remaining_dice,
                                                       stepnum=this_step,
                                                       inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Use AssignAllPQ to have the user assign each remaining die to one of the optional
             #  qualities.
             # AssignAllPQ runs until there are no dice left, so there's no need to update
             #  remaining_dice afterward.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AssignAllPQ(q_options, remaining_dice, stepnum=this_step, inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.RefreshFrame()
             # Use ChoosePrinciple to have the user select a Principle from the specified category.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+            self.ChoosePrinciple(r_category,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             print("That's all for your Background! Take " + str(ps_dice) + \
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
@@ -7017,8 +7079,9 @@ class Hero:
         # Walks the user through randomly selecting a Background as specified in the rulebook.
         # Returns the index of the Background selected.
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### GuidedBackground: "
         if len(inputs) > 0:
-            print("### GuidedBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # The user can reroll any number of their dice once per step.
         rerolls = 1
         prev_result = 0
@@ -7116,8 +7179,9 @@ class Hero:
         # Walks the user through selecting a Background from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Background selected.
+        notePrefix = "### ConstructedBackground: "
         if len(inputs) > 0:
-            print("### ConstructedBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(bg_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -7732,6 +7796,8 @@ class Hero:
             print("You have " + str(pdice) + " to assign to Powers.")
             if len(required_powers) > 0:
                 # Use ChoosePQ to assign one of pdice to one of required_powers
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -7740,19 +7806,24 @@ class Hero:
                                       pdice,
                                       stepnum=this_step,
                                       inputs=pass_inputs)[1]
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AssignAllPQ(optional_powers, pdice, stepnum=this_step, inputs=pass_inputs)
+            self.AssignAllPQ(optional_powers,
+                             pdice,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             for i in range(yellow_count):
                 # Use ChooseAbility to select and add a Yellow Ability from yellow_options and
                 #  update yellow_options to remove that Ability
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
                 legal_triplets = [x.triplet() for x in self.power_dice] + \
                                  [y.triplet() for y in self.quality_dice]
                 # Make a list of abilities the hero has in this zone from this Archetype
@@ -7782,14 +7853,24 @@ class Hero:
                                 legal_triplets.remove(x)
 ##                    print(notePrefix + "legal_triplets = " + str(legal_triplets))
 ##                    print(notePrefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
                 yellow_options = self.ChooseAbility(yellow_options,
                                                     1,
                                                     triplet_options=legal_triplets,
                                                     stepnum=this_step,
                                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             for i in range(green_count):
                 # Use ChooseAbility to select and add a Green Ability from green_options and update
                 #  green_options to remove that Ability
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -7798,6 +7879,8 @@ class Hero:
                                                    0,
                                                    stepnum=this_step,
                                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Evaluate and implement ps_bonus
             if ps_bonus == 1:
                 # Training: Next step, add a bonus d8 Quality from your Archetype's list.
@@ -7807,11 +7890,18 @@ class Hero:
             elif ps_bonus == 2:
                 # Mystical: Gain a d10 Information Quality.
                 print("Bonus: You get a d10 Information Quality.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,0), [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(Category(0,0),
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 3:
                 # Supernatural: Gain a d10 Power that ISN'T listed.
                 print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
@@ -7819,11 +7909,18 @@ class Hero:
                                   for a in range(len(mixed_collection[1]))]
                 non_optional_powers = [triplet for triplet in power_triplets \
                                        if triplet not in optional_powers]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(non_optional_powers, [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(non_optional_powers,
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 4:
                 # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more d6
                 #  Power from the Alien list.
@@ -7832,11 +7929,18 @@ class Hero:
                     # No d6s to upgrade.
                     print("Bonus: Since you can't upgrade a d6 Power or Quality, " + \
                           "you gain a d6 Power from the Alien list.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(optional_powers, [6], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(optional_powers,
+                                  [6],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 elif len(d6_pqs) == 1:
                     # Exactly 1 d6: upgrade it without prompting the user.
                     print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
@@ -7860,11 +7964,18 @@ class Hero:
                 # Genius: Gain 1 d10 Information or Mental Quality
                 print("Bonus: You get a d10 Information or Mental Quality.")
                 optional_qualities = Category(0,0) + Category(0,1)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(optional_qualities, [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(optional_qualities,
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 6:
                 # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
                 #  power by 1 die size.
@@ -7914,20 +8025,34 @@ class Hero:
             elif ps_bonus == 7:
                 # Unknown: Gain a d8 Social Quality.
                 print("Bonus: You get a d8 Social Quality.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,3), [8], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(Category(0,3),
+                              [8],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 8:
                 # The Multiverse: Gain a d6 Power from ANY category.
                 print("Bonus: You get a d6 Power from ANY category.")
                 power_triplets = AllCategories()
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(power_triplets, [6], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(power_triplets,
+                              [6],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
@@ -7941,12 +8066,12 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         if pdice == [] and self.ps_dice == []:
             print("Error! No dice have been specified for this step.")
-            return
+            return 99
         elif pdice == []:
             pdice = self.ps_dice
         elif len(pdice) not in [2,3]:
             print("Error! " + str(pdice) + " is not a valid set of Power Source dice.")
-            return
+            return 99
         # The user can reroll any number of their dice once per step.
         rerolls = 1
         prev_results = [0 for d in pdice]
@@ -8065,8 +8190,9 @@ class Hero:
         # Walks the user through selecting a Power Source from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Power Source selected.
+        notePrefix = "### ConstructedPowerSource: "
         if len(inputs) > 0:
-            print("### ConstructedPowerSource: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(ps_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -8119,8 +8245,9 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddMode: "
         if len(inputs) > 0:
-            print("### AddMode: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         this_step = max([0, stepnum])
         mode_template = mc_zones[zone][index]
         t_name = mode_template[0]
@@ -8225,6 +8352,8 @@ class Hero:
             mode_power_dice.append(mp_die)
         # Have the user fill in the mode's Ability
         m_ability = ""
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -8235,6 +8364,8 @@ class Hero:
                                        alt_powers=mode_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
         mode_name = t_name
         entry_options = ["Yes", "No"]
@@ -8493,8 +8624,9 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### ChooseForm: "
         if len(inputs) > 0:
-            print("### ChooseForm: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         this_step = max([0, stepnum])
         fc_powers = arc_collection[15][5]
         form_options = form_abilities_green
@@ -8689,6 +8821,8 @@ class Hero:
                     entry_choice = ' '
         # Have the user fill in the form's Ability
         f_ability = ""
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -8699,6 +8833,8 @@ class Hero:
                                        alt_powers=form_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
         form_name = form_ability_template.name
         entry_options = ["Yes", "No"]
@@ -8755,8 +8891,9 @@ class Hero:
         #  from the specified Archetype or Archetype combo.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddArchetype: "
         if len(inputs) > 0:
-            print("### AddArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if a_dice == []:
             a_dice = self.arc_dice
         # This is Step 3 of hero creation!
@@ -8862,6 +8999,8 @@ class Hero:
                         # Gain one of the primary_pqs that this hero doesn't already have.
                         primary_options = [triplet for triplet in primary_pqs if triplet not in \
                                            [d.triplet() for d in primary_matches]]
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
                         pass_inputs = []
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
@@ -8870,6 +9009,8 @@ class Hero:
                                                    a_dice,
                                                    stepnum=this_step,
                                                    inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
                         a_dice = remainders[1]
                 elif primary_alt == 2:
                     # Skip or swap the die with one of the new ones
@@ -8918,6 +9059,8 @@ class Hero:
             elif len(primary_pqs)==1:
                 # This Archetype has exactly 1 primary power/quality and this hero needs to gain it.
                 # print("primary_pqs[0]: " + str(primary_pqs[0]))
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8927,12 +9070,16 @@ class Hero:
                                               a_dice,
                                               stepnum=this_step,
                                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif len(primary_pqs) > 1:
                 # This Archetype has more than 1 primary power/quality and this hero needs to gain
                 #  one of them.
                 primary_options = [triplet for triplet in primary_pqs if triplet not in \
                                    [d.triplet() for d in primary_matches]]
                 remainders = []
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8941,11 +9088,15 @@ class Hero:
                                            a_dice,
                                            stepnum=this_step,
                                            inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 a_dice = remainders[1]
             # Then move on to secondary Powers/Qualities, if there are any:
             if len(secondary_pqs) > 0:
                 # Add 1 of the secondary Powers/Qualities:
                 remainders = []
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8954,6 +9105,8 @@ class Hero:
                                            a_dice,
                                            stepnum=this_step,
                                            inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 a_dice = remainders[1]
                 entry_choice = ' '
                 # If secondary_count is >1, the user gets to assign any number of dice to
@@ -8961,6 +9114,8 @@ class Hero:
                 #  which is the same as saying that each remaining die should be assigned within one
                 #  of those lists.
                 if secondary_count > 1 and len(a_dice) > 0:
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
@@ -8969,46 +9124,13 @@ class Hero:
                                      a_dice,
                                      stepnum=this_step,
                                      inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     a_dice = []
-##                entry_index = -1
-##                while secondary_count > 1 and len(a_dice) > 0 and entry_choice != 'N':
-##                    entry_options = "YN"
-##                    combined_type = categories_singular[DieCategory(secondary_pqs+tertiary_pqs)]
-##                    dice_report = "You have the following " + combined_type + \
-##                                  " dice available: " + str(a_dice)
-##                    prompt = dice_report + "\n\nDo you want to continue adding " + \
-##                             categories_plural[DieCategory(secondary_pqs)] + \
-##                             " from this list? (y/n)"
-##                    # Prepare both of the lists they're choosing between...
-##                    secondaryNames = MixedPQ(secondary_pqs[0])
-##                    for triplet in secondary_pqs[1:]:
-##                        secondaryNames += ", " + MixedPQ(triplet)
-##                    prompt += "\n\n" + secondaryNames
-##                    tertiaryNames = MixedPQ(tertiary_pqs[0])
-##                    for triplet in tertiary_pqs[1:]:
-##                        tertiaryNames += ", " + MixedPQ(triplet)
-##                    prompt += "\n\n" + "If you are done with the above list, your remaining " + \
-##                              "dice will go to " + categories_plural[DieCategory(tertiary_pqs)] + \
-##                              " from this list:\n\n" + tertiaryNames
-##                    decision = choose_letter(entry_options,
-##                                             ' ',
-##                                             prompt=prompt,
-##                                             repeat_message="Please enter Y or N.",
-##                                             inputs=inputs)
-##                    entry_choice = decision[0]
-##                    inputs = decision[1]
-##                    if entry_choice == "Y":
-##                        pass_inputs = []
-##                        if len(inputs) > 0:
-##                            if str(inputs[0]) != inputs[0]:
-##                                pass_inputs = inputs.pop(0)
-##                        remainders = self.ChoosePQ(secondary_pqs,
-##                                                   a_dice,
-##                                                   stepnum=this_step,
-##                                                   inputs=pass_inputs)
-##                        a_dice = remainders[1]
             # Finally, if there are dice remaining, assign them to the tertiary Powers/Qualities:
             if len(a_dice) > 0:
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -9017,11 +9139,15 @@ class Hero:
                                  a_dice,
                                  stepnum=this_step,
                                  inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
             #  the time to choose it.
             if self.arc_bonus_quality in legal_dice:
                 arc_q_triplets = [triplet for triplet in \
                                   primary_pqs + secondary_pqs + tertiary_pqs if triplet[0]==0]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -9030,16 +9156,25 @@ class Hero:
                               [self.arc_bonus_quality],
                               stepnum=step_names.index("Power Source"),
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # If this Archetype grants a bonus Power or Quality die, this is the time to choose it.
             if arc_grants_dice:
                 if arc_bonus == 2:
                     # Robot/Cyborg: Gain a d10 Technological Power.
                     print("Bonus: You get a d10 Technological Power.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(Category(1,8), [10], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(Category(1,8),
+                                  [10],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             # Now we start adding Abilities.
             if self.archetype_modifier == 2:
                 # If the hero is Modular, they get Modular abilities and Modes instead of the
@@ -9051,33 +9186,40 @@ class Hero:
                           "Power from any category to fill in the list:")
                     power_triplets = [[1,a,b] for b in range(len(mixed_collection[1][a])) \
                                       for a in range(len(mixed_collection[1]))]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(power_triplets, [6], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(power_triplets,
+                                  [6],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then add the mandatory Abilities for the Modular archetype:
                 mandatory_abilities = [a for a in arc_modular[7]]
                 for template in mandatory_abilities:
                     zone = template.zone
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChooseAbility([template], zone, stepnum=this_step, inputs=pass_inputs)
+                    self.ChooseAbility([template],
+                                       zone,
+                                       stepnum=this_step,
+                                       inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then start adding Modes.
                 # First, the user gets to choose whether to add a Powerless Mode.
                 prompt = "You can add a Powerless Mode if there are circumstances where you " + \
                          "could be separated from your power source (like having a Power Suit " + \
                          "that provides all your powers).\nDo you want to add a Powerless " + \
                          "Mode?\n\n" + ModeTemplateDetails(-1,0)
-##                entry_options = "YN"
-##                decision = choose_letter(entry_options,
-##                                         ' ',
-##                                         prompt=prompt,
-##                                         repeat_message="Please enter Y or N.",
-##                                         inputs=inputs)
-##                entry_choice = decision[0]
                 entry_options = ["Yes", "No"]
                 decision = self.ChooseIndex(entry_options,
                                             prompt=prompt,
@@ -9086,11 +9228,18 @@ class Hero:
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index == 0:
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AddMode(-1, 0, stepnum=this_step, inputs=pass_inputs)
+                    self.AddMode(-1,
+                                 0,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then, they get 1 additional Green Mode.
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
@@ -9130,11 +9279,18 @@ class Hero:
                            entry_choice not in entry_options:
                             DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
                     entry_index = entry_options.find(entry_choice)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AddMode(0, entry_index, stepnum=this_step, inputs=pass_inputs)
+                self.AddMode(0,
+                             entry_index,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 # Then, they get 2 different Yellow Modes.
                 yellow_indices = [i for i in range(len(mc_yellow))]
                 for x in range(2):
@@ -9185,11 +9341,18 @@ class Hero:
                                 DisplayModeTemplate(1, yellow_indices[entry_index])
                         entry_index = entry_options.find(entry_choice)
                     mode_index = yellow_indices[entry_index]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AddMode(1, mode_index, stepnum=this_step, inputs=pass_inputs)
+                    self.AddMode(1,
+                                 mode_index,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
                 if self.UseGUI(inputs):
@@ -9231,21 +9394,24 @@ class Hero:
                            entry_choice not in entry_options:
                             DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
                     entry_index = entry_options.find(entry_choice)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AddMode(2, entry_index, stepnum=this_step, inputs=pass_inputs)
+                self.AddMode(2,
+                             entry_index,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # As long as the hero isn't Modular, they get the Abilities from their main
                 #  Archetype.
                 # Start with the mandatory Abilities for the Archetype, if applicable:
                 for template in mandatory_abilities:
                     zone = template.zone
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
@@ -9279,21 +9445,25 @@ class Hero:
                         # This is a Green Ability, and Green Abilities from this Archetype use only
                         #  Powers/Qualities from this Archetype
                         legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     self.ChooseAbility([template],
                                        zone,
                                        triplet_options=legal_triplets,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then move on to the Green Abilities:
                 # If mixed_abilities exists, then that's the list of Green Ability options
                 if len(mixed_abilities) > 0:
                     green_abilities = mixed_abilities
                 for i in range(green_count):
                     # Add another Green Ability from the list.
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     category_req = -1
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
@@ -9342,12 +9512,20 @@ class Hero:
                         legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
 ##                    print("### AddArchetype: legal_triplets=" + str(legal_triplets))
                     # Finally, add the ability
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     green_abilities = self.ChooseAbility(green_abilities,
                                                          0,
                                                          triplet_options=legal_triplets,
                                                          category_req=category_req,
                                                          stepnum=this_step,
                                                          inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Next add the Yellow Abilities, if there are any
                 # If mixed_abilities exists, then green_abilities is the list of Yellow Ability
                 #  options
@@ -9355,10 +9533,6 @@ class Hero:
                     yellow_abilities = green_abilities
                 for i in range(yellow_count):
                     # Add another Yellow Ability from the list.
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
@@ -9384,20 +9558,32 @@ class Hero:
                                 while len([x for x in legal_triplets if x in arc_triplets]) > 0:
                                     for x in arc_triplets:
                                         legal_triplets.remove(x)
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     yellow_abilities = self.ChooseAbility(yellow_abilities,
                                                           1,
                                                           triplet_options=legal_triplets,
                                                           stepnum=this_step,
                                                           inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # If the hero is a Form-Changer, create their Forms
                 if self.archetype == 15:
                     # Add 2 Green Forms and 1 Yellow Form.
                     for f_zone in [0,0,1]:
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
                         pass_inputs = []
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
                                 pass_inputs = inputs.pop(0)
                         self.ChooseForm(f_zone, inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
                 # If the hero is a Minion-Maker, select their Minion Forms
                 if self.archetype == 13:
                     entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
@@ -9521,6 +9707,8 @@ class Hero:
                                  if triplet not in arc_triplets]
                 arc_triplets += [triplet for triplet in tertiary_pqs \
                                  if triplet not in arc_triplets]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -9530,6 +9718,8 @@ class Hero:
                                    triplet_options=arc_triplets,
                                    stepnum=this_step,
                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 # Then, choose a build option and create your heroic & civilian forms
                 build_options = [a_divided_psyche, a_split_form]
                 bo_prompt = "Choose one as the nature of your divided self:"
@@ -9575,6 +9765,8 @@ class Hero:
                     dv_nature = build_options[entry_options.find(entry_choice)]
                 if dv_nature == a_divided_psyche:
                     # Add the Divided Psyche Green Ability
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
@@ -9583,6 +9775,8 @@ class Hero:
                                        0,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     # Create a Civilian Form with standard Qualities & Status but no Powers
                     cf_name = self.dv_tags[0] + " Form"
                     cf_status = self.status_dice
@@ -9753,19 +9947,31 @@ class Hero:
                                 form_editing[3] = []
                 # Finally, choose a Principle from the Divided archetype
                 r_category = arc_divided[18]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePrinciple(r_category,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # As long as your hero isn't Divided, they get their Principle from their main
                 #  Archetype
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePrinciple(r_category,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             print("That's all for your Archetype!")
     def GuidedArchetype(self, adice=[], inputs=[]):
         # Walks the user through randomly selecting an Archetype as specified in the rulebook.
@@ -9773,8 +9979,9 @@ class Hero:
         #  Defaults to self.arc_dice if not specified.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [Archetype index, modifier index]
+        notePrefix = "### GuidedArchetype: "
         if len(inputs) > 0:
-            print("### GuidedArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if adice == [] and self.arc_dice == []:
             print("Error! No dice have been specified for this step.")
             return
@@ -10009,8 +10216,9 @@ class Hero:
         # Walks the user through selecting an Archetype from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [Archetype index, modifier index]
+        notePrefix = "### ConstructedArchetype: "
         if len(inputs) > 0:
-            print("### ConstructedArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(arc_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -10107,10 +10315,10 @@ class Hero:
         notePrefix = "### Hero.AddPersonality: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        print(notePrefix + "pn_index=" + str(pn_index) + " (" + pn_collection[pn_index][0] + ")")
-        if dv_index in range(len(pn_collection)):
-            print(notePrefix + "dv_index=" + str(dv_index) + " (" + pn_collection[dv_index][0] + \
-                  ")")
+##        print(notePrefix + "pn_index=" + str(pn_index) + " (" + pn_collection[pn_index][0] + ")")
+##        if dv_index in range(len(pn_collection)):
+##            print(notePrefix + "dv_index=" + str(dv_index) + " (" + pn_collection[dv_index][0] + \
+##                  ")")
         # This is Step 4 of hero creation!
         this_step = 4
         your_pn = pn_collection[pn_index]
@@ -10142,6 +10350,8 @@ class Hero:
             else:
                 print("OK! You've chosen the " + your_pn[0] + " Personality.")
             # Start by giving the hero their Roleplaying Quality at d8.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10151,6 +10361,8 @@ class Hero:
                                  [8],
                                  stepnum=this_step,
                                  inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
             #  Psyche and gets no Qualities in Heroic Form(s)
             matching_dice = [x for x in self.quality_dice if x.step == this_step]
@@ -10171,20 +10383,20 @@ class Hero:
                     elif rpq_die in fm[3]:
                         print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
             else:
-                print(notePrefix + "Divided Psyche not found")
+##                print(notePrefix + "Divided Psyche not found")
                 # All Form(s) and Mode(s) get this Quality
                 for fm in self.other_forms:
                     if rpq_die not in fm[3]:
-                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
+##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
                         fm[3].append(rpq_die)
-                    else:
-                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
+##                    else:
+##                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
                 for md in self.other_modes:
                     if rpq_die not in md[3]:
-                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md[0])
+##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md[0])
                         md[3].append(rpq_die)
-                    else:
-                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
+##                    else:
+##                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
             # ...
             # Then fill in their status dice and Out Ability.
             out_options = []
@@ -10213,6 +10425,8 @@ class Hero:
                 #  or GuidedPersonality()
                 out_options = [out_options[out_index]]
             # Add the Out Ability (letting the user choose, if there's more than one).
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10221,6 +10435,8 @@ class Hero:
                                3,
                                stepnum=this_step,
                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add any bonus content, if applicable
             your_personalities = [self.personality]
             if has_multiple:
@@ -10326,8 +10542,9 @@ class Hero:
     def GuidedPersonality(self, inputs=[]):
         # Walks the user through randomly choosing Personality(ies) as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### GuidedPersonality: "
         if len(inputs) > 0:
-            print("### GuidedPersonality: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is
@@ -10456,8 +10673,9 @@ class Hero:
     def ConstructedPersonality(self, inputs=[]):
         # Walks the user through choosing Personality(ies) from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ConstructedPersonality: "
         if len(inputs) > 0:
-            print("### ConstructedPersonality: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is 1
@@ -10588,8 +10806,9 @@ class Hero:
         #  the hero's current Powers and Qualities.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddRedAbility: "
         if len(inputs) > 0:
-            print("### AddRedAbility: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         slots_remaining = True
         # This is Step 5 of hero creation!
         this_step = 5
@@ -10752,6 +10971,8 @@ class Hero:
             # Send that set of Red Abilities and the corresponding restrictions on which
             #  Powers/Qualities to use to ChooseAbility to let them pick an Ability to finish and
             #  add.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10761,14 +10982,17 @@ class Hero:
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
     def AddRetcon(self,
                   inputs=[]):
         # Walks the user through choosing and implementing one of the AddRetcon options defined in
         #  the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddRetcon: "
         if len(inputs) > 0:
-            print("### AddRetcon: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is step 6 of hero creation!
         this_step = 6
         if self.used_retcon:
@@ -10992,6 +11216,8 @@ class Hero:
                 # Let the user choose a Power or Quality to add from any category using ChoosePQ
                 power_triplets = AllCategories(1)
                 quality_triplets = AllCategories(0)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -11000,6 +11226,8 @@ class Hero:
                               [6],
                               stepnum=this_step,
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
                 # red_upgrade_sizes: list of individually defined Red status die sizes that can be
@@ -11077,6 +11305,8 @@ class Hero:
                                                    self.other_forms[red_upgrade_forms[i]][0] + ")")
                     # Last option: upgrade all Red dice
                     upgrade_options.append("All")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
@@ -11087,6 +11317,8 @@ class Hero:
                                                 inputs=pass_inputs,
                                                 width=50,
                                                 buffer=15)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     entry_index = decision[0]
                     inputs = decision[1]
                     if entry_index == len(entry_options) - 1:
@@ -11178,6 +11410,8 @@ class Hero:
                             entry_choice = input()[0].upper()
                     entry_index = entry_options.find(entry_choice)
                 # Then use ChoosePrinciple to let them choose which to add
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -11185,15 +11419,21 @@ class Hero:
                 self.ChoosePrinciple(entry_index,
                                      stepnum=this_step,
                                      inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Gain another Red Ability":
                 # Let the user add another Red Ability using AddRedAbility
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
                 self.AddRedAbility(retcon_step=this_step,
                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
         if self.used_retcon:
             self.RefreshFrame()
@@ -11211,8 +11451,9 @@ class Hero:
         # Walks the user through determining the hero's max Health and ranges for each status zone.
         # roll: the result of 1d8, prepared earlier
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### AddHealth: "
         if len(inputs) > 0:
-            print("### AddHealth: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is step 7 of hero creation!
         this_step = 7
         if self.health_zones != [0,0,0]:
@@ -11321,8 +11562,9 @@ class Hero:
     def CreateHero(self, health_roll=99, inputs=[]):
         # Walks the user through hero creation from start to finish.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### CreateHero: "
         if len(inputs) > 0:
-            print("### CreateHero: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         indent = "    "
@@ -11342,6 +11584,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -11350,12 +11594,19 @@ class Hero:
                 bg_index = self.GuidedBackground(inputs=pass_inputs)
             else:
                 bg_index = self.ConstructedBackground(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Background
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddBackground(bg_index, inputs=pass_inputs)
+            self.AddBackground(bg_index,
+                               inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose a Power Source
         print("2. Power Source")
         if self.power_source in range(len(ps_collection)):
@@ -11372,6 +11623,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -11380,12 +11633,19 @@ class Hero:
                 ps_index = self.GuidedPowerSource(inputs=pass_inputs)
             else:
                 ps_index = self.ConstructedPowerSource(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Power Source
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddPowerSource(ps_index, inputs=pass_inputs)
+            self.AddPowerSource(ps_index,
+                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose an Archetype
         print("3. Archetype")
         if self.archetype in range(len(arc_collection)):
@@ -11404,6 +11664,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -11412,12 +11674,20 @@ class Hero:
                 arc_indices = self.GuidedArchetype(inputs=pass_inputs)
             else:
                 arc_indices = self.ConstructedArchetype(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Archetype
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddArchetype(arc_indices[0], arc_indices[1], inputs=pass_inputs)
+            self.AddArchetype(arc_indices[0],
+                              arc_indices[1],
+                              inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose one or more Personalities
         print("4. Personality")
         if self.personality in range(len(pn_collection)):
@@ -11443,23 +11713,35 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.GuidedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
                     pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             else:
                 pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Add the chosen Personality/ies
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -11476,6 +11758,8 @@ class Hero:
                                     dv_index=pn_indices[1],
                                     out_index=pn_indices[2],
                                     inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Add 2 Red Abilities
         print("5. Red Abilities")
         rs_abilities = [a for a in self.abilities if a.step == 5]
@@ -11483,11 +11767,15 @@ class Hero:
             print(indent + self.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
         while len(rs_abilities) < 2:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddRedAbility(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             rs_abilities = [a for a in self.abilities if a.step == 5]
         # Take a Retcon
         print("6. Retcon")
@@ -11495,22 +11783,31 @@ class Hero:
             print(indent + self.hero_name + " already used " + pronouns[self.pronoun_set][2] + \
                   " Retcon.")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddRetcon(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Determine Max Health
         print("7. Health")
         if self.health_zones != [0,0,0]:
             print(indent + self.hero_name + " already has maximum Health (" + \
                   str(self.health_zones[0]) + ").")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddHealth(roll=health_roll, inputs=pass_inputs)
+            self.AddHealth(roll=health_roll,
+                           inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         print("Done!")
     def Abilities(self, zone):
         # Returns the set of Abilities on this hero's main sheet that match the specified zone.
@@ -11912,49 +12209,121 @@ class Hero:
 # Sample heroes, for testing purposes...
 # Shikari is an Interstellar Genetic Flier with no Archetype modifier.
 def Create_Shikari(step=len(step_names)):
+    notePrefix = "### Create_Shikari: "
     shikari = Hero("Shikari", "Shikari Lonestar", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = shikari.ConstructedBackground(inputs=["Q"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddBackground(bg,
                               inputs=[[["i",["a"]],["b"]],["K","a","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = shikari.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddPowerSource(ps,
                                inputs=[[["o",["a"]],["h",["a"]],["c",[["a","Warskin"]]]],["A","b","a","Advance Tracking"],["A","a","a","Know the Way"],["A","a","a","Warrior's Instinct"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = shikari.ConstructedArchetype(inputs=["H"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddArchetype(arc[0],
                              arc[1],
                              inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","a","Watch Your Sprocking Head"],["A","f","a","Coming Through!"],["A","d","a","Follow Me!"],["J","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = shikari.ConstructedPersonality(inputs=["I"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddPersonality(pn[0],
                                inputs=[[["a","Lone Star Legion"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddRedAbility(inputs=["F",["D","a","End of the Road"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddRedAbility(inputs=["H",["E","a","Obstacle Avoidance"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddRetcon(inputs=["g",["C",["D","a","Protective Escort"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddHealth(roll=2,
                           inputs=["b","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     shikari.display()
     return shikari
 
 # Ultra Boy is a Criminal Radiation Modular:Physical Powerhouse.
 def Create_Ultra_Boy(step=len(step_names)):
+    notePrefix = "### Create_Ultra_Boy: "
     jo = Hero("Ultra Boy", "Jo Nah", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = jo.ConstructedBackground(inputs=["L"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddBackground(bg,
                          inputs=[[["a",["a"]],["c"]],["L","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = jo.ConstructedPowerSource(inputs=["I"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddPowerSource(ps,
                           inputs=[[["a"],["a",[["a","Legion Flight Ring"]]],["e"]],["C","b","a","Yoink!"],["A","b","a","That Tickles"],["C","a","a","Zap!"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = jo.ConstructedArchetype(inputs=["T","C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddArchetype(arc[0],
                         arc[1],
                         inputs=[["a"],["f",["b"]],[["f"]],
@@ -11971,35 +12340,84 @@ def Create_Ultra_Boy(step=len(step_names)):
                                 "B",
                                 ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
                                 ["D","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = jo.ConstructedPersonality(inputs=["O"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddPersonality(pn[0],
                           inputs=[[["a","Gangster Made Good"]],["c"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddRedAbility(inputs=["F",["C","a","Ring-Sling"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddRedAbility(inputs=["A",["A","a","Street Smarts"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddRetcon(inputs=["e"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddHealth(roll=6,
                      inputs=["b","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     jo.display()
     return jo
 
 # Chameleon is an Interstellar Alien Form-Changer with no Archetype modifier.
 def Create_Chameleon(step=len(step_names)):
+    notePrefix = "### Create_Chameleon: "
     cham = Hero("Chameleon", "Reep Daggle", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = cham.ConstructedBackground(inputs=["Q"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddBackground(bg,
                            inputs=[[["k",["a"]],["k"]],["D", "b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = cham.ConstructedPowerSource(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddPowerSource(ps,
                             inputs=[[["a","p",["a"]],["a","a",["b", ["a","Legion Flight Ring"]]],["a","b"]],["C","c","a","Slippery"],["A","a","a","Excellent Listener"],"b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = cham.ConstructedArchetype(inputs=["P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddArchetype(arc[0],
                           arc[1],
                           inputs=[["h"],
@@ -12012,34 +12430,83 @@ def Create_Chameleon(step=len(step_names)):
                                   ["D","a","b","e","b","e","q","c",["a","a","Critical Discovery"],"a","Stealth Form"],
                                   ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","a","Who Do You Think I Am!?"],"a","Imitation Form"],
                                   ["K","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = cham.ConstructedPersonality(inputs=["O"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddPersonality(pn[0],
                             inputs=[[["a","Frontline Ambassador"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        cham.AddRedAbility(inputs=["A",["B","a","a","Lateral Thinking"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        cham.AddRedAbility(inputs=["A",["B","a","a","Think Outside Your Head"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddRedAbility(inputs=["F",["B","a","a","Change for the Better"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddRetcon(inputs=["f","c",["E","b",["B"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddHealth(inputs=["b","a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     cham.display()
     return cham
 
 # Lori Morning is an Anachronistic Relic Divided:Form-Changer who uses Divided Psyche.
 def Create_Future_Girl(step=len(step_names)):
+    notePrefix = "### Create_Future_Girl: "
     lori = Hero("Future Girl", "Lori Morning", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = lori.ConstructedBackground(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddBackground(bg,
                            inputs=[[["C",["A"]],["H"]],["L","B"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = lori.ConstructedPowerSource(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddPowerSource(ps,
                             inputs=[[["A","D",["A",["A","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","A","Natural Heroism"],["B","B","A","Synthetic Power"],["A","A","A","One-Hour Superpower"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = lori.ConstructedArchetype(inputs=["S","P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddArchetype(arc[0],
                           arc[1],
                           inputs=[["H",["A"]],
@@ -12058,35 +12525,84 @@ def Create_Future_Girl(step=len(step_names)):
                                   ["A","Unlisted Numbers"],
                                   "B",
                                   ["H","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = lori.ConstructedPersonality(inputs=["B","D"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddPersonality(pn[0],
                             inputs=[[["A","Future Girl"]],["e"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddRedAbility(inputs=["B",["B","A","Please Hold"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddRedAbility(inputs=["F",["A","A","Wrong Number"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddRetcon(inputs=["e"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddHealth(roll=1,
                        inputs=["a","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     lori.display()
     return lori
 
 # Knockout (credit to NovaSpark#2117) is a Medical Alien Divided:Robot/Cyborg who uses Split Form.
 def Create_Knockout(step=len(step_names)):
+    notePrefix = "### Create_Knockout: "
     knockout = Hero("Knockout", "n/a", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = knockout.ConstructedBackground(inputs=["M"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddBackground(bg,
                                inputs=[["b"],[["b",["a"]],["f"]],["E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = knockout.ConstructedPowerSource(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddPowerSource(ps,
                                 inputs=[[["a","b",["b",["a","Doctor's Tools"]]],["a","a",["a",["a","Aston Martin"]]],["b","l"]],["B","c","a","Field Treatment"],["B","b","a","Watch the Paint!"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = knockout.ConstructedArchetype(inputs=["S","J"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddArchetype(arc[0],
                               arc[1],
                               inputs=[["a","a"],
@@ -12112,81 +12628,203 @@ def Create_Knockout(step=len(step_names)):
                                       "B",
                                       "B",
                                       ["H","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = knockout.ConstructedPersonality(inputs=["B","T"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddPersonality(pn[0],
                                 inputs=[[["A","Mad Doctor"]],["e"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddRedAbility(inputs=["D",["C","a","Peel Out"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddRedAbility(inputs=["D",["A","a","Anesthetic"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddRetcon(inputs=["g",["C",["C","a","You Scratch My Paint, I Scratch Yours"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddHealth(inputs=["c","a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     knockout.display()
     return knockout
 
 # The second Architect is a Dynasty Relic Minion-Maker with no Archetype modifier.
 def Create_Architect(step=len(step_names)):
+    notePrefix = "### Create_Architect: "
     kim = Hero("The Architect", "Kimberly Harris", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = kim.ConstructedBackground(inputs=["R"])
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddBackground(bg,
                           inputs=[[["b"],["b"]],["K","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = kim.ConstructedPowerSource(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddPowerSource(ps,
                            inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","a","Environmental Planning"],["B","a","a","Aerial Survey"],["c"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = kim.ConstructedArchetype(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddArchetype(arc[0],
                          arc[1],
                          inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","a","Concept Art"],["a","a","Detailing"],["C","d","a","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","a","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = kim.ConstructedPersonality(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddPersonality(pn[0],
                            inputs=[[["A", "Super Mom"]],["D"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddRedAbility(inputs=["H",["A","D","a","Economy of Scale"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddRedAbility(inputs=["E",["A","a","Blot Out"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddRetcon(inputs=["G",["G",["F","a","Constructive Criticism"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddHealth(roll=6,
                       inputs=["A","B"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     kim.display()
     return kim
 
 # Spark is an Unremarkable Accident Blaster who uses some element/energy-limited Abilities.
 def Create_Spark(step=len(step_names)):
+    notePrefix = "### Create_Spark: "
     spark = Hero("Spark", "Ayla Ranzz", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = spark.ConstructedBackground(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddBackground(bg,
                             inputs=[[["i",["b"]],["d"]],["e","E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = spark.ConstructedPowerSource(inputs=["a","A"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddPowerSource(ps,
                              inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","a","Charge!"],["A","b","a","Made You Look"],["B","a","a","Electric Atmosphere"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = spark.ConstructedArchetype(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddArchetype(arc[0],
                            arc[1],
                            inputs=[["c",["a"]],["j"],["D","b","a","Thread the Needle"],["C","a","a","Enough for Everyone"],["B","d","a","Complete Circuit"],["A","a","No Fear"],["B","a","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = spark.ConstructedPersonality(inputs=["P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddPersonality(pn[0],
                              inputs=[[["a","Bright Lights"]],["d"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddRedAbility(inputs=["D",["A","a","Finishing Strike"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddRedAbility(inputs=["G",["B","a","Living Battery"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddRetcon(inputs=["G",["A",["B","a","Struck by Inspiration"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddHealth(roll=7,
                         inputs=["b","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     spark.display()
     return spark
@@ -13388,7 +14026,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame: AddHeroBackground: "
         indent = "    "
         if len(inputs) > 0:
-            print(notePrefix + " inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("1. Background")
@@ -13406,6 +14044,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13414,12 +14054,19 @@ class HeroFrame(Frame):
                 bg_index = self.myHero.GuidedBackground(inputs=pass_inputs)
             else:
                 bg_index = self.myHero.ConstructedBackground(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Background
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddBackground(bg_index, inputs=pass_inputs)
+            self.myHero.AddBackground(bg_index,
+                                      inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroPowerSource(self, inputs=[]):
         # Walk the user through adding a Power Source to their hero.
@@ -13444,6 +14091,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13452,12 +14101,18 @@ class HeroFrame(Frame):
                 ps_index = self.myHero.GuidedPowerSource(inputs=pass_inputs)
             else:
                 ps_index = self.myHero.ConstructedPowerSource(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Power Source
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddPowerSource(ps_index, inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroArchetype(self, inputs=[]):
         # Walk the user through adding an Archetype to their hero.
@@ -13484,6 +14139,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13492,12 +14149,20 @@ class HeroFrame(Frame):
                 arc_indices = self.myHero.GuidedArchetype(inputs=pass_inputs)
             else:
                 arc_indices = self.myHero.ConstructedArchetype(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Archetype
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddArchetype(arc_indices[0], arc_indices[1], inputs=pass_inputs)
+            self.myHero.AddArchetype(arc_indices[0],
+                                     arc_indices[1],
+                                     inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroPersonality(self, inputs=[]):
         # Walks the user through adding a Personality (or Personalities) to their hero.
@@ -13532,23 +14197,35 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.myHero.GuidedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
                     pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             else:
                 pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Add the chosen Personality/ies
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13565,6 +14242,8 @@ class HeroFrame(Frame):
                                            dv_index=pn_indices[1],
                                            out_index=pn_indices[2],
                                            inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         self.UpdateAll(self.myHero)
     def AddHeroRedAbilities(self, inputs=[]):
         # Add 2 Red Abilities
@@ -13576,11 +14255,15 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
         while len(rs_abilities) < 2:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddRedAbility(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
         self.UpdateAll(self.myHero)
     def AddHeroRetcon(self, inputs=[]):
@@ -13592,11 +14275,15 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already used " + \
                   pronouns[self.myHero.pronoun_set][2] + " Retcon.")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddRetcon(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         self.UpdateAll(self.myHero)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
         # Determine Max Health
@@ -13607,11 +14294,16 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already has maximum Health (" + \
                   str(self.myHero.health_zones[0]) + ").")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddHealth(roll=health_roll, inputs=pass_inputs)
+            self.myHero.AddHealth(roll=health_roll,
+                                  inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         print("Done!")
         self.UpdateAll(self.myHero)
     def AddHeroNames(self, inputs=[]):
