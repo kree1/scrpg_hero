@@ -12829,6 +12829,91 @@ def Create_Spark(step=len(step_names)):
     spark.display()
     return spark
 
+# Template for new Create_*() method.
+# >> COPY BEFORE FILLING IN. <<
+# Before using, make sure you've replaced all of the following:
+# {HERO NAME HERE}
+# {CAMELCASE HERO NAME}
+# {CIVILIAN NAME HERE}
+# {PRONOUN INDEX HERE}
+# {D8 RESULT HERE}
+# You'll also want to add the new hero to SampleMaker (below) as a class variable, an entry in
+#  codenames, and a get*() method
+# {HERO SUMMARY}
+##def Create_{CAMELCASE HERO NAME}(step=len(step_names)):
+##    notePrefix = "### Create_{CAMELCASE HERO NAME}: "
+##    {HERO NAME HERE} = Hero("{CAMELCASE HERO NAME}", "{CIVILIAN NAME HERE}", {PRONOUN INDEX HERE})
+##    if step >= 1:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        bg = {HERO NAME HERE}.ConstructedBackground(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddBackground(bg, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 2:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        ps = {HERO NAME HERE}.ConstructedPowerSource(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddPowerSource(ps, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 3:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        arc = {HERO NAME HERE}.ConstructedArchetype(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddArchetype(arc[0], arc[1], inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 4:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        pn = {HERO NAME HERE}.ConstructedPersonality(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddPersonality(pn[0], inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 5:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRedAbility(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRedAbility(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 6:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRetcon(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 7:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddHealth(roll={D8 RESULT HERE}, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    print()
+##    {HERO NAME HERE}.display()
+##    return {HERO NAME HERE}
+
 class SampleMaker:
     def __init__(self):
         self.stepRange = range(0, len(step_names) + 1)
@@ -12958,6 +13043,27 @@ class SampleMaker:
             self.ayla[0] = Create_Spark()
             self.ayla[1] = len(step_names)
         return self.ayla[0]
+    # Template for new get*() method
+    # >> COPY BEFORE FILLING IN <<
+    # Before using, make sure you've replaced all of the following:
+    # {CAMELCASE SHORT NAME}
+    # {CAMELCASE HERO NAME}
+    # {SHORT VARIABLE NAME}
+##    def get{CAMELCASE SHORT NAME}(self, step=len(step_names)):
+##        notePrefix = "### SampleMaker.get{CAMELCASE SHORT NAME}: "
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.{SHORT VARIABLE NAME}[1]))
+##        if step in self.stepRange and step != self.{SHORT VARIABLE NAME}[1]:
+##            # If step is valid and doesn't match the step where the previous instance stopped,
+##            #  create a new instance stopping at [step] and save that number
+##            self.{SHORT VARIABLE NAME}[0] = Create_{CAMELCASE HERO NAME}(step=step)
+##            self.{SHORT VARIABLE NAME}[1] = step
+##        if step not in self.stepRange and self.{SHORT VARIABLE NAME}[1] != len(step_names):
+##            # If step is invalid, but the previous step number isn't the final step, create a
+##            #  new instance stopping at the final step and save its step number
+##            self.{SHORT VARIABLE NAME}[0] = Create_{CAMELCASE HERO NAME}()
+##            self.{SHORT VARIABLE NAME}[1] = len(step_names)
+##        return self.{SHORT VARIABLE NAME}[0]
         
 class SampleGUI:
     def __init__(self, parent):
