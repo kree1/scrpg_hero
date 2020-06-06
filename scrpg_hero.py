@@ -9070,17 +9070,22 @@ class Hero:
                 prompt = "You can add a Powerless Mode if there are circumstances where you " + \
                          "could be separated from your power source (like having a Power Suit " + \
                          "that provides all your powers).\nDo you want to add a Powerless " + \
-                         "Mode? (y/n)"
-                DisplayModeTemplate(-1,0)
-                entry_options = "YN"
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt=prompt,
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
-                entry_choice = decision[0]
+                         "Mode?\n\n" + ModeTemplateDetails(-1,0)
+##                entry_options = "YN"
+##                decision = choose_letter(entry_options,
+##                                         ' ',
+##                                         prompt=prompt,
+##                                         repeat_message="Please enter Y or N.",
+##                                         inputs=inputs)
+##                entry_choice = decision[0]
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt=prompt,
+                                            title="Archetype Selection: Modular",
+                                            inputs=inputs)
+                entry_index = decision[0]
                 inputs = decision[1]
-                if entry_choice == 'Y':
+                if entry_index == 0:
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
@@ -9443,25 +9448,19 @@ class Hero:
             # Then add the Principle:
             if self.archetype_modifier == 1:
                 # If the hero is Divided, they take some extra steps here
-                entry_options = "YN"
-                entry_choice = ' '
-                dispWidth = 100
-                prompt = split_text("As a Divided hero, you have two very different forms, " + \
-                                    "such as a nonpowered civilian form and a powered heroic form.",
-                                    width=dispWidth)
-                prompt += "\n" + split_text("The default names for these forms are " + \
-                                            self.dv_tags[0] + " and " + self.dv_tags[1] + ".",
-                                            width=dispWidth)
-                prompt += "\n" + split_text("Do you want to give them custom names? (y/n)",
-                                            width=dispWidth)
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt=prompt,
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                prompt = "As a Divided hero, you have two very different forms, such as a " + \
+                         "nonpowered civilian form and a powered heroic form."
+                prompt += "\n" + "The default names for these forms are " + self.dv_tags[0] + \
+                          " and " + self.dv_tags[1] + "."
+                prompt += "\n" + "Do you want to give them custom names?"
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt=prompt,
+                                            title="Archetype Selection: Divided",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
                     for i in range(len(self.dv_tags)):
                         decision = self.EnterText("Enter a new name for your " + self.dv_tags[i] + \
                                                   " form.",
@@ -10329,23 +10328,25 @@ class Hero:
         # inputs: a list of text inputs to use automatically instead of prompting the user
         if len(inputs) > 0:
             print("### GuidedPersonality: inputs=" + str(inputs))
-        multiple_choice = False
+        is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is
             #  1 (Divided), then they get to choose whether their hero gets more than 1
             #  Personality.
-            multiple_choice = True
-        is_multiple = False
-        if multiple_choice:
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to use two different Personalities? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+##            entry_options = "YN"
+##            decision = choose_letter(entry_options,
+##                                     ' ',
+##                                     prompt="Do you want to use two different Personalities? (y/n)",
+##                                     repeat_message="Please enter Y or N.",
+##                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to use two different Personalities?",
+                                        title="Personality Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            is_multiple = (entry_choice == "Y")
+            is_multiple = (entry_choice == 0)
         if is_multiple:
             # The rulebook says "you may take two different personalities - one for each of your
             #  forms"... but doesn't specify whether you should ROLL twice when using the Guided
@@ -10457,22 +10458,18 @@ class Hero:
         # inputs: a list of text inputs to use automatically instead of prompting the user
         if len(inputs) > 0:
             print("### ConstructedPersonality: inputs=" + str(inputs))
-        multiple_choice = False
+        is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is 1
             #  (Divided), then they get to choose whether their hero gets more than 1 Personality.
-            multiple_choice = True
-        is_multiple = False
-        if multiple_choice:
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to use two different Personalities? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to use two different Personalities?",
+                                        title="Personality Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            is_multiple = (entry_choice == "Y")
+            is_multiple = (entry_choice == 0)
         if is_multiple:
             # Choose 2 Personalities and 1 Out Ability.
             # Returns [Heroic Personality index, Civilian Personality index, Out Ability index]
@@ -11964,7 +11961,7 @@ def Create_Ultra_Boy(step=len(step_names)):
                                 ["f","a","I'm On It"],
                                 ["a","'Scuse Me"],
                                 ["a","Now I'm Mad"],
-                                "n",
+                                "b",
                                 "A",
                                 ["a","b","c","a",["c","a","Who Let You Play With These?"],"a","Ultra Speed"],
                                 "D",
@@ -12054,7 +12051,7 @@ def Create_Future_Girl(step=len(step_names)):
                                   ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","A","Where Was I?"],"a","Mobile Hero","B"],
                                   ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","A","Wrap It Up"],"a","Capture Hero","C"],
                                   ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","A","Lights Out"],"a","Powerhouse Hero","B"],
-                                  "N",
+                                  "B",
                                   "B",
                                   ["A","Dial H for Hero"],
                                   "A",
@@ -12062,7 +12059,7 @@ def Create_Future_Girl(step=len(step_names)):
                                   "B",
                                   ["H","b"]])
     if step >= 4:
-        pn = lori.ConstructedPersonality(inputs=["N","D"])
+        pn = lori.ConstructedPersonality(inputs=["B","D"])
         lori.AddPersonality(pn[0],
                             inputs=[[["A","Future Girl"]],["e"]])
     if step >= 5:
@@ -12092,9 +12089,31 @@ def Create_Knockout(step=len(step_names)):
         arc = knockout.ConstructedArchetype(inputs=["S","J"])
         knockout.AddArchetype(arc[0],
                               arc[1],
-                              inputs=[["a","a"],[["a","h"],["b","c"]],["b"],["D","e","a","Touch Up"],["D","b","a","12-Car Pileup"],["B","a","a",'Say "Ahh!"'],"y","Vehicle","Robot","B",["a","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","b"]])
+                              inputs=[["a","a"],
+                                      [["a","h"],["b","c"]],
+                                      ["b"],
+                                      ["D","e","a","Touch Up"],
+                                      ["D","b","a","12-Car Pileup"],
+                                      ["B","a","a",'Say "Ahh!"'],
+                                      "a",
+                                      "Vehicle",
+                                      "Robot",
+                                      "B",
+                                      ["a","Robot in Disguise"],
+                                      "B",
+                                      "D",
+                                      "D",
+                                      "D",
+                                      "B",
+                                      "B",
+                                      "A",
+                                      "B",
+                                      "B",
+                                      "B",
+                                      "B",
+                                      ["H","b"]])
     if step >= 4:
-        pn = knockout.ConstructedPersonality(inputs=["N","T"])
+        pn = knockout.ConstructedPersonality(inputs=["B","T"])
         knockout.AddPersonality(pn[0],
                                 inputs=[[["A","Mad Doctor"]],["e"]])
     if step >= 5:
@@ -15333,8 +15352,8 @@ class PrincipleFrame(Frame):
 
 factory = SampleMaker()
 
-root = Tk()
-root.geometry("+0+0")
+##root = Tk()
+##root.geometry("+0+0")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -15342,10 +15361,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getCham()
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+firstHero = factory.getKnockout()
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")

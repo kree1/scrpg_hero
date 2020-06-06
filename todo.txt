@@ -188,14 +188,14 @@ Replace YN calls to choose_letter with Hero.ChooseIndex, so that they can use Us
 .	Hero.ChooseForm, 8690 (give this form a custom name?)
 	Hero.AddArchetype, 8838 (add another primary power/quality?)
 	Hero.AddArchetype, 8863 (swap out existing primary power/quality?)
-	Hero.AddArchetype, 9062 (add a Powerless Mode?)
-	Hero.AddArchetype, 9443 (give your divided forms custom names?)
+.	Hero.AddArchetype, 9062 (add a Powerless Mode?)
+.	Hero.AddArchetype, 9443 (give your divided forms custom names?)
 	Hero.GuidedArchetype, 9859 (keep any previous die results?)
 	Hero.GuidedArchetype, 9869 (keep this previous die result?)
 	Hero.GuidedArchetype, 9896 (reroll for subordinate archetype under modular?)
-	Hero.GuidedPersonality, 10327 (use two different personalities?)
+.	Hero.GuidedPersonality, 10327 (use two different personalities?)
 	Hero.GuidedPersonality, 10416 (keep any previous die results?)
-	Hero.ConstructedPersonality, 10454 (use two different personalities?)
+.	Hero.ConstructedPersonality, 10454 (use two different personalities?)
 
 Using AddRetcon to upgrade Red status should check if the hero gets multiple alternate Red dice from the same alternate Divided personality, and collect them into a single upgrade option
 
