@@ -7147,7 +7147,7 @@ class Hero:
             bg_options = [min(die_results), max(die_results), sum(die_results)]
             # In case of doubles, remove the duplicate roll:
             if bg_options[0] == bg_options[1]:
-                bg_options[1:2] = []
+                del bg_options[1]
             # To convert to 0-index, subtract 1 from each option.
             bg_indices = [x-1 for x in bg_options]
             # Let the user choose from the options provided by their roll...
@@ -7201,24 +7201,28 @@ class Hero:
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
                 # User selected to reroll.
-                entry_options = "YN"
-                entry_choice = ' '
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous " + \
-                                         "results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Background Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == 'Y':
-                    decision = self.ChooseIndex([str(r) for r in die_results],
-                                                prompt="Choose which result to keep:",
-                                                inputs=inputs,
-                                                width=25)
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    prev_result = die_results[entry_index]
+                if entry_choice == 0:
+                    if die_results[0] == die_results[1]:
+                        # There are only two dice, both of the same size, and they rolled the same
+                        #  number. If the user wants to keep a previous result, they don't need to
+                        #  specify which one.
+                        prev_result = die_results[0]
+                    else:
+                        decision = self.ChooseIndex([str(r) for r in die_results],
+                                                    prompt="Choose which result to keep:",
+                                                    inputs=inputs,
+                                                    width=25)
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        prev_result = die_results[entry_index]
                 rerolls = 0
             else:
                 # User selected a background.
@@ -8145,8 +8149,12 @@ class Hero:
                 #  the sum of all three minus the value of the third.
                 ps_options = [x for x in die_results] + [sum(die_results) - y for y in die_results]
                 ps_options.sort()
+                # Remove duplicates:
+                #  i counts forward from 0 to end-of-list -1
+                #  j counts backward from end-of-list to i
+                #  if ps_options[i] and ps_options[j] match, delete ps_options[j]
                 for i in range(len(ps_options)-1):
-                    for j in range(i+1, len(ps_options)):
+                    for j in range(len(ps_options)-1,i,-1):
                         if i < j < len(ps_options):
                             if ps_options[i] == ps_options[j]:
                                 del ps_options[j]
@@ -8205,29 +8213,26 @@ class Hero:
             if entry_index == len(ps_options):
                 # User selected to reroll.
                 prev_results = [0 for x in die_results]
-                entry_options = "YN"
-                entry_choice = ' '
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous " + \
-                                         "results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Power Source Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
                     for i in range(len(die_results)):
-                        entry_choice = ' '
-                        decision = choose_letter(entry_options,
-                                                 ' ',
-                                                 prompt="Do you want to keep " + \
-                                                        str(die_results[i]) + " on your d" + \
-                                                        str(pdice[i]) + "? (y/n)",
-                                                 repeat_message="Please enter Y or N.",
-                                                 inputs=inputs)
+                        entry_options = ["Yes", "No"]
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt="Do you want to keep " + \
+                                                    str(die_results[i]) + " on your d" + \
+                                                    str(pdice[i]) + "?",
+                                                    title="Power Source Selection",
+                                                    inputs=inputs)
                         entry_choice = decision[0]
                         inputs = decision[1]
-                        if entry_choice == "Y":
+                        if entry_choice == 0:
                             prev_results[i] = die_results[i]
                 rerolls = 0
             else:
@@ -9651,12 +9656,13 @@ class Hero:
                             for i in range(len(min_indices)):
                                 printlong(entry_options[i] + ": " + \
                                           MinionFormStr(min_collection[min_indices[i]]),
-                                          96, prefix="    ")
+                                          width=100,
+                                          prefix="    ")
                             decision = choose_letter(entry_options, ' ', inputs=inputs)
                             entry_choice = decision[0]
                             inputs = decision[1]
                             entry_index = entry_options.find(entry_choice)
-                            # EDIT: Use choose_index(), not find()? printlong complicates things
+                            # EDIT: Use self.ChooseIndex(), not find()?
                             # ...
                             mf_index = min_indices[entry_index]
                             self.min_forms.append(min_collection[min_indices.pop(entry_index)])
@@ -16309,8 +16315,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori(step=4)
-##arc = firstHero.GuidedArchetype(inputs=[])
+firstHero = factory.getLori(step=0)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
