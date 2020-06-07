@@ -4751,7 +4751,7 @@ arc_robot_cyborg = ["Robot/Cyborg",
 # If already present:     none
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Intellectual, any Mobility, 
-#                         any Self-Control, any Technological
+#                         any Self Control, any Technological
 # Tertiary PQs:           any Information, any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4791,7 +4791,7 @@ arc_sorceror = ["Sorcerer",
 # If already present:     none
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Elemental/Energy, any Materials, any Mobility, any Psychic, 
-#                         any Self-Control
+#                         any Self Control
 # Tertiary PQs:           any Information, any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4832,7 +4832,7 @@ arc_psychic = ["Psychic",
 # Primary Power/Quality:  any Psychic
 # If already present:     none
 # Secondary Power Qty:    1 or more(*)
-# Secondary Powers:       any Intellectual, any Materials, any Psychic, any Self-Control(*)
+# Secondary Powers:       any Intellectual, any Materials, any Psychic, any Self Control(*)
 # Tertiary PQs:           any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4990,10 +4990,10 @@ arc_form_changer = ["Form-Changer",
                     False,
                     0,
                     3]
-# Primary Power/Quality:  any Self-Control
+# Primary Power/Quality:  any Self Control
 # If already present:     Skip or choose another
 # Secondary Power Qty:    1 or more
-# Secondary Powers:       any Athletic, any Mobility, any Self-Control, any Technological
+# Secondary Powers:       any Athletic, any Mobility, any Self Control, any Technological
 # Tertiary PQs:           any Information, any Physical
 # Mandatory Abilities:    Change Forms, Emergency Change
 # Green Ability Qty:      1
@@ -6297,6 +6297,8 @@ class Hero:
                   inputs=[]):
         # Prints a prompt for the user to enter a line of text.
         # title: a string to display in the title bar of the EntryWindow, if there is one
+        # default: a string to initially display in the Entry widget, if there is one
+        # width: max width of a line when displaying the prompt as text
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [user's response, any remaining inputs]
         notePrefix = "### EnterText: "
@@ -7268,8 +7270,7 @@ class Hero:
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayBackground(entry_index,
-                                      width=100,
-                                      prefix="    ")
+                                      width=100)
             entry_index = entry_options.find(entry_choice)
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
@@ -7543,7 +7544,7 @@ class Hero:
                         entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        template_options[entry_index].display(prefix="    ")
+                        template_options[entry_index].display(width=100)
                 entry_index = entry_options.find(entry_choice)
             ability_template = template_options[entry_index]
             ability_matching_slots = template_restricted_slots[entry_index]
@@ -7887,13 +7888,8 @@ class Hero:
                     #  ps_zone_abilities:
                     ps_triplets = []
                     for x in ps_zone_abilities:
-                        ps_triplets += [y for y in x.insert_pqs if len(y) == 3]
-                    # Remove any repeats
-                    for i in range(len(ps_triplets)):
-                        trip = ps_triplets[i]
-                        for j in range(i + 1, len(ps_triplets)):
-                            if ps_triplets[j] == trip:
-                                del ps_triplets[j]
+                        ps_triplets += [y for y in x.insert_pqs \
+                                        if len(y) == 3 and y not in ps_triplets]
 ##                    print(notePrefix + "ps_triplets = " + str(ps_triplets))
 ##                    print(notePrefix + "(" + str(MixedPQs(ps_triplets)) + ")")
                     # Remove those previously-used triplets from the list of triplets that can be
@@ -8203,8 +8199,7 @@ class Hero:
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayPowerSource(ps_indices[entry_index],
-                                           width=100,
-                                           prefix="    ")
+                                           width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(ps_options):
@@ -8285,8 +8280,7 @@ class Hero:
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayPowerSource(entry_index,
-                                       width=100,
-                                       prefix="    ")
+                                       width=100)
             entry_index = entry_options.find(entry_choice)
         print(ps_collection[entry_index][0] + " Power Source selected.")
         return entry_index
@@ -9011,10 +9005,10 @@ class Hero:
         else:
             # This hero has no Archetype, so we can add this one.
             if mod_index > 0:
-                print("OK! You've chosen the " + arc_modifiers[mod_index][0] + ":" + \
-                      your_arc[0] + " Archetype.")
+                arc_title = arc_modifiers[mod_index][0] + ":" + your_arc[0]
             else:
-                print("OK! You've chosen the " + your_arc[0] + " Archetype.")
+                arc_title = your_arc[0]
+            print("OK! You've chosen the " + arc_title + " Archetype.")
             self.archetype = arc_index
             self.archetype_modifier = mod_index
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
@@ -9042,17 +9036,16 @@ class Hero:
                 # primary_alt > 0, so the user gets to make a choice
                 if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
                     # Skip or choose another die to gain
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=ext_report + "\n\nDo you want to put one " + \
-                                             "of " + str(a_dice) + " into another option " + \
-                                             "above? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=ext_report + "\n\nDo you want to put " + \
+                                                "one of " + str(a_dice) + " into another " + \
+                                                "option above? (y/n)",
+                                                title="Archetype Selection: " + arc_title,
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
+                    if entry_choice == 0:
                         # Gain one of the primary_pqs that this hero doesn't already have.
                         primary_options = [triplet for triplet in primary_pqs if triplet not in \
                                            [d.triplet() for d in primary_matches]]
@@ -9071,17 +9064,16 @@ class Hero:
                         a_dice = remainders[1]
                 elif primary_alt == 2:
                     # Skip or swap the die with one of the new ones
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=ext_report + "\n\nDo you want to swap one " + \
-                                             "of the dice you have above for one of " + \
-                                             str(a_dice) + "? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=ext_report + "\n\nDo you want to swap " + \
+                                                "one of the dice you have above for one of " + \
+                                                str(a_dice) + "?",
+                                                title="Archetype Selection: " + arc_title,
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
+                    if entry_choice == 0:
                         swap_index = 0
                         if len(primary_matches) > 1:
                             # Choose one of primary_matches to swap out.
@@ -9486,13 +9478,8 @@ class Hero:
                             #  arc_zone_abilities:
                             arc_triplets = []
                             for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
                             if (zone == 0 and len(arc_triplets) < green_unique) or \
                                (zone == 1 and len(arc_triplets) < yellow_unique):
                                 # This Ability needs to use a Power/Quality that hasn't been used
@@ -9550,13 +9537,8 @@ class Hero:
                             #  arc_zone_abilities:
                             arc_triplets = []
                             for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
 ##                            print("### AddArchetype: arc_triplets=" + str(arc_triplets))
 ##                            print("### AddArchetype: len(arc_triplets)=" + str(len(arc_triplets)))
                             if len(arc_triplets) < green_unique:
@@ -9605,19 +9587,16 @@ class Hero:
                             #  met, and if not, restrict this Ability to unused ones.
                             # Start by making a list of the Powers/Qualities already used in
                             #  arc_zone_abilities:
-                            arc_triplets = [[y for y in x.insert_pqs] for x in arc_zone_abilities]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                            for x in arc_zone_abilities:
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
                             if len(arc_triplets) < yellow_unique:
                                 # This Ability needs to use a Power/Quality that hasn't been used
                                 #  in this zone before
                                 while len([x for x in legal_triplets if x in arc_triplets]) > 0:
                                     for x in arc_triplets:
-                                        legal_triplets.remove(x)
+                                        if x in legal_triplets:
+                                            legal_triplets.remove(x)
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
@@ -10132,34 +10111,32 @@ class Hero:
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayArchetype(arc_indices[entry_index],
-                                         width=100,
-                                         prefix="    ")
+                                         width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(arc_options):
                 # User selected to reroll.
                 prev_results = [0 for x in die_results]
-                entry_options = "YN"
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous " + \
-                                         "results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Archetype Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
+                    entry_options = ["Yes", "No"]
                     for i in range(len(die_results)):
-                        decision = choose_letter(entry_options,
-                                                 ' ',
-                                                 prompt="Do you want to keep " + \
-                                                        str(die_results[i]) + " on your d" + \
-                                                        str(adice[i]) + "? (y/n)",
-                                                 repeat_message="Please enter Y or N.",
-                                                 inputs=inputs)
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt="Do you want to keep " + \
+                                                    str(die_results[i]) + " on your d" + \
+                                                    str(adice[i]) + "?",
+                                                    title="Archetype Selection",
+                                                    inputs=inputs)
                         entry_choice = decision[0]
                         inputs = decision[1]
-                        if entry_choice == "Y":
+                        if entry_choice == 0:
                             prev_results[i] = die_results[i]
                 rerolls = 0
             elif arc_indices[entry_index] in range(len(arc_simple)):
@@ -10171,21 +10148,23 @@ class Hero:
                 modifier_index = arc_indices[entry_index] - len(arc_collection) + \
                                  len(arc_modifiers)
                 arc_mod = arc_modifiers[modifier_index]
-                print(arc_mod[0] + " requires another Archetype to modify.")
+                complexText = arc_mod[0] + " requires another Archetype to modify."
                 entry_choice = " "
                 if modifier_index == 2:
                     # Modular gives the user a choice: reroll their dice, or choose the other
                     #  Archetype from their existing options.
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt="Do you want to reroll your Archetype " + \
-                                             "dice before choosing your other Archetype? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=complexText + "\nDo you want to " + \
+                                                "reroll your Archetype dice before choosing " + \
+                                                "your other Archetype? (y/n)",
+                                                title="Archetype Selection: Modular",
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                if modifier_index == 1 or entry_choice == 'Y':
+                else:
+                    print(complexText)
+                if modifier_index == 1 or entry_choice == 0:
                     # Either the modifier is Divided, which requires a reroll, or the modifier is
                     #  Modular and the user has chosen to reroll.
                     print("Rolling " + dice_combo(adice) + " for other Archetype...")
@@ -10270,8 +10249,7 @@ class Hero:
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
                             DisplayArchetype(arc_indices[entry_index],
-                                             width=100,
-                                             prefix="    ")
+                                             width=100)
                     entry_index = entry_options.find(entry_choice)
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
@@ -10322,8 +10300,7 @@ class Hero:
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayArchetype(entry_index,
-                                     width=100,
-                                     prefix="    ")
+                                     width=100)
             entry_index = entry_options.find(entry_choice)
         print(arc_collection[entry_index][0] + " Archetype selected.")
         if entry_index in range(len(arc_simple)):
@@ -10372,8 +10349,7 @@ class Hero:
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayArchetype(entry_index,
-                                         width=100,
-                                         prefix="    ")
+                                         width=100)
                 entry_index = entry_options.find(entry_choice)
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
@@ -10619,12 +10595,6 @@ class Hero:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is
             #  1 (Divided), then they get to choose whether their hero gets more than 1
             #  Personality.
-##            entry_options = "YN"
-##            decision = choose_letter(entry_options,
-##                                     ' ',
-##                                     prompt="Do you want to use two different Personalities? (y/n)",
-##                                     repeat_message="Please enter Y or N.",
-##                                     inputs=inputs)
             entry_options = ["Yes", "No"]
             decision = self.ChooseIndex(entry_options,
                                         prompt="Do you want to use two different Personalities?",
@@ -10649,13 +10619,13 @@ class Hero:
             while rerolls >= 0:
                 die_results = []
                 if prev_result < 1:
-                    print("Rolling 2d10 for Personality...")
+                    roll_report = "Rolling 2d10 for Personality..."
                     die_results = [random.randint(1, 10), random.randint(1, 10)]
                 else:
-                    print("Keeping " + str(prev_result) + \
-                          " from previous roll. Rolling 1d10 for Personality...")
+                    roll_report = "Keeping " + str(prev_result) + \
+                                  " from previous roll. Rolling 1d10 for Personality..."
                     die_results = [prev_result, random.randint(1, 10)]
-                print("Rolled " + str(die_results[0]) + " and " + str(die_results[1]) + ".")
+                roll_report = "Rolled " + str(die_results[0]) + " and " + str(die_results[1]) + "."
                 # The player can choose between any single result or the sum of any pair of results.
                 # Since there are only two dice, this is a straightforward list: the two results
                 #  and their sum.
@@ -10680,7 +10650,7 @@ class Hero:
                                                   indented=True,
                                                   breaks=2) for i in pn_indices]
                     question = ExpandWindow(self.myWindow,
-                                            "Choose one:",
+                                            roll_report + "\n\nChoose one:",
                                             options,
                                             details,
                                             var=answer,
@@ -10690,6 +10660,7 @@ class Hero:
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
+                    print(roll_report)
                     for i in range(len(entry_options)-rerolls):
                         print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0] + \
                               " (" + str(pn_options[i]) + ")")
@@ -10710,32 +10681,35 @@ class Hero:
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
                             DisplayPersonality(pn_indices[entry_index],
-                                               prefix="    ")
+                                               width=100)
                     entry_index = entry_options.find(entry_choice)
                 # Now we have a commitment to a valid choice from the list.
                 if entry_index == len(pn_options):
                     # User selected to reroll.
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt="Do you want to keep any of the previous " + \
-                                             "results? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt="Do you want to keep any of the " + \
+                                                "previous results? (y/n)",
+                                                title="Personality Selection",
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
+                    if entry_choice == 0:
                         # Only two dice were rolled. There's no point in rolling again if you want
                         #  to keep both, and no point in keeping anything if you want to keep
                         #  neither. Therefore, the user wants to keep exactly one.
-                        entry_options = string.ascii_uppercase[0:len(die_results)]
-                        decision = self.ChooseIndex([str(x) + " (" + pn_collection[x-1][0] + \
-                                                     ")" for x in die_results],
-                                                    prompt="Choose which result to keep:",
-                                                    inputs=inputs,
-                                                    width=25)
-                        inputs = decision[1]
-                        prev_result = die_results[decision[0]]
+                        if die_results[0] == die_results[1]:
+                            # If both values are the same, there's no choice to make here
+                            prev_result = die_results[0]
+                        else:
+                            entry_options = string.ascii_uppercase[0:len(die_results)]
+                            decision = self.ChooseIndex([str(x) + " (" + pn_collection[x-1][0] + \
+                                                         ")" for x in die_results],
+                                                        prompt="Choose which result to keep:",
+                                                        inputs=inputs,
+                                                        width=25)
+                            inputs = decision[1]
+                            prev_result = die_results[decision[0]]
                     rerolls = 0
                 else:
                     # User selected a personality.
@@ -10805,7 +10779,8 @@ class Hero:
                         if entry_choice not in entry_options and \
                            entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(entry_index)
+                            DisplayPersonality(entry_index,
+                                               width=100)
                     entry_index = entry_options.find(entry_choice)
                 print(pn_collection[entry_index][0] + " Personality selected.")
                 # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
@@ -10871,7 +10846,8 @@ class Hero:
                         entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPersonality(entry_index)
+                        DisplayPersonality(entry_index,
+                                           width=100)
                 entry_index = entry_options.find(entry_choice)
             print(pn_collection[entry_index][0] + " Personality selected.")
             return [entry_index]
@@ -12944,7 +12920,7 @@ def Create_Curveball(step=len(step_names)):
             print(notePrefix + tracker_close)
         if track_inputs:
             print(notePrefix + tracker_open)
-        curveball.AddArchetype(arc[0], arc[1], inputs=["y","a",["e"],[["a","w"],["b","b"]],["A","b","a","Going My Way"],["d","D","a","a","Scattershot"],["A","a","a","Cover Fire"],["F","b"]])
+        curveball.AddArchetype(arc[0], arc[1], inputs=["a","a",["e"],[["a","w"],["b","b"]],["A","b","a","Going My Way"],["d","D","a","a","Scattershot"],["A","a","a","Cover Fire"],["F","b"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 4:
@@ -16052,8 +16028,8 @@ class ExpandFrame(Frame):
             self.myDispLabel.config(height=detailsHeight)
         print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
               ", myDispBuffer = " + str(self.myDispBuffer))
-##        print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
-##              ", myPromptBuffer = " + str(self.myPromptBuffer))
+        print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
+              ", myPromptBuffer = " + str(self.myPromptBuffer))
         self.myAnswer.set(index)
     def plusbuffer(self, event=None):
         self.myDispBuffer += 5
@@ -16333,7 +16309,8 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getTalyn()
+firstHero = factory.getLori(step=4)
+##arc = firstHero.GuidedArchetype(inputs=[])
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
