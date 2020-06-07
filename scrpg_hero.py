@@ -153,7 +153,7 @@ global print_issue, track_inputs, tracker_open, tracker_close
 #  track_inputs: if True, activates reporting statements throughout Hero intended to help convert
 #                 manual inputs into automatic ones
 print_issue = False
-track_inputs = True
+track_inputs = False
 tracker_open = "~~~ ["
 tracker_close = "~~~ ]"
 
@@ -9674,24 +9674,54 @@ class Hero:
                         # The user needs to choose their Minion Forms.
                         min_indices = [i for i in range(len(min_collection))]
                         while len(self.min_forms) < max_forms:
-                            entry_options = string.ascii_uppercase[0:len(min_indices)]
-                            print("Choose a Minion Form (#" + str(len(self.min_forms) + 1) + \
-                                  " of " + str(max_forms) + "):")
-                            for i in range(len(min_indices)):
-                                printlong(entry_options[i] + ": " + \
-                                          MinionFormStr(min_collection[min_indices[i]]),
-                                          width=100,
-                                          prefix="    ")
-                            decision = choose_letter(entry_options, ' ', inputs=inputs)
-                            entry_choice = decision[0]
-                            inputs = decision[1]
-                            entry_index = entry_options.find(entry_choice)
-                            # EDIT: Use self.ChooseIndex(), not find()?
-                            # ...
-                            mf_index = min_indices[entry_index]
-                            self.min_forms.append(min_collection[min_indices.pop(entry_index)])
-                            print("OK! Added " + min_collection[mf_index][0] + " to " + \
-                                  self.hero_name + "'s Minion sheet.")
+                            if self.UseGUI(inputs):
+                                # Use AssignWindow to choose any number of minion forms at once
+                                result = StringVar(self.myFrame)
+                                remaining = max_forms - len(self.min_forms)
+                                questions = AssignWindow(self.myWindow,
+                                                         "Choose exactly " + str(remaining) + \
+                                                         " Minion Forms to add...",
+                                                         ["Add", "Don't Add"],
+                                                         [MinionFormStr(i,
+                                                                        width=-1,
+                                                                        breaks=1) for i in \
+                                                          min_indices],
+                                                         result,
+                                                         default=1,
+                                                         rwidth=10,
+                                                         firstMin=remaining,
+                                                         firstMax=remaining,
+                                                         counter=True,
+                                                         title="Archetype Selection: Minion-Maker")
+                                answers = result.get()
+                                self.min_forms += [min_indices[i] \
+                                                   for i in range(len(min_indices)) \
+                                                   if answers[i] == string.ascii_uppercase[0]]
+                                # ...
+                            else:
+                                # Use the text shell to choose the next minion form
+                                entry_options = string.ascii_uppercase[0:len(min_indices)]
+                                print("Choose a Minion Form (#" + str(len(self.min_forms) + 1) + \
+                                      " of " + str(max_forms) + "):")
+                                for i in range(len(min_indices)):
+                                    printlong(entry_options[i] + ": " + \
+                                              MinionFormStr(min_indices[i],
+                                                            width=-1,
+                                                            breaks=0),
+                                              width=100,
+                                              prefix="    ")
+                                decision = choose_letter(entry_options,
+                                                         ' ',
+                                                         inputs=inputs)
+                                entry_choice = decision[0]
+                                inputs = decision[1]
+                                entry_index = entry_options.find(entry_choice)
+                                # EDIT: Use self.ChooseIndex(), not find()?
+                                # ...
+                                mf_index = min_indices.pop(entry_index)
+                                self.min_forms.append(mf_index)
+                                print("OK! Added " + min_collection[mf_index][0] + " to " + \
+                                      self.hero_name + "'s Minion sheet.")
                         self.mf_step = this_step
             # Next, add any bonus content:
             if arc_bonus == 1:
@@ -9925,30 +9955,62 @@ class Hero:
                         # Assign each remaining Power and Quality to either Civilian or Heroic.
                         unassigned_dice = unassigned_powers + unassigned_qualities
                         while len(unassigned_dice) > 0:
-                            assigning_die = unassigned_dice.pop(0)
-                            entry_options = "AB"
-                            decision = self.ChooseIndex(self.dv_tags,
-                                                        prompt="Which of " + self.hero_name + \
-                                                        "'s Divided Forms should have access " + \
-                                                        "to " + str(assigning_die) + "?",
-                                                        inputs=inputs,
-                                                        width=50,
-                                                        buffer=10)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(assigning_die) + " as a " + \
-                                  self.dv_tags[entry_index] + " " + \
-                                  categories_singular[assigning_die.ispower] + ".")
-                            if entry_index == 0:
-                                if assigning_die.ispower:
-                                    civilian_powers.append(assigning_die)
-                                else:
-                                    civilian_qualities.append(assigning_die)
+                            if self.UseGUI(inputs):
+                                # Use an AssignWindow to assign the remaining dice
+                                result = StringVar(self.myFrame)
+                                questions = AssignWindow(self.myWindow,
+                                                         "Assign " + self.hero_name + \
+                                                         "'s remaining Powers & Qualities to " + \
+                                                         "one of " + \
+                                                         pronouns[self.pronoun_set][2] + \
+                                                         " Divided Forms...",
+                                                         self.dv_tags,
+                                                         [str(x) for x in unassigned_dice],
+                                                         result,
+                                                         title="Archetype Selection: Divided")
+                                answer = result.get()
+                                for i in range(len(unassigned_dice)):
+                                    if answer[i] == string.ascii_uppercase[0]:
+                                        if unassigned_dice[i].ispower:
+                                            civilian_powers.append(unassigned_dice[i])
+                                        else:
+                                            civilian_qualities.append(unassigned_dice[i])
+                                    else:
+                                        if unassigned_dice[i].ispower:
+                                            heroic_powers.append(unassigned_dice[i])
+                                        else:
+                                            heroic_qualities.append(unassigned_dice[i])
+                                unassigned_dice = [x for x in unassigned_dice \
+                                                   if x not in civilian_powers + \
+                                                   civilian_qualities + heroic_powers + \
+                                                   heroic_qualities]
                             else:
-                                if assigning_die.ispower:
-                                    heroic_powers.append(assigning_die)
+                                # Use ChooseIndex to assign the next die
+                                assigning_die = unassigned_dice.pop(0)
+                                entry_options = "AB"
+                                decision = self.ChooseIndex(self.dv_tags,
+                                                            prompt="Which of " + self.hero_name + \
+                                                            "'s Divided Forms should have " + \
+                                                            "access to " + str(assigning_die) + \
+                                                            "?",
+                                                            inputs=inputs,
+                                                            width=50,
+                                                            buffer=10)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(assigning_die) + " as a " + \
+                                      self.dv_tags[entry_index] + " " + \
+                                      categories_singular[assigning_die.ispower] + ".")
+                                if entry_index == 0:
+                                    if assigning_die.ispower:
+                                        civilian_powers.append(assigning_die)
+                                    else:
+                                        civilian_qualities.append(assigning_die)
                                 else:
-                                    heroic_qualities.append(assigning_die)
+                                    if assigning_die.ispower:
+                                        heroic_powers.append(assigning_die)
+                                    else:
+                                        heroic_qualities.append(assigning_die)
                         # We're leaving self.power_dice and self.quality_dice as complete lists.
                         # The Heroic form gets the Heroic dice plus the Constant ones:
                         hr_power_dice = [d for d in constant_powers + heroic_powers]
@@ -12006,9 +12068,9 @@ class Hero:
                                                   width=width,
                                                   prefix=prefix)
                     for x in range(len(self.min_forms)):
-                        stepText += "\n" + split_text(MinionFormStr(self.min_forms[x]),
-                                                      width=width,
-                                                      prefix=prefix+indent)
+                        stepText += "\n" + MinionFormStr(self.min_forms[x],
+                                                         width=width,
+                                                         prefix=prefix+indent)
                 if len(step_forms) > 0:
                     stepText += "\n" + split_text("Forms:",
                                                   width=width,
@@ -12243,9 +12305,9 @@ class Hero:
                                             width=width,
                                             prefix=prefix)
             for x in range(len(self.min_forms)):
-                heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
-                                                width=width,
-                                                prefix=prefix+indent)
+                heroString += "\n" + MinionFormStr(self.min_forms[x],
+                                                   width=width,
+                                                   prefix=prefix+indent)
         # Modes and Forms get hanging=True even if hanging=False in this method, because it's
         #  important to see where each one stops and the next one begins
         if len(self.other_forms) > 0:
@@ -15227,7 +15289,7 @@ your minion one of the following upgrades:"
             self.myMinionCount = len(self.myHero.min_forms)
             self.myMinionInfo = [["","",-1] for i in range(self.myMinionCount)]
             for i in range(self.myMinionCount):
-                thisMinion = self.myHero.min_forms[i]
+                thisMinion = min_collection[self.myHero.min_forms[i]]
                 self.myMinionInfo[i] = [str(thisMinion[0]),
                                         "+" + str(thisMinion[2]),
                                         str(thisMinion[1])]
@@ -16546,32 +16608,13 @@ root.geometry("+0+0")
 # Testing SampleGUI
 ##gui = SampleGUI(root)
 
-# Testing AssignFrame
-result = StringVar(root)
-question = AssignWindow(root,
-                        "Choose exactly 8 Minion Forms to add:",
-                        ["Add", "Don't Add"],
-                        [MinionFormStr(x,
-                                       width=-1,
-                                       breaks=1) for x in range(len(min_collection))],
-                        result,
-                        firstMin=8,
-                        firstMax=8,
-                        default=1,
-                        counter=True)
-root.mainloop()
-answer = result.get()
-formList = [min_collection[i][0] for i in range(len(min_collection)) \
-            if answer[i] == string.ascii_uppercase[0]]
-print("formList: " + str(formList))
-
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getLori(step=0)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getKim()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
