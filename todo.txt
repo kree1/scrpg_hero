@@ -135,8 +135,7 @@ Assign rwidth values to existing ExpandWindow calls
 	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
 Assigning Powers and Qualities for Split Form could just be a single window with a set of radiobuttons for each die
-
-ChoosePrinciple should check whether the hero already has any of these Principles
+ So could choosing Minion forms, if you gave it the right validation code
 
 ? Make AddHeroNames automatically recognize substrings like "girl", "man", etc. in codename and change default pronouns to suit ?
 
@@ -181,16 +180,3 @@ Using AddRetcon to upgrade Red status should check if the hero gets multiple alt
 When implementing Split Form for Form-Changers, any Power that only appears in a [Heroic/Civilian] form can automatically be given the matching tag; it's the ones that appear in both that are undefined
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
-
-You have the following Power dice available: [10]
-You have the following Quality dice available: [10]
-
-    def ChooseIndex(self,
-                    print_options,
-                    prompt="",
-                    repeat_message=invalid_message,
-                    title="Hero Creation",
-                    width=40,
-                    buffer=5,
-                    inputs=[]):
-					

@@ -5686,8 +5686,22 @@ def PowerSourceDetails(index,
                           width=width,
                           prefix=prefix)
 
-def MinionFormStr(min_form):
-    return min_form[0] + " (requires +" + str(min_form[2]) + " or higher): " + min_form[1]
+def MinionFormStr(index,
+                  width=100,
+                  prefix="",
+                  breaks=0):
+    if index in range(len(min_collection)):
+        buff = min_collection[index]
+        minText = buff[0] + " (requires +" + str(buff[2]) + " or higher): "
+        minText += "\n" * breaks + buff[1]
+        minText = split_text(minText,
+                             width=width,
+                             prefix=prefix)
+        return minText
+    else:
+        return split_text("Invalid minion form index: " + str(index),
+                          width=width,
+                          prefix=prefix)
 
 def DisplayTransitionMethod(index,
                             width=100,
@@ -6507,7 +6521,12 @@ class Hero:
         print("d" + str(valid_dice[entry_index]) + " assigned to " + print_name)
         valid_dice.remove(valid_dice[entry_index])
         return valid_dice
-    def ChoosePQ(self, triplets, die_options, custom_name=False, stepnum=0, inputs=[]):
+    def ChoosePQ(self,
+                 triplets,
+                 die_options,
+                 custom_name=False,
+                 stepnum=0,
+                 inputs=[]):
         # Lets the user choose from a list of powers and/or qualities (triplets) to assign one of a
         #  list of dice (die_options)
         # Returns the list of unused triplets and the list of unused die sizes
@@ -6608,8 +6627,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title=print_type + " Selection",
-                                            lwidth=40,
-                                            lbuffer=5,
+                                            lwidth=50,
+                                            lbuffer=15,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -6825,6 +6844,12 @@ class Hero:
             print("Error! Invalid category: " + str(category))
         else:
             r_options = [Principle(category, i) for i in range(len(rc_master[category]))]
+            # We don't need to check whether any of r_options match the Principle(s) the hero
+            #  already has, because Principles are customizable. A hero could take two different
+            #  Principles of Dependence for two different objects they depend on, or two different
+            #  Principles of [Energy/Element] for two different elements their hero is in touch
+            #  with. (It might not be the best decision character- or gameplay-wise, but it's
+            #  theirs to make.)
             if rc_names[category][0].upper() in "AEIOU":
                 prompt = "Choose an " + rc_names[category] + " Principle."
             else:
@@ -6903,7 +6928,7 @@ class Hero:
                 entry_major = ri.major_twist
                 entry_green = ri.green_ability
                 if self.UseGUI(inputs):
-                    # Create a PrincipleWindow to prompt the user.
+                    # Create a PrincipleWindow to prompt the user to modify any number of sections.
                     dispWidth = 100
                     titleVar = StringVar()
                     roleplayingVar = StringVar()
@@ -6924,9 +6949,8 @@ class Hero:
                     entry_minor = minorVar.get()
                     entry_major = majorVar.get()
                     entry_green = greenVar.get()
-                    # ...
                 else:
-                    # Ask the user what part they want to change.
+                    # Use the text shell to prompt the user, one section at a time.
                     entry_dict = dict(A="Title",
                                       B="During Roleplaying text",
                                       C="Minor Twist",
@@ -9721,7 +9745,6 @@ class Hero:
                                             lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
-                    # ...
                 else:
                     # Use the shell to prompt the user
                     entry_options = string.ascii_uppercase[0:len(tr_collection)]
@@ -9785,7 +9808,6 @@ class Hero:
                                             lwidth=30,
                                             rwidth=100)
                     dv_nature = build_options[answer.get()]
-                    # ...
                 else:
                     # Use the shell to prompt the user
                     entry_options = string.ascii_uppercase[0:len(build_options)]
@@ -10448,7 +10470,6 @@ class Hero:
                         md[3].append(rpq_die)
 ##                    else:
 ##                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
-            # ...
             # Then fill in their status dice and Out Ability.
             out_options = []
             if has_multiple:
@@ -10944,7 +10965,6 @@ class Hero:
                 pq_sublists.append([d for d in self.power_dice])
                 ra_sublists.append([rt for rt in ra_minion_maker])
                 sublist_strings.append("for Minion-Maker heroes")
-                # ...
             # Show the user the list of sublists of Red Abilities and corresponding
             #  Powers/Qualities
             if self.UseGUI(inputs):
@@ -12060,13 +12080,11 @@ class Hero:
                             stepText += "\n" + aPrime.details(width=width,
                                                               prefix=prefix+indent*2,
                                                               indented=indented)
-            # ...
         else:
             stepText += split_text("Error! " + str(stepnum) + \
                                    " is not a valid step of hero creation.",
                                    width=width,
                                    prefix=prefix)
-        # ...
         return stepText
     def DisplaySteps(self,
                      width=100,
@@ -13814,7 +13832,6 @@ class HeroFrame(Frame):
                 self.retconButton.grid()
             elif self.firstIncomplete == 6:
                 self.healthButton.grid()
-        # ...
         toolboxColumn = buttonColumn + self.buttonWidth
         prevButtons = 0
 ##        # Button for updating relief option (for design purposes)
@@ -14079,7 +14096,6 @@ class HeroFrame(Frame):
                 prinSectionHeights[j][i] = thisSectionHeights[j]
         sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
         print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
-        # ...
         firstRow = 29
         titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
@@ -14219,7 +14235,6 @@ class HeroFrame(Frame):
         self.redAbilityButton.grid_remove()
         self.retconButton.grid_remove()
         self.healthButton.grid_remove()
-        # ...
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this hero
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
@@ -14247,7 +14262,6 @@ class HeroFrame(Frame):
                 self.retconButton.grid()
             elif self.firstIncomplete == 6:
                 self.healthButton.grid()
-        # ...
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
         print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -15244,7 +15258,6 @@ class FormFrame(Frame):
 ##        print(notePrefix + "columnWidth: " + str(self.columnWidth))
         self.SetHero(hero)
         self.numRows = 11 * self.myFormCount - 1
-        # ...
         self.rowHeight = 1
         self.height = max(1,self.numRows*self.rowHeight)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
@@ -15469,9 +15482,7 @@ class FormFrame(Frame):
                                                        columnspan=self.lowerWidths[5+k],
                                                        sticky=self.abilityGlue)
                     thisRow += abilityHeight
-            # ...
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
-        # ...
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -15479,7 +15490,6 @@ class FormFrame(Frame):
         self.isDivided = False
         self.myDividedTags = []
         self.myFormInfo = []
-        # ...
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -15548,6 +15558,13 @@ class SelectWindow(SubWindow):
         master.grid(row=0, column=0)
         return master
 
+# A value used to represent the discrepancy between "number of characters in this title" and
+#  "width (in characters) of a window that will fully display this title"- that is, the width of
+#  the buttons and icons that also take up space in the title bar
+# Global because it's useful for SelectFrame, EntryFrame, etc.
+global titleBuffer
+titleBuffer = 10
+
 class SelectFrame(Frame):
     # A frame that poses a multiple-choice question to the user and reports the answer.
     # prompt: the text of the question
@@ -15566,7 +15583,7 @@ class SelectFrame(Frame):
         notePrefix = "### SelectFrame.__init__: "
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
-        self.myTitleWidth = titleWidth
+        self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
 ##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myBuffer = buffer
@@ -15691,13 +15708,11 @@ class SelectFrame(Frame):
                 # Destroy this window...
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
-                # ...
             else:
                 print("SelectFrame.finish: Invalid value of answer (" + str(answer) + ")")
         else:
             print("SelectFrame.finish: Invalid length of self.myOptions (" + \
                   str(len(self.myOptions)) + ")")
-        # ...
 
 class EntryWindow(SubWindow):
     def __init__(self,
@@ -15739,7 +15754,7 @@ class EntryFrame(Frame):
                  titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myTitleWidth = titleWidth
+        self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
@@ -16278,6 +16293,7 @@ class PrincipleFrame(Frame):
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def finish(self, *args):
+        notePrefix = "### PrincipleFrame.finish: "
         complete = True
         for i in range(len(self.prinSectionNames)):
             if self.prinSectionVars[i].get() == "":
@@ -16297,13 +16313,231 @@ class PrincipleFrame(Frame):
                                          major=self.prinSectionVars[3].get(),
                                          green=self.prinSectionVars[4].get(),
                                          stepnum=step)
-            print("PrincipleFrame.finish: returning " + str(self.myPrinciple) + ":")
+            print(notePrefix + "returning " + str(self.myPrinciple) + ":")
             self.myPrinciple.display()
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
                 self.myParent.cancel()
-            
 
+class AssignWindow(SubWindow):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 categories,
+                 items,
+                 destination,
+                 default=-1,
+                 lwidth=40,
+                 rwidth=20,
+                 firstMin=-1,
+                 firstMax=-1,
+                 counter=False,
+                 title=""):
+        SubWindow.__init__(self, parent, str(title))
+        self.myTitle = str(title)
+        self.myAssignFrame = AssignFrame(self,
+                                         prompt=prompt,
+                                         categories=categories,
+                                         items=items,
+                                         destination=destination,
+                                         default=default,
+                                         lwidth=lwidth,
+                                         rwidth=rwidth,
+                                         firstMin=firstMin,
+                                         firstMax=firstMax,
+                                         counter=counter,
+                                         titleWidth=len(self.myTitle))
+        self.activate(self.myAssignFrame)
+    def body(self, master):
+        self.container = master
+        master.grid(row=0, column=0, sticky=N+E+S+W)
+        return master
+
+class AssignFrame(Frame):
+    # Presents the user with a list of items that each need to be assigned to one of a number of
+    #  categories, and lets them assign each value to a category using a set of radiobuttons.
+    # prompt: string. the overall question the user is answering
+    # categories: list of strings. the categories to assign between
+    # items: list of strings. the values to assign
+    # destination: StringVar. the variable to save the results in
+    # lwidth: int. the width in characters of each label identifying a value
+    # rwidth: int. the width in characters of each label identifying a category
+    # firstMin: int. the minimum number of values that need to be assigned to the first category
+    # firstMax: int. the maximum number of values that need to be assigned to the first category
+    def __init__(self,
+                 parent,
+                 prompt,
+                 categories,
+                 items,
+                 destination,
+                 default=-1,
+                 lwidth=40,
+                 rwidth=20,
+                 firstMin=-1,
+                 firstMax=-1,
+                 counter=False,
+                 titleWidth=-1):
+        notePrefix = "### AssignFrame.__init__: "
+        Frame.__init__(self, parent)
+        self.myParent = parent
+        self.myPrompt = str(prompt)
+        self.myCategories = [str(x) for x in categories]
+        self.myItems = [str(x) for x in items]
+        self.myDestination = StringVar(self)
+        if isinstance(destination, StringVar):
+            self.myDestination = destination
+        self.myItemWidth = max(lwidth, max([max([len(y) for y in x.split("\n")]) \
+                                                for x in self.myItems]))
+        print(notePrefix + "myItemWidth=" + str(self.myItemWidth))
+        self.myColumnWidth = rwidth
+        self.myFirstMin = -1
+        self.myFirstMax = -1
+        self.myDefault = -1
+        if firstMin in range(0, len(self.myItems)+1):
+            self.myFirstMin = firstMin
+        if firstMax in range(0, len(self.myItems)+1):
+            self.myFirstMax = firstMax
+        if default in range(len(self.myCategories)):
+            self.myDefault = default
+        self.useCounter = False
+        if counter == True:
+            self.useCounter = True
+        # Until the assignment values are ready to be returned, they'll be stored as individual
+        #  IntVars in self.myAssignments
+        # self.myAssignments[3].get() == 0 will indicate that self.myItems[3] is assigned to
+        #  self.myCategories[0], for instance.
+        self.myAssignments = [IntVar(value=-1) for x in self.myItems]
+        # When the answers are preparing to be returned, they'll be represented by letters in the
+        #  array self.myAnswer, like responses to a multiple-choice test.
+        # self.myAnswer[3] == self.myAnswerKey[0] will indicate that self.myItems[3] is assigned
+        #  to self.myCategories[0], etc.
+        # self.myDestination will then be set to str.join(self.myAnswer).
+        self.myAnswer = [' '] * len(self.myItems)
+        self.myAnswerKey = string.ascii_uppercase[0:len(self.myCategories)]
+        totalWidth = max(self.myItemWidth + self.myColumnWidth*len(self.myCategories),
+                         titleWidth + titleBuffer)
+        promptLines = split_text(self.myPrompt,
+                                 width=totalWidth)
+        # myPromptLabel goes across the full first row
+        self.myPromptLabel = Label(self,
+                                   anchor=W,
+                                   justify=LEFT,
+                                   text=promptLines,
+                                   width=totalWidth,
+                                   height=1+len([x for x in promptLines if x == "\n"]))
+        self.myPromptLabel.grid(row=0,
+                                column=0,
+                                rowspan=1,
+                                columnspan=1+len(self.myCategories),
+                                sticky=N+E+S+W)
+        # Each of myItems gets its own label...
+        self.myItemLabels = [None for y in range(len(self.myItems))]
+        #... and its own set of radio buttons, one for each category
+        self.myRadioButtons = [[None for x in range(len(self.myCategories))] \
+                               for y in range(len(self.myItems))]
+        # These take up the next len(self.myItems) rows beneath the prompt
+        for i in range(len(self.myItems)):
+            thisRow = i + 1
+            self.myItemLabels[i] = Label(self,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         text=self.myItems[i],
+                                         width=self.myItemWidth,
+                                         relief=GROOVE)
+            self.myItemLabels[i].grid(row=thisRow,
+                                      column=0,
+                                      rowspan=1,
+                                      columnspan=1,
+                                      sticky=N+E+S+W)
+            if self.myDefault in range(len(self.myCategories)):
+                self.myAssignments[i].set(self.myDefault)
+            for j in range(len(self.myCategories)):
+                thisCol = j + 1
+                self.myRadioButtons[i][j] = Radiobutton(self,
+                                                        anchor=CENTER,
+                                                        justify=CENTER,
+                                                        text=self.myCategories[j],
+                                                        variable=self.myAssignments[i],
+                                                        value=j,
+                                                        indicatoron=0,
+                                                        command=self.update)
+                self.myRadioButtons[i][j].grid(row=thisRow,
+                                               column=thisCol,
+                                               rowspan=1,
+                                               columnspan=1,
+                                               sticky=N+E+S+W)
+            self.myCountLabel = Label(self,
+                                      anchor=SE,
+                                      justify=RIGHT,
+                                      text="")
+            self.myCountLabel.grid(row=len(self.myItems)+2,
+                                   column=0,
+                                   rowspan=1,
+                                   columnspan=1,
+                                   sticky=N+E+S+W)
+            self.myOKButton = Button(self,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="OK",
+                                     command=self.finish)
+            self.myOKButton.grid(row=len(self.myItems)+2,
+                                 column=1,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+            self.bind("<Return>", self.finish)
+            self.update()
+    def update(self, *args):
+        notePrefix = "### AssignFrame.update: "
+        firstCount = len([x for x in self.myAssignments if x.get()==0])
+        for i in range(len(self.myItems)):
+            choice = self.myAssignments[i].get()
+            if choice in range(len(self.myCategories)):
+##                if choice != self.myDefault:
+##                    print(notePrefix + str(self.myItems[i]).split()[0] + " assigned to " + \
+##                          str(self.myCategories[choice]))
+                self.myAnswer[i] = self.myAnswerKey[choice]
+        if self.useCounter:
+            cText = str(firstCount) + " selected"
+            if self.myFirstMin in range(len(self.myItems)+1) and firstCount < self.myFirstMin:
+                remainder = self.myFirstMin - firstCount
+                cText += ", " + str(remainder) + " to go..."
+            elif self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
+                cText += " (limit " + str(self.myFirstMax) + ")..."
+            self.myCountLabel.config(text=cText)
+    def finish(self, *args):
+        notePrefix = "### AssignFrame.finish: "
+        complete = True
+        firstCount = len([x for x in self.myAssignments if x.get()==0])
+        for i in range(len(self.myItems)):
+            choice = self.myAssignments[i].get()
+            if choice in range(len(self.myCategories)):
+                if choice != self.myDefault:
+                    print(notePrefix + str(self.myItems[i]).split()[0] + " assigned to " + \
+                          str(self.myCategories[choice]))
+                self.myAnswer[i] = self.myAnswerKey[choice]
+            else:
+                complete = False
+        if self.myFirstMin in range(len(self.myItems)+1) and firstCount < self.myFirstMin:
+            complete = False
+        if self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
+            complete = False
+        if complete:
+            print(notePrefix + "myAnswer: " + str(self.myAnswer))
+            self.myDestination.set("".join(self.myAnswer))
+            print(notePrefix + "returning '" + self.myDestination.get() + "'")
+            if isinstance(self.myParent, SubWindow):
+                self.myParent.cancel()
+        elif len([x for x in self.myAssignments if x.get() in range(len(self.myCategories))]) < \
+             len(self.myItems):
+            print("Error! Not all items have been assigned...")
+        elif self.myFirstMin in range(len(self.myItems)) and firstCount < self.myFirstMin:
+            print("Error! Less than " + str(self.myFirstMin) + " items have been assigned to " + \
+                  "the first category...")
+        else:
+            print("Error! More than " + str(self.myFirstMax) + " items have been assigned to " + \
+                  "the first category...")
+                
 factory = SampleMaker()
 
 root = Tk()
@@ -16312,13 +16546,32 @@ root.geometry("+0+0")
 # Testing SampleGUI
 ##gui = SampleGUI(root)
 
+# Testing AssignFrame
+result = StringVar(root)
+question = AssignWindow(root,
+                        "Choose exactly 8 Minion Forms to add:",
+                        ["Add", "Don't Add"],
+                        [MinionFormStr(x,
+                                       width=-1,
+                                       breaks=1) for x in range(len(min_collection))],
+                        result,
+                        firstMin=8,
+                        firstMax=8,
+                        default=1,
+                        counter=True)
+root.mainloop()
+answer = result.get()
+formList = [min_collection[i][0] for i in range(len(min_collection)) \
+            if answer[i] == string.ascii_uppercase[0]]
+print("formList: " + str(formList))
+
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getLori(step=0)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getLori(step=0)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
