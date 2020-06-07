@@ -315,9 +315,11 @@ def choose_letter(entry_options,
             entry_choice = "N"
     else:
         if len(prompt) > 0:
-            entry_choice = input(prompt + "\n")[0].upper()
-        else:
-            entry_choice = input()[0].upper()
+            print(prompt)
+        line_prompt = ""
+        if track_inputs:
+            line_prompt += "> "
+        entry_choice = input(line_prompt)[0].upper()
     while entry_choice not in entry_options:
         if len(inputs) > 0:
             print(repeat_message)
@@ -6261,21 +6263,26 @@ class Hero:
             else:
                 # If not, wait for the user to enter something and use their input as the initial
                 #  entry
-                entry_choice = input()[0].upper()
+                line_prompt = ""
+                if track_inputs:
+                    line_prompt = "> "
+                entry_choice = input(line_prompt)[0].upper()
             while entry_choice not in entry_options:
-                # As long as the current entry doesn't match any of the options...
+                # As long as the current entry doesn't match any of the options, display the
+                #  "try again" message...
+                print(split_text(repeat_message,
+                                 width=dispWidth))
                 if len(inputs) > 0:
-                    # If a text input was specified ahead of time, display the "try again" message
-                    #  and then that input, and use that input as the next entry
-                    print(split_text(repeat_message,
-                                     width=dispWidth))
+                    # If a text input was specified ahead of time, display that input, and use it
+                    #  as the next entry
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
-                    # If not, use the "try again" message to prompt the user to enter something
-                    #  new, and use their input as the next entry
-                    entry_choice = input(split_text(repeat_message,
-                                                    width=dispWidth) + "\n")[0].upper()
+                    # If not, use the user's input as the next entry
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0].upper()
             # Now that the latest entry matches one of the options, use find() to determine which
             #  one.
             entry_index = entry_options.find(entry_choice)
@@ -6286,6 +6293,7 @@ class Hero:
                   prompt="",
                   title="Hero Creation",
                   default="",
+                  width=100,
                   inputs=[]):
         # Prints a prompt for the user to enter a line of text.
         # title: a string to display in the title bar of the EntryWindow, if there is one
@@ -6296,7 +6304,8 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         entry_line = ""
         if len(inputs) > 0:
-            print(prompt)
+            print(split_text(prompt,
+                             width=width))
             print("> " + inputs[0])
             entry_line = inputs.pop(0)
         elif self.UseGUI(inputs):
@@ -6310,7 +6319,12 @@ class Hero:
                                    title=title)
             entry_line = answer.get()
         else:
-            entry_line = input(prompt + "\n")
+            print(split_text(prompt,
+                             width=width))
+            line_prompt = ""
+            if track_inputs:
+                line_prompt = "> "
+            entry_line = input(line_prompt)
         return [entry_line, inputs]
     def AddPQDie(self,
                  ispower,
@@ -6744,14 +6758,16 @@ class Hero:
                                indented=True,
                                breaks=1,
                                hanging=True)
+                print("Enter A to replace the first one, B to replace the second one, or " + \
+                      "anything else to cancel.")
                 if len(inputs) > 0:
-                    print("Enter A to replace the first one, B to replace the second one, or " + \
-                          "anything else to cancel.")
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
-                    entry_choice = input("Enter A to replace the first one, B to replace the " + \
-                                         "second one, or anything else to cancel.\n").upper()
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0].upper()
                 if entry_choice in "AB":
                     entry_index = "AB".find(entry_choice)
             if entry_index in range(2):
@@ -6800,6 +6816,7 @@ class Hero:
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
         notePrefix = "### ChoosePrinciple: "
+        dispWidth = 100
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
         if category not in range(len(rc_master)):
@@ -6834,17 +6851,19 @@ class Hero:
                     print("    " + entry_options[i] + ": " + r_options[i].title)
                 entry_choice = ' '
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a Principle expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Principle expanded, or an " + \
-                              "uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Principle " + \
-                                             "expanded, or an uppercase letter to select it.\n")
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt = "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and not entry_choice in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        r_options[entry_index].display(width=100,
+                        r_options[entry_index].display(width=dispWidth,
                                                        prefix="    ",
                                                        indented=True,
                                                        hanging=False)
@@ -6928,49 +6947,74 @@ class Hero:
                         # Now the user has chosen a section to customize...
                         if entry_id == 'A':
                             print("Current title: " + entry_title)
+                            print("Enter a new title:")
                             if len(inputs) > 0:
-                                print("Enter a new title:")
                                 print("> Principle of " + inputs[0])
                                 entry_title = inputs.pop(0)
                             else:
-                                entry_title = input("Enter a new title:\nPrinciple of ")
-                            print("New title: Principle of " + entry_title)
+                                line_prompt = "Principle of "
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_title = input(line_prompt)
+                            printlong("New title: Principle of " + entry_title,
+                                      width=dispWidth)
                         elif entry_id == 'B':
-                            printlong("Current During Roleplaying text: " + entry_roleplaying, 100)
+                            printlong("Current During Roleplaying text: " + entry_roleplaying,
+                                      width=dispWidth)
+                            print("Enter new During Roleplaying text:")
                             if len(inputs) > 0:
-                                print("Enter new During Roleplaying text:")
                                 print("> " + inputs[0])
                                 entry_roleplaying = inputs.pop(0)
                             else:
-                                entry_roleplaying = input("Enter new During Roleplaying text:\n")
-                            printlong("New During Roleplaying text: " + entry_roleplaying, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_roleplaying = input(line_prompt)
+                            printlong("New During Roleplaying text: " + entry_roleplaying,
+                                      width=dispWidth)
                         elif entry_id == 'C':
-                            printlong("Current minor twist: " + entry_minor, 100)
+                            printlong("Current minor twist: " + entry_minor,
+                                      width=dispWidth)
+                            print("Enter a new minor twist:")
                             if len(inputs) > 0:
-                                print("Enter a new minor twist:")
                                 print("> " + inputs[0])
                                 entry_minor = inputs.pop(0)
                             else:
-                                entry_minor = input("Enter a new minor twist:\n")
-                            printlong("New minor twist: " + entry_minor, 100)
+                                print("Enter a new minor twist:")
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_minor = input(line_prompt)
+                            printlong("New minor twist: " + entry_minor,
+                                      width=dispWidth)
                         elif entry_id == 'D':
-                            printlong("Current major twist: " + entry_major, 100)
+                            printlong("Current major twist: " + entry_major,
+                                      width=dispWidth)
+                            print("Enter a new major twist:")
                             if len(inputs) > 0:
-                                print("Enter a new major twist:")
                                 print("> " + inputs[0])
                                 entry_major = inputs.pop(0)
                             else:
-                                entry_major = input("Enter a new major twist:\n")
-                            printlong("New major twist: " + entry_major, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_major = input(line_prompt)
+                            printlong("New major twist: " + entry_major,
+                                      width=dispWidth)
                         elif entry_id == 'E':
-                            printlong("Current Green Ability: " + entry_green, 100)
+                            printlong("Current Green Ability: " + entry_green,
+                                      width=dispWidth)
+                            print("Enter a new Green Ability:")
                             if len(inputs) > 0:
-                                print("Enter a new Green Ability:")
                                 print("> " + inputs[0])
                                 entry_green = inputs.pop(0)
                             else:
-                                entry_green = input("Enter a new Green Ability:\n")
-                            printlong("New Green Ability: " + entry_green, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_green = input(line_prompt)
+                            printlong("New Green Ability: " + entry_green,
+                                      width=dispWidth)
                         del entry_dict[entry_id]
                     print("OK!")
                 if track_inputs:
@@ -7140,14 +7184,17 @@ class Hero:
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Background " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+                              "uppercase letter to select it.")
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options[:-1] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayBackground(bg_indices[entry_index],
-                                          width=100,
-                                          prefix="    ")
+                                          width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
@@ -7208,14 +7255,16 @@ class Hero:
             for i in range(len(bg_collection)):
                 print("    " + entry_options[i] + ": " + bg_collection[i][0] + " (" + str(i+1) + ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Background expanded, or an " + \
+                      "uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Background expanded, or an uppercase " + \
-                          "letter to select it.")
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Background expanded, or " + \
-                                         "an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayBackground(entry_index,
@@ -7482,14 +7531,16 @@ class Hero:
                 for i in range(len(template_options)):
                     print("    " + entry_options[i] + ": " + str(template_options[i]))
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an ability expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an ability expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an ability " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         template_options[entry_index].display(prefix="    ")
@@ -8138,14 +8189,16 @@ class Hero:
                 if rerolls > 0:
                     print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an option expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an option expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an option " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options[:-1] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
@@ -8219,14 +8272,16 @@ class Hero:
                 print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + \
                       ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Power Source expanded, or an " + \
+                      "uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Power Source expanded, " + \
-                          "or an uppercase letter to select it.")
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Power Source " + \
-                                         "expanded, or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayPowerSource(entry_index,
@@ -8663,14 +8718,16 @@ class Hero:
             for i in range(len(form_options)):
                 print("    " + entry_options[i] + ": " + form_options[i].name)
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Form expanded, " + \
+                      "or an uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Form expanded, " + \
-                          "or an uppercase letter to select it.")
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Form expanded, " + \
-                                         "or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     form_options[entry_index].display()
@@ -9266,15 +9323,16 @@ class Hero:
                     for i in range(len(mc_green)):
                         print("    " + entry_options[i] + ": " + mc_green[i][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Mode expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                 "expanded, or an uppercase letter to select " + \
-                                                 "it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
@@ -9326,15 +9384,16 @@ class Hero:
                             print("    " + entry_options[i] + ": " + \
                                   mc_yellow[yellow_indices[i]][0])
                         while entry_choice not in entry_options:
+                            print("Enter a lowercase letter to see a Mode expanded, " + \
+                                  "or an uppercase letter to select it.")
                             if len(inputs) > 0:
-                                print("Enter a lowercase letter to see a Mode expanded, " + \
-                                      "or an uppercase letter to select it.")
                                 print("> " + inputs[0])
                                 entry_choice = inputs.pop(0)[0]
                             else:
-                                entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                     "expanded, or an uppercase letter to " + \
-                                                     "select it.\n")[0]
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_choice = input(line_prompt)[0]
                             if entry_choice.upper() in entry_options and \
                                entry_choice not in entry_options:
                                 entry_index = entry_options.find(entry_choice.upper())
@@ -9381,15 +9440,16 @@ class Hero:
                     for i in range(len(mc_red)):
                         print("    " + entry_options[i] + ": " + mc_red[i][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Mode expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                 "expanded, or an uppercase letter to select " + \
-                                                 "it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
@@ -9685,15 +9745,16 @@ class Hero:
                     for i in range(len(tr_collection)):
                         print("    " + entry_options[i] + ": " + tr_collection[i][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a transition method " + \
+                              "expanded, or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a transition method " + \
-                                  "expanded, or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a transition " + \
-                                                 "method expanded, or an uppercase letter to " + \
-                                                 "select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
@@ -9748,15 +9809,16 @@ class Hero:
                     for i in range(len(build_options)):
                         print("    " + entry_options[i] + ": " + build_options[i].name)
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a divided nature expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a divided nature expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a divided " + \
-                                                 "nature expanded, or an uppercase letter to " + \
-                                                 "select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             expand_index = entry_options.find(entry_choice.upper())
@@ -10056,14 +10118,16 @@ class Hero:
                 if rerolls > 0:
                     print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an Archetype expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options[:len(arc_options)] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
@@ -10192,15 +10256,16 @@ class Hero:
                         print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
                               arc_simple[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")")
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see an Archetype expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see an Archetype expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see an " + \
-                                                 "Archetype expanded, or an uppercase letter " + \
-                                                 "to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
@@ -10244,14 +10309,16 @@ class Hero:
                 print("    " + entry_options[i] + ": " + arc_collection[i][0] + " (" + str(i+1) + \
                       ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see an Archetype expanded, " + \
+                      "or an uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
                     print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                         "expanded, or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     DisplayArchetype(entry_index,
@@ -10292,14 +10359,16 @@ class Hero:
                     print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
                           arc_simple[i][0] + " (" + str(i+1) + ")")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an Archetype expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayArchetype(entry_index,
@@ -10627,14 +10696,16 @@ class Hero:
                     if rerolls > 0:
                         print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Personality expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Personality expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Personality " + \
-                                                 "expanded, or an uppercase letter to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options[:-1] and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
@@ -10721,15 +10792,16 @@ class Hero:
                     for i in range(len(pn_indices)):
                         print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Personality expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Personality expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a " + \
-                                                 "Personality expanded, or an uppercase " + \
-                                                 "letter to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice not in entry_options and \
                            entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
@@ -10787,14 +10859,16 @@ class Hero:
                 for i in range(len(pn_collection)):
                     print("    " + entry_options[i] + ": " + pn_collection[i][0])
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a Personality expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Personality " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         DisplayPersonality(entry_index)
@@ -10952,14 +11026,16 @@ class Hero:
                     for rt in ra_sublists[i]:
                         print("            " + str(rt))
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a category expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a category expanded, " + \
-                              "or an uppercase letter to select it.")
                         print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a category expanded, " + \
-                                             "or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         print("Red Abilities " + sublist_strings[entry_index] + ":")
@@ -11143,15 +11219,16 @@ class Hero:
                     for i in range(len(ability_options)):
                         print("    " + entry_options[i] + ": " + str(ability_options[i]))
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see an Ability expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see an Ability expanded, " + \
-                                  "or an uppercase letter to select it.")
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see an " + \
-                                                 "Ability expanded, or an uppercase letter to " + \
-                                                 "select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice not in entry_options and \
                            entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
@@ -11407,7 +11484,10 @@ class Hero:
                             print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0].upper()
                         else:
-                            entry_choice = input()[0].upper()
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0].upper()
                     entry_index = entry_options.find(entry_choice)
                 # Then use ChoosePrinciple to let them choose which to add
                 if track_inputs:
@@ -12829,6 +12909,82 @@ def Create_Spark(step=len(step_names)):
     spark.display()
     return spark
 
+# Curveball is a Military Genetic Transporter who swaps in a new primary die size in the Archetype
+#  step.
+def Create_Curveball(step=len(step_names)):
+    notePrefix = "### Create_Curveball: "
+    curveball = Hero("Curveball", "Talyn Dol'Goch", 1)
+    if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        bg = curveball.ConstructedBackground(inputs=["J"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddBackground(bg, inputs=[[["g",["a"]],["c"]],["E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        ps = curveball.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddPowerSource(ps, inputs=[[["q",["a"]],["b"],["e"]],["A","c","a","Motion Sensor"],["A","b","a","Tactical Relocation"],["A","a","a","Vantage Point"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        arc = curveball.ConstructedArchetype(inputs=["M"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddArchetype(arc[0], arc[1], inputs=["y","a",["e"],[["a","w"],["b","b"]],["A","b","a","Going My Way"],["d","D","a","a","Scattershot"],["A","a","a","Cover Fire"],["F","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = curveball.ConstructedPersonality(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddPersonality(pn[0], inputs=[[["a","Rules of Engagement"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRedAbility(inputs=["A",["B","a","Go for the Knees"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRedAbility(inputs=["B",["b","B","a","Look, No Hands"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRetcon(inputs=["g",["F",["C","a","Emergency Stop"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddHealth(inputs=["a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    print()
+    curveball.display()
+    return curveball
+
 # Template for new Create_*() method.
 # >> COPY BEFORE FILLING IN. <<
 # Before using, make sure you've replaced all of the following:
@@ -12838,7 +12994,8 @@ def Create_Spark(step=len(step_names)):
 # {PRONOUN INDEX HERE}
 # {D8 RESULT HERE}
 # You'll also want to add the new hero to SampleMaker (below) as a class variable, an entry in
-#  codenames, and a get*() method
+#  codenames, and a get*() method, and probably to HeroFrame (even further below) in SwitchHero
+# ...
 # {HERO SUMMARY}
 ##def Create_{CAMELCASE HERO NAME}(step=len(step_names)):
 ##    notePrefix = "### Create_{CAMELCASE HERO NAME}: "
@@ -12924,13 +13081,15 @@ class SampleMaker:
         self.knockout = [None, -1]
         self.kim = [None, -1]
         self.ayla = [None, -1]
+        self.talyn = [None, -1]
         self.codenames = ["Shikari",
                           "Ultra Boy",
                           "Chameleon",
                           "Future Girl",
                           "Knockout",
                           "The Architect",
-                          "Spark"]
+                          "Spark",
+                          "Curveball"]
     def getShikari(self,
                    step=len(step_names)):
         notePrefix = "### SampleMaker.getShikari: "
@@ -13043,6 +13202,21 @@ class SampleMaker:
             self.ayla[0] = Create_Spark()
             self.ayla[1] = len(step_names)
         return self.ayla[0]
+    def getTalyn(self, step=len(step_names)):
+        notePrefix = "### SampleMaker.getTalyn: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.talyn[1]))
+        if step in self.stepRange and step != self.talyn[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.talyn[0] = Create_Curveball(step=step)
+            self.talyn[1] = step
+        if step not in self.stepRange and self.talyn[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.talyn[0] = Create_Curveball()
+            self.talyn[1] = len(step_names)
+        return self.talyn[0]
     # Template for new get*() method
     # >> COPY BEFORE FILLING IN <<
     # Before using, make sure you've replaced all of the following:
@@ -13741,12 +13915,10 @@ class HeroFrame(Frame):
         self.wrapButton["text"] = str(self.principleWrap)
         self.wrapButton.update_idletasks()
     def SwitchHero(self, update=1):
-        if self.myHeroNames[0] == "Spark":
-            self.UpdateAll(factory.getKim())
-        else:
-            self.UpdateAll(factory.getAyla())
-        # Shikari, Jo, Cham, Lori, Knockout, Kim, Ayla
-        self.sampleIndex = (self.sampleIndex + update) % 7
+        self.sampleIndex = -1
+        if self.myHeroNames[0] in factory.codenames:
+            self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
+        self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
         if self.sampleIndex == 0:
             self.UpdateAll(factory.getShikari())
         elif self.sampleIndex == 1:
@@ -13761,6 +13933,8 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getKim())
         elif self.sampleIndex == 6:
             self.UpdateAll(factory.getAyla())
+        elif self.sampleIndex == 7:
+            self.UpdateAll(factory.getTalyn())
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -16150,8 +16324,8 @@ class PrincipleFrame(Frame):
 
 factory = SampleMaker()
 
-##root = Tk()
-##root.geometry("+0+0")
+root = Tk()
+root.geometry("+0+0")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -16159,10 +16333,10 @@ factory = SampleMaker()
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKnockout()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getTalyn()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")

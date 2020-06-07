@@ -205,11 +205,6 @@ Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
 Hero.EnterText and Hero.ChooseIndex should automatically wrap their prompts internally
 
-Create a global variable, track_inputs, that helps the programmer convert a series of manual inputs into an inputs[] array
- When track_inputs is true...
-  something should print whenever a function call receives less than the full inputs[] as an argument, to indicate "add [ here"
-  something should print whenever a return statement doesn't include inputs, to indicate "add ] here"
-
 You have the following Power dice available: [10]
 You have the following Quality dice available: [10]
 
