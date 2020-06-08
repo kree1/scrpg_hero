@@ -15781,6 +15781,8 @@ class SelectFrame(Frame):
 ##                                 sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        self.bind("<Down>", self.nextoption)
+        self.bind("<Up>", self.prevoption)
     def update(self, event=None):
         # Make sure myWidth never gets narrower than the widest option
         self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
@@ -15804,6 +15806,18 @@ class SelectFrame(Frame):
     def minuswidth(self, event=None):
         self.myWidth -= 5
         self.update()
+    def nextoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index+1])
+                self.update()
+    def prevoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index-1])
+                self.update()
     def finish(self, *args):
         if len(self.myOptions) > 0:
             answer = self.myOptions.index(self.myString.get())
@@ -16131,9 +16145,11 @@ class ExpandFrame(Frame):
                               column=4,
                               rowspan=len(self.myOptions)+3,
                               sticky=N+E+S+W)
-        self.expand()
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        self.bind("<Up>", self.prevoption)
+        self.bind("<Down>", self.nextoption)
+        self.expand()
     def expand(self, event=None):
         # Make sure myPromptWidth never gets narrower than the widest option
         self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
@@ -16173,6 +16189,18 @@ class ExpandFrame(Frame):
     def minuswidth(self, event=None):
         self.myDispWidth -= 5
         self.expand()
+    def nextoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index+1])
+                self.expand()
+    def prevoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index-1])
+                self.expand()
     def finish(self, *args):
         if len(self.myOptions) > 0:
             if self.myAnswer.get() in range(len(self.myOptions)):
@@ -16281,6 +16309,27 @@ class SwapFrame(Frame):
                              sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+    def nextoption0(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[0].get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myAnswers[0].get())
+                self.myAnswers[0].set(self.myOptions[index+1])
+                self.update()
+    def prevoption0(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[0].get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myAnswers[0].get())
+                self.myAnswers[0].set(self.myOptions[index-1])
+    def nextoption1(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[1].get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myAnswers[1].get())
+                self.myAnswers[1].set(self.myOptions[index+1])
+    def prevoption1(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[1].get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myAnswers[1].get())
+                self.myAnswers[1].set(self.myOptions[index-1])
     def finish(self, *args):
         if len(self.myOptions) > 0:
             for i in range(2):

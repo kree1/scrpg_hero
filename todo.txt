@@ -165,8 +165,6 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
   Details() methods
 	done!
 
-Hitting Enter in EntryFrame to give an Ability a new name keeps making Python freeze
-
 ? Consolidate mode selection process into a single loop, like form selection ?
  ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
 
@@ -176,4 +174,4 @@ Hitting Enter in EntryFrame to give an Ability a new name keeps making Python fr
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
-Bind up/down arrow keys to changing selection in SelectWindow and ExpandWindow
+Write better bonus explanations for Archetypes
