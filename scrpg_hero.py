@@ -8768,9 +8768,9 @@ class Hero:
                                          d.flavorname,
                                          stepnum=d.step))
         step_options = "ABCD"
-        step_text = ["Swap 2 Power dice",
-                     "Replace a Power with a Form-Changer Power",
-                     "No further changes"]
+        step_text = ["Yes, swap 2 Power dice",
+                     "Yes, replace a Power with a Form-Changer Power",
+                     "No, no further changes"]
         step_choice = 99
         # The user can swap two power dice, or replace a power die with another Power from the
         #  Form-Changer secondary list, any number of times.
@@ -13130,6 +13130,89 @@ def Create_Curveball(step=len(step_names)):
     curveball.display()
     return curveball
 
+# "Platypus" is an Academic Genetic Shadow that I've been using as a set of sample inputs
+def Create_Platypus(step=len(step_names)):
+    notePrefix = "### Create_Platypus: "
+    platypus = Hero("Platypus", "Chaz Villette", 1)
+    if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        bg = platypus.ConstructedBackground(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddBackground(bg, inputs=[[["E",["A"]],["H"]],["I","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        ps = platypus.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddPowerSource(ps, inputs=[[["G",["A"]],["Q"]],
+                                            ["B","A","a","Recalculate"],
+                                            ["A","a","Raise the Mirror"],
+                                            ["A","A","a","Statistical Inference"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        arc = platypus.ConstructedArchetype(inputs=["B"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddArchetype(arc[0], arc[1], inputs=[["b"],
+                                                      [["g",["b"]],["b"]],
+                                                      ["B","c","a","No One Here But You"],
+                                                      ["B","a","Reflection"],
+                                                      ["A","c","a","Behind the Scenes"],
+                                                      ["M","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = platypus.ConstructedPersonality(inputs=["A"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddPersonality(pn[0], inputs=[[["a", "Wind-Up Boogeyman"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRedAbility(inputs=["C",["B","a","Stand Up On It"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRedAbility(inputs=["E",["F","a","In Their Own Words"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRetcon(inputs=["f","d",["G","b",["b"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddHealth(inputs=["a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    print()
+    platypus.display()
+    return platypus
+
 # Template for new Create_*() method.
 # >> COPY BEFORE FILLING IN. <<
 # Before using, make sure you've replaced all of the following:
@@ -13227,6 +13310,7 @@ class SampleMaker:
         self.kim = [None, -1]
         self.ayla = [None, -1]
         self.talyn = [None, -1]
+        self.chaz = [None, -1]
         self.codenames = ["Shikari",
                           "Ultra Boy",
                           "Chameleon",
@@ -13234,7 +13318,8 @@ class SampleMaker:
                           "Knockout",
                           "The Architect",
                           "Spark",
-                          "Curveball"]
+                          "Curveball",
+                          "Platypus"]
     def getShikari(self,
                    step=len(step_names)):
         notePrefix = "### SampleMaker.getShikari: "
@@ -13362,6 +13447,21 @@ class SampleMaker:
             self.talyn[0] = Create_Curveball()
             self.talyn[1] = len(step_names)
         return self.talyn[0]
+    def getChaz(self, step=len(step_names)):
+        notePrefix = "### SampleMaker.getChaz: "
+        print(notePrefix + "step=" + str(step))
+        print(notePrefix + "prev step=" + str(self.chaz[1]))
+        if step in self.stepRange and step != self.chaz[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.chaz[0] = Create_Platypus(step=step)
+            self.chaz[1] = step
+        if step not in self.stepRange and self.chaz[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.chaz[0] = Create_Platypus()
+            self.chaz[1] = len(step_names)
+        return self.chaz[0]
     # Template for new get*() method
     # >> COPY BEFORE FILLING IN <<
     # Before using, make sure you've replaced all of the following:
@@ -14100,6 +14200,8 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getAyla())
         elif self.sampleIndex == 7:
             self.UpdateAll(factory.getTalyn())
+        elif self.sampleIndex == 8:
+            self.UpdateAll(factory.getChaz())
     def Empty(self,
               buttonPressed=False):
         # Clears all hero attributes
@@ -16803,33 +16905,11 @@ root.geometry("+0+0")
 
 # Testing HeroFrame
 
-# Using the sample heroes
-firstHero = factory.getTalyn()
+# Using the sample heroes (full or partial)
+firstHero = factory.getChaz()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
-
-# Using a partially constructed hero
-##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
-##disp_frame = HeroFrame(root, hero=platypus)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","b"]])
-##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
-##                                   ["B","A","a","Recalculate"],
-##                                   ["A","a","Raise the Mirror"],
-##                                   ["A","A","a","Statistical Inference"]])
-##platypus.AddArchetype(1, inputs=[["b"],
-##                                 [["g",["b"]],["b"]],
-##                                 ["B","c","a","No One Here But You"],
-##                                 ["B","a","Reflection"],
-##                                 ["A","c","a","Behind the Scenes"],
-##                                 ["M","b"]])
-##platypus.AddPersonality(0, inputs=[[["a", "Wind-Up Boogeyman"]],["a"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","a","Stand Up On It"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","a","In Their Own Words"]])
-##platypus.AddRetcon(inputs=["f","d",["G","b",["b"]]])
-##platypus.AddHealth(inputs=["a"])
-##root.mainloop()
 
 # Using a not-yet-constructed hero
 ##dispFrame = HeroFrame(root)
