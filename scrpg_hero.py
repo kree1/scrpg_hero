@@ -12045,7 +12045,11 @@ class Hero:
                              len(step_forms),
                              len(step_modes)])
             if stepnum in [self.status_step, self.health_step] or \
-               (stepnum == self.mf_step and len(self.min_forms) > 0):
+               (stepnum == self.mf_step and len(self.min_forms) > 0) or \
+               (stepnum == 1 and self.background != 99) or \
+               (stepnum == 2 and self.power_source != 99) or \
+               (stepnum == 3 and (self.archetype != 99 or self.archetype_modifier != 99)) or \
+               (stepnum == 4 and (self.personality != 99 or self.dv_personality != 99)):
                 any_added = 1
             if any_added > 0:
                 stepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
@@ -12054,13 +12058,45 @@ class Hero:
                                        prefix=prefix)
                 if hanging:
                     prefix += "    "
+                if step_names[stepnum] == "Background" and self.background != 99:
+                    stepText += "\n" + split_text("Background: " + \
+                                                  bg_collection[self.background][0],
+                                                  width=width,
+                                                  prefix=prefix)
+                elif step_names[stepnum] == "Power Source" and self.power_source != 99:
+                    stepText += "\n" + split_text("Power Source: " + \
+                                                  ps_collection[self.power_source][0],
+                                                  width=width,
+                                                  prefix=prefix)
+                elif step_names[stepnum] == "Archetype" and \
+                     (self.archetype != 99 or self.archetype_modifier != 99):
+                    arcTitle = ""
+                    if self.archetype in range(len(arc_simple)):
+                        arcTitle += arc_simple[self.archetype][0]
+                    else:
+                        arcTitle += "*"
+                    if self.archetype_modifier > 0 and \
+                       self.archetype_modifier in range(len(arc_modifiers)):
+                        arcTitle = arc_modifiers[self.archetype_modifier][0] + ":" + arcTitle
+                    stepText += "\n" + split_text("Archetype: " + arcTitle,
+                                                  width=width,
+                                                  prefix=prefix)
+                elif step_names[stepnum] == "Personality" and \
+                     (self.personality != 99 or self.dv_personality != 99):
+                    pnTitle = ""
+                    if self.personality in range(len(pn_collection)):
+                        pnTitle += pn_collection[self.personality][0]
+                    else:
+                        pnTitle += "*"
+                    if self.dv_personality in range(len(pn_collection)):
+                        pnTitle = pn_collection[self.dv_personality][0] + "/" + pnTitle
                 if len(step_principles) > 0:
                     stepText += "\n" + split_text("Principles:",
                                                   width=width,
                                                   prefix=prefix)
                     for pri in step_principles:
                         stepText += "\n" + pri.details(width=width,
-                                                       prefix=prefix+indent*2,
+                                                       prefix=prefix+indent,
                                                        green=False,
                                                        indented=indented,
                                                        breaks=1)
@@ -13410,6 +13446,7 @@ class HeroFrame(Frame):
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
 ##        print(notePrefix + "height=" + str(self.height))
 ##        print(notePrefix + "rowHeight=" + str(self.rowHeight))
+        self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
         # Set up Hero Name and Alias labels spanning rows 1-2
@@ -13965,7 +14002,7 @@ class HeroFrame(Frame):
 ##                             rowspan=self.buttonHeight,
 ##                             columnspan=self.buttonWidth)
 ##        prevButtons += 1
-        # Button for switching to another hero (for testing purposes)
+        # Buttons for switching to another hero (for demonstration purposes)
         self.forwardButton = Button(self,
                                     text="Next Hero >>",
                                     width=self.columnWidth*self.buttonWidth,
@@ -13985,6 +14022,17 @@ class HeroFrame(Frame):
                              column=toolboxColumn,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        prevButtons += 1
+        # Button to empty the current hero
+        self.resetButton = Button(self,
+                                  text="Reset Hero",
+                                  width=self.columnWidth*self.buttonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  command=lambda arg1=True : self.Empty(buttonPressed=arg1))
+        self.resetButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
+                              column=toolboxColumn,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.buttonWidth)
         prevButtons += 1
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -14026,6 +14074,15 @@ class HeroFrame(Frame):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
+        elif self.myHero:
+            # There is a Hero associated with this frame but it's not one of the samples
+            # Ask the user if they want to save it before switching away
+            saveFirst = messagebox.askyesno(title="Save Changes?",
+                                            message="Switching to a different hero will clear " + \
+                                            "all data for your current one. Do you want to " + \
+                                            "save this hero to a TXT file before you switch?")
+            if saveFirst:
+                self.SaveTxt()
         self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
         if self.sampleIndex == 0:
             self.UpdateAll(factory.getShikari())
@@ -14043,8 +14100,19 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getAyla())
         elif self.sampleIndex == 7:
             self.UpdateAll(factory.getTalyn())
-    def Empty(self):
+    def Empty(self,
+              buttonPressed=False):
         # Clears all hero attributes
+        clearDisplay = False
+        if self.myHero and buttonPressed:
+            clearDisplay = True
+            if self.myHero.hero_name not in factory.codenames:
+                saveFirst = messagebox.askyesno(title="Save Changes?",
+                                                message="This will clear all data for your " + \
+                                                "current hero. Do you want to save this hero " + \
+                                                "to a TXT file first?")
+                if saveFirst:
+                    self.SaveTxt()
         self.myHero = None
         self.myHeroNames = ["", ""]
         self.myHeroChars = ["" for i in range(4)]
@@ -14061,9 +14129,12 @@ class HeroFrame(Frame):
         self.myFormCount = 0
         self.myModeCount = 0
         self.myMinionCount = 0
+        if clearDisplay:
+            self.UpdateAll()
     def SetHero(self, hero=None):
         # Sets all hero attributes
-        self.Empty()
+        if hero != self.myHero:
+            self.Empty()
         if isinstance(hero, Hero):
             self.myHero = hero
             self.myHero.SetFrame(self)
@@ -14737,6 +14808,26 @@ class HeroFrame(Frame):
         # Let the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
         indent = "    "
+        # Ask the user what they want to save
+        options = ["Hero details (Powers, Qualities, Abilities, Principles, etc.)",
+                   "Hero creation process (what you did at each step)",
+                   "Both"]
+        answer = IntVar()
+        question = SelectWindow(self.myParent,
+                                "What information about this hero would you like to save?",
+                                options,
+                                var=answer,
+                                title="Save Hero")
+        includeSections = answer.get()
+        writeText = ""
+        if includeSections == 0:
+            writeText = self.myHero.details(width=-1)
+        elif includeSections == 1:
+            writeText = self.myHero.AllStepDetails(width=-1)
+        else:
+            writeText = self.myHero.details(width=-1) + "\n\n" + \
+                        self.myHero.AllStepDetails(width=-1)
+        # Then ask where they want to save it
         prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
                  "name a .txt file that already exists " + \
                  "in this folder. It WILL be overwritten."
@@ -14745,9 +14836,15 @@ class HeroFrame(Frame):
                                prompt,
                                textVar,
                                title="Save Hero")
-        fname = textVar.get() + ".txt"
+        fname = textVar.get()
+        # Remove illegal filename characters, plus .
+        for char in '\\/:*?><|.':
+            fname = fname.replace(char, '')
+        # Add file extension, unless the user included it
+        if not fname.endswith(".txt"):
+            fname += ".txt"
         heroFile = open(fname, mode='w')
-        heroFile.write(self.myHero.details(width=-1))
+        heroFile.write(writeText)
         heroFile.close()
 
 class SubWindow(Toplevel):
@@ -16707,7 +16804,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-firstHero = factory.getKnockout(step=2)
+firstHero = factory.getTalyn()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
@@ -16716,21 +16813,21 @@ root.mainloop()
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
 ##disp_frame = HeroFrame(root, hero=platypus)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
-##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
+##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","b"]])
 ##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
-##                                   ["B","A","y","Recalculate"],
-##                                   ["A","y","Raise the Mirror"],
-##                                   ["A","A","y","Statistical Inference"]])
+##                                   ["B","A","a","Recalculate"],
+##                                   ["A","a","Raise the Mirror"],
+##                                   ["A","A","a","Statistical Inference"]])
 ##platypus.AddArchetype(1, inputs=[["b"],
 ##                                 [["g",["b"]],["b"]],
-##                                 ["B","c","y","No One Here But You"],
-##                                 ["B","y","Reflection"],
-##                                 ["A","c","y","Behind the Scenes"],
-##                                 ["M","n"]])
-##platypus.AddPersonality(0, inputs=[[["y", "Wind-Up Boogeyman"]],["a"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","y","Stand Up On It"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
-##platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
+##                                 ["B","c","a","No One Here But You"],
+##                                 ["B","a","Reflection"],
+##                                 ["A","c","a","Behind the Scenes"],
+##                                 ["M","b"]])
+##platypus.AddPersonality(0, inputs=[[["a", "Wind-Up Boogeyman"]],["a"]])
+##platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","a","Stand Up On It"]])
+##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","a","In Their Own Words"]])
+##platypus.AddRetcon(inputs=["f","d",["G","b",["b"]]])
 ##platypus.AddHealth(inputs=["a"])
 ##root.mainloop()
 
