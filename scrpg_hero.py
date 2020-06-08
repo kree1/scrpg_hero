@@ -9922,36 +9922,83 @@ class Hero:
                         unassigned_qualities = [d for d in self.quality_dice]
                         # Pick 2 Powers to be available in both forms.
                         while len(constant_powers) < 2:
-                            entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
-                            decision = self.ChooseIndex([str(x) for x in unassigned_powers],
-                                                        prompt="Choose a Power for " + \
-                                                        self.hero_name + " to have access to " + \
-                                                        "in both " + self.dv_tags[0] + " and " + \
-                                                        self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs,
-                                                        width=50,
-                                                        buffer=15)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(unassigned_powers[entry_index]) + \
-                                  " as a constant Power.")
-                            constant_powers.append(unassigned_powers.pop(entry_index))
+                            if len(constant_powers) == 0 and self.UseGUI(inputs):
+                                # Use a SwapWindow to select both constant Powers at once
+                                dispWidth = 100
+                                answer0 = IntVar()
+                                answer1 = IntVar()
+                                prompt = "Choose 2 Powers for " + self.hero_name + \
+                                         " to have access to in both " + self.dv_tags[0] + \
+                                         " and " + self.dv_tags[1] + " Forms:"
+                                title = "Archetype Selection: Divided"
+                                question = SwapWindow(self.myWindow,
+                                                      prompt,
+                                                      [str(x) for x in unassigned_powers],
+                                                      answer0,
+                                                      answer1,
+                                                      title=title,
+                                                      width=dispWidth)
+                                constantIndices = [answer0.get(), answer1.get()]
+                                # Move corresponding power dice from unassigned to constant, in
+                                #  descending order so the indices don't change
+                                constant_powers.append(unassigned_powers.pop(max(constantIndices)))
+                                constant_powers.append(unassigned_powers.pop(min(constantIndices)))
+                            else:
+                                # Select one constant Power at a time
+                                entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
+                                decision = self.ChooseIndex([str(x) for x in unassigned_powers],
+                                                            prompt="Choose a Power for " + \
+                                                            self.hero_name + " to have access " + \
+                                                            "to in both " + self.dv_tags[0] + \
+                                                            " and " + self.dv_tags[1] + " Forms:",
+                                                            inputs=inputs,
+                                                            title="Archetype Selection: Divided",
+                                                            width=50,
+                                                            buffer=15)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(unassigned_powers[entry_index]) + \
+                                      " as a constant Power.")
+                                constant_powers.append(unassigned_powers.pop(entry_index))
                         # Pick 2 Qualities to be available in both forms.
                         while len(constant_qualities) < 2:
-                            entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
-                            decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
-                                                        prompt="Choose a Quality for " + \
-                                                        self.hero_name + " to have access to " + \
-                                                        "in both " + self.dv_tags[0] + " and " + \
-							self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs,
-                                                        width=50,
-                                                        buffer=15)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
-                                  " as a constant Quality.")
-                            constant_qualities.append(unassigned_qualities.pop(entry_index))
+                            if len(constant_qualities) == 0 and self.UseGUI(inputs):
+                                # Use a SwapWindow to select both constant Qualities at once
+                                dispWidth = 100
+                                answer0 = IntVar()
+                                answer1 = IntVar()
+                                prompt = "Choose 2 Qualities for " + self.hero_name + \
+                                         " to have access to in both " + self.dv_tags[0] + \
+                                         " and " + self.dv_tags[1] + " Forms:"
+                                title = "Archetype Selection: Divided"
+                                question = SwapWindow(self.myWindow,
+                                                      prompt,
+                                                      [str(x) for x in unassigned_qualities],
+                                                      answer0,
+                                                      answer1,
+                                                      title=title,
+                                                      width=dispWidth)
+                                constantIndices = [answer0.get(), answer1.get()]
+                                # Move corresponding quality dice from unassigned to constant, in
+                                #  descending order so the indices don't change
+                                constant_qualities.append(unassigned_qualities.pop(max(constantIndices)))
+                                constant_qualities.append(unassigned_qualities.pop(min(constantIndices)))
+                            else:
+                                # Select one constant Quality at a time
+                                entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
+                                decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
+                                                            prompt="Choose a Quality for " + \
+                                                            self.hero_name + " to have access " + \
+                                                            "to in both " + self.dv_tags[0] + \
+                                                            " and " + self.dv_tags[1] + " Forms:",
+                                                            inputs=inputs,
+                                                            width=50,
+                                                            buffer=15)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
+                                      " as a constant Quality.")
+                                constant_qualities.append(unassigned_qualities.pop(entry_index))
                         # Assign each remaining Power and Quality to either Civilian or Heroic.
                         unassigned_dice = unassigned_powers + unassigned_qualities
                         while len(unassigned_dice) > 0:
@@ -16611,10 +16658,10 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes
-##firstHero = factory.getKim()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getKnockout(step=2)
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a partially constructed hero
 ##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
@@ -16639,9 +16686,9 @@ root.geometry("+0+0")
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "
