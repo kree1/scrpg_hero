@@ -447,11 +447,14 @@ class PQDie:
         return mirror
     def SetPrevious(self, stepnum):
         # Used in preparation for editing the PQDie's attributes during character creation
-        # Creates a copy of the PQDie with its current attributes and saves it in self.prev_version, then adds the specified step number to the list of steps when this die was modified.
+        # Creates a copy of the PQDie with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
         self.prev_version = self.copy()
         self.steps_modified.append(stepnum)
     def RetrievePrior(self, stepnum):
-        # Returns a copy of the PQDie as it existed prior to the specified step of character creation.
+        # Returns a copy of the PQDie as it existed prior to the specified step of character
+        #  creation.
         if stepnum < 1:
             print("Error! " + str(stepnum) + " is too small to be a valid step index.")
             return self
@@ -1015,7 +1018,6 @@ class Principle:
         self.category = category
         self.index = index
         self.step = max([0, stepnum])
-        self.steps_modified = []
         ref = ["[undefined]"] * 5
         self.has_ref = False
         self.is_template = False
@@ -1028,7 +1030,7 @@ class Principle:
         if not title:
             title = ref[0]
         elif title.startswith("Principle of "):
-            title = title[13:]
+            title = title.replace("Principle of ","")
         self.title = title
         if not roleplaying:
             roleplaying = ref[1]
@@ -1050,11 +1052,62 @@ class Principle:
            self.minor_twist != ref[2] and self.major_twist != ref[3] and \
            self.green_ability != ref[4]:
             self.has_ref = False
+        self.steps_modified = []
+        self.prev_version = None
     def __str__(self):
         summary = "Principle of " + self.title
         if self.has_ref and not self.is_template:
             summary += "*"
         return summary
+    def CheckRef(self):
+        # Verifies has_ref and is_template
+        if self.category in range(len(rc_master)):
+            r_cat = rc_master[self.category]
+            if self.index in range(len(r_cat)):
+                ref = rc_master[self.category][self.index]
+                self.has_ref = True
+                self.is_template = True
+        if self.is_template and (self.title != ref[0] or self.during_roleplaying != ref[1] or \
+                                 self.minor_twist != ref[2] or self.major_twist != ref[3] or \
+                                 self.green_ability != ref[4]):
+            self.is_template = False
+        if self.title != ref[0] and self.during_roleplaying != ref[1] and \
+           self.minor_twist != ref[2] and self.major_twist != ref[3] and \
+           self.green_ability != ref[4]:
+            self.has_ref = False
+    def copy(self):
+        mirror = Principle(self.category,
+                           self.index,
+                           title=self.title,
+                           roleplaying=self.during_roleplaying,
+                           minor=self.minor_twist,
+                           major=self.major_twist,
+                           green=self.green_ability,
+                           stepnum=self.step)
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
+        return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Principle's attributes during character creation
+        # Creates a copy of the Principle with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Principle as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
     def display(self,
                 prefix="",
                 width=100,
@@ -6793,24 +6846,45 @@ class Hero:
                 if entry_choice in "AB":
                     entry_index = "AB".find(entry_choice)
             if entry_index in range(2):
-                pri = Principle(category,
-                                index,
-                                title,
-                                roleplaying,
-                                minor,
-                                major,
-                                green,
-                                stepnum=max([0, stepnum]))
-                removed = self.principles[entry_index]
-                removed_indices = [i for i in range(len(self.abilities)) \
-                                   if self.abilities[i].text == removed.green_ability]
-                self.principles[entry_index] = pri
-                self.abilities[removed_indices[0]] = Ability("Principle of " + pri.title,
-                                                             "A",
-                                                             pri.green_ability,
-                                                             0,
-                                                             hero_step=max([0, stepnum]))
-                print("Replaced " + str(removed) + " with " + str(pri) + "!")
+                edited = self.principles[entry_index]
+                edited_indices = [i for i in range(len(self.abilities)) \
+                                  if self.abilities[i].text == edited.green_ability]
+                edited_ability = self.abilities[edited_indices[0]]
+                prev_string = str(edited)
+                edit_step = max([0, stepnum])
+                # Set the current version of this Principle & Ability as their versions prior to
+                #  this step
+                edited.SetPrevious(edit_step)
+                edited_ability.SetPrevious(edit_step)
+                # Change their internal values to the new ones just specified
+                edited.category = category
+                edited.index = index
+                ref = rc_master[category][index]
+                if title:
+                    edited.title = title
+                else:
+                    edited.title = ref[0]
+                if roleplaying:
+                    edited.during_roleplaying = roleplaying
+                else:
+                    edited.during_roleplaying = ref[1]
+                if minor:
+                    edited.minor_twist = minor
+                else:
+                    edited.minor_twist = ref[2]
+                if major:
+                    edited.major_twist = major
+                else:
+                    edited.major_twist = ref[3]
+                if green:
+                    edited.green_ability = green
+                else:
+                    edited.green_ability = ref[4]
+                edited.CheckRef()
+                edited_ability.name = "Principle of " + rc_master[category][index][0]
+                edited_ability.flavorname = "Principle of " + edited.title
+                edited_ability.text = edited.green_ability
+                print("Replaced " + prev_string + " with " + str(edited) + "!")
         else:
             pri = Principle(category,
                             index,
@@ -6821,10 +6895,11 @@ class Hero:
                             green,
                             stepnum=max([0, stepnum]))
             self.principles.append(pri)
-            pri_ability = Ability("Principle of " + pri.title,
+            pri_ability = Ability("Principle of " + rc_master[category][index][0],
                                   "A",
                                   pri.green_ability,
                                   0,
+                                  f_name="Principle of " + pri.title,
                                   hero_step=max([0, stepnum]))
             self.abilities.append(pri_ability)
             print("Added " + str(pri) + "!")
@@ -12074,6 +12149,9 @@ class Hero:
             indent = "    "
         else:
             indent = ""
+        secPrefix = prefix
+        if hanging:
+            secPrefix += "    "
         stepText = ""
         if stepnum in range(1,len(step_names)):
             step_powers = [d for d in self.power_dice if d.step == stepnum]
@@ -12100,18 +12178,16 @@ class Hero:
                                        ") provided:",
                                        width=width,
                                        prefix=prefix)
-                if hanging:
-                    prefix += "    "
                 if step_names[stepnum] == "Background" and self.background != 99:
                     stepText += "\n" + split_text("Background: " + \
                                                   bg_collection[self.background][0],
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                 elif step_names[stepnum] == "Power Source" and self.power_source != 99:
                     stepText += "\n" + split_text("Power Source: " + \
                                                   ps_collection[self.power_source][0],
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                 elif step_names[stepnum] == "Archetype" and \
                      (self.archetype != 99 or self.archetype_modifier != 99):
                     arcTitle = ""
@@ -12124,7 +12200,7 @@ class Hero:
                         arcTitle = arc_modifiers[self.archetype_modifier][0] + ":" + arcTitle
                     stepText += "\n" + split_text("Archetype: " + arcTitle,
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                 elif step_names[stepnum] == "Personality" and \
                      (self.personality != 99 or self.dv_personality != 99):
                     pnTitle = ""
@@ -12137,107 +12213,110 @@ class Hero:
                 if len(step_principles) > 0:
                     stepText += "\n" + split_text("Principles:",
                                                   width=width,
-                                                  prefix=prefix)
-                    for pri in step_principles:
-                        stepText += "\n" + pri.details(width=width,
-                                                       prefix=prefix+indent,
-                                                       green=False,
-                                                       indented=indented,
-                                                       breaks=1)
+                                                  prefix=secPrefix)
+                    for r in step_principles:
+                        rPrime = r.RetrievePrior(stepnum+1)
+                        stepText += "\n" + rPrime.details(width=width,
+                                                          prefix=secPrefix+indent,
+                                                          green=False,
+                                                          indented=indented,
+                                                          breaks=1)
                 if len(step_powers) > 0:
                     stepText += "\n" + split_text("Powers:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for d in step_powers:
                         stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
                 if len(step_qualities) > 0:
                     stepText += "\n" + split_text("Qualities:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for d in step_qualities:
                         stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
                 if stepnum == self.status_step:
                     if self.dv_personality in range(len(pn_collection)):
                         stepText += "\n" + split_text("Status (" + self.dv_tags[0] + "):",
                                                       width=width,
-                                                      prefix=prefix)
+                                                      prefix=secPrefix)
                         for x in range(len(self.dv_status)):
                             stepText += "\n" + split_text(status_zones[x] + ": " + \
                                                           str(self.dv_status[x]),
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=secPrefix+indent)
                         stepText += "\n" + split_text("Status (" + self.dv_tags[1] + "):",
                                                       width=width,
-                                                      prefix=prefix)
+                                                      prefix=secPrefix)
                         for x in range(len(self.dv_status)):
                             stepText += "\n" + split_text(status_zones[x] + ": " + \
                                                           str(self.status_dice[x]),
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=secPrefix+indent)
                     else:
                         stepText += "\n" + split_text("Status:",
                                                       width=width,
-                                                      prefix=prefix)
+                                                      prefix=secPrefix)
                         for x in range(len(self.status_dice)):
                             stepText += "\n" + split_text(status_zones[x] + ": " + \
                                                           str(self.status_dice[x]),
                                                           width=width,
-                                                          prefix=prefix+indent)
+                                                          prefix=secPrefix+indent)
                 if stepnum == self.health_step:
                     stepText += "\n" + split_text("Health:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     rn = self.HealthRanges()
                     for i in range(len(rn)):
                         stepText += "\n" + split_text(status_zones[i] + " Zone: " + \
                                                       str(rn[i][0]) + "-" + str(rn[i][1]),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
                 for z in range(len(status_zones)):
                     step_zone_abilities = [ab for ab in step_abilities if ab.zone == z]
                     if len(step_zone_abilities) > 0:
                         stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
                                                       width=width,
-                                                      prefix=prefix)
+                                                      prefix=secPrefix)
                         for a in step_zone_abilities:
                             aPrime = a.RetrievePrior(stepnum+1)
-                            stepText += "\n" + aPrime.details(prefix=prefix+indent,
+                            stepText += "\n" + aPrime.details(prefix=secPrefix+indent,
                                                               width=width,
                                                               indented=indented)
                 if stepnum == self.mf_step and len(self.min_forms) > 0:
                     stepText += "\n" + split_text("Minion Forms:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for x in range(len(self.min_forms)):
                         stepText += "\n" + MinionFormStr(self.min_forms[x],
                                                          width=width,
-                                                         prefix=prefix+indent)
+                                                         prefix=secPrefix+indent)
                 if len(step_forms) > 0:
                     stepText += "\n" + split_text("Forms:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for x in range(len(step_forms)):
                         stepText += "\n" + self.FormDetails(x,
                                                             codename=False,
                                                             width=width,
-                                                            prefix=prefix+indent)
+                                                            prefix=secPrefix+indent)
                 if len(step_modes) > 0:
                     stepText += "\n" + split_text("Modes:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for x in range(len(step_modes)):
                         stepText += "\n" + self.ModeDetails(x,
                                                             codename=False,
                                                             width=width,
-                                                            prefix=prefix+indent)
+                                                            prefix=secPrefix+indent)
             modified_powers = [d for d in self.power_dice if stepnum in d.steps_modified and \
                                d not in step_powers]
             modified_qualities = [d for d in self.quality_dice if stepnum in d.steps_modified and \
                                   d not in step_qualities]
+            modified_principles = [r for r in self.principles if stepnum in r.steps_modified and \
+                                   r not in step_principles]
             modified_abilities = [a for a in self.abilities if stepnum in a.steps_modified and \
                                   a not in step_abilities]
             any_modified = max([len(modified_powers),
@@ -12246,46 +12325,57 @@ class Hero:
             if stepnum in self.status_steps_modified:
                 any_modified = 1
             if any_modified > 0:
-                stepText += "\n" + split_text("Step " + str(stepnum) + " modified:",
-                                              width=width,
-                                              prefix=prefix)
-                if hanging and any_added <= 0:
-                    prefix += "    "
+                if len(stepText) > 0:
+                    stepText += "\n"
+                stepText +=  split_text("Step " + str(stepnum) + " (" + \
+                                        step_names[stepnum] + ") modified:",
+                                        width=width,
+                                        prefix=prefix)
                 if len(modified_powers) > 0:
                     stepText += "\n" + split_text("Powers:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for d in modified_powers:
                         stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
                 if len(modified_qualities) > 0:
                     stepText += "\n" + split_text("Qualities:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for d in modified_qualities:
                         stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
+                if len(modified_principles) > 0:
+                    stepText += "\n" + split_text("Principles:",
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    for pri in modified_principles:
+                        stepText += "\n" + pri.details(width=width,
+                                                       prefix=secPrefix+indent,
+                                                       green=False,
+                                                       indented=indented,
+                                                       breaks=1)
                 if stepnum in self.status_steps_modified:
                     stepText += "\n" + split_text("Status:",
                                                   width=width,
-                                                  prefix=prefix)
+                                                  prefix=secPrefix)
                     for x in range(len(self.status_dice)):
                         stepText += "\n" + split_text(status_zones[x] + ": " + \
                                                       str(self.status_dice[x]),
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=secPrefix+indent)
                 for z in range(len(status_zones)):
                     modified_zone_abilities = [ab for ab in modified_abilities if ab.zone == z]
                     if len(modified_zone_abilities) > 0:
                         stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
                                                       width=width,
-                                                      prefix=prefix)
+                                                      prefix=secPrefix)
                         for a in modified_zone_abilities:
                             aPrime = a.RetrievePrior(stepnum+1)
                             stepText += "\n" + aPrime.details(width=width,
-                                                              prefix=prefix+indent*2,
+                                                              prefix=secPrefix+indent*2,
                                                               indented=indented)
         else:
             stepText += split_text("Error! " + str(stepnum) + \
@@ -16970,7 +17060,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori(step=3)
+firstHero = factory.getChaz()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
