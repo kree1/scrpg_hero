@@ -140,8 +140,6 @@ Assign width/buffer values to existing EnterText calls
  Hero.AddMode, line 8202 (rename this Mode)
  Hero.ChooseForm, line 8670 (rename this Form)
  Hero.AddArchetype, line 9419 (rename this Divided form)
- 
-? Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows ?
 
 Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundDetails, DisplayPowerSource, PowerSourceDetails, DisplayArchetype, ArchetypeDetails, etc. calls
   Display() methods

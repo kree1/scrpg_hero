@@ -14025,14 +14025,23 @@ class HeroFrame(Frame):
                                   sticky=N+E+S+W)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
+        # Set up buttons in rows 8-52 of columns 33-*
         buttonColumn = 33
         firstButtonRow = 8
-        prevButtons = 0
         self.buttonWidth = 4
         self.buttonHeight = 2
         self.stepAnchor = W
         self.stepReason = LEFT
-        self.modeButton = Button(self,
+        self.buttonFrame = Frame(self,
+                                 width=self.columnWidth*self.buttonWidth*2,
+                                 height=self.rowHeight*(52-firstButtonRow+1))
+        self.buttonFrame.grid(row=firstButtonRow,
+                              column=buttonColumn,
+                              rowspan=52-firstButtonRow+1,
+                              columnspan=self.buttonWidth*2,
+                              sticky=N+E+S+W)
+        prevButtons = 0
+        self.modeButton = Button(self.buttonFrame,
                                  text="Modes ("+str(self.myModeCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -14044,7 +14053,7 @@ class HeroFrame(Frame):
         prevButtons += 1
         if self.myModeCount == 0:
             self.modeButton.grid_remove()
-        self.formButton = Button(self,
+        self.formButton = Button(self.buttonFrame,
                                  text="Forms ("+str(self.myFormCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -14056,7 +14065,7 @@ class HeroFrame(Frame):
         prevButtons += 1
         if self.myFormCount == 0:
             self.formButton.grid_remove()
-        self.minionButton = Button(self,
+        self.minionButton = Button(self.buttonFrame,
                                  text="Minions ("+str(self.myMinionCount)+")",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -14068,7 +14077,7 @@ class HeroFrame(Frame):
         prevButtons += 1
         if self.myMinionCount == 0:
             self.minionButton.grid_remove()
-        self.nameButton = Button(self,
+        self.nameButton = Button(self.buttonFrame,
                                  anchor=self.stepAnchor,
                                  justify=self.stepReason,
                                  text="0. Edit Names",
@@ -14080,7 +14089,7 @@ class HeroFrame(Frame):
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
         prevButtons += 1
-        self.backgroundButton = Button(self,
+        self.backgroundButton = Button(self.buttonFrame,
                                        anchor=self.stepAnchor,
                                        justify=self.stepReason,
                                        text="1. Add Background",
@@ -14092,7 +14101,7 @@ class HeroFrame(Frame):
                                    rowspan=self.buttonHeight,
                                    columnspan=self.buttonWidth)
         prevButtons += 1
-        self.powerSourceButton = Button(self,
+        self.powerSourceButton = Button(self.buttonFrame,
                                         anchor=self.stepAnchor,
                                         justify=self.stepReason,
                                         text="2. Add Power Source",
@@ -14104,7 +14113,7 @@ class HeroFrame(Frame):
                                     rowspan=self.buttonHeight,
                                     columnspan=self.buttonWidth)
         prevButtons += 1
-        self.archetypeButton = Button(self,
+        self.archetypeButton = Button(self.buttonFrame,
                                       anchor=self.stepAnchor,
                                       justify=self.stepReason,
                                       text="3. Add Archetype",
@@ -14116,7 +14125,7 @@ class HeroFrame(Frame):
                                   rowspan=self.buttonHeight,
                                   columnspan=self.buttonWidth)
         prevButtons += 1
-        self.personalityButton = Button(self,
+        self.personalityButton = Button(self.buttonFrame,
                                         anchor=self.stepAnchor,
                                         justify=self.stepReason,
                                         text="4. Add Personality",
@@ -14128,7 +14137,7 @@ class HeroFrame(Frame):
                                     rowspan=self.buttonHeight,
                                     columnspan=self.buttonWidth)
         prevButtons += 1
-        self.redAbilityButton = Button(self,
+        self.redAbilityButton = Button(self.buttonFrame,
                                        anchor=self.stepAnchor,
                                        justify=self.stepReason,
                                        text="5. Add Red Abilities",
@@ -14140,7 +14149,7 @@ class HeroFrame(Frame):
                                    rowspan=self.buttonHeight,
                                    columnspan=self.buttonWidth)
         prevButtons += 1
-        self.retconButton = Button(self,
+        self.retconButton = Button(self.buttonFrame,
                                    anchor=self.stepAnchor,
                                    justify=self.stepReason,
                                    text="6. Retcon",
@@ -14152,7 +14161,7 @@ class HeroFrame(Frame):
                                rowspan=self.buttonHeight,
                                columnspan=self.buttonWidth)
         prevButtons += 1
-        self.healthButton = Button(self,
+        self.healthButton = Button(self.buttonFrame,
                                    anchor=self.stepAnchor,
                                    justify=self.stepReason,
                                    text="7. Health",
@@ -14164,7 +14173,7 @@ class HeroFrame(Frame):
                                rowspan=self.buttonHeight,
                                columnspan=self.buttonWidth)
         prevButtons += 1
-        self.printButton = Button(self,
+        self.printButton = Button(self.buttonFrame,
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
@@ -14175,7 +14184,7 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
         prevButtons += 1
-        self.stepsButton = Button(self,
+        self.stepsButton = Button(self.buttonFrame,
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
@@ -14185,7 +14194,7 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
         prevButtons += 1
-        self.saveButton = Button(self,
+        self.saveButton = Button(self.buttonFrame,
                                  text="Save as TXT",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -14233,7 +14242,7 @@ class HeroFrame(Frame):
         toolboxColumn = buttonColumn + self.buttonWidth
         prevButtons = 0
 ##        # Button for updating relief option (for design purposes)
-##        self.reliefButton = Button(self,
+##        self.reliefButton = Button(self.buttonFrame,
 ##                                   text=str(self.reliefOptions[self.reliefIndex]),
 ##                                   width=self.columnWidth*self.buttonWidth,
 ##                                   height=self.rowHeight*self.buttonHeight,
@@ -14244,7 +14253,7 @@ class HeroFrame(Frame):
 ##                               columnspan=self.buttonWidth)
 ##        prevButtons += 1
 ##        # Button for modifying wrap length in ability Text labels (for design purposes)
-##        self.wrapButton = Button(self,
+##        self.wrapButton = Button(self.buttonFrame,
 ##                                 text=str(self.principleWrap),
 ##                                 width=self.columnWidth*self.buttonWidth,
 ##                                 height=self.rowHeight*self.buttonHeight,
@@ -14255,7 +14264,7 @@ class HeroFrame(Frame):
 ##                             columnspan=self.buttonWidth)
 ##        prevButtons += 1
         # Buttons for switching to another hero (for demonstration purposes)
-        self.forwardButton = Button(self,
+        self.forwardButton = Button(self.buttonFrame,
                                     text="Next Hero >>",
                                     width=self.columnWidth*self.buttonWidth,
                                     height=self.rowHeight*self.buttonHeight,
@@ -14265,7 +14274,7 @@ class HeroFrame(Frame):
                                 rowspan=self.buttonHeight,
                                 columnspan=self.buttonWidth)
         prevButtons += 1
-        self.backButton = Button(self,
+        self.backButton = Button(self.buttonFrame,
                                  text="<< Prev Hero",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
@@ -14276,7 +14285,7 @@ class HeroFrame(Frame):
                              columnspan=self.buttonWidth)
         prevButtons += 1
         # Button to empty the current hero
-        self.resetButton = Button(self,
+        self.resetButton = Button(self.buttonFrame,
                                   text="Reset Hero",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
@@ -14387,7 +14396,7 @@ class HeroFrame(Frame):
             self.UpdateAll()
     def SetHero(self, hero=None):
         # Sets all hero attributes
-        if hero != self.myHero:
+        if hero != self.myHero or hero == None:
             self.Empty()
         if isinstance(hero, Hero):
             self.myHero = hero
@@ -14529,7 +14538,7 @@ class HeroFrame(Frame):
             for j in range(len(prinSectionHeights)):
                 prinSectionHeights[j][i] = thisSectionHeights[j]
         sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
-        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
+##        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
         firstRow = 29
         titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
@@ -17060,15 +17069,15 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getChaz()
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getChaz()
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 ##w=40
 ##pf="123  "
