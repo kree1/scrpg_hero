@@ -169,6 +169,18 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
  ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
 
 ~ When implementing Split Form for Form-Changers, any Power that only appears in a [Heroic/Civilian] form can automatically be given the matching tag; it's the ones that appear in both that are undefined
+ MUERTO DOES THIS, DUMBASS, LOOK AT HIS SHEET
+  Powers			Gh	EG	EY
+   Awareness		10	10	6
+   Electricity		8		
+   Intangibility	10	10	10
+   Part Detachment		6	12
+   Power Suit			8	10
+   Remote Viewing	8		
+  So it looks like... they deliberately restricted themselves while creating his Power lists in Electronics forms so that he would always have exactly two constant Powers.
+   That's technically feasible for anyone doing this- if you knew you were going with Split Form, you would just be required to change exactly (X-2) of your Powers to other Powers every time you created a Form for Form-Changer that wasn't getting the same Divided tag as their base form. It wouldn't even have to be the same set of replacement powers every time, just as long as the overlap between one side of Divided and the other was exactly 2.
+    *BUT* the instructions for Divided say to do everything except Principles for your other archetype first, and only then make your Divided choices.
+    To make Muerto, they had to select Split Form first, then use that information in the steps for his other Archetype. You *CAN'T* guarantee that Split Form will be feasible if you follow the instructions as written.
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
