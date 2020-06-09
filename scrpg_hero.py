@@ -6195,6 +6195,7 @@ class Hero:
         self.mf_step = 0
         self.personality = 99
         self.dv_personality = 99
+        self.dv_status = [0, 0, 0]
         self.used_retcon = False
         self.principles = []
         self.abilities = []
@@ -8676,6 +8677,16 @@ class Hero:
                 formString += "\n" + split_text("[Standard Status]",
                                                 width=width,
                                                 prefix=prefix)
+            elif self.dv_personality in range(len(pn_collection)) and \
+                 form[6] == 0 and \
+                 form[4] == self.dv_status:
+                formString += "\n" + split_text("[" + self.dv_tags[0] + " Status]:",
+                                                width=width,
+                                                prefix=prefix)
+                for i in range(3):
+                    formString += "\n" + split_text(status_zones[i] + ": " + str(form[4][i]),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             else:
                 for i in range(3):
                     formString += "\n" + split_text(status_zones[i] + ": " + str(form[4][i]),
@@ -8790,7 +8801,7 @@ class Hero:
                                         buffer=15)
             step_choice = decision[0]
             inputs = decision[1]
-            if step_text[step_choice] == "Swap 2 Power dice":
+            if step_text[step_choice] == "Yes, swap 2 Power dice":
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
@@ -8841,7 +8852,7 @@ class Hero:
                 else:
                     print(swap_dice[0].name + " and " + swap_dice[1].name + \
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
-            elif step_text[step_choice] == "Replace a Power with a Form-Changer Power":
+            elif step_text[step_choice] == "Yes, replace a Power with a Form-Changer Power":
                 decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                             prompt="Choose a Power die to switch out...",
                                             inputs=inputs,
@@ -10490,7 +10501,11 @@ class Hero:
                 entry_index = entry_options.find(entry_choice)
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
-    def AddPersonality(self, pn_index, dv_index=99, out_index=99, inputs=[]):
+    def AddPersonality(self,
+                       pn_index,
+                       dv_index=99,
+                       out_index=99,
+                       inputs=[]):
         # Adds the Status dice and Out Ability granted by the specified Personality (or
         #  Personalities, in the case of a Divided hero)
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -10514,8 +10529,8 @@ class Hero:
                           self.dv_tags[0] + " form."
             print("Error! " + self.hero_name + " already has " + pn_text)
             input()
-        else:
-            # This hero doesn't have a Personality, so we can add this one.
+        elif pn_index in range(len(pn_collection)):
+            # This hero doesn't have a Personality, and we can add this one.
             self.personality = pn_index
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
@@ -10583,16 +10598,16 @@ class Hero:
             out_options = []
             if has_multiple:
                 self.status_dice = [d for d in your_pn[1]]
-                dv_status_dice = [d for d in your_dv_pn[1]]
+                self.dv_status = [d for d in your_dv_pn[1]]
                 printlong("You get " + str(self.status_dice) + " as Status dice in " + \
-                          self.dv_tags[1] + ", and " + str(dv_status_dice) + " in " + \
+                          self.dv_tags[1] + ", and " + str(self.dv_status) + " in " + \
                           self.dv_tags[0] + ".", 100)
                 for i in range(len(self.other_forms)):
                     form_editing = self.other_forms[i]
                     # If this Form isn't the same dv_tag as the base form, give it the status dice
                     #  from the non-base Personality.
                     if form_editing[6] != 1:
-                        form_editing[4] = [x for x in dv_status_dice]
+                        form_editing[4] = [x for x in self.dv_status]
                 out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
                 if out_options[0] == out_options[1]:
                     del out_options[1]
@@ -10688,6 +10703,15 @@ class Hero:
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f[0] + ".")
+                        # Other Modes always have their own Power lists using a subset of the base
+                        #  Powers, so check those too
+                        for m in self.other_modes:
+                            for d in m[2]:
+                                if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
+                                    d.SetPrevious(this_step)
+                                    d.diesize += 2
+                                    print("Upgraded " + d.flavorname + " to d" + \
+                                          str(d.diesize) + " in " + m[0] + ".")
                     else:
                         # Upgrading a Quality
                         # Find all Quality dice matching this triplet that can be upgraded, and
@@ -10713,6 +10737,8 @@ class Hero:
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f[0] + ".")
+                        # Other Modes always use the Qualities from the base sheet (so far), so no
+                        #  need to check them
                 elif this_bonus == 2:
                     # Mischievous: You may use any Power or Quality to determine Health.
                     for i in range(len(mixed_collection)):
@@ -10720,6 +10746,9 @@ class Hero:
                             self.health_pqs += [triplet for triplet in Category(i, j) \
                                                 if triplet not in self.health_pqs]
             print("That's all for your Personality.")
+        else:
+            # This hero doesn't have a Personality, but pn_index is invalid
+            print("Error! Invalid Personality index: " + str(pn_index))
     def GuidedPersonality(self, inputs=[]):
         # Walks the user through randomly choosing Personality(ies) as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -12117,14 +12146,32 @@ class Hero:
                                                       width=width,
                                                       prefix=prefix+indent)
                 if stepnum == self.status_step:
-                    stepText += "\n" + split_text("Status:",
-                                                  width=width,
-                                                  prefix=prefix)
-                    for x in range(len(self.status_dice)):
-                        stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                      str(self.status_dice[x]),
+                    if self.dv_personality in range(len(pn_collection)):
+                        stepText += "\n" + split_text("Status (" + self.dv_tags[0] + "):",
                                                       width=width,
-                                                      prefix=prefix+indent)
+                                                      prefix=prefix)
+                        for x in range(len(self.dv_status)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.dv_status[x]),
+                                                          width=width,
+                                                          prefix=prefix+indent)
+                        stepText += "\n" + split_text("Status (" + self.dv_tags[1] + "):",
+                                                      width=width,
+                                                      prefix=prefix)
+                        for x in range(len(self.dv_status)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.status_dice[x]),
+                                                          width=width,
+                                                          prefix=prefix+indent)
+                    else:
+                        stepText += "\n" + split_text("Status:",
+                                                      width=width,
+                                                      prefix=prefix)
+                        for x in range(len(self.status_dice)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.status_dice[x]),
+                                                          width=width,
+                                                          prefix=prefix+indent)
                 if stepnum == self.health_step:
                     stepText += "\n" + split_text("Health:",
                                                   width=width,
@@ -16906,7 +16953,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getChaz()
+firstHero = factory.getLori(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
