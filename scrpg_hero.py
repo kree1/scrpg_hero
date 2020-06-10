@@ -14286,6 +14286,7 @@ class HeroFrame(Frame):
         # Hide all creation step buttons by default
         for i in range(1,len(self.stepButtons)):
             self.stepButtons[i].grid_remove()
+##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -14302,7 +14303,9 @@ class HeroFrame(Frame):
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
             if self.firstIncomplete in range(1,len(self.stepButtons)):
-                self.stepButtons[i].grid()
+                self.stepButtons[self.firstIncomplete].grid()
+##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
+##                      step_names[i] + ") shown")
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
@@ -14679,6 +14682,7 @@ class HeroFrame(Frame):
         # Hide all creation step buttons by default
         for i in range(1,len(self.stepButtons)):
             self.stepButtons[i].grid_remove()
+##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -14695,7 +14699,9 @@ class HeroFrame(Frame):
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
             if self.firstIncomplete in range(1,len(self.stepButtons)):
-                self.stepButtons[i].grid()
+                self.stepButtons[self.firstIncomplete].grid()
+##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
+##                      step_names[i] + ") shown")
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
         print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -17067,7 +17073,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getShikari(step=0)
+##firstHero = factory.getShikari(step=2)
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
