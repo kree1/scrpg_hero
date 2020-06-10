@@ -5244,14 +5244,29 @@ arc_collection = [arc_speedster,
 arc_simple = [x for x in arc_collection[0:18]]
 arc_modifiers = [[], arc_divided, arc_modular]
 arc_special = ["",
-               "May use a Materials or Technological power for Health",
-               "Bonus d10 Technological power; may use a Technological power for Health",
-               "Creates 2 additional Green forms and 1 additional Yellow form with alternate " + \
-               "Power lists and special Abilities",
-               "Gains Powers/Qualities & Abilities from another Archetype",
-               "Gains Powers/Qualities & Principle from another Archetype. In place of that " + \
-               "Archetype's Abilities, creates 1 Green Mode, 2 Yellow Modes, & 1 Red Mode " + \
-               "with modified Power lists and special Abilities"]
+               "When you determine max Health in step 7, you may use a Materials or " + \
+               "Technological power.",
+               "You get a bonus d10 Technological power.\nWhen you determine max Health in " + \
+               "step 7, you may use a Technological power.",
+               "You get to create 2 additional Green forms and 1 additional Yellow " + \
+               "form.\nWhile your hero is in an alternate Form, they'll use a modified Power " + \
+               "list, which you'll create in this step by moving dice around between their " + \
+               "existing Powers and the Form-Changer Powers you see here, and have access to " + \
+               "a special Ability.\nYour hero can switch between these Forms using the " + \
+               "Abilities you see here.",
+               ">>> This Archetype modifies another Archetype. <<<\nIf you choose this, " + \
+               "you'll choose another Archetype to follow it, and gain the Powers, Qualities, " + \
+               "and Abilities that your other Archetype tells you to.\nThen, you'll add the " + \
+               "following:",
+               ">>> This Archetype modifies another Archetype. <<<\nIf you choose this, " + \
+               "you'll choose another Archetype to follow it, and gain the Powers, Qualities, " + \
+               "and Principle that your other Archetype tells you to.\nIn place of that " + \
+               "Archetype's Abilities, you'll create 1 Green Mode, 2 Yellow Modes, & 1 Red " + \
+               "Mode.\nWhile your hero is in an alternate Mode, they'll have access to a " + \
+               "special Ability, modified Power dice that you'll choose in this step, and " + \
+               "restrictions on which of the basic actions (Attack, Defend, Boost, Hinder, " + \
+               "Overcome) they can take.\nYour hero can change between Modes using the " + \
+               "Abilities you see here."]
 arc_width = 150
 
 global form_abilities_green, form_abilities_yellow, fc_zones
@@ -14645,9 +14660,12 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(sectionWidths),
                                   sticky=N+E+S+W)
-        self.myAuxCounts = [len(self.myHero.other_modes),
-                            len(self.myHero.other_forms),
-                            len(self.myHero.min_forms)]
+        if isinstance(self.myHero, Hero):
+            self.myAuxCounts = [len(self.myHero.other_modes),
+                                len(self.myHero.other_forms),
+                                len(self.myHero.min_forms)]
+        else:
+            self.myAuxCounts = [0,0,0]
         self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
                         for i in range(len(self.auxWords))]
         for i in range(len(self.auxButtons)):
@@ -17049,15 +17067,15 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getShikari(step=0)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getShikari(step=0)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 ##w=40
 ##pf="123  "

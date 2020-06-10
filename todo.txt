@@ -182,8 +182,6 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 
 Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
-Write better bonus explanations for Archetypes
-
 ? Put some buffer space vertically between button columns in HeroFrame ?
 
-Collect hero creation step buttons into a single array, and create them using a loop
+? Move auxiliary sheet buttons into a separate frame, so that showing or hiding them doesn't move the others around ?
