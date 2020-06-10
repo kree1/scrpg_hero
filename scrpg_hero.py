@@ -16185,8 +16185,8 @@ class SelectFrame(Frame):
                                    text=self.myPrompt,
                                    width=self.myWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
@@ -16195,8 +16195,8 @@ class SelectFrame(Frame):
                                        *self.myOptions)
         self.myOptionMenu.config(anchor=W,
                                  justify=LEFT)
-        self.myOptionMenu.grid(row=1,
-                               column=0,
+        self.myOptionMenu.grid(row=2,
+                               column=1,
                                rowspan=1,
                                columnspan=3,
                                sticky=N+E+S+W)
@@ -16206,8 +16206,8 @@ class SelectFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
+        self.myOKButton.grid(row=3,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
@@ -16223,13 +16223,13 @@ class SelectFrame(Frame):
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-##        self.myBPlusButton.grid(row=4,
-##                                column=0,
+##        self.myBPlusButton.grid(row=5,
+##                                column=1,
 ##                                rowspan=1,
 ##                                columnspan=1,
 ##                                sticky=N+E+S+W)
-##        self.myBMinusButton.grid(row=4,
-##                                 column=1,
+##        self.myBMinusButton.grid(row=5,
+##                                 column=2,
 ##                                 rowspan=1,
 ##                                 columnspan=1,
 ##                                 sticky=N+E+S+W)
@@ -16245,13 +16245,13 @@ class SelectFrame(Frame):
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-##        self.myWPlusButton.grid(row=5,
-##                                column=0,
+##        self.myWPlusButton.grid(row=6,
+##                                column=1,
 ##                                rowspan=1,
 ##                                columnspan=1,
 ##                                sticky=N+E+S+W)
-##        self.myWMinusButton.grid(row=5,
-##                                 column=1,
+##        self.myWMinusButton.grid(row=6,
+##                                 column=2,
 ##                                 rowspan=1,
 ##                                 columnspan=1,
 ##                                 sticky=N+E+S+W)
@@ -16259,7 +16259,9 @@ class SelectFrame(Frame):
         self.bind("<Return>", self.finish)
         self.bind("<Down>", self.nextoption)
         self.bind("<Up>", self.prevoption)
-    def update(self, event=None):
+    def update(self,
+               event=None,
+               edited=False):
         # Make sure myWidth never gets narrower than the widest option
         self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
@@ -16268,20 +16270,21 @@ class SelectFrame(Frame):
         self.myPromptLabel.config(text=self.myPrompt,
                                   width=self.myWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
-        print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
-              ", myBuffer = " + str(self.myBuffer))
+        if edited:
+            print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
+                  ", myBuffer = " + str(self.myBuffer))
     def plusbuffer(self, event=None):
         self.myBuffer += 5
-        self.update()
+        self.update(edited=True)
     def minusbuffer(self, event=None):
         self.myBuffer -= 5
-        self.update()
+        self.update(edited=True)
     def pluswidth(self, event=None):
         self.myWidth += 5
-        self.update()
+        self.update(edited=True)
     def minuswidth(self, event=None):
         self.myWidth -= 5
-        self.update()
+        self.update(edited=True)
     def nextoption(self, event=None):
         if len(self.myOptions) > 1:
             if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
@@ -16367,8 +16370,8 @@ class EntryFrame(Frame):
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
@@ -16376,8 +16379,8 @@ class EntryFrame(Frame):
         self.myTextEntry = Entry(self,
                                  justify=LEFT,
                                  textvariable=self.myText)
-        self.myTextEntry.grid(row=1,
-                              column=0,
+        self.myTextEntry.grid(row=2,
+                              column=1,
                               rowspan=1,
                               columnspan=3,
                               sticky=N+E+S+W)
@@ -16389,8 +16392,8 @@ class EntryFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
+        self.myOKButton.grid(row=3,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
@@ -16521,88 +16524,96 @@ class ExpandFrame(Frame):
             self.myDispBuffer = rbuffer
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.myDetails = [str(x) for x in expand_options]
-        self.myPromptLabel = Label(self,
+        self.myLeftFrame = Frame(self,
+                                 width=self.myPromptWidth,
+                                 height=4+len([x for x in self.myPrompt if x == "\n"]))
+        self.myLeftFrame.grid(row=1,
+                              column=1,
+                              rowspan=1,
+                              columnspan=1,
+                              sticky=N+E+S+W)
+        self.myPromptLabel = Label(self.myLeftFrame,
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=self.myPromptWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myOptionMenu = OptionMenu(self,
+        self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
                                        command=self.expand)
         self.myOptionMenu.config(anchor=W,
                                  justify=LEFT)
-        self.myOptionMenu.grid(row=1,
-                               column=0,
+        self.myOptionMenu.grid(row=2,
+                               column=1,
                                rowspan=1,
                                columnspan=3,
                                sticky=E+W)
-        self.myOKButton = Button(self,
+        self.myOKButton = Button(self.myLeftFrame,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
+        self.myOKButton.grid(row=3,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=E+W)
-        self.myBufferLabel = Label(self,
+        self.myBufferLabel = Label(self.myLeftFrame,
                                    anchor=W,
                                    text="")
-        self.myBufferLabel.grid(row=3,
-                                column=0,
+        self.myBufferLabel.grid(row=4,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myBPlusButton = Button(self,
+        self.myBPlusButton = Button(self.myLeftFrame,
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+B",
                                     padx=1,
                                     command=self.plusbuffer)
-        self.myBMinusButton = Button(self,
+        self.myBMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-##        self.myBPlusButton.grid(row=4,
-##                                column=0,
+##        self.myBPlusButton.grid(row=5,
+##                                column=1,
 ##                                rowspan=1,
 ##                                columnspan=1,
 ##                                sticky=N+E+S+W)
-##        self.myBMinusButton.grid(row=4,
-##                                 column=1,
+##        self.myBMinusButton.grid(row=5,
+##                                 column=2,
 ##                                 rowspan=1,
 ##                                 columnspan=1,
 ##                                 sticky=N+E+S+W)
-        self.myWPlusButton = Button(self,
+        self.myWPlusButton = Button(self.myLeftFrame,
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+W",
                                     padx=1,
                                     command=self.pluswidth)
-        self.myWMinusButton = Button(self,
+        self.myWMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-##        self.myWPlusButton.grid(row=5,
-##                                column=0,
+##        self.myWPlusButton.grid(row=6,
+##                                column=1,
 ##                                rowspan=1,
 ##                                columnspan=1,
 ##                                sticky=N+E+S+W)
-##        self.myWMinusButton.grid(row=5,
-##                                 column=1,
+##        self.myWMinusButton.grid(row=6,
+##                                 column=2,
 ##                                 rowspan=1,
 ##                                 columnspan=1,
 ##                                 sticky=N+E+S+W)
@@ -16617,9 +16628,10 @@ class ExpandFrame(Frame):
                                  relief=GROOVE)
         if detailsHeight < 40:
             self.myDispLabel.config(height=detailsHeight)
-        self.myDispLabel.grid(row=0,
-                              column=4,
-                              rowspan=len(self.myOptions)+3,
+        self.myDispLabel.grid(row=1,
+                              column=2,
+                              rowspan=1,
+                              columnspan=1,
                               sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
@@ -16634,6 +16646,7 @@ class ExpandFrame(Frame):
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myPromptWrap)
+        self.myLeftFrame.config(width=self.myPromptWidth)
         self.myPromptLabel.config(text=self.myPrompt,
                                   width=self.myPromptWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
@@ -16760,8 +16773,8 @@ class SwapFrame(Frame):
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
@@ -16770,8 +16783,8 @@ class SwapFrame(Frame):
             self.myAnswers[i].set(self.myOptions[i])
             self.myDestinations[i].set(-1)
             self.myOptionMenus[i] = OptionMenu(self, self.myAnswers[i], *self.myOptions)
-            self.myOptionMenus[i].grid(row=i+1,
-                                       column=0,
+            self.myOptionMenus[i].grid(row=i+2,
+                                       column=1,
                                        rowspan=1,
                                        columnspan=3,
                                        sticky=N+E+S+W)
@@ -16781,8 +16794,8 @@ class SwapFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=3,
-                             column=1,
+        self.myOKButton.grid(row=4,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
@@ -16907,15 +16920,15 @@ class PrincipleFrame(Frame):
                                             background="white",
                                             text=self.prinSectionNames[i],
                                             padx=2)
-            self.mySectionLabels[i].grid(row=i,
-                                         column=0,
+            self.mySectionLabels[i].grid(row=i+1,
+                                         column=1,
                                          sticky=N+E+S+W)
             self.mySectionEntries[i] = Entry(self,
                                              justify=LEFT,
                                              textvariable=self.prinSectionVars[i],
                                              width=self.entryWidth)
-            self.mySectionEntries[i].grid(row=i,
-                                          column=1,
+            self.mySectionEntries[i].grid(row=i+1,
+                                          column=2,
                                           columnspan=4,
                                           sticky=N+E+S+W)
         self.myOKButton = Button(self,
@@ -16924,8 +16937,8 @@ class PrincipleFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=len(self.prinSectionNames),
-                             column=2,
+        self.myOKButton.grid(row=len(self.prinSectionNames)+1,
+                             column=3,
                              sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
@@ -17062,8 +17075,8 @@ class AssignFrame(Frame):
                                    text=promptLines,
                                    width=totalWidth,
                                    height=1+len([x for x in promptLines if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=1+len(self.myCategories),
                                 sticky=N+E+S+W)
@@ -17074,7 +17087,7 @@ class AssignFrame(Frame):
                                for y in range(len(self.myItems))]
         # These take up the next len(self.myItems) rows beneath the prompt
         for i in range(len(self.myItems)):
-            thisRow = i + 1
+            thisRow = i + 2
             self.myItemLabels[i] = Label(self,
                                          anchor=W,
                                          justify=LEFT,
@@ -17082,14 +17095,14 @@ class AssignFrame(Frame):
                                          width=self.myItemWidth,
                                          relief=GROOVE)
             self.myItemLabels[i].grid(row=thisRow,
-                                      column=0,
+                                      column=1,
                                       rowspan=1,
                                       columnspan=1,
                                       sticky=N+E+S+W)
             if self.myDefault in range(len(self.myCategories)):
                 self.myAssignments[i].set(self.myDefault)
             for j in range(len(self.myCategories)):
-                thisCol = j + 1
+                thisCol = j + 2
                 self.myRadioButtons[i][j] = Radiobutton(self,
                                                         anchor=CENTER,
                                                         justify=CENTER,
@@ -17107,8 +17120,8 @@ class AssignFrame(Frame):
                                       anchor=SE,
                                       justify=RIGHT,
                                       text="")
-            self.myCountLabel.grid(row=len(self.myItems)+2,
-                                   column=0,
+            self.myCountLabel.grid(row=len(self.myItems)+3,
+                                   column=1,
                                    rowspan=1,
                                    columnspan=1,
                                    sticky=N+E+S+W)
@@ -17117,8 +17130,8 @@ class AssignFrame(Frame):
                                      justify=CENTER,
                                      text="OK",
                                      command=self.finish)
-            self.myOKButton.grid(row=len(self.myItems)+2,
-                                 column=1,
+            self.myOKButton.grid(row=len(self.myItems)+3,
+                                 column=2,
                                  rowspan=1,
                                  columnspan=1,
                                  sticky=N+E+S+W)
@@ -17186,7 +17199,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getJo(step=1)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

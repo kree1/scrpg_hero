@@ -187,5 +187,3 @@ Write better bonus explanations for Archetypes
 ? Put some buffer space vertically between button columns in HeroFrame ?
 
 Collect hero creation step buttons into a single array, and create them using a loop
-
-Move prompt, OptionMenu, buffer, and OK button in ExpandFrame into their own Frame so that resizing the details doesn't move them around
