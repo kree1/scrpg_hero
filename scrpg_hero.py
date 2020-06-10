@@ -6314,7 +6314,6 @@ class Hero:
                             return [print_options.index("No"), inputs]
             # A more complicated question with a GUI available and no text inputs? Use a
             #  SelectWindow to give the user a list of options to pick from
-            print("Using SelectWindow")
             answer = IntVar()
             question = SelectWindow(self.myWindow,
                                     prompt=prompt,
@@ -13490,8 +13489,8 @@ class SampleMaker:
     def getShikari(self,
                    step=len(step_names)):
         notePrefix = "### SampleMaker.getShikari: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.shikari[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.shikari[1]))
         if step in self.stepRange and step != self.shikari[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13506,8 +13505,8 @@ class SampleMaker:
     def getJo(self,
               step=len(step_names)):
         notePrefix = "### SampleMaker.getJo: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.jo[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.jo[1]))
         if step in self.stepRange and step != self.jo[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13522,8 +13521,8 @@ class SampleMaker:
     def getCham(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getCham: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.cham[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.cham[1]))
         if step in self.stepRange and step != self.cham[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13538,8 +13537,8 @@ class SampleMaker:
     def getLori(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getLori: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.lori[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.lori[1]))
         if step in self.stepRange and step != self.lori[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13554,8 +13553,8 @@ class SampleMaker:
     def getKnockout(self,
                     step=len(step_names)):
         notePrefix = "### SampleMaker.getKnockout: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.knockout[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.knockout[1]))
         if step in self.stepRange and step != self.knockout[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13570,8 +13569,8 @@ class SampleMaker:
     def getKim(self,
                step=len(step_names)):
         notePrefix = "### SampleMaker.getKim: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.kim[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.kim[1]))
         if step in self.stepRange and step != self.kim[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13586,8 +13585,8 @@ class SampleMaker:
     def getAyla(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getAyla: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.ayla[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.ayla[1]))
         if step in self.stepRange and step != self.ayla[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13601,8 +13600,8 @@ class SampleMaker:
         return self.ayla[0]
     def getTalyn(self, step=len(step_names)):
         notePrefix = "### SampleMaker.getTalyn: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.talyn[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.talyn[1]))
         if step in self.stepRange and step != self.talyn[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13616,8 +13615,8 @@ class SampleMaker:
         return self.talyn[0]
     def getChaz(self, step=len(step_names)):
         notePrefix = "### SampleMaker.getChaz: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.chaz[1]))
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.chaz[1]))
         if step in self.stepRange and step != self.chaz[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
@@ -13637,8 +13636,8 @@ class SampleMaker:
     # {SHORT VARIABLE NAME}
 ##    def get{CAMELCASE SHORT NAME}(self, step=len(step_names)):
 ##        notePrefix = "### SampleMaker.get{CAMELCASE SHORT NAME}: "
-##        print(notePrefix + "step=" + str(step))
-##        print(notePrefix + "prev step=" + str(self.{SHORT VARIABLE NAME}[1]))
+####        print(notePrefix + "step=" + str(step))
+####        print(notePrefix + "prev step=" + str(self.{SHORT VARIABLE NAME}[1]))
 ##        if step in self.stepRange and step != self.{SHORT VARIABLE NAME}[1]:
 ##            # If step is valid and doesn't match the step where the previous instance stopped,
 ##            #  create a new instance stopping at [step] and save that number
@@ -14040,9 +14039,9 @@ class HeroFrame(Frame):
                                   sticky=N+E+S+W)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
-        # Set up buttons in rows 14-52 of columns 33-*
+        # Set up buttons in rows 3-52 of columns 33-*
         buttonFrameColumn = 33
-        buttonFrameRow = 12
+        buttonFrameRow = 3
         self.buttonWidth = 3
         self.buttonHeight = 2
         self.buttonPadX = 2
@@ -14062,7 +14061,8 @@ class HeroFrame(Frame):
         #  1-4 of buttonFrame, and use self.auxColors
         # These can display in the same spot for now- we don't have any way of creating a hero that
         #  uses more than one of them
-        self.auxColors = ["DarkOrange" + str(x) for x in range(2,4)]
+##        self.auxColors = ["DarkOrange" + str(x) for x in range(2,4)]
+        self.auxColors = ["#FFC76C", "#FFBB4D"]
         self.auxCommands = [self.LaunchModeWindow,
                             self.LaunchFormWindow,
                             self.LaunchMinionWindow]
@@ -14073,15 +14073,21 @@ class HeroFrame(Frame):
         firstBFCol = 1
         prevButtonRows = 0
         self.auxButtons = [None for x in range(len(self.auxCommands))]
+        # We want a big gap between these buttons, which just display additional info on this hero,
+        #  and the other buttons, which modify, clear, or replace this hero
+        # This many button heights should do it...
+        self.auxBufferHeight = 6
+        # This buffer will span all the columns in buttonFrame
+        self.auxBufferWidth = 2
         self.auxBuffer = Label(self.buttonFrame,
-                               width=self.columnWidth*self.buttonWidth*2,
-                               height=self.rowHeight*self.buttonHeight*2,
+                               width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
+                               height=self.rowHeight*self.buttonHeight*self.auxBufferHeight,
                                padx=self.buttonPadX,
                                pady=self.buttonPadY)
         self.auxBuffer.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
                             column=firstBFCol,
-                            rowspan=self.buttonHeight*2,
-                            columnspan=self.buttonWidth*2)
+                            rowspan=self.buttonHeight*self.auxBufferHeight,
+                            columnspan=self.buttonWidth*self.auxBufferWidth)
         for i in range(len(self.auxButtons)):
             self.auxButtons[i] = Button(self.buttonFrame,
                                         background=self.auxColors[0],
@@ -14099,7 +14105,7 @@ class HeroFrame(Frame):
             # If this button isn't relevant to this hero, hide it
             if self.myAuxCounts[i] == 0:
                 self.auxButtons[i].grid_remove()
-        prevButtonRows += 2
+        prevButtonRows += self.auxBufferHeight
         # Text manipulation buttons (Display Text, Display Steps, Save as TXT) go in the next 6
         #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
         self.buttonColors = ["PaleTurquoise" + str(x) for x in range(1,5)]
@@ -14215,16 +14221,20 @@ class HeroFrame(Frame):
         prevButtonRows += 1
         # Buttons for switching to another hero (for demonstration purposes) go in the following
         #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
+        # We want a large gap between these buttons and the ones that will be in the final GUI.
+        #  demoBuffer will cover that gap, plus the height of the demo buttons
+        # This many rows should do it...
+        self.demoBufferHeight = 2
         self.demoBuffer = Label(self.buttonFrame,
-                                width=self.columnWidth*self.buttonWidth*2,
-                                height=self.buttonHeight*2,
+                                width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
+                                height=self.buttonHeight*self.demoBufferHeight,
                                 padx=self.buttonPadX,
                                 pady=self.buttonPadY)
         self.demoBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
-                             rowspan=self.buttonHeight*2,
-                             columnspan=self.buttonWidth*2)
-        prevButtonRows += 1
+                             rowspan=self.buttonHeight*self.demoBufferHeight,
+                             columnspan=self.buttonWidth*self.auxBufferWidth)
+        prevButtonRows += self.demoBufferHeight - 1
         self.demoColors = ["plum1", "plum2"]
         self.backButton = Button(self.buttonFrame,
                                  background=self.demoColors[0],
@@ -14704,8 +14714,8 @@ class HeroFrame(Frame):
 ##                      step_names[i] + ") shown")
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.other_modes)) + " other Modes)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.other_modes)) + " other Modes)")
         # If the hero has other Modes, create a new Toplevel window with a ModeFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_modes) > 0:
@@ -14717,8 +14727,8 @@ class HeroFrame(Frame):
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
     def LaunchFormWindow(self):
         notePrefix = "HeroFrame: LaunchFormWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.other_forms)) + " other Forms)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.other_forms)) + " other Forms)")
         # If the hero has other Forms, create a new Toplevel window with a FormFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_forms) > 0:
@@ -14730,8 +14740,8 @@ class HeroFrame(Frame):
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
     def LaunchMinionWindow(self):
         notePrefix = "HeroFrame: LaunchMinionWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.min_forms)) + " minion forms)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.min_forms)) + " minion forms)")
         # If the hero has Minion Forms, create a new Toplevel window with a MinionFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.min_forms) > 0:
@@ -16046,7 +16056,7 @@ class SelectFrame(Frame):
 ##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
-        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
+##        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
         self.myRawPrompt = str(prompt)
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
@@ -16171,6 +16181,7 @@ class SelectFrame(Frame):
                 self.myString.set(self.myOptions[index-1])
                 self.update()
     def finish(self, *args):
+        notePrefix = "### SelectFrame.finish: "
         if len(self.myOptions) > 0:
             answer = self.myOptions.index(self.myString.get())
             if answer in range(len(self.myOptions)):
@@ -16184,9 +16195,9 @@ class SelectFrame(Frame):
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
             else:
-                print("SelectFrame.finish: Invalid value of answer (" + str(answer) + ")")
+                print(notePrefix + "Invalid value of answer (" + str(answer) + ")")
         else:
-            print("SelectFrame.finish: Invalid length of self.myOptions (" + \
+            print(notePrefix + "Invalid length of self.myOptions (" + \
                   str(len(self.myOptions)) + ")")
 
 class EntryWindow(SubWindow):
@@ -16302,13 +16313,13 @@ class EntryFrame(Frame):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
             # Return self.myText to the destination
-            print(notePrefix + "passing '" + self.myText.get() + "'")
+##            print(notePrefix + "passing '" + self.myText.get() + "'")
             self.myDestination.set(self.myText.get())
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
                 self.myParent.cancel()
         else:
-            print("EntryFrame.finish: no text entered")
+            print(notePrefix + "No text entered")
 
 class ExpandWindow(SubWindow):
     def __init__(self,
@@ -16567,6 +16578,7 @@ class ExpandFrame(Frame):
                 self.myString.set(self.myOptions[index-1])
                 self.expand()
     def finish(self, *args):
+        notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
             if self.myAnswer.get() in range(len(self.myOptions)):
 ##                print(self.myPrompt)
@@ -16579,11 +16591,11 @@ class ExpandFrame(Frame):
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
             else:
-                print("ExpandFrame.finish: Invalid value at self.myAnswer (" + \
+                print(notePrefix + "Invalid value at self.myAnswer (" + \
                       str(self.myAnswer.get()) + ")")
         else:
-            print("ExpandFrame.finish: Invalid length of self.myOptions (" + \
-                  str(len(self.myOptions)) + ")")
+            print(notePrefix + "Invalid length of self.myOptions (" + str(len(self.myOptions)) + \
+                  ")")
 
 class SwapWindow(SubWindow):
     def __init__(self,
@@ -16696,6 +16708,7 @@ class SwapFrame(Frame):
                 index = self.myOptions.index(self.myAnswers[1].get())
                 self.myAnswers[1].set(self.myOptions[index-1])
     def finish(self, *args):
+        notePrefix = "### SwapFrame.finish: "
         if len(self.myOptions) > 0:
             for i in range(2):
                 if self.myAnswers[i].get() in self.myOptions:
@@ -16703,23 +16716,23 @@ class SwapFrame(Frame):
                     # Pass the value of self.myAnswer to the destination
                     self.myDestinations[i].set(answerIndex)
                 else:
-                    print("SwapFrame.finish: Invalid value at self.myAnswers[" + str(i) + \
+                    print(notePrefix + "Invalid value at self.myAnswers[" + str(i) + \
                           "] (" + str(self.myAnswers[i].get()) + ")")
             # If both options are valid and they don't match...
             if self.myDestinations[0].get() >= 0 and \
                self.myDestinations[1].get() >= 0 and \
                self.myDestinations[0].get() != self.myDestinations[1].get():
-                print("SwapFrame.finish: returning " + str(self.myDestinations[0].get()) + \
-                      " and " + str(self.myDestinations[1].get()))
+##                print(notePrefix + "returning " + str(self.myDestinations[0].get()) + \
+##                      " and " + str(self.myDestinations[1].get()))
                 # Destroy this window
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
             elif self.myDestinations[0].get() == self.myDestinations[1].get():
-                print("SwapFrame.finish: invalid selections (both " + \
+                print(notePrefix + "invalid selections (both " + \
                       str(self.myDestinations[0].get()) + ")")
         else:
-            print("SwapFrame.finish: Invalid length of self.myOptions (" + \
-                  str(len(self.myOptions)) + ")")
+            print(notePrefix + "Invalid length of self.myOptions (" + str(len(self.myOptions)) + \
+                  ")")
 
 class PrincipleWindow(SubWindow):
     def __init__(self,
@@ -16836,7 +16849,7 @@ class PrincipleFrame(Frame):
                                          major=self.prinSectionVars[3].get(),
                                          green=self.prinSectionVars[4].get(),
                                          stepnum=step)
-            print(notePrefix + "returning " + str(self.myPrinciple) + ":")
+##            print(notePrefix + "returning " + str(self.myPrinciple) + ":")
             self.myPrinciple.display()
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
@@ -16911,7 +16924,7 @@ class AssignFrame(Frame):
             self.myDestination = destination
         self.myItemWidth = max(lwidth, max([max([len(y) for y in x.split("\n")]) \
                                                 for x in self.myItems]))
-        print(notePrefix + "myItemWidth=" + str(self.myItemWidth))
+##        print(notePrefix + "myItemWidth=" + str(self.myItemWidth))
         self.myColumnWidth = rwidth
         self.myFirstMin = -1
         self.myFirstMax = -1
@@ -17046,9 +17059,9 @@ class AssignFrame(Frame):
         if self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
             complete = False
         if complete:
-            print(notePrefix + "myAnswer: " + str(self.myAnswer))
+##            print(notePrefix + "myAnswer: " + str(self.myAnswer))
             self.myDestination.set("".join(self.myAnswer))
-            print(notePrefix + "returning '" + self.myDestination.get() + "'")
+##            print(notePrefix + "returning '" + self.myDestination.get() + "'")
             if isinstance(self.myParent, SubWindow):
                 self.myParent.cancel()
         elif len([x for x in self.myAssignments if x.get() in range(len(self.myCategories))]) < \
@@ -17073,7 +17086,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getShikari(step=2)
+##firstHero = factory.getJo()
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()

@@ -184,4 +184,10 @@ Ability text wrap in HeroFrame is too big, Command Power overruns the box
 
 ? Put some buffer space vertically between button columns in HeroFrame ?
 
-? Move auxiliary sheet buttons into a separate frame, so that showing or hiding them doesn't move the others around ?
+Light orange colors:
+#FFC76C
+#FFBB4D
+#FFB845
+
+Standard orange:
+#FFA500
