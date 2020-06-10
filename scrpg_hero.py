@@ -14385,7 +14385,8 @@ class HeroFrame(Frame):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
-            self.completeSteps = [self.myHero.background in range(len(bg_collection)),
+            self.completeSteps = [isinstance(self.myHero, Hero),
+                                  self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
                                   self.myHero.archetype in range(len(arc_collection)),
                                   self.myHero.personality in range(len(pn_collection)),
@@ -14395,19 +14396,19 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 0:
+            if self.firstIncomplete == 1:
                 self.backgroundButton.grid()
-            elif self.firstIncomplete == 1:
-                self.powerSourceButton.grid()
             elif self.firstIncomplete == 2:
-                self.archetypeButton.grid()
+                self.powerSourceButton.grid()
             elif self.firstIncomplete == 3:
-                self.personalityButton.grid()
+                self.archetypeButton.grid()
             elif self.firstIncomplete == 4:
-                self.redAbilityButton.grid()
+                self.personalityButton.grid()
             elif self.firstIncomplete == 5:
-                self.retconButton.grid()
+                self.redAbilityButton.grid()
             elif self.firstIncomplete == 6:
+                self.retconButton.grid()
+            elif self.firstIncomplete == 7:
                 self.healthButton.grid()
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -14793,9 +14794,11 @@ class HeroFrame(Frame):
         self.retconButton.grid_remove()
         self.healthButton.grid_remove()
         if isinstance(self.myHero, Hero):
-            # Display ONLY the button for the first hero creation step that ISN'T complete for this hero
+            # Display ONLY the button for the first hero creation step that ISN'T complete for this
+            #  hero
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
-            self.completeSteps = [self.myHero.background in range(len(bg_collection)),
+            self.completeSteps = [isinstance(self.myHero, Hero),
+                                  self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
                                   self.myHero.archetype in range(len(arc_collection)),
                                   self.myHero.personality in range(len(pn_collection)),
@@ -14805,19 +14808,19 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 0:
+            if self.firstIncomplete == 1:
                 self.backgroundButton.grid()
-            elif self.firstIncomplete == 1:
-                self.powerSourceButton.grid()
             elif self.firstIncomplete == 2:
-                self.archetypeButton.grid()
+                self.powerSourceButton.grid()
             elif self.firstIncomplete == 3:
-                self.personalityButton.grid()
+                self.archetypeButton.grid()
             elif self.firstIncomplete == 4:
-                self.redAbilityButton.grid()
+                self.personalityButton.grid()
             elif self.firstIncomplete == 5:
-                self.retconButton.grid()
+                self.redAbilityButton.grid()
             elif self.firstIncomplete == 6:
+                self.retconButton.grid()
+            elif self.firstIncomplete == 7:
                 self.healthButton.grid()
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
