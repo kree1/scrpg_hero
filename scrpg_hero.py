@@ -14030,8 +14030,8 @@ class HeroFrame(Frame):
         buttonFrameRow = 12
         self.buttonWidth = 3
         self.buttonHeight = 2
-        self.buttonPadX = 5
-        self.buttonPadY = 2
+        self.buttonPadX = 2
+        self.buttonPadY = 0
         self.stepAnchor = W
         self.stepReason = LEFT
         self.buttonFrame = Frame(self,
@@ -14043,70 +14043,48 @@ class HeroFrame(Frame):
                               rowspan=52-buttonFrameRow+1,
                               columnspan=self.buttonWidth*2,
                               sticky=N+E+S+W)
-        # Auxiliary sheet buttons (Modes, Forms, Minion Forms) go in the first 6 rows of columns
+        # Auxiliary sheet buttons (Modes, Forms, Minion Forms) go in the first 2 rows of columns
         #  1-4 of buttonFrame, and use self.auxColors
+        # These can display in the same spot for now- we don't have any way of creating a hero that
+        #  uses more than one of them
         self.auxColors = ["DarkOrange" + str(x) for x in range(2,4)]
+        self.auxCommands = [self.LaunchModeWindow,
+                            self.LaunchFormWindow,
+                            self.LaunchMinionWindow]
+        self.auxWords = ["Modes", "Forms", "Minions"]
+        self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
+                        for i in range(len(self.auxWords))]
         firstBFRow = 1
         firstBFCol = 1
         prevButtonRows = 0
-        self.modeButton = Button(self.buttonFrame,
-                                 background=self.auxColors[0],
-                                 activebackground=self.auxColors[1],
-                                 text="View Modes ("+str(self.myModeCount)+")",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchModeWindow,
-                                 padx=self.buttonPadX,
-                                 pady=self.buttonPadY)
-        self.modeButton.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
-                             column=firstBFCol,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        if self.myModeCount == 0:
-            self.modeButton.grid_remove()
-        self.formButton = Button(self.buttonFrame,
-                                 background=self.auxColors[0],
-                                 activebackground=self.auxColors[1],
-                                 text="View Forms ("+str(self.myFormCount)+")",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchFormWindow,
-                                 padx=self.buttonPadX,
-                                 pady=self.buttonPadY)
-        self.formButton.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
-                             column=firstBFCol,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        if self.myFormCount == 0:
-            self.formButton.grid_remove()
-        self.minionButton = Button(self.buttonFrame,
-                                   background=self.auxColors[0],
-                                   activebackground=self.auxColors[1],
-                                   text="View Minions ("+str(self.myMinionCount)+")",
-                                   width=self.columnWidth*self.buttonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   command=self.LaunchMinionWindow,
-                                   padx=self.buttonPadX,
-                                   pady=self.buttonPadY)
-        self.minionButton.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
-                               column=firstBFCol,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        if self.myMinionCount == 0:
-            self.minionButton.grid_remove()
+        self.auxButtons = [None for x in range(len(self.auxCommands))]
         self.auxBuffer = Label(self.buttonFrame,
                                width=self.columnWidth*self.buttonWidth*2,
-                               height=self.rowHeight*self.buttonHeight,
+                               height=self.rowHeight*self.buttonHeight*2,
                                padx=self.buttonPadX,
                                pady=self.buttonPadY)
         self.auxBuffer.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
                             column=firstBFCol,
-                            rowspan=self.buttonHeight,
+                            rowspan=self.buttonHeight*2,
                             columnspan=self.buttonWidth*2)
-        prevButtonRows += 1
+        for i in range(len(self.auxButtons)):
+            self.auxButtons[i] = Button(self.buttonFrame,
+                                        background=self.auxColors[0],
+                                        activebackground=self.auxColors[1],
+                                        text=self.auxText[i],
+                                        width=self.columnWidth*self.buttonWidth,
+                                        height=self.rowHeight*self.buttonHeight,
+                                        command=self.auxCommands[i],
+                                        padx=self.buttonPadX,
+                                        pady=self.buttonPadY)
+            self.auxButtons[i].grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
+                                    column=firstBFCol,
+                                    rowspan=self.buttonHeight,
+                                    columnspan=self.buttonWidth)
+            # If this button isn't relevant to this hero, hide it
+            if self.myAuxCounts[i] == 0:
+                self.auxButtons[i].grid_remove()
+        prevButtonRows += 2
         # Text manipulation buttons (Display Text, Display Steps, Save as TXT) go in the next 6
         #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
         self.buttonColors = ["PaleTurquoise" + str(x) for x in range(1,5)]
@@ -14161,6 +14139,16 @@ class HeroFrame(Frame):
         #  self.buttonColors[2:4]
         secondBFCol = firstBFCol + self.buttonWidth
         prevButtonRows = 0
+        self.stepCommands = [self.EditNames,
+                             self.AddHeroBackground,
+                             self.AddHeroPowerSource,
+                             self.AddHeroArchetype,
+                             self.AddHeroPersonality,
+                             self.AddHeroRedAbilities,
+                             self.AddHeroRetcon,
+                             self.AddHeroHealth]
+        self.stepText = ["Names"] + [x for x in step_names[1:]]
+        self.stepButtons = [None for x in step_names]
         self.resetButton = Button(self.buttonFrame,
                                   background=self.buttonColors[2],
                                   activebackground=self.buttonColors[3],
@@ -14175,144 +14163,51 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
         prevButtonRows += 1
-        self.nameButton = Button(self.buttonFrame,
-                                 background=self.buttonColors[2],
-                                 activebackground=self.buttonColors[3],
-                                 anchor=self.stepAnchor,
-                                 justify=self.stepReason,
-                                 text="0. Edit Names",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.EditNames,
-                                 padx=self.buttonPadX,
-                                 pady=self.buttonPadY)
-        self.nameButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                             column=secondBFCol,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
+        self.stepButtons[0] = Button(self.buttonFrame,
+                                     background=self.buttonColors[2],
+                                     activebackground=self.buttonColors[3],
+                                     anchor=self.stepAnchor,
+                                     justify=self.stepReason,
+                                     text="0. Edit Names",
+                                     width=self.columnWidth*self.buttonWidth,
+                                     height=self.rowHeight*self.buttonHeight,
+                                     command=self.EditNames,
+                                     padx=self.buttonPadX,
+                                     pady=self.buttonPadY)
+        self.stepButtons[0].grid(row=editRow+self.buttonHeight*prevButtonRows,
+                                 column=secondBFCol,
+                                 rowspan=self.buttonHeight,
+                                 columnspan=self.buttonWidth)
         prevButtonRows += 1
-        self.backgroundButton = Button(self.buttonFrame,
-                                       background=self.buttonColors[2],
-                                       activebackground=self.buttonColors[3],
-                                       anchor=self.stepAnchor,
-                                       justify=self.stepReason,
-                                       text="1. Add Background",
-                                       width=self.columnWidth*self.buttonWidth,
-                                       height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroBackground,
-                                       padx=self.buttonPadX,
-                                       pady=self.buttonPadY)
-        self.backgroundButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                                   column=secondBFCol,
-                                   rowspan=self.buttonHeight,
-                                   columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.powerSourceButton = Button(self.buttonFrame,
-                                        background=self.buttonColors[2],
-                                        activebackground=self.buttonColors[3],
-                                        anchor=self.stepAnchor,
-                                        justify=self.stepReason,
-                                        text="2. Add Power Source",
-                                        width=self.columnWidth*self.buttonWidth,
-                                        height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPowerSource,
-                                        padx=self.buttonPadX,
-                                        pady=self.buttonPadY)
-        self.powerSourceButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                                    column=secondBFCol,
-                                    rowspan=self.buttonHeight,
-                                    columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.archetypeButton = Button(self.buttonFrame,
-                                      background=self.buttonColors[2],
-                                      activebackground=self.buttonColors[3],
-                                      anchor=self.stepAnchor,
-                                      justify=self.stepReason,
-                                      text="3. Add Archetype",
-                                      width=self.columnWidth*self.buttonWidth,
-                                      height=self.rowHeight*self.buttonHeight,
-                                      command=self.AddHeroArchetype,
-                                      padx=self.buttonPadX,
-                                      pady=self.buttonPadY)
-        self.archetypeButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                                  column=secondBFCol,
-                                  rowspan=self.buttonHeight,
-                                  columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.personalityButton = Button(self.buttonFrame,
-                                        background=self.buttonColors[2],
-                                        activebackground=self.buttonColors[3],
-                                        anchor=self.stepAnchor,
-                                        justify=self.stepReason,
-                                        text="4. Add Personality",
-                                        width=self.columnWidth*self.buttonWidth,
-                                        height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPersonality,
-                                        padx=self.buttonPadX,
-                                        pady=self.buttonPadY)
-        self.personalityButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                                    column=secondBFCol,
-                                    rowspan=self.buttonHeight,
-                                    columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.redAbilityButton = Button(self.buttonFrame,
-                                       background=self.buttonColors[2],
-                                       activebackground=self.buttonColors[3],
-                                       anchor=self.stepAnchor,
-                                       justify=self.stepReason,
-                                       text="5. Add Red Abilities",
-                                       width=self.columnWidth*self.buttonWidth,
-                                       height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroRedAbilities,
-                                       padx=self.buttonPadX,
-                                       pady=self.buttonPadY)
-        self.redAbilityButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                                   column=secondBFCol,
-                                   rowspan=self.buttonHeight,
-                                   columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.retconButton = Button(self.buttonFrame,
-                                   background=self.buttonColors[2],
-                                   activebackground=self.buttonColors[3],
-                                   anchor=self.stepAnchor,
-                                   justify=self.stepReason,
-                                   text="6. Retcon",
-                                   width=self.columnWidth*self.buttonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroRetcon,
-                                   padx=self.buttonPadX,
-                                   pady=self.buttonPadY)
-        self.retconButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                               column=secondBFCol,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
-        prevButtonRows += 1
-        self.healthButton = Button(self.buttonFrame,
-                                   background=self.buttonColors[2],
-                                   activebackground=self.buttonColors[3],
-                                   anchor=self.stepAnchor,
-                                   justify=self.stepReason,
-                                   text="7. Health",
-                                   width=self.columnWidth*self.buttonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroHealth,
-                                   padx=self.buttonPadX,
-                                   pady=self.buttonPadY)
-        self.healthButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                               column=secondBFCol,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
+        # stepButtons 1-7 all display in the same place- for now, we'll only be seeing one of them
+        #  at a time
+        for i in range(1, len(self.stepButtons)):
+            self.stepButtons[i] = Button(self.buttonFrame,
+                                         background=self.buttonColors[2],
+                                         activebackground=self.buttonColors[3],
+                                         anchor=self.stepAnchor,
+                                         justify=self.stepReason,
+                                         text=str(i) + ". Add " + self.stepText[i],
+                                         width=self.columnWidth*self.buttonWidth,
+                                         height=self.rowHeight*self.buttonHeight,
+                                         command=self.stepCommands[i],
+                                         padx=self.buttonPadX,
+                                         pady=self.buttonPadY)
+            self.stepButtons[i].grid(row=editRow+self.buttonHeight*prevButtonRows,
+                                     column=secondBFCol,
+                                     rowspan=self.buttonHeight,
+                                     columnspan=self.buttonWidth)
         prevButtonRows += 1
         # Buttons for switching to another hero (for demonstration purposes) go in the following
         #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
         self.demoBuffer = Label(self.buttonFrame,
                                 width=self.columnWidth*self.buttonWidth*2,
-                                height=self.buttonHeight,
+                                height=self.buttonHeight*2,
                                 padx=self.buttonPadX,
                                 pady=self.buttonPadY)
         self.demoBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
-                             rowspan=self.buttonHeight,
+                             rowspan=self.buttonHeight*2,
                              columnspan=self.buttonWidth*2)
         prevButtonRows += 1
         self.demoColors = ["plum1", "plum2"]
@@ -14374,13 +14269,8 @@ class HeroFrame(Frame):
 ##                             columnspan=self.buttonWidth)
 ##        prevButtonRows += 1
         # Hide all creation step buttons by default
-        self.backgroundButton.grid_remove()
-        self.powerSourceButton.grid_remove()
-        self.archetypeButton.grid_remove()
-        self.personalityButton.grid_remove()
-        self.redAbilityButton.grid_remove()
-        self.retconButton.grid_remove()
-        self.healthButton.grid_remove()
+        for i in range(1,len(self.stepButtons)):
+            self.stepButtons[i].grid_remove()
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -14396,20 +14286,8 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 1:
-                self.backgroundButton.grid()
-            elif self.firstIncomplete == 2:
-                self.powerSourceButton.grid()
-            elif self.firstIncomplete == 3:
-                self.archetypeButton.grid()
-            elif self.firstIncomplete == 4:
-                self.personalityButton.grid()
-            elif self.firstIncomplete == 5:
-                self.redAbilityButton.grid()
-            elif self.firstIncomplete == 6:
-                self.retconButton.grid()
-            elif self.firstIncomplete == 7:
-                self.healthButton.grid()
+            if self.firstIncomplete in range(1,len(self.stepButtons)):
+                self.stepButtons[i].grid()
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
@@ -14481,6 +14359,7 @@ class HeroFrame(Frame):
     def Empty(self,
               buttonPressed=False):
         # Clears all hero attributes
+        notePrefix = "### HeroFrame.Empty: "
         clearDisplay = False
         if self.myHero and buttonPressed:
             clearDisplay = True
@@ -14504,13 +14383,12 @@ class HeroFrame(Frame):
                                 [None for i in range(4)],
                                 [None for i in range(4)]]
         self.myOutAbility = None
-        self.myFormCount = 0
-        self.myModeCount = 0
-        self.myMinionCount = 0
+        self.myAuxCounts = [0,0,0]
         if clearDisplay:
             self.UpdateAll()
     def SetHero(self, hero=None):
         # Sets all hero attributes
+        notePrefix = "### HeroFrame.SetHero: "
         if hero != self.myHero or hero == None:
             self.Empty()
         if isinstance(hero, Hero):
@@ -14600,9 +14478,9 @@ class HeroFrame(Frame):
             if len(givenOutAbilities) > 1:
                 print("Error! Too many Out Abilities: " + str(len(givenOutAbilities)))
                 print("Displaying first Out Ability: " + givenOutAbilities[0].disptext())
-            self.myFormCount = len(self.myHero.other_forms)
-            self.myModeCount = len(self.myHero.other_modes)
-            self.myMinionCount = len(self.myHero.min_forms)
+            self.myAuxCounts = [len(self.myHero.other_modes),
+                                len(self.myHero.other_forms),
+                                len(self.myHero.min_forms)]
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
@@ -14767,32 +14645,22 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(sectionWidths),
                                   sticky=N+E+S+W)
-        self.modeButton.config(text="Modes ("+str(self.myModeCount)+")")
-        self.formButton.config(text="Forms ("+str(self.myFormCount)+")")
-        self.minionButton.config(text="Minions ("+str(self.myMinionCount)+")")
-        # Hide the Forms button if it's not relevant, otherwise show it
-        if self.myFormCount == 0:
-            self.formButton.grid_remove()
-        else:
-            self.formButton.grid()
-        # Hide the Modes button if it's not relevant, otherwise show it
-        if self.myModeCount == 0:
-            self.modeButton.grid_remove()
-        else:
-            self.modeButton.grid()
-        # Hide the Minion Forms button if it's not relevant, otherwise show it
-        if self.myMinionCount == 0:
-            self.minionButton.grid_remove()
-        else:
-            self.minionButton.grid()
+        self.myAuxCounts = [len(self.myHero.other_modes),
+                            len(self.myHero.other_forms),
+                            len(self.myHero.min_forms)]
+        self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
+                        for i in range(len(self.auxWords))]
+        for i in range(len(self.auxButtons)):
+            # Update this button's text
+            self.auxButtons[i].config(text=self.auxText[i])
+            # If this button is relevant, show it; otherwise, hide it
+            if self.myAuxCounts[i] > 0:
+                self.auxButtons[i].grid()
+            else:
+                self.auxButtons[i].grid_remove()
         # Hide all creation step buttons by default
-        self.backgroundButton.grid_remove()
-        self.powerSourceButton.grid_remove()
-        self.archetypeButton.grid_remove()
-        self.personalityButton.grid_remove()
-        self.redAbilityButton.grid_remove()
-        self.retconButton.grid_remove()
-        self.healthButton.grid_remove()
+        for i in range(1,len(self.stepButtons)):
+            self.stepButtons[i].grid_remove()
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -14808,20 +14676,8 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 1:
-                self.backgroundButton.grid()
-            elif self.firstIncomplete == 2:
-                self.powerSourceButton.grid()
-            elif self.firstIncomplete == 3:
-                self.archetypeButton.grid()
-            elif self.firstIncomplete == 4:
-                self.personalityButton.grid()
-            elif self.firstIncomplete == 5:
-                self.redAbilityButton.grid()
-            elif self.firstIncomplete == 6:
-                self.retconButton.grid()
-            elif self.firstIncomplete == 7:
-                self.healthButton.grid()
+            if self.firstIncomplete in range(1,len(self.stepButtons)):
+                self.stepButtons[i].grid()
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
         print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -14829,10 +14685,12 @@ class HeroFrame(Frame):
         # If the hero has other Modes, create a new Toplevel window with a ModeFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_modes) > 0:
-            myModeWindow = ModeWindow(self, title=self.myHeroNames[0] + " Modes", hero=self.myHero)
+            myModeWindow = ModeWindow(self,
+                                      title=self.myHeroNames[0] + " Mode Sheet",
+                                      hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def LaunchFormWindow(self):
         notePrefix = "HeroFrame: LaunchFormWindow: "
         print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -14840,10 +14698,12 @@ class HeroFrame(Frame):
         # If the hero has other Forms, create a new Toplevel window with a FormFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_forms) > 0:
-            myFormWindow = FormWindow(self, title=self.myHeroNames[0] + " Forms", hero=self.myHero)
+            myFormWindow = FormWindow(self,
+                                      title=self.myHeroNames[0] + " Form Sheet",
+                                      hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def LaunchMinionWindow(self):
         notePrefix = "HeroFrame: LaunchMinionWindow: "
         print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -14855,8 +14715,8 @@ class HeroFrame(Frame):
                                           title=self.myHeroNames[0] + " Minion Sheet",
                                           hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def AddHeroBackground(self, inputs=[]):
         # Walk the user through adding a Background to their hero.
         notePrefix = "### HeroFrame: AddHeroBackground: "
@@ -15185,7 +15045,7 @@ class HeroFrame(Frame):
         if isinstance(self.myHero, Hero):
             self.myHero.DisplaySteps(width=100)
     def SaveTxt(self, inputs=[]):
-        # Let the user save the hero's attributes to a txt file.
+        # Lets the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
         indent = "    "
         # Ask the user what they want to save
@@ -16101,20 +15961,6 @@ class FormFrame(Frame):
                     self.myFormInfo[i][4] = [x for x in self.myHero.dv_status]
                 elif self.myFormInfo[i][4] == [1,1,1]:
                     self.myFormInfo[i][4] = [x for x in self.myHero.status_dice]
-
-class ModeWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
-        SubWindow.__init__(self, parent, title)
-        if isinstance(hero, Hero):
-            self.myHero = hero
-        else:
-            self.myHero = None
-        self.myModeFrame = ModeFrame(self, hero=self.myHero)
-        self.activate(self.myModeFrame)
-    def body(self, master):
-        self.container = master
-        master.grid(row=0, column=0)
-        return master
 
 class SelectWindow(SubWindow):
     def __init__(self,
@@ -17195,6 +17041,7 @@ factory = SampleMaker()
 
 root = Tk()
 root.geometry("+0+0")
+root.title("SCRPG Hero Creator")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -17202,7 +17049,7 @@ root.geometry("+0+0")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo(step=1)
+firstHero = factory.getShikari(step=0)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
