@@ -14809,7 +14809,8 @@ class HeroFrame(Frame):
         if len(self.myHero.other_modes) > 0:
             myModeWindow = ModeWindow(self,
                                       title=self.myHeroNames[0] + " Mode Sheet",
-                                      hero=self.myHero)
+                                      hero=self.myHero,
+                                      font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
@@ -14822,7 +14823,8 @@ class HeroFrame(Frame):
         if len(self.myHero.other_forms) > 0:
             myFormWindow = FormWindow(self,
                                       title=self.myHeroNames[0] + " Form Sheet",
-                                      hero=self.myHero)
+                                      hero=self.myHero,
+                                      font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
@@ -14835,7 +14837,8 @@ class HeroFrame(Frame):
         if len(self.myHero.min_forms) > 0:
             myMinionWindow = MinionWindow(self,
                                           title=self.myHeroNames[0] + " Minion Sheet",
-                                          hero=self.myHero)
+                                          hero=self.myHero,
+                                          font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
@@ -15237,13 +15240,19 @@ class SubWindow(Toplevel):
         self.destroy()
 
 class ModeWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myModeFrame = ModeFrame(self, hero=self.myHero)
+        self.myModeFrame = ModeFrame(self,
+                                     hero=self.myHero,
+                                     font=font)
         self.activate(self.myModeFrame)
     def body(self, master):
         self.container = master
@@ -15251,7 +15260,13 @@ class ModeWindow(SubWindow):
         return master
 
 class ModeFrame(Frame):
-    def __init__(self, parent, hero=None, width=105, height=27, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=105,
+                 height=27,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "ModeFrame: __init__: "
@@ -15261,11 +15276,18 @@ class ModeFrame(Frame):
         self.height = height
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          name="Calibri10pt",
+                                          exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         if printing:
             print(notePrefix + "width=" + str(self.width))
             print(notePrefix + "columnWidth=" + str(self.columnWidth))
             print(notePrefix + "height=" + str(self.height))
             print(notePrefix + "rowHeight=" + str(self.rowHeight))
+            print(notePrefix + "dispFont: " + str(self.dispFont.actual(option="family")) + \
+                  str(self.dispFont.actual(option="size")) + "pt")
         self.SetHero(hero)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
         self.mainColorIndex = 1
@@ -15324,7 +15346,8 @@ class ModeFrame(Frame):
                                                     relief=self.titleRelief,
                                                     text=self.sectionTitles[j],
                                                     width=self.sectionWidths[j]*self.columnWidth,
-                                                    height=self.powerHeight*self.rowHeight)
+                                                    height=self.powerHeight*self.rowHeight,
+                                                    font=self.dispFont)
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
@@ -15337,7 +15360,8 @@ class ModeFrame(Frame):
                                           relief=self.headerRelief,
                                           text=self.myModeNames[i],
                                           width=sum(self.sectionWidths)*self.columnWidth,
-                                          height=self.headerHeight*self.rowHeight)
+                                          height=self.headerHeight*self.rowHeight,
+                                          font=self.dispFont)
             self.myModeHeaders[i].grid(row=topRow,
                                        column=firstCol,
                                        rowspan=self.headerHeight,
@@ -15382,8 +15406,10 @@ class ModeFrame(Frame):
                                                         justify=self.sectionReasons[k],
                                                         relief=self.dieRelief,
                                                         text=thisPowerValues[k],
-                                                        width=self.sectionWidths[k]*self.columnWidth,
-                                                        height=thisPowerHeight)
+                                                        width=self.sectionWidths[k] * \
+                                                        self.columnWidth,
+                                                        height=thisPowerHeight,
+                                                        font=self.dispFont)
                     self.myPowerValues[i][j][k].grid(row=topRow+leftHeight,
                                                      column=firstCol+sum(self.sectionWidths[0:k]),
                                                      rowspan=thisPowerHeight,
@@ -15408,7 +15434,8 @@ class ModeFrame(Frame):
                                          justify=LEFT,
                                          text=thisRulesText,
                                          width=sum(self.sectionWidths[2:])*self.columnWidth,
-                                         height=thisRulesHeight*self.rowHeight)
+                                         height=thisRulesHeight*self.rowHeight,
+                                         font=self.dispFont)
             self.myRuleValues[i].grid(row=topRow+rightHeight,
                                       column=firstCol+sum(self.sectionWidths[0:2]),
                                       rowspan=thisRulesHeight,
@@ -15449,7 +15476,8 @@ class ModeFrame(Frame):
             thisAbilitySections = [split_text(thisAbilitySections[i],
                                               width=self.abilityWraps[i]) \
                                    for i in range(len(thisAbilitySections))]
-            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) for y in thisAbilitySections])
+            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
+                                         for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Label(self,
                                                    background=modeColor,
@@ -15458,7 +15486,8 @@ class ModeFrame(Frame):
                                                    relief=self.abilityRelief,
                                                    text=thisAbilitySections[j],
                                                    width=self.sectionWidths[j+2]*self.columnWidth,
-                                                   height=thisAbilityHeight*self.rowHeight)
+                                                   height=thisAbilityHeight*self.rowHeight,
+                                                   font=self.dispFont)
                 self.myAbilityValues[i][j].grid(row=topRow+rightHeight,
                                                 column=firstCol+sum(self.sectionWidths[0:j+2]),
                                                 rowspan=thisAbilityHeight,
@@ -15494,7 +15523,8 @@ class ModeFrame(Frame):
                                                 background=modeColor,
                                                 text=" ",
                                                 width=cBufferWidth*self.columnWidth,
-                                                height=cBufferHeight*self.rowHeight)
+                                                height=cBufferHeight*self.rowHeight,
+                                                font=self.dispFont)
                 self.myColumnBuffers[i].grid(row=cBufferRow,
                                              column=cBufferCol,
                                              rowspan=cBufferHeight,
@@ -15516,7 +15546,8 @@ class ModeFrame(Frame):
                 self.myBuffers[i] = Label(self,
                                           text=" ",
                                           width=sum(self.sectionWidths)*self.columnWidth,
-                                          height=self.bufferHeight*self.rowHeight)
+                                          height=self.bufferHeight*self.rowHeight,
+                                          font=self.dispFont)
                 self.myBuffers[i].grid(row=bufferRow,
                                        column=firstCol,
                                        rowspan=self.bufferHeight,
@@ -15580,13 +15611,20 @@ class ModeFrame(Frame):
                 self.myModeRules[i] = rulesText
 
 class MinionWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
+        notePrefix = "### MinionWindow.__init__: "
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myMinionFrame = MinionFrame(self, hero=self.myHero)
+        self.myMinionFrame = MinionFrame(self,
+                                         hero=self.myHero,
+                                         font=font)
         self.activate(self.myMinionFrame)
     def body(self, master):
         self.container = master
@@ -15594,7 +15632,12 @@ class MinionWindow(SubWindow):
         return master
 
 class MinionFrame(Frame):
-    def __init__(self, parent, hero=None, width=160, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=160,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "MinionFrame: __init__: "
@@ -15605,11 +15648,18 @@ class MinionFrame(Frame):
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
         self.rowHeight = 1.6875
         self.height = math.ceil(self.rowHeight*self.numRows)
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          name="Calibri10pt",
+                                          exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         if printing:
             print(notePrefix + "numRows: " + str(self.numRows))
             print(notePrefix + "height: " + str(self.height))
             print(notePrefix + "width: " + str(self.width))
             print(notePrefix + "columnWidth: " + str(self.columnWidth))
+            print(notePrefix + "dispFont: " + str(self.dispFont.actual(option="family")) + \
+                  str(self.dispFont.actual(option="size")) + "pt")
         self.sizeHeaders = ["Key Die Value", "Die Size", "Sample Forms"]
         self.sizeWidths = [2, 1, 13]
         self.sizeText = [["0 or less", "1-3", "4-7", "8-11", "12 or more"],
@@ -15619,14 +15669,15 @@ class MinionFrame(Frame):
                           "Small humanoid or large animal",
                           "Standard humanoid or large machine",
                           "Massive humanoid or immense animal"]]
-        self.sizeRules = "When you create a Minion with an ability during a scene, you choose \
-which of the basic actions it can take (Attack, Boost, Defend, Hinder, or Overcome). It acts like \
-a minion under your control and takes its action at the beginning of your turn. The size of the \
-minion die is based on the result of your roll:"
+        self.sizeRules = "When you create a Minion with an ability during a scene, you choose " + \
+                         "which of the basic actions it can take (Attack, Boost, Defend, " + \
+                         "Hinder, or Overcome). It acts like a minion under your control and " + \
+                         "takes its action at the beginning of your turn. The size of the " + \
+                         "minion die is based on the result of your roll:"
         self.formHeaders = ["Name", "Bonus Required", "Description"]
         self.formWidths = [2, 2, 12]
-        self.formRules = "When creating a minion, you may discard a bonus on you or a willing ally to give \
-your minion one of the following upgrades:"
+        self.formRules = "When creating a minion, you may discard a bonus on you or a willing " + \
+                         "ally to give your minion one of the following upgrades:"
         self.rulesModifier = 1
         self.rulesWrap = math.floor(sum(self.sizeWidths)*self.columnWidth*self.rulesModifier)
         self.titleModifier = 1
@@ -15656,7 +15707,8 @@ your minion one of the following upgrades:"
                                        text=split_text(self.sizeRules,
                                                        width=self.rulesWrap),
                                        width=sum(self.sizeWidths)*self.columnWidth,
-                                       height=math.floor(2*self.rowHeight))
+                                       height=math.floor(2*self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionSizeRules.grid(row=1,
                                     column=1,
                                     rowspan=2,
@@ -15671,7 +15723,8 @@ your minion one of the following upgrades:"
                                        text=split_text("Minion Sizes",
                                                        width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionSizeTitle.grid(row=3,
                                     column=1,
                                     rowspan=1,
@@ -15688,7 +15741,8 @@ your minion one of the following upgrades:"
                                text=split_text(self.sizeHeaders[i],
                                                width=self.sizeWraps[i]),
                                width=self.sizeWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight))
+                               height=math.floor(self.rowHeight),
+                               font=self.dispFont)
             self.myMinionSizeHeaders[i] = thisHeader
             self.myMinionSizeHeaders[i].grid(row=4,
                                              column=1+sum(self.sizeWidths[0:i]),
@@ -15707,7 +15761,8 @@ your minion one of the following upgrades:"
                                   text=split_text(self.sizeText[c][r],
                                                   width=self.sizeWraps[c]),
                                   width=self.sizeWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight))
+                                  height=math.floor(self.rowHeight),
+                                  font=self.dispFont)
                 self.myMinionSizeEntries[c][r] = thisEntry
                 self.myMinionSizeEntries[c][r].grid(row=5+r,
                                                     column=1+sum(self.sizeWidths[0:c]),
@@ -15725,7 +15780,8 @@ your minion one of the following upgrades:"
                                        text=split_text(self.formRules,
                                                        width=self.rulesWrap),
                                        width=sum(self.formWidths)*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionFormRules.grid(row=12,
                                     column=1,
                                     rowspan=1,
@@ -15740,7 +15796,8 @@ your minion one of the following upgrades:"
                                        text=split_text("Minion Forms",
                                                        width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionFormTitle.grid(row=13,
                                     column=1,
                                     rowspan=1,
@@ -15757,7 +15814,8 @@ your minion one of the following upgrades:"
                                text=split_text(self.formHeaders[i],
                                                width=self.formWraps[i]),
                                width=self.formWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight))
+                               height=math.floor(self.rowHeight),
+                               font=self.dispFont)
             self.myMinionFormHeaders[i] = thisHeader
             self.myMinionFormHeaders[i].grid(row=14,
                                              column=1+sum(self.formWidths[0:i]),
@@ -15776,7 +15834,8 @@ your minion one of the following upgrades:"
                                   text=split_text(self.myMinionInfo[r][c],
                                                   width=self.formWraps[c]),
                                   width=self.formWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight))
+                                  height=math.floor(self.rowHeight),
+                                  font=self.dispFont)
                 self.myMinionFormEntries[r][c] = thisEntry
                 self.myMinionFormEntries[r][c].grid(row=15+r,
                                                     column=1+sum(self.formWidths[0:c]),
@@ -15801,13 +15860,19 @@ your minion one of the following upgrades:"
                                         str(thisMinion[1])]
 
 class FormWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myFormFrame = FormFrame(self, hero=self.myHero)
+        self.myFormFrame = FormFrame(self,
+                                     hero=self.myHero,
+                                     font=font)
         self.activate(self.myFormFrame)
     def body(self, master):
         self.container = master
@@ -15815,7 +15880,12 @@ class FormWindow(SubWindow):
         return master
 
 class FormFrame(Frame):
-    def __init__(self, parent, hero=None, width=104, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=104,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "FormFrame: __init__: "
@@ -15830,10 +15900,10 @@ class FormFrame(Frame):
         self.height = max(1,self.numRows*self.rowHeight)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
         self.dispFont = tkinter.font.Font(root=self.myParent,
-                                          family="Calibri",
-                                          size=10,
                                           name="Calibri10pt",
                                           exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         self.mainColorIndex = 1
         self.darkColorIndex = 2
         self.titleBG = "orange"
@@ -17188,7 +17258,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
