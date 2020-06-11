@@ -149,6 +149,7 @@ global legal_dice
 legal_dice = [4, 6, 8, 10, 12]
 
 global print_issue, track_inputs, tracker_open, tracker_close
+# Variables to modify for testing/debugging purposes
 #  print_issue: if True, activates diagnostic statements in split_text
 #  track_inputs: if True, activates reporting statements throughout Hero intended to help convert
 #                 manual inputs into automatic ones
