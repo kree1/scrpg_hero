@@ -15991,9 +15991,10 @@ class FormFrame(Frame):
             # For each form, if the status dice are empty, replace them with the hero's main
             #  status dice
             for i in range(self.myFormCount):
-                if self.myFormInfo[i][4] == [0,0,0]:
+                if self.myFormInfo[i][4] == [0,0,0] and \
+                   self.myHero.dv_personality in range(len(pn_collection)):
                     self.myFormInfo[i][4] = [x for x in self.myHero.dv_status]
-                elif self.myFormInfo[i][4] == [1,1,1]:
+                elif self.myFormInfo[i][4] in [[0,0,0],[1,1,1]]:
                     self.myFormInfo[i][4] = [x for x in self.myHero.status_dice]
 
 class SelectWindow(SubWindow):
@@ -17086,15 +17087,15 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getJo()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getLori()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "
