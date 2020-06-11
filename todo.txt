@@ -96,7 +96,7 @@ Script, Modern, Roman: even worse
 
 Best options seem to be Arial.9 & Calibri.10
 
-cget(option="size") returns an int
+actual(option="size") returns an int
  
 Finding proper display sizes...
  BackgroundDetails
@@ -200,3 +200,5 @@ Light orange colors:
 
 Standard orange:
 #FFA500
+
+Let the user copy a label's text to the clipboard by clicking on it

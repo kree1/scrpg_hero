@@ -13697,7 +13697,7 @@ class HeroFrame(Frame):
     def __init__(self,
                  parent,
                  hero=None,
-                 width=160,
+                 width=195,
                  height=52):
         Frame.__init__(self, parent)
         notePrefix = "### HeroFrame.__init__: "
@@ -13722,7 +13722,7 @@ class HeroFrame(Frame):
                                              name="HeroFrame Display Font")
         print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
               str(self.currentFont.actual(option="size")) + "pt")
-        self.numCols = 32
+        self.numCols = 39
         self.numRows = 52
         self.width = width
         self.height = height
