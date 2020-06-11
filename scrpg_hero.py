@@ -14009,7 +14009,8 @@ class HeroFrame(Frame):
             self.abilityTitles[i].grid(row=firstRow,
                                        column=firstCol+sum(sectionWidths[:i]),
                                        rowspan=titleHeight,
-                                       columnspan=sectionWidths[i])
+                                       columnspan=sectionWidths[i],
+                                       sticky=N+E+S+W)
         # Principle Abilities start after Green Abilities
         greenRows = 0
         abilityMultiplier = 1.25
