@@ -4,9 +4,90 @@ OptionMenu config options: ['activebackground', 'activeforeground', 'anchor', 'b
 'indicatoron', 'justify', 'menu', 'padx', 'pady', 'relief', 'compound', 'state', 'takefocus', 
 'text', 'textvariable', 'underline', 'width', 'wraplength']
 
-Make column-display routines adjust number of columns based on width?
- Max length of a canon Power is 20 (Lightning Calculator)
- Max length of a canon Quality is 24 (Criminal Underworld Info)
+Font families:
+'System', '8514oem', 'Fixedsys', 'Terminal', 'Modern', 'Roman', 'Script', 'Courier', 'MS Serif',
+'MS Sans Serif', 'Small Fonts', 'Adobe Caslon Pro Bold', 'Adobe Caslon Pro', 'Adobe Fangsong Std
+R', '@Adobe Fangsong Std R', 'Adobe Fan Heiti Std B', '@Adobe Fan Heiti Std B', 'Adobe Gothic Std
+B', '@Adobe Gothic Std B', 'Adobe Heiti Std R', '@Adobe Heiti Std R', 'Adobe Kaiti Std R', '@Adobe
+Kaiti Std R', 'Adobe Garamond Pro Bold', 'Adobe Garamond Pro', 'Birch Std', 'Blackoak Std', 'Brush
+Script Std', 'Chaparral Pro', 'Charlemagne Std', 'Cooper Std Black', 'Giddyup Std', 'Hobo Std',
+'Kozuka Gothic Pr6N B', '@Kozuka Gothic Pr6N B', 'Kozuka Gothic Pr6N EL', '@Kozuka Gothic Pr6N EL',
+'Kozuka Gothic Pr6N H', '@Kozuka Gothic Pr6N H', 'Kozuka Gothic Pr6N L', '@Kozuka Gothic Pr6N L',
+'Kozuka Gothic Pr6N M', '@Kozuka Gothic Pr6N M', 'Kozuka Gothic Pr6N R', '@Kozuka Gothic Pr6N R',
+'Kozuka Mincho Pr6N B', '@Kozuka Mincho Pr6N B', 'Kozuka Mincho Pr6N EL', '@Kozuka Mincho Pr6N EL',
+'Kozuka Mincho Pr6N H', '@Kozuka Mincho Pr6N H', 'Kozuka Mincho Pr6N L', '@Kozuka Mincho Pr6N L',
+'Kozuka Mincho Pr6N M', '@Kozuka Mincho Pr6N M', 'Kozuka Mincho Pr6N R', '@Kozuka Mincho Pr6N R',
+'Lithos Pro Regular', 'Mesquite Std', 'Minion Pro Cond', 'Minion Pro Med', 'Minion Pro SmBd',
+'Nueva Std Cond', 'OCR A Std', 'Orator Std', 'Poplar Std', 'Prestige Elite Std', 'Rosewood Std
+Regular', 'Stencil Std', 'Tekton Pro', 'Tekton Pro Cond', 'Tekton Pro Ext', 'Trajan Pro', 'Adobe
+Arabic', 'Adobe Hebrew', 'Adobe Ming Std L', '@Adobe Ming Std L', 'Adobe Myungjo Std M', '@Adobe
+Myungjo Std M', 'Adobe Song Std L', '@Adobe Song Std L', 'Kozuka Gothic Pro B', '@Kozuka Gothic Pro
+B', 'Kozuka Gothic Pro EL', '@Kozuka Gothic Pro EL', 'Kozuka Gothic Pro H', '@Kozuka Gothic Pro H',
+'Kozuka Gothic Pro L', '@Kozuka Gothic Pro L', 'Kozuka Gothic Pro M', '@Kozuka Gothic Pro M',
+'Kozuka Gothic Pro R', '@Kozuka Gothic Pro R', 'Kozuka Mincho Pro B', '@Kozuka Mincho Pro B',
+'Kozuka Mincho Pro EL', '@Kozuka Mincho Pro EL', 'Kozuka Mincho Pro H', '@Kozuka Mincho Pro H',
+'Kozuka Mincho Pro L', '@Kozuka Mincho Pro L', 'Kozuka Mincho Pro M', '@Kozuka Mincho Pro M',
+'Kozuka Mincho Pro R', '@Kozuka Mincho Pro R', 'Letter Gothic Std', 'Minion Pro', 'Myriad Pro',
+'Myriad Pro Cond', 'Myriad Pro Light', 'Gill Sans MT Std Heavy', 'Gill Sans MT Std Light', 'Gill
+Sans MT Std Medium', 'Gill Sans MT Std UltraBold', 'Gill Sans MT Std UltraBold Cond', 'Gill Sans
+Shadowed MT Pro Light', 'Gill Sans Shadowed MT Std Light', 'Gill Sans Shadow MT Pro', 'Gill Sans
+Shadow MT Std', 'Gill Sans Std Bold ExtraCond', 'ACME Secret Agent BB', 'Astounder Squared BB',
+'Astounder Squared LC BB', 'Gill Sans MT Pro Medium', 'Gill Sans MT Pro Condensed', 'Gill Sans MT
+Pro Bold ExtCond', 'Gill Sans MT Pro Book', 'Gill Sans MT Pro ExtraBold', 'Gill Sans MT Pro Heavy',
+'Gill Sans MT Pro Light', 'Gill Sans MT Pro UltraBold', 'Gill Sans MT Pro UltraBold Cond', 'Gill
+Sans MT Std Condensed', 'Gill Sans MT Std Book', 'Gill Sans MT Std ExraBold', 'Marlett', 'Arial',
+'Arabic Transparent', 'Arial Baltic', 'Arial CE', 'Arial CYR', 'Arial Greek', 'Arial TUR', 'Arial
+Black', 'Bahnschrift Light', 'Bahnschrift SemiLight', 'Bahnschrift', 'Bahnschrift SemiBold',
+'Bahnschrift Light SemiCondensed', 'Bahnschrift SemiLight SemiConde', 'Bahnschrift SemiCondensed',
+'Bahnschrift SemiBold SemiConden', 'Bahnschrift Light Condensed', 'Bahnschrift SemiLight
+Condensed', 'Bahnschrift Condensed', 'Bahnschrift SemiBold Condensed', 'Calibri', 'Calibri Light',
+'Cambria', 'Cambria Math', 'Candara', 'Candara Light', 'Comic Sans MS', 'Consolas', 'Constantia',
+'Corbel', 'Corbel Light', 'Courier New', 'Courier New Baltic', 'Courier New CE', 'Courier New CYR',
+'Courier New Greek', 'Courier New TUR', 'Ebrima', 'Franklin Gothic Medium', 'Gabriola', 'Gadugi',
+'Georgia', 'Impact', 'Ink Free', 'Javanese Text', 'Leelawadee UI', 'Leelawadee UI Semilight',
+'Lucida Console', 'Lucida Sans Unicode', 'Malgun Gothic', '@Malgun Gothic', 'Malgun Gothic
+Semilight', '@Malgun Gothic Semilight', 'Microsoft Himalaya', 'Microsoft JhengHei', '@Microsoft
+JhengHei', 'Microsoft JhengHei UI', '@Microsoft JhengHei UI', 'Microsoft JhengHei Light',
+'@Microsoft JhengHei Light', 'Microsoft JhengHei UI Light', '@Microsoft JhengHei UI Light',
+'Microsoft New Tai Lue', 'Microsoft PhagsPa', 'Microsoft Sans Serif', 'Microsoft Tai Le',
+'Microsoft YaHei', '@Microsoft YaHei', 'Microsoft YaHei UI', '@Microsoft YaHei UI', 'Microsoft
+YaHei Light', '@Microsoft YaHei Light', 'Microsoft YaHei UI Light', '@Microsoft YaHei UI Light',
+'Microsoft Yi Baiti', 'MingLiU-ExtB', '@MingLiU-ExtB', 'PMingLiU-ExtB', '@PMingLiU-ExtB',
+'MingLiU_HKSCS-ExtB', '@MingLiU_HKSCS-ExtB', 'Mongolian Baiti', 'MS Gothic', '@MS Gothic', 'MS UI
+Gothic', '@MS UI Gothic', 'MS PGothic', '@MS PGothic', 'MV Boli', 'Myanmar Text', 'Nirmala UI',
+'Nirmala UI Semilight', 'Palatino Linotype', 'Segoe MDL2 Assets', 'Segoe Print', 'Segoe Script',
+'Segoe UI', 'Segoe UI Black', 'Segoe UI Emoji', 'Segoe UI Historic', 'Segoe UI Light', 'Segoe UI
+Semibold', 'Segoe UI Semilight', 'Segoe UI Symbol', 'SimSun', '@SimSun', 'NSimSun', '@NSimSun',
+'SimSun-ExtB', '@SimSun-ExtB', 'Sitka Small', 'Sitka Text', 'Sitka Subheading', 'Sitka Heading',
+'Sitka Display', 'Sitka Banner', 'Sylfaen', 'Symbol', 'Tahoma', 'Times New Roman', 'Times New Roman
+Baltic', 'Times New Roman CE', 'Times New Roman CYR', 'Times New Roman Greek', 'Times New Roman
+TUR', 'Trebuchet MS', 'Verdana', 'Webdings', 'Wingdings', 'Yu Gothic', '@Yu Gothic', 'Yu Gothic
+UI', '@Yu Gothic UI', 'Yu Gothic UI Semibold', '@Yu Gothic UI Semibold', 'Yu Gothic Light', '@Yu
+Gothic Light', 'Yu Gothic UI Light', '@Yu Gothic UI Light', 'Yu Gothic Medium', '@Yu Gothic
+Medium', 'Yu Gothic UI Semilight', '@Yu Gothic UI Semilight', 'HoloLens MDL2 Assets', 'Unmasked
+BB', 'Vaporized BB', 'Warmonger BB', 'Wicked Queen BB', 'YouMurderer BB', 'SmackAttack BB',
+'StraightToHell BB', 'StraightToHell Sinner BB', 'Ticking Timebomb BB', 'Turntablz BB', 'BlackHole
+BB', 'Coalition', 'Construthinvism', 'Damn Noisy Kids', 'Feedback BB', 'Flyboy BB', 'Nevis',
+'Praetorium BB', 'Psiphoon BB', 'Pythia', 'Santas Big Secret BB', 'Seven Monkey Fury BB', 'Seven
+Swordsmen BB', 'ShockTherapy BB', 'Agency FB', 'Arial Narrow', 'Arial Rounded MT Bold', 'Blackadder
+ITC', 'Bodoni MT', 'Bodoni MT Black', 'Bodoni MT Condensed', 'Book Antiqua', 'Bookman Old Style',
+'Bradley Hand ITC', 'Calisto MT', 'Castellar', 'Century Gothic', 'Century Schoolbook', 'Copperplate
+Gothic Bold', 'Copperplate Gothic Light', 'Curlz MT', 'Edwardian Script ITC', 'Elephant',
+'Engravers MT', 'Eras Bold ITC', 'Eras Demi ITC', 'Eras Light ITC', 'Eras Medium ITC', 'Felix
+Titling', 'Forte', 'Franklin Gothic Book', 'Franklin Gothic Demi', 'Franklin Gothic Demi Cond',
+'Franklin Gothic Heavy', 'Franklin Gothic Medium Cond', 'French Script MT', 'Garamond', 'Gigi',
+'Gill Sans MT Ext Condensed Bold', 'Gill Sans MT', 'Gill Sans MT Condensed', 'Gill Sans Ultra
+Bold', 'Gill Sans Ultra Bold Condensed', 'Gloucester MT Extra Condensed', 'Goudy Old Style', 'Goudy
+Stout', 'Haettenschweiler', 'Imprint MT Shadow', 'Lucida Sans', 'Lucida Sans Typewriter', 'Maiandra
+GD', 'Monotype Corsiva', 'OCR A Extended', 'Palace Script MT', 'Papyrus', 'Perpetua', 'Perpetua
+Titling MT', 'Pristina', 'Rage Italic', 'Rockwell', 'Rockwell Condensed', 'Rockwell Extra Bold',
+'Script MT Bold', 'Tw Cen MT', 'Tw Cen MT Condensed', 'Wingdings 2', 'Wingdings 3', 'Bookshelf
+Symbol 7', 'MS Reference Sans Serif', 'MS Reference Specialty', 'Tw Cen MT Condensed Extra Bold',
+'Newsflash BB', 'Orc Horde BB', 'Orc Horde Inline BB', 'Armor Piercing', 'Big Bloke BB',
+'CrashLanding BB', 'CryptCreep BB', 'CryptCreep Heavy BB', 'FireFight BB', 'Government Agent BB',
+'LowRider BB', 'Lato', 'Lato Light', 'Lato Semibold', 'RedStateBlueState BB', 'Roboto'
+
+'Terminal', 'Modern', 'Roman', 'Script', 'Courier', 'Arial', 'Calibri', 'Times New Roman', 
  
 Finding proper display sizes...
  BackgroundDetails
@@ -26,66 +107,87 @@ Finding proper display sizes...
  Entered as:
   buffer = math.floor(0.43 * width - 20)
   
-Make Principle section labels in HeroFrame compress when possible, like Green Abilities
- Knockout's Major Twist sections compress too much for some reason...
+Assign rwidth values to existing ExpandWindow calls
+	Hero.ChoosePQ, 6534 (choose a section of the power/quality list)
+	Hero.AddPrinciple, 6663 (choose a principle to replace)
+	Hero.ChoosePrinciple, 6748 (choose a principle to add)
+	Hero.GuidedBackground, 7024 (choose a die result or reroll)
+	Hero.ConstructedBackground, 7096 (choose a background from the list)
+	Hero.ChooseAbility, 7330 (choose a section of the ability list)
+	Hero.ChooseAbility, 7369 (choose an ability from the list)
+	Hero.GuidedPowerSource, 7956 (choose a die result or reroll)
+	Hero.ConstructedPowerSource, 8034 (choose a power source from the list)
+	Hero.ChooseForm, 8481 (choose a form from the list)
+	Hero.AddArchetype, 9061 (choose a green mode from the list)
+	Hero.AddArchetype, 9111 (choose a yellow mode from the list)
+	Hero.AddArchetype, 9158 (choose a red mode from the list)
+	Hero.AddArchetype, 9441 (choose a transition type)
+	Hero.AddArchetype, 9499 (choose a build option for divided)
+	Hero.GuidedArchetype, 9785 (choose a die result or reroll for initial archetype)
+	Hero.GuidedArchetype, 9921 (choose a die result or reroll for subordinate archetype)
+	Hero.ConstructedArchetype, 9971 (choose an initial archetype from the list)
+	Hero.ConstructedArchetype, 10015 (choose a subordinate archetype from the list)
+	Hero.GuidedPersonality, 10343 (choose a die result or reroll)
+	Hero.ConstructedPersonality, 10436 (choose one of your two personalities from the list)
+	Hero.ConstructedPersonality, 10500 (choose your single personality from the list)
+	Hero.AddRedAbility, 10642 (choose a category of red ability)
+	Hero.AddRetcon, 10843 (choose an ability to edit)
+	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
-Assign lwidth values to existing ExpandWindow calls
+Assign width/buffer values to existing EnterText calls
+ Hero.AddPQDie, line 6326 (rename this power/quality)
+ Hero.ChooseAbility, line 7617 (rename this ability)
+ Hero.AddMode, line 8202 (rename this Mode)
+ Hero.ChooseForm, line 8670 (rename this Form)
+ Hero.AddArchetype, line 9419 (rename this Divided form)
 
-Assign width/buffer values to existing SelectWindow calls
-. HeroFrame.AddHeroNames, line 12734: width=40, buffer=6
- Hero.ChooseIndex (line 6075) now accepts a width argument
-  Assign width values to existing ChooseIndex calls...
-.   Hero.ChoosePQDieSize, line 6281 (choose a die for this power/quality) width=35, buffer=10
-.   Hero.ChoosePQ, line 6418 (choose a section of the power/quality list if not UseGUI)
-.   Hero.ChoosePQ, line 6430 (choose a power/quality to add) width=50, buffer=15
-.   Hero.GuidedBackground, line 6891 (choose which die result to keep) width=25, buffer=*
-   Hero.ChooseAbility, line 7103 (choose a section of the ability list)
-    Add an if UseGUI alternative here
-   Hero.ChooseAbility, line 7179 (choose a damage category)
-   Hero.ChooseAbility, line 7210 (choose an elemental/energy power)
-   Hero.ChooseAbility, line 7224 (choose an energy/element)
-   Hero.ChooseAbility, line 7241 (choose a basic action)
-   Hero.ChooseAbility, line 7302 (choose a power/quality for this ability)
-   Hero.AddPowerSource, line 7533 (choose a d6 power/quality to upgrade)
-.   Hero.AddPowerSource, line 7565 (choose a power to downgrade) width=40, buffer=10
-.   Hero.AddPowerSource, line 7583 (choose a power to upgrade) width=40, buffer=10
-   Hero.AddMode, line 7806 (choose a power for this die size)
-   Hero.AddMode, line 7842 (choose a power for this modifier)
-.   Hero.ChooseForm, line 8237 (choose the first power to swap if not UseGUI)
-.   Hero.ChooseForm, line 8246 (choose the second power to swap if not UseGUI)
-   Hero.ChooseForm, line 8270 (choose a power to replace)
-   Hero.ChooseForm, line 8278 (choose a new power to replace it)
-   Hero.ChooseForm, line 8295 (choose a power to upgrade for this form)
-   Hero.ChooseForm, line 8373 (choose a divided tag for this form)
-   Hero.AddArchetype, line 8522 (choose an existing primary power/quality to swap dice with)
-   Hero.AddArchetype, line 8530 (choose a new die to give to the primary power/quality)
-   Hero.AddArchetype, line 8984 (choose a quality to determine the number of minion forms)
-   Hero.AddArchetype, line 9167 (choose a constant power for Split Form)
-   Hero.AddArchetype, line 9181 (choose a constant quality for Split Form)
-   Hero.AddArchetype, line 9197 (choose a divided tag for this power/quality)
-   Hero.AddArchetype, line 9258 (choose a divided tag for this form)
-.   Hero.AddPersonality, line 9708 (choose a power/quality to upgrade) width=40, buffer=10
-.   Hero.GuidedPersonality, line 9871 (choose which die result to keep) width=25, buffer=*
-   Hero.ConstructedPersonality, line 9954 (choose which out ability to use)
-.   Hero.AddRetcon, line 10194 (choose a retcon option) width=60, buffer=*
-.   Hero.AddRetcon, line 10219 (choose the first power to swap if not UseGUI)
-.   Hero.AddRetcon, line 10224 (choose the second power to swap if not UseGUI)
-.   Hero.AddRetcon, line 10266 (choose the first quality to swap if not UseGUI)
-.   Hero.AddRetcon, line 10271 (choose the second quality to swap if not UseGUI)
-   Hero.AddRetcon, line 10344 (choose which power/quality from this ability to change)
-   Hero.AddRetcon, line 10375 (choose which power/quality to replace it with)
-   Hero.AddHealth, line 10615 (choose which power/quality to use for health)
-   Hero.AddHealth, line 10642 (choose which red status to use for health)
-.   Hero.AddHealth, line 10659 (choose whether to use 4 or 1d8 for health) width=50, buffer=25
-.   Hero.CreateHero, line 10697 (use guided or constructed for background) width=50, buffer=15
-.   Hero.CreateHero, line 10725 (use guided or constructed for power source) width=50, buffer=15
-   Hero.CreateHero, line 10755 (use guided or constructed for archetype)
-.   Hero.CreateHero, line 10793 (use guided or constructed for personality) width=50, buffer=15
-.   HeroFrame.AddHeroBackground, line 12498 (use guided or constructed for background) width=50, buffer=15
-.   HeroFrame.AddHeroPowerSource, line 12534 (use guided or constructed for power source) width=50, buffer=15
-   HeroFrame.AddHeroArchetype, line 12572 (use guided or constructed for archetype)
-.   HeroFrame.AddHeroPersonality, line 12619 (use guided or constructed for personality) width=50, buffer=15
- 
-Move buttons in HeroFrame to their own Frame (with its own geometry manager) so they quit resizing everything else's rows?
+Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundDetails, DisplayPowerSource, PowerSourceDetails, DisplayArchetype, ArchetypeDetails, etc. calls
+  Display() methods
+	Hero.GuidedBackground, line 7015 (expand this background if not UseGUI)
+	Hero.ConstructedBackground, line 7080 (expand this background if not UseGUI)
+	Hero.GuidedPowerSource, line 7864 (expand this power source if not UseGUI)
+	Hero.ConstructedPowerSource, line 7937 (expand this power source if not UseGUI)
+	Hero.GuidedArchetype, line 9634 (expand this archetype if not UseGUI)
+	Hero.GuidedArchetype, line 9765 (expand this archetype if not UseGUI)
+	Hero.ConstructedArchetype, line 9809 (expand this archetype if not UseGUI)
+	Hero.ConstructedArchetype, line 9851 (expand this archetype if not UseGUI)
+	Hero.GuidedPersonality, line 10171 (expand this personality if not UseGUI)
+	Hero.ConstructedPersonality, line 10260 (expand this personality if not UseGUI)
+	Hero.ConstructedPersonality, line 10319 (expand this personality if not UseGUI)
+	Hero.AddArchetype, line 9298 (expand this transition method if not UseGUI)
+	Hero.AddMode, line 7964 (expand this mode template)
+	Hero.AddArchetype, line 8883 (expand Powerless Mode)
+	Hero.AddArchetype, line 8931 (expand this mode template if not UseGUI)
+	Hero.AddArchetype, line 8980 (expand this mode template if not UseGUI)
+	Hero.AddArchetype, line 9022 (expand this mode template if not UseGUI)
+  Details() methods
+	done!
 
->>> finish filling in Create methods for sample heroes, starting with Lori
+? Consolidate mode selection process into a single loop, like form selection ?
+ ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
+
+~ When implementing Split Form for Form-Changers, any Power that only appears in a [Heroic/Civilian] form can automatically be given the matching tag; it's the ones that appear in both that are undefined
+ MUERTO DOES THIS, DUMBASS, LOOK AT HIS SHEET
+  Powers			Gh	EG	EY
+   Awareness		10	10	6
+   Electricity		8		
+   Intangibility	10	10	10
+   Part Detachment		6	12
+   Power Suit			8	10
+   Remote Viewing	8		
+  So it looks like... they deliberately restricted themselves while creating his Power lists in Electronics forms so that he would always have exactly two constant Powers.
+   That's technically feasible for anyone doing this- if you knew you were going with Split Form, you would just be required to change exactly (X-2) of your Powers to other Powers every time you created a Form for Form-Changer that wasn't getting the same Divided tag as their base form. It wouldn't even have to be the same set of replacement powers every time, just as long as the overlap between one side of Divided and the other was exactly 2.
+    *BUT* the instructions for Divided say to do everything except Principles for your other archetype first, and only then make your Divided choices.
+    To make Muerto, they had to select Split Form first, then use that information in the steps for his other Archetype. You *CAN'T* guarantee that Split Form will be feasible if you follow the instructions as written.
+
+Ability text wrap in HeroFrame is too big, Command Power overruns the box
+
+? Put some buffer space vertically between button columns in HeroFrame ?
+
+Light orange colors:
+#FFC76C
+#FFBB4D
+#FFB845
+
+Standard orange:
+#FFA500

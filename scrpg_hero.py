@@ -148,77 +148,122 @@ mixed_categories = [q_categories, p_categories]
 global legal_dice
 legal_dice = [4, 6, 8, 10, 12]
 
-def printlong(text, width, prefix=""):
+global print_issue, track_inputs, tracker_open, tracker_close
+#  print_issue: if True, activates diagnostic statements in split_text
+#  track_inputs: if True, activates reporting statements throughout Hero intended to help convert
+#                 manual inputs into automatic ones
+print_issue = False
+track_inputs = False
+tracker_open = "~~~ ["
+tracker_close = "~~~ ]"
+
+def printlong(text,
+              width=100,
+              prefix=""):
     # Prints the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
-    if len(text) <= width:
-        print(prefix + text)
-    elif " " not in text[0:width]:
-        print(prefix + text)
-    elif width <= 0:
-        print(prefix + text)
-    else:
-        sec_start = 0
-        sec_end = text.rfind(" ", sec_start, sec_start + width)
-        while sec_start < len(text):
-            if sec_end == -1:
-                print(prefix + text[sec_start:])
-                sec_start = len(text)
-            else:
-                print(prefix + text[sec_start:sec_end+1])
-                sec_start = sec_end + 1
-                if sec_start + width >= len(text):
-                    sec_end = len(text)
-                else:
-                    sec_end = text.rfind(" ", sec_start, sec_start + width)
+    notePrefix = "### printlong: "
+    print(split_text(text,
+                     width=width,
+                     prefix=prefix))
 
-def split_text(text, width=100, prefix=""):
+def split_text(text,
+               width=100,
+               prefix=""):
     # Returns the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
-##    print("### split_text: len(text)=" + str(len(text)))
+    notePrefix = "### split_text: "
+    if prefix == "":
+        # No prefix specified? Check to see if text starts with whitespace; if so, use that
+        okToShift = False
+        if len(text) > 0:
+            if text[0] == " ":
+                okToShift = True
+        while okToShift:
+            prefix += text[0]
+            text = text[1:]
+            if len(text) <= 0:
+                okToShift = False
+            elif text[0] != " ":
+                okToShift = False
+    # prefix takes up a certain number of characters on every line, so set those aside and
+    #  designate the width of actual text as textWidth
+    textWidth = width-len(prefix)
+    if print_issue:
+        print(notePrefix + "text= '" + text + "'")
+        print(notePrefix + "len(text)= " + str(len(text)))
+        print(notePrefix + "width= " + str(width))
+        print(notePrefix + "prefix= '" + prefix + "'")
+        print(notePrefix + "textWidth= " + str(textWidth))
     if "\n" in text:
         # If text already contains multiple lines, consider each one separately
         sections = text.split("\n")
-        lines = split_text(sections[0], width, prefix)
+        lines = split_text(sections[0],
+                           width=width,
+                           prefix=prefix)
         for s in sections[1:]:
-            lines += "\n" + split_text(s, width, prefix)
+            lines += "\n" + split_text(s,
+                                       width=width,
+                                       prefix=prefix)
         return lines
-    elif len(text) < width or " " not in text[0:width] or width <= 0:
-        # If text is less that width characters long,
-        # or if the first [width] characters contain no spaces,
-        # or if width <= 0,
+    elif len(text) < textWidth or " " not in text[0:textWidth] or textWidth <= 0:
+        # If text is less than [textWidth] characters long,
+        # or if the first [textWidth] characters contain no spaces,
+        # or if textWidth <= 0,
         #  return text with prefix and no changes
         return prefix + text
     else:
-        if prefix == "":
-            # No prefix specified? Check to see if text starts with whitespace
-            while text[0] == " ":
-                prefix += text[0]
-                text = text[1:]
-        lines = prefix + text
+        # EDIT: Screw this edit-in-place nonsense, let's make a separate list of lines and then
+        #  join them at the end
+        lines = []
+        conjunction = "\n" + prefix
         sec_start = 0
-        sec_end = lines.rfind(" ", sec_start + len(prefix), sec_start + len(prefix) + width)
+        sec_end = text.rfind(" ",
+                             sec_start,
+                             sec_start + textWidth)
         while sec_start < len(text):
-##            print(lines)
-##            print("### split_text: sec_end=" + str(sec_end) + " ('" + lines[sec_end] + "')")
-            if sec_end in range(len(text)):
-                # Insert a line break and the prefix after sec_end
-                pre_break = lines[0:sec_end]
-                post_break = lines[sec_end+1:]
-                lines = pre_break + "\n" + prefix + post_break
-                # Move sec_start to the character after the new prefix
-                sec_start = sec_end + len(prefix) + 1
-                # Move sec_end to either the last space between sec_start and sec_start + width, or
-                #  to the end of the string
-                if sec_start + width >= len(text):
-                    sec_end = len(text)
-                else:
-                    sec_end = lines.rfind(" ", sec_start, sec_start + len(prefix) + width)
+            if print_issue:
+                print(notePrefix + "sec_start= " + str(sec_start))
+                if sec_start in range(len(text)):
+                    print(notePrefix + " ('" + text[sec_start] + "')")
+                print(notePrefix + "sec_start+textWidth= " + str(sec_start+textWidth))
+                if sec_start + textWidth in range(len(text)):
+                    print(notePrefix + " ('" + text[sec_start+textWidth] + "')")
+                print(notePrefix + "sec_end= " + str(sec_end))
+                if sec_end in range(len(text)):
+                    print(notePrefix + " ('" + text[sec_end] + "')")
+            # Add this line
+            lines.append(text[sec_start:sec_end+1])
+            if print_issue:
+                print(notePrefix + "'" + text[sec_start:sec_end+1] + "' added to lines")
+            # Adjust values for the next one
+            # sec_start goes to the character after the last one in the previous line
+            sec_start = sec_end + 1
+            if print_issue:
+                print(notePrefix + "sec_start= " + str(sec_start))
+                if sec_start in range(len(text)):
+                    print(notePrefix + " ('" + text[sec_start] + "')")
+            if sec_start + textWidth in range(len(text)):
+                # If a space can be found within the next textWidth characters, sec_end goes to the
+                #  last such space
+                sec_end = text.rfind(" ",
+                                     sec_start,
+                                     sec_start + textWidth)
+                if sec_end not in range(len(text)):
+                    # If no space can be found within that range, sec_end goes to the next space in
+                    #  the string
+                    sec_end = text.find(" ",
+                                        sec_start)
+                    if sec_end not in range(len(text)):
+                        # If no space can be found within the rest of the string, sec_end goes to
+                        #  the end of the string
+                        sec_end = len(text)
             else:
-                sec_start = len(text)
-##        print(text)
-##        print(lines)
-        return lines
+                # If there are fewer than textWidth characters remaining in the string, sec_end goes
+                #  to the end of the string
+                sec_end = len(text)
+        # Make sure to include prefix before the first line
+        return prefix + conjunction.join(lines)
 
 def dice_combo(die_sizes, results=[]):
     # Converts a list of die sizes (e.g., [6, 6, 10]) to a phrase describing the set of dice
@@ -270,9 +315,11 @@ def choose_letter(entry_options,
             entry_choice = "N"
     else:
         if len(prompt) > 0:
-            entry_choice = input(prompt + "\n")[0].upper()
-        else:
-            entry_choice = input()[0].upper()
+            print(prompt)
+        line_prompt = ""
+        if track_inputs:
+            line_prompt += "> "
+        entry_choice = input(line_prompt)[0].upper()
     while entry_choice not in entry_options:
         if len(inputs) > 0:
             print(repeat_message)
@@ -400,11 +447,14 @@ class PQDie:
         return mirror
     def SetPrevious(self, stepnum):
         # Used in preparation for editing the PQDie's attributes during character creation
-        # Creates a copy of the PQDie with its current attributes and saves it in self.prev_version, then adds the specified step number to the list of steps when this die was modified.
+        # Creates a copy of the PQDie with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
         self.prev_version = self.copy()
         self.steps_modified.append(stepnum)
     def RetrievePrior(self, stepnum):
-        # Returns a copy of the PQDie as it existed prior to the specified step of character creation.
+        # Returns a copy of the PQDie as it existed prior to the specified step of character
+        #  creation.
         if stepnum < 1:
             print("Error! " + str(stepnum) + " is too small to be a valid step index.")
             return self
@@ -949,9 +999,10 @@ rc_responsibility = [r_business,
                      r_veteran,
                      r_youth]
 
-global rc_master, rc_names
+global rc_master, rc_names, ri_width
 rc_master = [rc_esoteric, rc_expertise, rc_ideals, rc_identity, rc_responsibility]
 rc_names = ["Esoteric", "Expertise", "Ideals", "Identity", "Responsibility"]
+ri_width = 90
 
 # Class representing a Principle
 class Principle:
@@ -967,7 +1018,6 @@ class Principle:
         self.category = category
         self.index = index
         self.step = max([0, stepnum])
-        self.steps_modified = []
         ref = ["[undefined]"] * 5
         self.has_ref = False
         self.is_template = False
@@ -980,7 +1030,7 @@ class Principle:
         if not title:
             title = ref[0]
         elif title.startswith("Principle of "):
-            title = title[13:]
+            title = title.replace("Principle of ","")
         self.title = title
         if not roleplaying:
             roleplaying = ref[1]
@@ -1002,54 +1052,104 @@ class Principle:
            self.minor_twist != ref[2] and self.major_twist != ref[3] and \
            self.green_ability != ref[4]:
             self.has_ref = False
+        self.steps_modified = []
+        self.prev_version = None
     def __str__(self):
         summary = "Principle of " + self.title
         if self.has_ref and not self.is_template:
             summary += "*"
         return summary
+    def CheckRef(self):
+        # Verifies has_ref and is_template
+        if self.category in range(len(rc_master)):
+            r_cat = rc_master[self.category]
+            if self.index in range(len(r_cat)):
+                ref = rc_master[self.category][self.index]
+                self.has_ref = True
+                self.is_template = True
+        if self.is_template and (self.title != ref[0] or self.during_roleplaying != ref[1] or \
+                                 self.minor_twist != ref[2] or self.major_twist != ref[3] or \
+                                 self.green_ability != ref[4]):
+            self.is_template = False
+        if self.title != ref[0] and self.during_roleplaying != ref[1] and \
+           self.minor_twist != ref[2] and self.major_twist != ref[3] and \
+           self.green_ability != ref[4]:
+            self.has_ref = False
+    def copy(self):
+        mirror = Principle(self.category,
+                           self.index,
+                           title=self.title,
+                           roleplaying=self.during_roleplaying,
+                           minor=self.minor_twist,
+                           major=self.major_twist,
+                           green=self.green_ability,
+                           stepnum=self.step)
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
+        return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Principle's attributes during character creation
+        # Creates a copy of the Principle with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Principle as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
     def display(self,
                 prefix="",
                 width=100,
-                green=True):
-        indent = "    "
-        printlong("Principle of " + self.title,
-                  width=width-len(prefix),
-                  prefix=prefix)
-        printlong(self.during_roleplaying,
-                  width=width-len(prefix+indent),
-                  prefix=prefix+indent)
-        printlong("Minor Twist: " + self.minor_twist,
-                  width=width-len(prefix+indent+indent),
-                  prefix=prefix+indent+indent)
-        printlong("Major Twist: " + self.major_twist,
-                  width=width-len(prefix+indent+indent),
-                  prefix=prefix+indent+indent)
-        if green:
-            printlong("Green Ability: " + self.green_ability,
-                      width-len(prefix+indent),
-                      prefix=prefix+indent)
+                green=True,
+                indented=True,
+                breaks=2,
+                hanging=True):
+        print(self.details(prefix=prefix,
+                           width=width,
+                           green=green,
+                           indented=indented,
+                           breaks=breaks,
+                           hanging=hanging))
     def details(self,
                 prefix="",
                 width=100,
                 green=True,
-                breaks=2):
-        indent = "    "
+                indented=True,
+                breaks=2,
+                hanging=True):
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         text = split_text("Principle of " + self.title,
-                          width=width-len(prefix),
+                          width=width,
                           prefix=prefix)
+        if hanging:
+            prefix += "    "
         text += "\n" * breaks + split_text(self.during_roleplaying,
-                                           width=width-len(prefix+indent),
-                                           prefix=prefix+indent)
+                                           width=width,
+                                           prefix=prefix)
         text += "\n" * breaks + split_text("Minor Twist: " + self.minor_twist,
-                                           width=width-len(prefix+indent+indent),
-                                           prefix=prefix+indent+indent)
+                                           width=width,
+                                           prefix=prefix+indent)
         text += "\n" * breaks + split_text("Major Twist: " + self.major_twist,
-                                           width=width-len(prefix+indent+indent),
-                                           prefix=prefix+indent+indent)
+                                           width=width,
+                                           prefix=prefix+indent)
         if green:
             text += "\n" * breaks + split_text("Green Ability: " + self.green_ability,
-                                               width=width-len(prefix+indent+indent),
-                                               prefix=prefix+indent+indent)
+                                               width=width,
+                                               prefix=prefix+indent)
         return text
 
 global hp_bounds
@@ -1657,38 +1757,43 @@ class Ability:
             summary = self.flavorname
         summary += " (" + self.type + ")"
         return summary
-    def display(self, prefix="", width=100):
+    def display(self,
+                width=100,
+                prefix="",
+                indented=True):
         # Prints a list of the ability's attributes.
-        pref = prefix
-        indent = "    "
-        firstline = ""
+        print(self.details(prefix=prefix,
+                           width=width,
+                           indented=indented))
+    def details(self,
+                width=100,
+                prefix="",
+                indented=True):
+        # Returns a list of the Ability's attributes.
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         if self.zone != 3:
             # Out Abilities don't get names when displayed like this.
             # The only time an Out Ability needs a name is when a Divided hero chooses between two
             #  of them.
             if self.flavorname:
-                firstline = self.flavorname
+                firstLine = self.flavorname
             else:
-                firstline = self.name
-        if len(firstline) > 0:
-            firstline += " "
-        firstline += "[" + self.type + "]"
+                firstLine = self.name
+            firstLine += " "
+        else:
+            firstLine = ""
+        firstLine += "[" + self.type + "]"
         if self.zone in range(len(status_zones)):
-            firstline += " (" + status_zones[self.zone] + ")"
-        print(pref + firstline)
-        printlong(self.dispText(), width-4, prefix=pref+indent)
-    def details(self, width=100, prefix=""):
-        fullText = "" + prefix
-        if self.zone != 3:
-            if self.flavorname:
-                fullText += self.flavorname
-            else:
-                fullText += self.name
-            fullText += " "
-        fullText += "[" + self.type + "]"
-        if self.zone in range(len(status_zones)):
-            fullText += " (" + status_zones[self.zone] + ")"
-        fullText += "\n" + split_text(self.dispText(), width=width, prefix=prefix+"    ")
+            firstLine += " (" + status_zones[self.zone] + ")"
+        fullText = split_text(firstLine,
+                              width=width,
+                              prefix=prefix)
+        fullText += "\n" + split_text(self.dispText(),
+                                      width=width,
+                                      prefix=prefix+indent)
         return fullText
     def dispText(self):
         disptext = self.text
@@ -4699,7 +4804,7 @@ arc_robot_cyborg = ["Robot/Cyborg",
 # If already present:     none
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Intellectual, any Mobility, 
-#                         any Self-Control, any Technological
+#                         any Self Control, any Technological
 # Tertiary PQs:           any Information, any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4739,7 +4844,7 @@ arc_sorceror = ["Sorcerer",
 # If already present:     none
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Elemental/Energy, any Materials, any Mobility, any Psychic, 
-#                         any Self-Control
+#                         any Self Control
 # Tertiary PQs:           any Information, any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4780,7 +4885,7 @@ arc_psychic = ["Psychic",
 # Primary Power/Quality:  any Psychic
 # If already present:     none
 # Secondary Power Qty:    1 or more(*)
-# Secondary Powers:       any Intellectual, any Materials, any Psychic, any Self-Control(*)
+# Secondary Powers:       any Intellectual, any Materials, any Psychic, any Self Control(*)
 # Tertiary PQs:           any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
@@ -4938,10 +5043,10 @@ arc_form_changer = ["Form-Changer",
                     False,
                     0,
                     3]
-# Primary Power/Quality:  any Self-Control
+# Primary Power/Quality:  any Self Control
 # If already present:     Skip or choose another
 # Secondary Power Qty:    1 or more
-# Secondary Powers:       any Athletic, any Mobility, any Self-Control, any Technological
+# Secondary Powers:       any Athletic, any Mobility, any Self Control, any Technological
 # Tertiary PQs:           any Information, any Physical
 # Mandatory Abilities:    Change Forms, Emergency Change
 # Green Ability Qty:      1
@@ -5139,14 +5244,29 @@ arc_collection = [arc_speedster,
 arc_simple = [x for x in arc_collection[0:18]]
 arc_modifiers = [[], arc_divided, arc_modular]
 arc_special = ["",
-               "May use a Materials or Technological power for Health",
-               "Bonus d10 Technological power; may use a Technological power for Health",
-               "Creates 2 additional Green forms and 1 additional Yellow form with alternate " + \
-               "Power lists and special Abilities",
-               "Gains Powers/Qualities & Abilities from another Archetype",
-               "Gains Powers/Qualities & Principle from another Archetype. In place of that " + \
-               "Archetype's Abilities, creates 1 Green Mode, 2 Yellow Modes, & 1 Red Mode " + \
-               "with modified Power lists and special Abilities"]
+               "When you determine max Health in step 7, you may use a Materials or " + \
+               "Technological power.",
+               "You get a bonus d10 Technological power.\nWhen you determine max Health in " + \
+               "step 7, you may use a Technological power.",
+               "You get to create 2 additional Green forms and 1 additional Yellow " + \
+               "form.\nWhile your hero is in an alternate Form, they'll use a modified Power " + \
+               "list, which you'll create in this step by moving dice around between their " + \
+               "existing Powers and the Form-Changer Powers you see here, and have access to " + \
+               "a special Ability.\nYour hero can switch between these Forms using the " + \
+               "Abilities you see here.",
+               ">>> This Archetype modifies another Archetype. <<<\nIf you choose this, " + \
+               "you'll choose another Archetype to follow it, and gain the Powers, Qualities, " + \
+               "and Abilities that your other Archetype tells you to.\nThen, you'll add the " + \
+               "following:",
+               ">>> This Archetype modifies another Archetype. <<<\nIf you choose this, " + \
+               "you'll choose another Archetype to follow it, and gain the Powers, Qualities, " + \
+               "and Principle that your other Archetype tells you to.\nIn place of that " + \
+               "Archetype's Abilities, you'll create 1 Green Mode, 2 Yellow Modes, & 1 Red " + \
+               "Mode.\nWhile your hero is in an alternate Mode, they'll have access to a " + \
+               "special Ability, modified Power dice that you'll choose in this step, and " + \
+               "restrictions on which of the basic actions (Attack, Defend, Boost, Hinder, " + \
+               "Overcome) they can take.\nYour hero can change between Modes using the " + \
+               "Abilities you see here."]
 arc_width = 150
 
 global form_abilities_green, form_abilities_yellow, fc_zones
@@ -5426,230 +5546,328 @@ pn_special = ["",
               "May use any Power or Quality for Health"]
 pn_width = 100
 
-def DisplayBackground(index, prefix="", width=100):
-    if index in range(len(bg_collection)):
-        pref = prefix
-        bg = bg_collection[index]
-        printlong(bg[0] + ": " + bg[1], width, prefix=pref)
-        print(prefix + "    Quality Dice: " + str(bg[2]))
-        if len(bg[3]) > 0:
-            print(prefix + "    Required Quality: " + MixedPQ(bg[3][0]))
-        print(prefix + "    Optional Qualities: ")
-        quality_choices = bg[4]
-        col_num = 4
-        columns = [0] * col_num
-        for c in range(len(columns)):
-            columns[c] = max([len(MixedPQ(quality_choices[i]))+2 \
-                              for i in range(len(quality_choices)) if i%col_num == c])
-        for i in range(len(quality_choices)):
-            quality_text = MixedPQ(quality_choices[i])
-            while len(quality_text) < columns[i%col_num]:
-                quality_text += " "
-            if i%col_num == 0:
-                print(prefix + "        ", end="")
-            if i%col_num == col_num-1 or i == len(quality_choices)-1:
-                print(quality_text)
-            else:
-                print(quality_text, end="")
-        print(prefix + "    " + rc_names[bg[5]] + " Principle")
-        print(prefix + "    Power Source Dice: " + str(bg[6]))
+def DisplayBackground(index,
+                      width=100,
+                      prefix="",
+                      indented=True,
+                      breaks=1,
+                      grid=True,
+                      hanging=False):
+    print(BackgroundDetails(index,
+                            width=width,
+                            prefix=prefix,
+                            indented=indented,
+                            breaks=breaks,
+                            grid=grid,
+                            hanging=hanging))
 
-def BackgroundDetails(index, width=100):
+def BackgroundDetails(index,
+                      width=100,
+                      prefix="",
+                      indented=False,
+                      breaks=2,
+                      grid=False,
+                      hanging=False):
+    # There are a lot of Display*() and *Details() methods in this file and they use a lot of the
+    #  same keyword arguments. Here's what they generally mean.
+    # width: Int. The maximum length, in characters, of a single line in the resulting text.
+    #  Enforced using split_text.
+    # prefix: String. A string to be inserted at the start of each new line in the resulting text.
+    #  Usually whitespace. Inserted using split_text.
+    # indented: Boolean. Whether the resulting text should use horizontal indentation to visually
+    #  separate its subsections.
+    # breaks: Int. The number of line breaks the resulting text should include between sections.
+    # grid: Boolean. Whether the resulting text, when it includes a large list of short values such
+    #  as the names of Powers and Qualities, should present the list in columnar format. If false,
+    #  the list is presented as a long sequence of comma-separated values with the proper
+    #  indentation.
+    # hanging: Boolean. Whether the resulting text should give initial indentation to EVERY section
+    #  other than the first one.
     if index in range(len(bg_collection)):
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         bg = bg_collection[index]
-        bgText = split_text(bg[0] + ": " + bg[1], width=width)
-        bgText += "\n\n" + "Quality Dice: " + str(bg[2])
+        bgText = split_text(bg[0] + ": " + bg[1],
+                            width=width,
+                            prefix=prefix)
+        if hanging:
+            prefix += "    "
+        bgText += "\n" * breaks + split_text("Quality Dice: " + str(bg[2]),
+                                             width=width,
+                                             prefix=prefix)
         if len(bg[3]) > 0:
-            bgText += "\n\n" + "Required Quality: " + MixedPQ(bg[3][0])
-        bgText += "\n\n" + "Optional Qualities: "
+            bgText += "\n" * breaks + split_text("Required Quality: " + MixedPQ(bg[3][0]),
+                                                 width=width,
+                                                 prefix=prefix)
+        bgText += "\n" * breaks + split_text("Optional Qualities: ",
+                                             width=width,
+                                             prefix=prefix)
         quality_choices = bg[4]
-        this_line = ""
-        for i in range(len(quality_choices)):
-            quality_text = MixedPQ(quality_choices[i])
-##            if len(this_line) + len(quality_text) + 4 > width:
-##                bgText += "\n  " + this_line
-##                this_line = "" + quality_text
-##            else:
-##                this_line += quality_text
-            this_line += quality_text
-            if i < len(quality_choices) - 1:
-                this_line += ", "
-        bgText += "\n" + split_text(this_line, width=width, prefix="  ")
-        bgText += "\n\n" + rc_names[bg[5]] + " Principle"
-        bgText += "\n\n" + "Power Source Dice: " + str(bg[6])
+        if grid:
+            # Include Quality options spaced in equal columns
+            maxWidth = 2 + max([len(x) for x in MixedPQs(quality_choices)])
+            numCols = math.floor((width-len(prefix+indent))/maxWidth)
+            colWidths = [0] * numCols
+            for c in range(numCols):
+                if c in range(len(quality_choices)):
+                    colWidths[c] = max([len(MixedPQ(quality_choices[i])) + 2 \
+                                        for i in range(len(quality_choices)) if i%numCols==c])
+            for i in range(len(quality_choices)):
+                qualityText = MixedPQ(quality_choices[i])
+                while len(qualityText) < maxWidth:
+                    qualityText += " "
+                if i%numCols == 0:
+                    bgText += "\n" + prefix + indent
+                bgText += qualityText
+        else:
+            # Include Quality options as a simple list
+            this_line = ""
+            for i in range(len(quality_choices)):
+                quality_text = MixedPQ(quality_choices[i])
+                this_line += quality_text
+                if i < len(quality_choices) - 1:
+                    this_line += ", "
+            bgText += "\n" + split_text(this_line,
+                                        width=width,
+                                        prefix=prefix+indent)
+        bgText += "\n" * breaks + split_text(rc_names[bg[5]] + " Principle",
+                                             width=width,
+                                             prefix=prefix)
+        bgText += "\n" * breaks + split_text("Power Source Dice: " + str(bg[6]),
+                                             width=width,
+                                             prefix=prefix)
         return bgText
     else:
-        return "Invalid Background index: " + str(index)
+        return split_text("Invalid Background index: " + str(index),
+                          width=width,
+                          prefix=prefix)
 
-def DisplayPowerSource(index, prefix="", width=100):
-    if index in range(len(ps_collection)):
-        pref = prefix
-        indent = "    "
-        powersource = ps_collection[index]
-        printlong(powersource[0] + ": " + powersource[1], width, prefix=pref)
-        if len(powersource[2]) > 0:
-            print(prefix + indent + "Required Power: " + MixedPQ(powersource[2][0]))
-        print(prefix + indent + "Optional Powers: ")
-        power_choices = powersource[3]
-        col_num = 4
-        columns = [0] * col_num
-        for c in range(len(columns)):
-            columns[c] = max([len(MixedPQ(power_choices[i]))+2 \
-                              for i in range(len(power_choices)) if i%col_num == c])
-        for i in range(len(power_choices)):
-            power_text = MixedPQ(power_choices[i])
-            while len(power_text) < columns[i%col_num]:
-                power_text += " "
-            if i%col_num == 0:
-                print(prefix + indent + indent, end="")
-            if i%col_num == col_num-1 or i == len(power_choices)-1:
-                print(power_text)
-            else:
-                print(power_text, end="")
-        if powersource[4] > 0:
-            if powersource[4] == 1:
-                print(prefix + indent + str(powersource[4]) + " Yellow Ability from:")
-            else:
-                print(prefix + indent + str(powersource[4]) + " Yellow Abilities from:")
-            for ability in powersource[5]:
-                ability.display(prefix=pref+indent+indent, width=width-len(indent+indent))
-        if powersource[6] > 0:
-            if powersource[6] == 1:
-                print(prefix + indent + str(powersource[6]) + " Green Ability from:")
-            else:
-                print(prefix + indent + str(powersource[6]) + " Green Abilities from:")
-            for ability in powersource[7]:
-                ability.display(prefix=pref+indent+indent, width=width-len(indent+indent))
-        if powersource[8] > 0:
-            print(prefix + indent + ps_special[powersource[8]])
-        print(prefix + indent + "Archetype Dice: " + str(powersource[9]))
+def DisplayPowerSource(index,
+                       width=100,
+                       prefix="",
+                       indented=True,
+                       breaks=1,
+                       grid=True,
+                       hanging=False):
+    print(PowerSourceDetails(index,
+                             width=width,
+                             prefix=prefix,
+                             indented=indented,
+                             breaks=breaks,
+                             grid=grid,
+                             hanging=hanging))
 
-def PowerSourceDetails(index, width=100):
+def PowerSourceDetails(index,
+                       width=100,
+                       prefix="",
+                       indented=False,
+                       breaks=2,
+                       grid=False,
+                       hanging=False):
     if index in range(len(ps_collection)):
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         psText = ""
         powersource = ps_collection[index]
-        psText += split_text(powersource[0] + ": " + powersource[1], width=width)
+        psText += split_text(powersource[0] + ": " + powersource[1],
+                             width=width,
+                             prefix=prefix)
+        if hanging:
+            prefix += "    "
         if len(powersource[2]) > 0:
-            psText += "\n\n" + "Required Power: " + MixedPQ(powersource[2][0])
-        psText += "\n\n" + "Optional Powers: "
+            psText += "\n" * breaks + split_text("Required Power: " + MixedPQ(powersource[2][0]),
+                                                 width=width,
+                                                 prefix=prefix)
+        psText += "\n" * breaks + split_text("Optional Powers: ",
+                                             width=width,
+                                             prefix=prefix)
         power_choices = powersource[3]
-        this_line = ""
-        for i in range(len(power_choices)):
-            power_text = MixedPQ(power_choices[i])
-            this_line += power_text
-            if i < len(power_choices) - 1:
-                this_line += ", "
-        psText += "\n" + split_text(this_line, width=width, prefix="  ")
+        if grid:
+            # Include Power options spaced in equal columns
+            maxWidth = 2 + max([len(x) for x in MixedPQs(power_choices)])
+            numCols = math.floor((width-len(prefix+indent))/maxWidth)
+            colWidths = [0] * numCols
+            for c in range(numCols):
+                if c in range(len(power_choices)):
+                    colWidths[c] = max([len(MixedPQ(power_choices[i])) + 2 \
+                                        for i in range(len(power_choices)) if i%numCols==c])
+            for i in range(len(power_choices)):
+                powerText = MixedPQ(power_choices[i])
+                while len(powerText) < maxWidth:
+                    powerText += " "
+                if i%numCols == 0:
+                    psText += "\n" + prefix + indent
+                psText += powerText
+        else:
+            # Include Power options as a simple list
+            this_line = ""
+            for i in range(len(power_choices)):
+                power_text = MixedPQ(power_choices[i])
+                this_line += power_text
+                if i < len(power_choices) - 1:
+                    this_line += ", "
+            psText += "\n" + split_text(this_line,
+                                        width=width,
+                                        prefix=prefix+indent)
         if powersource[4] > 0:
             if powersource[4] == 1:
-                psText += "\n\n" + str(powersource[4]) + " Yellow Ability from:"
+                psText += "\n" * breaks + split_text(str(powersource[4]) + " Yellow Ability from:",
+                                                     width=width,
+                                                     prefix=prefix)
             else:
-                psText += "\n\n" + str(powersource[4]) + " Yellow Abilities from:"
+                psText += "\n" * breaks + split_text(str(powersource[4]) + \
+                                                     " Yellow Abilities from:",
+                                                     width=width,
+                                                     prefix=prefix)
             for ability in powersource[5]:
-                psText += "\n" + ability.details(width=width)
+                psText += "\n" + ability.details(width=width,
+                                                 prefix=prefix+indent,
+                                                 indented=indented)
         if powersource[6] > 0:
             if powersource[6] == 1:
-                psText += "\n\n" + str(powersource[6]) + " Green Ability from:"
+                psText += "\n" * breaks + split_text(str(powersource[6]) + " Green Ability from:",
+                                                     width=width,
+                                                     prefix=prefix)
             else:
-                psText += "\n\n" + str(powersource[6]) + " Green Abilities from:"
+                psText += "\n" * breaks + split_text(str(powersource[6]) + \
+                                                     " Green Abilities from:",
+                                                     width=width,
+                                                     prefix=prefix)
             for ability in powersource[7]:
-                psText += "\n" + ability.details(width=width)
+                psText += "\n" + ability.details(width=width,
+                                                 prefix=prefix+indent,
+                                                 indented=indented)
         if powersource[8] > 0:
-            psText += "\n\n" + ps_special[powersource[8]]
-        psText += "\n\n" + "Archetype Dice: " + str(powersource[9])
+            psText += "\n" * breaks + split_text(ps_special[powersource[8]],
+                                                 width=width,
+                                                 prefix=prefix)
+        psText += "\n" * breaks + split_text("Archetype Dice: " + str(powersource[9]),
+                                             width=width,
+                                             prefix=prefix)
         return psText
     else:
-        return "Invalid Power Source index: " + str(index)
+        return split_text("Invalid Power Source index: " + str(index),
+                          width=width,
+                          prefix=prefix)
 
-def MinionFormStr(min_form):
-    return min_form[0] + " (requires +" + str(min_form[2]) + " or higher): " + min_form[1]
-
-def DisplayTransitionMethod(index, prefix="", width=100):
-    indent = "    "
-    transition = tr_collection[index]
-    print(prefix + transition[0])
-    printlong(transition[1], width-len(indent), prefix=prefix+indent)
-    if len(transition[2]) > 1:
-        print(prefix + indent + "Optional Green Abilities:")
+def MinionFormStr(index,
+                  width=100,
+                  prefix="",
+                  breaks=0):
+    if index in range(len(min_collection)):
+        buff = min_collection[index]
+        minText = buff[0] + " (requires +" + str(buff[2]) + " or higher): "
+        minText += "\n" * breaks + buff[1]
+        minText = split_text(minText,
+                             width=width,
+                             prefix=prefix)
+        return minText
     else:
-        print(prefix + indent + "Required Green Ability:")
-    for i in range(len(transition[2])):
-        transition[2][i].display(prefix+indent+indent,width=width-len(indent+indent))
+        return split_text("Invalid minion form index: " + str(index),
+                          width=width,
+                          prefix=prefix)
 
-def TransitionDetails(index, width=50):
+def DisplayTransitionMethod(index,
+                            width=100,
+                            prefix="",
+                            indented=True,
+                            hanging=False):
+    print(TransitionDetails(index,
+                            width=width,
+                            prefix=prefix,
+                            indented=indented,
+                            hanging=hanging))
+
+def TransitionDetails(index,
+                      width=100,
+                      prefix="",
+                      indented=True,
+                      hanging=False):
     if index in range(len(tr_collection)):
-        transition = tr_collection[index]
-        trText = split_text(transition[0] + ": " + transition[1], width=width)
-        if len(transition[2]) > 1:
-            trText += "\n" + "Optional Green Abilities:"
+        if indented:
+            indent = "    "
         else:
-            trText += "\n" + "Required Green Ability:"
+            indent = ""
+        transition = tr_collection[index]
+        trText = split_text(transition[0] + ": " + transition[1],
+                            width=width,
+                            prefix=prefix)
+        if hanging:
+            prefix += "    "
+        if len(transition[2]) > 1:
+            trText += "\n" + split_text("Optional Green Abilities:",
+                                        width=width,
+                                        prefix=prefix)
+        else:
+            trText += "\n" + split_text("Required Green Ability:",
+                                        width=width,
+                                        prefix=prefix)
         for i in range(len(transition[2])):
-            trText += "\n" + transition[2][i].details(width=width)
+            trText += "\n" + transition[2][i].details(width=width,
+                                                      prefix=prefix+indent,
+                                                      indented=indented)
         return trText
     else:
-        return "Invalid transition index: " + str(index)
+        return split_text("Invalid transition index: " + str(index),
+                          width=width,
+                          prefix=prefix)
 
-def DisplayModeTemplate(zone, index, prefix="", width=100):
-    indent = "    "
-    mode = []
-    if zone in [-1,3]:
-        mode = mt_powerless
-        zone = 0
-    else:
-        mode = mc_zones[zone][index]
-    print(prefix + mode[0] + " [" + status_zones[zone] + "]:")
-    for d in legal_dice:
-        matching_dice = [size for size in mode[2] if size==d]
-        if len(matching_dice) == 1:
-            print(prefix + indent + str(len(matching_dice)) + " Power at d" + str(d))
-        elif len(matching_dice) > 1:
-            print(prefix + indent + str(len(matching_dice)) + " Powers at d" + str(d))
-    for modifier in range(-2, 3):
-        mod_text = str(modifier)
-        if modifier >=0:
-            mod_text = "+" + mod_text
-        if abs(modifier) == 1:
-            mod_text += " die size"
-        else:
-            mod_text += " die sizes"
-        matching_mods = [m for m in mode[3] if m==modifier]
-        if len(matching_mods) == 1:
-            print(prefix + indent + str(len(matching_mods)) + " Power at " + mod_text)
-        elif len(matching_mods) > 1:
-            print(prefix + indent + str(len(matching_mods)) + " Powers at " + mod_text)
-    if len(mode[4]) > 0:
-        prohibited_text = mode[4][0]
-        for i in range(1, len(mode[4])-1):
-            prohibited_text += ", " + mode[4][i]
-        if len(mode[4]) > 2:
-            prohibited_text += ","
-        if len(mode[4]) > 1:
-            prohibited_text += " or " + mode[4][len(mode[4])-1]
-        print(prefix + indent + "You cannot " + prohibited_text + " while in this mode.")
-    if mode[5]:
-        print(prefix + indent + "You gain access to this Ability:")
-        pref = prefix
-        mode[5].display(prefix=pref+indent+indent,width=width-len(indent+indent))
+def DisplayModeTemplate(zone,
+                        index,
+                        width=100,
+                        prefix="",
+                        indented=True,
+                        hanging=False):
+    print(ModeTemplateDetails(zone,
+                              index,
+                              width=width,
+                              prefix=prefix,
+                              indented=indented,
+                              hanging=hanging))
 
-def ModeTemplateDetails(zone, index, width=100):
+def ModeTemplateDetails(zone,
+                        index,
+                        width=100,
+                        prefix="",
+                        indented=True,
+                        hanging=False):
     mode = []
     if zone in [-1,3]:
         mode = mt_powerless
         zone = 0
     elif zone not in range(len(status_zones)):
-        return "Invalid zone index: " + str(zone)
+        return split_text("Invalid zone index: " + str(zone),
+                          width=width,
+                          prefix=prefix)
     elif index not in range(len(mc_zones[zone])):
-        return "Invalid mode index for " + status_zones[zone] + " zone: " + str(index)
+        return split_text("Invalid mode index for " + status_zones[zone] + " zone: " + str(index),
+                          width=width,
+                          prefix=prefix)
     else:
         mode = mc_zones[zone][index]
-    modeText = mode[0] + " [" + status_zones[zone] + "]:"
+    if indented:
+        indent = "    "
+    else:
+        indent = ""
+    modeText = split_text(mode[0] + " [" + status_zones[zone] + "]:",
+                          width=width,
+                          prefix=prefix)
+    if hanging:
+        prefix += "    "
     for d in legal_dice:
         matching_dice = [size for size in mode[2] if size==d]
         if len(matching_dice) == 1:
-            modeText += "\n" + str(len(matching_dice)) + " Power at d" + str(d)
+            modeText += "\n" + split_text(str(len(matching_dice)) + " Power at d" + str(d),
+                                          width=width,
+                                          prefix=prefix)
         elif len(matching_dice) > 1:
-            modeText += "\n" + str(len(matching_dice)) + " Powers at d" + str(d)
+            modeText += "\n" + split_text(str(len(matching_dice)) + " Powers at d" + str(d),
+                                          width=width,
+                                          prefix=prefix)
     for modifier in range(-2, 3):
         mod_text = str(modifier)
         if modifier >=0:
@@ -5660,9 +5878,13 @@ def ModeTemplateDetails(zone, index, width=100):
             mod_text += " die sizes"
         matching_mods = [m for m in mode[3] if m==modifier]
         if len(matching_mods) == 1:
-            modeText += "\n" + str(len(matching_mods)) + " Power at " + mod_text
+            modeText += "\n" + split_text(str(len(matching_mods)) + " Power at " + mod_text,
+                                          width=width,
+                                          prefix=prefix)
         elif len(matching_mods) > 1:
-            modeText += "\n" + str(len(matching_mods)) + " Powers at " + mod_text
+            modeText += "\n" + split_text(str(len(matching_mods)) + " Powers at " + mod_text,
+                                          width=width,
+                                          prefix=prefix)
     if len(mode[4]) > 0:
         prohibited_text = mode[4][0]
         for i in range(1, len(mode[4])-1):
@@ -5671,265 +5893,166 @@ def ModeTemplateDetails(zone, index, width=100):
             prohibited_text += ","
         if len(mode[4]) > 1:
             prohibited_text += " or " + mode[4][len(mode[4])-1]
-        modeText += "\n" + "You cannot " + prohibited_text + " while in this mode."
+        modeText += "\n" + split_text("You cannot " + prohibited_text + " while in this mode.",
+                                      width=width,
+                                      prefix=prefix)
     if mode[5]:
-        modeText += "\n" + "You gain access to this Ability:"
-        modeText += "\n" + mode[5].details(width=width)
+        modeText += "\n" + split_text("You gain access to this Ability:",
+                                      width=width,
+                                      prefix=prefix)
+        modeText += "\n" + mode[5].details(width=width,
+                                           prefix=prefix+indent,
+                                           indented=indented)
     return modeText
         
-def DisplayArchetype(index, prefix="", width=100):
-    if index in range(len(arc_collection)):
-        pref = prefix
-        indent = "    "
-        archetype = arc_collection[index]
-        printlong(archetype[0] + ": " + archetype[1], width, prefix=pref)
-        if index in range(18):
-            # A normal standalone archetype
-            # Display the primary power(s)/quality(ies) from archetype[2]
-            pcat = DieCategory(archetype[2])
-            if len(archetype[2])==1:
-                print(prefix + indent + "Primary " + categories_singular[pcat] + ": " + \
-                      MixedPQ(archetype[2][0]))
-            elif len(archetype[2])>1:
-                print(prefix + indent + "Primary " + categories_plural[pcat] + " (choose 1):")
-                primary_choices = archetype[2]
-                col_num = 4
-                columns = [0] * col_num
-                for c in range(len(columns)):
-                    if c in range(len(primary_choices)):
-                        columns[c] = max([len(MixedPQ(primary_choices[i]))+2 \
-                                          for i in range(len(primary_choices)) if i%col_num == c])
-                for i in range(len(primary_choices)):
-                    pq_text = MixedPQ(primary_choices[i])
-                    while len(pq_text) < columns[i%col_num]:
-                        pq_text += " "
-                    if i%col_num == 0:
-                        print(prefix + "        ", end="")
-                    if i%col_num == col_num-1 or i == len(primary_choices)-1:
-                        print(pq_text)
-                    else:
-                        print(pq_text, end="")
-            if archetype[3] > 0:
-                alternatives = ["", "skip it or choose another", "skip it or swap in a new die"]
-                print(prefix + indent + "(If already present: " + alternatives[archetype[3]] + ")")
-            # Display the secondary power(s)/quality(ies) from archetype[5]
-            secondary_count = "1"
-            if archetype[4] > 1:
-                secondary_count = "1 or more"
-            if archetype[4] > 0:
-                print(prefix + indent + "Required Powers/Qualities (choose " + secondary_count + \
-                      "):")
-                secondary_choices = archetype[5]
-                col_num = 4
-                columns = [0] * col_num
-                for c in range(len(columns)):
-                    if c in range(len(secondary_choices)):
-                        columns[c] = max([len(MixedPQ(secondary_choices[i]))+2 \
-                                          for i in range(len(secondary_choices)) if i%col_num == c])
-                for i in range(len(secondary_choices)):
-                    pq_text = MixedPQ(secondary_choices[i])
-                    while len(pq_text) < columns[i%col_num]:
-                        pq_text += " "
-                    if i%col_num == 0:
-                        print(prefix + indent + indent, end="")
-                    if i%col_num == col_num-1 or i == len(secondary_choices)-1:
-                        print(pq_text)
-                    else:
-                        print(pq_text, end="")
-            # Display the tertiary power(s)/quality(ies) from archetype[6]
-            if len(archetype[6]) > 0:
-                print(prefix + indent + "Optional Powers/Qualities:")
-                tertiary_choices = archetype[6]
-                col_num = 4
-                columns = [0] * col_num
-                for c in range(len(columns)):
-                    columns[c] = max([len(MixedPQ(tertiary_choices[i]))+2 \
-                                      for i in range(len(tertiary_choices)) if i%col_num == c])
-                for i in range(len(tertiary_choices)):
-                    pq_text = MixedPQ(tertiary_choices[i])
-                    while len(pq_text) < columns[i%col_num]:
-                        pq_text += " "
-                    if i%col_num == 0:
-                        print(prefix + indent + indent, end="")
-                    if i%col_num == col_num-1 or i == len(tertiary_choices)-1:
-                        print(pq_text)
-                    else:
-                        print(pq_text, end="")
-            # Display the mandatory Abilities from archetype[7]
-            if len(archetype[7]) > 0:
-                if len(archetype[7]) == 1:
-                    print(prefix + indent + "Required Ability:")
-                else:
-                    print(prefix + indent + "Required Abilities:")
-                for ability in archetype[7]:
-                    ability.display(prefix=pref+indent+indent,width=width-len(indent+indent))
-            # If applicable, display the Green/Yellow Abilities from archetype[12]
-            # Otherwise, display Green Abilities from archetype[10] and Yellow Abilities from
-            #  archetype[11] separately
-            green_text = "Green Ability"
-            yellow_text = "Yellow Ability"
-            if archetype[8] > 1:
-                green_text = "Green Abilities"
-                green_restrictions = ""
-                if archetype[15] >= archetype[8]:
-                    green_restrictions = "each using a different Power/Quality"
-                elif archetype[15] > 0:
-                    green_restrictions = "using at least " + str(archetype[15]) + \
-                                         " different Powers/Qualities"
-                if archetype[17]:
-                    if len(green_restrictions) == 0:
-                        green_restrictions = "using only Powers/Qualities from the " + \
-                                             archetype[0] + " lists"
-                    else:
-                        green_restrictions += " from the " + \
-                                              archetype[0] + " lists"
-                if len(green_restrictions) > 0:
-                    green_text += ", " + green_restrictions + ","
-            if archetype[9] > 1:
-                yellow_text = "Yellow Abilities"
-                if archetype[16] >= archetype[9]:
-                    yellow_text += ", each using a different Power/Quality,"
-            # Prepare restrictions on Green Abilities from archetype[13] and archetype[14], if
-            #  applicable
-            # If Green and Yellow Abilities are separate, this is displayed after Green; otherwise,
-            #  after both
-            gcat = "Power/Quality"
-            gtext = ""
-            ptext = "the Primary " + categories_singular[pcat]
-            if len(archetype[2])==1:
-                ptext = MixedPQ(archetype[2][0])
-            if archetype[14] >= 0:
-                gcat = categories_singular[archetype[14]]
-                gtext = "1 Green Ability uses " + ptext + \
-                        "; another uses a " + gcat
-            elif archetype[13]:
-                gtext = "1 Green Ability uses " + ptext
-            if len(gtext) > 0:
-                gtext = "(" + gtext + ")"
-            if len(archetype[12]) > 0:
-                printlong(str(archetype[8]) + " " + green_text + " and " + \
-                          str(archetype[9]) + " " + yellow_text + " from:",
-                          prefix=prefix+indent,
-                          width=width-len(indent))
-                for ability in archetype[12]:
-                    ability.display(prefix=pref+indent+indent,width=width-len(indent+indent))
-                if len(gtext) > 0:
-                    print(prefix + indent + gtext)
-            else:
-                if archetype[8] > 0:
-                    print(prefix + indent + str(archetype[8]) + " " + green_text + " from:")
-                    for ability in archetype[10]:
-                        ability.display(prefix=pref+indent+indent,width=width-len(indent+indent))
-                    if len(gtext) > 0:
-                        print(prefix + indent + gtext)
-                if archetype[9] > 0:
-                    print(prefix + indent + str(archetype[9]) + " " + yellow_text + " from:")
-                    for ability in archetype[11]:
-                        ability.display(prefix=pref+indent+indent,width=width-len(indent+indent))
-            # Display the Principle category from archetype[18]
-            print(prefix + indent + rc_names[archetype[18]] + " Principle")
-            # Display bonus effects, if applicable
-            if archetype[19] > 0:
-                printlong(arc_special[archetype[19]],prefix=pref+indent,width=width-len(indent))
-        elif index == 18:
-            # Divided
-            # Bonus effects first- they indicate that this is a complex Archetype that needs a
-            #  simple one underneath
-            printlong(arc_special[archetype[19]],prefix=pref+indent,width=width-len(indent))
-            # Display the Transition Types and their associated Green Abilities.
-            print(prefix + indent + "Transition Types (choose 1):")
-            for i in range(len(tr_collection)):
-                DisplayTransitionMethod(i, prefix=pref+indent+indent, width=width-len(indent+indent))
-            # Display the Build Options and the Green Ability associated with Split Form.
-            build_options = [a_divided_psyche, a_split_form]
-            print(prefix + indent + "Divided Nature (choose 1):")
-            for i in range(len(build_options)):
-                build_options[i].display(prefix=pref+indent+indent, width=width-len(indent+indent))
-            # Display the Principle category from archetype[18]
-            print(prefix + indent + rc_names[archetype[18]] + " Principle")
-        elif index == 19:
-            # Modular
-            # Bonus effects first- they indicate that this is a complex Archetype that needs a
-            #  simple one underneath
-            printlong(arc_special[archetype[19]],prefix=pref+indent,width=width-len(indent))
-            # Display the mandatory Abilities from archetype[7]
-            if len(archetype[7]) > 0:
-                if len(archetype[7]) == 1:
-                    print(prefix + indent + "Required Ability:")
-                else:
-                    print(prefix + indent + "Required Abilities:")
-                for ability in archetype[7]:
-                    ability.display(prefix=pref+indent+indent,width=width-len(indent+indent))
-            print(prefix + indent + "Optional Mode:")
-            DisplayModeTemplate(3,
-                                0,
-                                prefix=prefix+indent+indent,
-                                width=width-len(indent+indent))
-            mode_counts = [1, 2, 1]
-            for z in range(3):
-                print(prefix + indent + status_zones[z] + " Modes (choose " + \
-                      str(mode_counts[z]) + "):")
-                for i in range(len(mc_zones[z])):
-                    DisplayModeTemplate(z,
-                                        i,
-                                        prefix=prefix+indent+indent,
-                                        width=width-len(indent+indent))
+def DisplayArchetype(index,
+                     width=100,
+                     prefix="",
+                     indented=True,
+                     breaks=1,
+                     grid=True,
+                     hanging=False):
+    print(ArchetypeDetails(index,
+                           width=width,
+                           prefix=prefix,
+                           indented=indented,
+                           breaks=breaks,
+                           grid=grid,
+                           hanging=hanging))
 
-def ArchetypeDetails(index, width=100):
+def ArchetypeDetails(index,
+                     width=100,
+                     prefix="",
+                     indented=False,
+                     breaks=2,
+                     grid=False,
+                     hanging=False):
     if index in range(len(arc_collection)):
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         archetype = arc_collection[index]
         arcText = ""
-        arcText += split_text(archetype[0] + ": " + archetype[1], width=width)
+        arcText += split_text(archetype[0] + ": " + archetype[1],
+                              width=width,
+                              prefix=prefix)
+        if hanging:
+            prefix += "    "
         if index in range(18):
             # A normal standalone archetype
-            # Display the primary power(s)/quality(ies) from archetype[2]
+            # Include the primary power(s)/quality(ies) from archetype[2]
             pcat = DieCategory(archetype[2])
             if len(archetype[2])==1:
-                arcText += "\n\nPrimary " + categories_singular[pcat] + ": " + \
-                      MixedPQ(archetype[2][0])
+                arcText += "\n" * breaks + split_text("Primary " + categories_singular[pcat] + \
+                                                      ": " + MixedPQ(archetype[2][0]),
+                                                      width=width,
+                                                      prefix=prefix)
             elif len(archetype[2])>1:
-                arcText += "\n\nPrimary " + categories_plural[pcat] + " (choose 1):"
+                arcText += "\n" * breaks + split_text("Primary " + categories_plural[pcat] + \
+                                                      " (choose 1):",
+                                                      width=width,
+                                                      prefix=prefix)
                 primary_choices = archetype[2]
-                this_line = ""
-                for i in range(len(primary_choices)):
-                    this_line += MixedPQ(primary_choices[i])
-                    if i < len(primary_choices) - 1:
-                        this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
+                if grid:
+                    # Include primary choices spaced in equal columns
+                    maxWidth = 2 + max([len(x) for x in MixedPQs(primary_choices)])
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
+                    for i in range(len(primary_choices)):
+                        pqText = MixedPQ(primary_choices[i])
+                        while len(pqText) < maxWidth:
+                            pqText += " "
+                        if i%numCols == 0:
+                            arcText += "\n" + prefix + indent
+                        arcText += pqText
+                else:
+                    # Include primary choices as a simple list
+                    this_line = ""
+                    for i in range(len(primary_choices)):
+                        this_line += MixedPQ(primary_choices[i])
+                        if i < len(primary_choices) - 1:
+                            this_line += ", "
+                    arcText += "\n" + split_text(this_line,
+                                                 width=width,
+                                                 prefix=prefix+indent)
             if archetype[3] > 0:
                 alternatives = ["", "skip it or choose another", "skip it or swap in a new die"]
-                arcText += "\n(If already present: " + alternatives[archetype[3]] + ")"
-            # Display the secondary power(s)/quality(ies) from archetype[5]
+                arcText += "\n" + split_text("(If already present: " + \
+                                             alternatives[archetype[3]] + ")",
+                                             width=width,
+                                             prefix=prefix)
+            # Include the secondary power(s)/quality(ies) from archetype[5]
             secondary_count = "1"
             if archetype[4] > 1:
                 secondary_count = "1 or more"
             if archetype[4] > 0:
-                arcText += "\n\nRequired Powers/Qualities (choose " + secondary_count + "):"
+                arcText += "\n" * breaks + split_text("Required Powers/Qualities (choose " + \
+                                                      secondary_count + "):",
+                                                      width=width,
+                                                      prefix=prefix)
                 secondary_choices = archetype[5]
-                this_line = ""
-                for i in range(len(secondary_choices)):
-                    this_line += MixedPQ(secondary_choices[i])
-                    if i < len(secondary_choices) - 1:
-                        this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
-            # Display the tertiary power(s)/quality(ies) from archetype[6]
+                if grid:
+                    # Include secondary choices spaced in equal columns
+                    maxWidth = 2 + max([len(x) for x in MixedPQs(secondary_choices)])
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
+                    for i in range(len(secondary_choices)):
+                        pqText = MixedPQ(secondary_choices[i])
+                        while len(pqText) < maxWidth:
+                            pqText += " "
+                        if i%numCols == 0:
+                            arcText += "\n" + prefix + indent
+                        arcText += pqText
+                else:
+                    # Include secondary choices as a simple list
+                    this_line = ""
+                    for i in range(len(secondary_choices)):
+                        this_line += MixedPQ(secondary_choices[i])
+                        if i < len(secondary_choices) - 1:
+                            this_line += ", "
+                    arcText += "\n" + split_text(this_line,
+                                                 width=width,
+                                                 prefix=prefix+indent)
+            # Include the tertiary power(s)/quality(ies) from archetype[6]
             if len(archetype[6]) > 0:
-                arcText += "\n\nOptional Powers/Qualities:"
+                arcText += "\n" * breaks + split_text("Optional Powers/Qualities:",
+                                                      width=width,
+                                                      prefix=prefix)
                 tertiary_choices = archetype[6]
-                this_line = ""
-                for i in range(len(tertiary_choices)):
-                    this_line += MixedPQ(tertiary_choices[i])
-                    if i < len(tertiary_choices) - 1:
-                        this_line += ", "
-                arcText += "\n" + split_text(this_line, width=width, prefix="  ")
-            # Display the mandatory Abilities from archetype[7]
+                if grid:
+                    # Include tertiary choices spaced in equal columns
+                    maxWidth = 2 + max([len(x) for x in MixedPQs(tertiary_choices)])
+                    numCols = math.floor((width-len(prefix+indent))/maxWidth)
+                    for i in range(len(tertiary_choices)):
+                        pqText = MixedPQ(tertiary_choices[i])
+                        while len(pqText) < maxWidth:
+                            pqText += " "
+                        if i%numCols == 0:
+                            arcText += "\n" + prefix + indent
+                        arcText += pqText
+                else:
+                    # Include tertiary choices as a simple list
+                    this_line = ""
+                    for i in range(len(tertiary_choices)):
+                        this_line += MixedPQ(tertiary_choices[i])
+                        if i < len(tertiary_choices) - 1:
+                            this_line += ", "
+                    arcText += "\n" + split_text(this_line,
+                                                 width=width,
+                                                 prefix=prefix+indent)
+            # Include the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
-                    arcText += "\n\nRequired Ability:"
+                    arcText += "\n" * breaks + split_text("Required Ability:",
+                                                          width=width,
+                                                          prefix=prefix)
                 else:
-                    arcText += "\n\nRequired Abilities:"
+                    arcText += "\n" * breaks + split_text("Required Abilities:",
+                                                          width=width,
+                                                          prefix=prefix)
                 for ability in archetype[7]:
-                    arcText += "\n" + ability.details(width=width)
+                    arcText += "\n" + ability.details(width=width,
+                                                      prefix=prefix+indent,
+                                                      indented=indented)
             green_text = "Green Ability"
             yellow_text = "Yellow Ability"
             if archetype[8] > 1:
@@ -5964,98 +6087,157 @@ def ArchetypeDetails(index, width=100):
                 ptext = MixedPQ(archetype[2][0])
             if archetype[14] >= 0:
                 gcat = categories_singular[archetype[14]]
-                gtext = "  (1 Green Ability uses " + ptext + "; another uses a " + gcat + ")"
+                gtext = "(1 Green Ability uses " + ptext + "; another uses a " + gcat + ")"
             elif archetype[13]:
-                gtext = "  (1 Green Ability uses " + ptext + ")"
+                gtext = "(1 Green Ability uses " + ptext + ")"
             if len(archetype[12]) > 0:
                 # Green and Yellow Abilities are listed together
                 # Add list of Green/Yellow Abilities from archetype[12], then add Green
                 #  restrictions if present
-                arcText += "\n\n" + split_text(str(archetype[8]) + " " + green_text + " and " + \
-                                               str(archetype[9]) + " " + yellow_text + " from:",
-                                               width=width)
+                arcText += "\n" * breaks + split_text(str(archetype[8]) + " " + green_text + \
+                                                      " and " + str(archetype[9]) + " " + \
+                                                      yellow_text + " from:",
+                                                      width=width,
+                                                      prefix=prefix)
                 for ability in archetype[12]:
-                    arcText += "\n" + ability.details(width=width)
+                    arcText += "\n" + ability.details(width=width,
+                                                      prefix=prefix+indent,
+                                                      indented=indented)
                 if len(gtext) > 0:
-                    arcText += "\n" + gtext
+                    arcText += "\n" + split_text(gtext,
+                                                 width=width,
+                                                 prefix=prefix)
             else:
                 # Green and Yellow Abilities are listed separately
                 # Add list of Green Abilities from archetype[10], then add Green restrictions if
                 #  present, then add list of Yellow Abilities from archetype[11]
                 if archetype[8] > 0:
-                    arcText += "\n\n" + split_text(str(archetype[8]) + " " + green_text + " from:",
-                                                   width=width)
+                    arcText += "\n" * breaks + split_text(str(archetype[8]) + " " + green_text + \
+                                                          " from:",
+                                                          width=width,
+                                                          prefix=prefix)
                     for ability in archetype[10]:
-                        arcText += "\n" + ability.details(width=width)
+                        arcText += "\n" + ability.details(width=width,
+                                                          prefix=prefix+indent,
+                                                          indented=indented)
                     if len(gtext) > 0:
-                        arcText += "\n" + gtext
+                        arcText += "\n" + split_text(gtext,
+                                                     width=width,
+                                                     prefix=prefix)
                 if archetype[9] > 0:
-                    arcText += "\n\n" + split_text(str(archetype[9]) + " " + yellow_text + " from:",
-                                                   width=width)
+                    arcText += "\n" * breaks + split_text(str(archetype[9]) + " " + yellow_text + \
+                                                          " from:",
+                                                          width=width,
+                                                          prefix=prefix)
                     for ability in archetype[11]:
-                        arcText += "\n" + ability.details(width=width)
+                        arcText += "\n" + ability.details(width=width,
+                                                          prefix=prefix+indent,
+                                                          indented=indented)
             # Add Principle category from archetype[18]
-            arcText += "\n\n" + rc_names[archetype[18]] + " Principle"
+            arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
+                                                  width=width,
+                                                  prefix=prefix)
             # Add bonus effects, if applicable
             if archetype[19] > 0:
-                arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
+                arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+                                                      width=width,
+                                                      prefix=prefix)
         elif index == 18:
             # Divided
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
-            # Display the Transition Types and their associated Green Abilities.
-            arcText += "\n\n" + "Transition Types (choose 1):"
-            # ...
+            arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+                                                  width=width,
+                                                  prefix=prefix)
+            # Include the Transition Types and their associated Green Abilities.
+            arcText += "\n" * breaks + split_text("Transition Types (choose 1):",
+                                                  width=width,
+                                                  prefix=prefix)
             for i in range(len(tr_collection)):
-                arcText += "\n" + TransitionDetails(i, width=width) + "\n"
-            # Display the Build Options and the Green Ability associated with Split Form.
+                arcText += "\n" + TransitionDetails(i,
+                                                    width=width,
+                                                    prefix=prefix+indent,
+                                                    indented=indented,
+                                                    hanging=hanging)
+            # Include the Build Options and the Green Ability associated with Split Form.
             build_options = [a_divided_psyche, a_split_form]
-            arcText += "\n" + "Divided Nature (choose 1):"
+            arcText += "\n" * breaks + split_text("Divided Nature (choose 1):",
+                                                  width=width,
+                                                  prefix=prefix)
             for i in range(len(build_options)):
-                arcText += "\n" + build_options[i].details(width=width)
-            # Display the Principle category from archetype[18]
-            arcText += "\n\n" + rc_names[archetype[18]] + " Principle"
+                arcText += "\n" + build_options[i].details(width=width,
+                                                           prefix=prefix+indent)
+            # Include the Principle category from archetype[18]
+            arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
+                                                  width=width,
+                                                  prefix=prefix)
         elif index == 19:
             # Modular
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n\n" + split_text(arc_special[archetype[19]], width=width)
-            # Display the mandatory Abilities from archetype[7]
+            arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+                                                  width=width,
+                                                  prefix=prefix)
+            # Include the mandatory Abilities from archetype[7]
             if len(archetype[7]) > 0:
                 if len(archetype[7]) == 1:
-                    arcText += "\n\n" + "Required Ability:"
+                    arcText += "\n" * breaks + split_text("Required Ability:",
+                                                          width=width,
+                                                          prefix=prefix)
                 else:
-                    arcText += "\n\n" + "Required Abilities:"
+                    arcText += "\n" * breaks + split_text("Required Abilities:",
+                                                          width=width,
+                                                          prefix=prefix)
                 for ability in archetype[7]:
-                    arcText += "\n" + ability.details(width=width)
-##            arcText += "\n\n" + "Optional Mode:"
-##            arcText += "\n" + ModeTemplateDetails(3, 0, width=width)
-##            mode_counts = [1, 2, 1]
-##            for z in range(3):
-##                arcText += "\n\n" + status_zones[z] + " Modes (choose " + str(mode_counts[z]) + \
-##                           "):"
-##                for i in range(len(mc_zones[z])):
-##                    arcText += "\n" + ModeTemplateDetails(z,i)
+                    arcText += "\n" + ability.details(width=width,
+                                                      prefix=prefix+indent,
+                                                      indented=indented)
         return arcText
 
-def DisplayPersonality(index, prefix="", width=100):
+def DisplayPersonality(index,
+                       width=100,
+                       prefix="",
+                       indented=True,
+                       breaks=1,
+                       hanging=False):
     # Display the attributes of the Personality specified by index.
-    indent = "    "
-    personality = pn_collection[index]
-    print(prefix + personality[0])
-    print(prefix + indent + "Status Dice: " + str(personality[1]))
-    personality[2].display(prefix=prefix+indent, width=width-len(indent))
-    if personality[3] > 0:
-        print(prefix + indent + "Bonus: " + pn_special[personality[3]])
+    print(PersonalityDetails(index,
+                             width=width,
+                             prefix=prefix,
+                             indented=indented,
+                             breaks=breaks,
+                             hanging=hanging))
 
-def PersonalityDetails(index, width=100):
+def PersonalityDetails(index,
+                       width=100,
+                       prefix="",
+                       indented=False,
+                       breaks=2,
+                       hanging=False):
+    if indented:
+        indent = "    "
+    else:
+        indent = ""
     personality = pn_collection[index]
-    pnText = "" + personality[0]
-    pnText += "\n" + split_text("Status Dice: " + str(personality[1]), width=width)
-    pnText += "\n" + personality[2].details(width=width)
+    # Name
+    pnText = split_text(personality[0],
+                        width=width,
+                        prefix=prefix)
+    if hanging:
+        prefix += "    "
+    # Status Dice
+    pnText += "\n" * breaks + split_text("Status Dice: " + str(personality[1]),
+                                         width=width,
+                                         prefix=prefix)
+    # Out Ability
+    pnText += "\n" * breaks + personality[2].details(width=width,
+                                                     prefix=prefix,
+                                                     indented=indented)
+    # Bonus content
     if personality[3] > 0:
-        pnText += "\n" + split_text("Bonus: " + pn_special[personality[3]], width=width)
+        pnText += "\n" * breaks + split_text("Bonus: " + pn_special[personality[3]],
+                                             width=width,
+                                             prefix=prefix)
     return pnText
 
 class Hero:
@@ -6081,6 +6263,7 @@ class Hero:
         self.mf_step = 0
         self.personality = 99
         self.dv_personality = 99
+        self.dv_status = [0, 0, 0]
         self.used_retcon = False
         self.principles = []
         self.abilities = []
@@ -6114,12 +6297,23 @@ class Hero:
         # title: a string to display in the title bar of the SelectWindow, if there is one
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [index of user's response, any remaining inputs]
+        notePrefix = "### ChooseIndex: "
         if len(inputs) > 0:
-            print("### choose_index: inputs=" + str(inputs))
-        # If we have a GUI and no text inputs, create a SelectWindow to ask the question
-        # Otherwise, use the text shell
+            print(notePrefix + "inputs=" + str(inputs))
         if self.UseGUI(inputs):
-            print("Using SelectWindow")
+            if len(print_options) == 2:
+                if "Yes" in print_options:
+                    if "No" in print_options:
+                        # Exactly 2 options, one of which is Yes and the other is No, and this hero
+                        #  has an associated GUI? Use a messagebox to give the user a Yes button
+                        #  and a No button side-by-side
+                        msg_prompt = prompt.replace(" (y/n)","")
+                        if messagebox.askyesno(title, msg_prompt):
+                            return [print_options.index("Yes"), inputs]
+                        else:
+                            return [print_options.index("No"), inputs]
+            # A more complicated question with a GUI available and no text inputs? Use a
+            #  SelectWindow to give the user a list of options to pick from
             answer = IntVar()
             question = SelectWindow(self.myWindow,
                                     prompt=prompt,
@@ -6130,42 +6324,73 @@ class Hero:
                                     buffer=buffer)
             return [answer.get(), inputs]
         else:
+            # There's no GUI for this hero, or the user's inputs have been specified ahead of time?
+            #  Use the CLI to get the answer
             indent = "    "
+            dispWidth = 100
             entry_options = string.ascii_uppercase[0:len(print_options)]
             entry_choice = ' '
             if len(prompt) > 0:
-                print(prompt)
+                # Display the prompt to the user
+                print(split_text(prompt,
+                                 width=dispWidth))
             for i in range(len(print_options)):
+                # Display each of print_options with its associated letter key
                 print(indent + entry_options[i] + ": " + print_options[i])
             if len(inputs) > 0:
-                print("> " + str(inputs[0]))
+                # If a text input was specified ahead of time, display that and use it as the
+                #  initial entry
+                print("> " + inputs[0])
                 entry_choice = inputs.pop(0)[0].upper()
             else:
-                entry_choice = input()[0].upper()
+                # If not, wait for the user to enter something and use their input as the initial
+                #  entry
+                line_prompt = ""
+                if track_inputs:
+                    line_prompt = "> "
+                entry_choice = input(line_prompt)[0].upper()
             while entry_choice not in entry_options:
+                # As long as the current entry doesn't match any of the options, display the
+                #  "try again" message...
+                print(split_text(repeat_message,
+                                 width=dispWidth))
                 if len(inputs) > 0:
-                    print(repeat_message)
-                    print("> " + str(inputs[0]))
+                    # If a text input was specified ahead of time, display that input, and use it
+                    #  as the next entry
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
-                    entry_choice = input(repeat_message + "\n")[0].upper()
+                    # If not, use the user's input as the next entry
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0].upper()
+            # Now that the latest entry matches one of the options, use find() to determine which
+            #  one.
             entry_index = entry_options.find(entry_choice)
+            # The resulting index goes in our return value, along with any remaining prepared
+            #  inputs.
             return [entry_index, inputs]
     def EnterText(self,
                   prompt="",
                   title="Hero Creation",
                   default="",
+                  width=100,
                   inputs=[]):
         # Prints a prompt for the user to enter a line of text.
         # title: a string to display in the title bar of the EntryWindow, if there is one
+        # default: a string to initially display in the Entry widget, if there is one
+        # width: max width of a line when displaying the prompt as text
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [user's response, any remaining inputs]
+        notePrefix = "### EnterText: "
         if len(inputs) > 0:
-            print("### EnterText: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_line = ""
         if len(inputs) > 0:
-            print(prompt)
-            print("> " + str(inputs[0]))
+            print(split_text(prompt,
+                             width=width))
+            print("> " + inputs[0])
             entry_line = inputs.pop(0)
         elif self.UseGUI(inputs):
             # If we have a GUI and no prepared inputs, create an EntryWindow to get text from the
@@ -6178,7 +6403,12 @@ class Hero:
                                    title=title)
             entry_line = answer.get()
         else:
-            entry_line = input(prompt + "\n")
+            print(split_text(prompt,
+                             width=width))
+            line_prompt = ""
+            if track_inputs:
+                line_prompt = "> "
+            entry_line = input(line_prompt)
         return [entry_line, inputs]
     def AddPQDie(self,
                  ispower,
@@ -6193,8 +6423,9 @@ class Hero:
         # custom_name: should the user be prompted to customize the name of this die?
         # stepnum: the number of the step of hero creation (1-7) at which this die is being added
         # inputs: a set of text inputs to use instead of prompting the user
+        notePrefix = "### AddPQDie: "
         if len(inputs) > 0:
-            print("### AddPQDie: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         category = pair[0]
         index = pair[1]
         if ispower:
@@ -6218,17 +6449,14 @@ class Hero:
         # If the power or quality is a Hallmark or Unlisted Power or a Special Quality, and no new
         #  name is provided, prompt the user to rename it
         if ([ispower, category] in [[0,4],[1,2],[1,9]] or custom_name==True) and flavorname=="":
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to give " + \
-                                     MixedPQ([ispower, category, index]) + \
-                                     " a new name? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to give " + \
+                                        MixedPQ([ispower, category, index]) + " a new name?",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == 'Y':
+            if entry_choice == 0:
                 decision = self.EnterText("Enter a new name for " + \
                                           MixedPQ([ispower, category, index]) + ":",
                                           inputs=inputs)
@@ -6260,8 +6488,9 @@ class Hero:
         # custom_name: should the user be prompted to customize the name of this die?
         # stepnum: the number of the step of hero creation (1-7) at which this die is being added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ChoosePQDieSize: "
         if len(inputs) > 0:
-            print("### ChoosePQDieSize: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # Validate each entry in die_options:
         valid_dice = [diesize for diesize in die_options if diesize in legal_dice]
         print_name = ""
@@ -6297,6 +6526,8 @@ class Hero:
         elif len(valid_dice) == 1:
             # Only one die available? Just assign it
             print("d" + str(valid_dice[0]) + " assigned to " + print_name)
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6307,6 +6538,8 @@ class Hero:
                           flavorname,
                           stepnum=max([0, stepnum]),
                           inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             return []
         else:
             # Are all of valid_dice matching values? If so, just assign that die size.
@@ -6316,6 +6549,8 @@ class Hero:
                     break
             else:
                 print("d" + str(valid_dice[0]) + " assigned to " + print_name)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6326,15 +6561,19 @@ class Hero:
                               flavorname,
                               stepnum=max([0, stepnum]),
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 return valid_dice[1:]
         # Now we know there are multiple valid_dice with different values. Time to make a choice.
         decision = self.ChooseIndex([str(d) for d in valid_dice],
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
-                                    width=35,
+                                    width=45,
                                     buffer=10)
         entry_index = decision[0]
         inputs = decision[1]
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -6344,11 +6583,18 @@ class Hero:
                       valid_dice[entry_index],
                       flavorname,
                       stepnum=max([0, stepnum]),
-                      inputs=pass_inputs)    
+                      inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         print("d" + str(valid_dice[entry_index]) + " assigned to " + print_name)
         valid_dice.remove(valid_dice[entry_index])
         return valid_dice
-    def ChoosePQ(self, triplets, die_options, custom_name=False, stepnum=0, inputs=[]):
+    def ChoosePQ(self,
+                 triplets,
+                 die_options,
+                 custom_name=False,
+                 stepnum=0,
+                 inputs=[]):
         # Lets the user choose from a list of powers and/or qualities (triplets) to assign one of a
         #  list of dice (die_options)
         # Returns the list of unused triplets and the list of unused die sizes
@@ -6387,15 +6633,20 @@ class Hero:
 ##            print(notePrefix + "valid_triplets[0][0]: " + str(valid_triplets[0][0]))
 ##            print(notePrefix + "valid_triplets[0][1:3]: " + str(valid_triplets[0][1:3]))
 ##            print(notePrefix + "die_options: " + str(die_options))
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            return [[], self.ChoosePQDieSize(valid_triplets[0][0],
-                                             valid_triplets[0][1:3],
-                                             die_options,
-                                             stepnum=max([0, stepnum]),
-                                             inputs=pass_inputs)]
+            remaining_dice = self.ChoosePQDieSize(valid_triplets[0][0],
+                                                  valid_triplets[0][1:],
+                                                  die_options,
+                                                  stepnum=max([0, stepnum]),
+                                                  inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
+            return [[], remaining_dice]
         else:
             # If none of these, the user has to make a choice...
             # Define some useful text variables:
@@ -6408,6 +6659,13 @@ class Hero:
             dice_report = "You have the following " + print_type + " dice available: " + \
                           str(valid_dice)
             section_length = 25
+            if self.UseGUI(inputs):
+                # We'll be using a SelectWindow instead of a text entry to choose the Power/Quality,
+                #  so we don't need to limit section_length by the number of letters available.
+                #  If the list only requires two sections and the second one is much smaller than
+                #  the first, just stretch section_length to fit.
+                if len(valid_triplets) - section_length < 10:
+                    section_length = len(valid_triplets)
             if len(valid_triplets) > section_length:
                 sections = math.ceil(len(valid_triplets)/section_length)
                 section_bounds = [print_names[s*section_length] + \
@@ -6426,7 +6684,8 @@ class Hero:
                         for j in range(1, section_length):
                             if i*section_length + j < len(valid_triplets):
                                 this_section += ", " + print_names[i*section_length + j]
-                        details[i] = split_text(this_section, width=dispWidth)
+                        details[i] = split_text(this_section,
+                                                width=dispWidth)
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
                                             dice_report + "\n" + \
@@ -6436,12 +6695,12 @@ class Hero:
                                             details,
                                             var=answer,
                                             title=print_type + " Selection",
+                                            lwidth=50,
+                                            lbuffer=15,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:sections]
-                    section_list = [entry_options[s] + ": " + section_bounds[s] \
-                                    for s in range(sections)]
                     col_num = 4
                     columns = [0] * col_num
                     for c in range(len(columns)):
@@ -6472,7 +6731,7 @@ class Hero:
                             print(pq_text)
                         else:
                             print(pq_text, end="")
-                    decision = self.ChooseIndex(section_list,
+                    decision = self.ChooseIndex(section_bounds,
                                                 prompt=dice_report + "\n" + options_report + \
                                                 "\n" + choice_request,
                                                 inputs=inputs,
@@ -6497,6 +6756,8 @@ class Hero:
             # Now we have the user's choice.
             # We can have them assign a die to it using ChoosePQDieSize.
             remaining_dice = []
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6506,6 +6767,8 @@ class Hero:
                                                   valid_dice,
                                                   stepnum=max([0, stepnum]),
                                                   inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             valid_triplets.remove(triplet_choice)
             return [valid_triplets, remaining_dice]
     def AssignAllPQ(self, triplets, dice_options, stepnum=0, inputs=[]):
@@ -6514,12 +6777,15 @@ class Hero:
         # inputs: a set of text inputs to use automatically instead of prompting the user
         # stepnum: the number of the step of hero creation (1-7) at which these dice are being added
         # No return value
+        notePrefix = "### AssignAllPQ: "
         if len(inputs) > 0:
-            print("### AssignAllPQ: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         remaining_triplets = [entry for entry in triplets]
         remaining_dice = [die_size for die_size in dice_options]
         while len(remaining_dice) > 0:
             # Use ChoosePQ to have the user assign one of the dice to one of the powers/qualities
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -6528,6 +6794,8 @@ class Hero:
                                        remaining_dice,
                                        stepnum=max([0, stepnum]),
                                        inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             remaining_triplets = remainders[0]
             remaining_dice = remainders[1]
             # Repeat until there are no more dice.
@@ -6546,57 +6814,91 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        # No return value.
+        notePrefix = "### AddPrinciple: "
         if len(inputs) > 0:
-            print("### AddPrinciple: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if len(self.principles) > 1:
             # Can't have more than 2 Principles.
+            dispWidth = 100
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user to choose.
                 answer = IntVar()
-                dispWidth = 100
                 options = [str(x) for x in self.principles] + ["Cancel"]
-                details = [x.details(width=dispWidth) for x in self.principles]
+                details = [x.details(width=-1,
+                                     breaks=2,
+                                     indented=False,
+                                     hanging=False) for x in self.principles]
                 question = ExpandWindow(self.myWindow,
                                         "Choose a Principle to replace: ",
                                         options,
                                         details,
                                         var=answer,
                                         title="Principle Selection",
+                                        lwidth=30,
+                                        lbuffer=5,
                                         rwidth=dispWidth)
                 entry_index = answer.get()
             else:
                 print(self.hero_name + " already has 2 Principles: ")
                 for ex in self.principles:
-                    ex.display(prefix="    ")
+                    ex.display(width=dispWidth,
+                               prefix="    ",
+                               indented=True,
+                               breaks=1,
+                               hanging=True)
+                print("Enter A to replace the first one, B to replace the second one, or " + \
+                      "anything else to cancel.")
                 if len(inputs) > 0:
-                    print("Enter A to replace the first one, B to replace the second one, or " + \
-                          "anything else to cancel.")
-                    print("> " + str(inputs[0]))
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0].upper()
                 else:
-                    entry_choice = input("Enter A to replace the first one, B to replace the " + \
-                                         "second one, or anything else to cancel.\n").upper()
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0].upper()
                 if entry_choice in "AB":
                     entry_index = "AB".find(entry_choice)
             if entry_index in range(2):
-                pri = Principle(category,
-                                index,
-                                title,
-                                roleplaying,
-                                minor,
-                                major,
-                                green,
-                                stepnum=max([0, stepnum]))
-                removed = self.principles[entry_index]
-                removed_indices = [i for i in range(len(self.abilities)) \
-                                   if self.abilities[i].text == removed.green_ability]
-                self.principles[entry_index] = pri
-                self.abilities[removed_indices[0]] = Ability("Principle of " + pri.title,
-                                                             "A",
-                                                             pri.green_ability,
-                                                             0,
-                                                             hero_step=max([0, stepnum]))
-                print("Replaced " + str(removed) + " with " + str(pri) + "!")
+                edited = self.principles[entry_index]
+                edited_indices = [i for i in range(len(self.abilities)) \
+                                  if self.abilities[i].text == edited.green_ability]
+                edited_ability = self.abilities[edited_indices[0]]
+                prev_string = str(edited)
+                edit_step = max([0, stepnum])
+                # Set the current version of this Principle & Ability as their versions prior to
+                #  this step
+                edited.SetPrevious(edit_step)
+                edited_ability.SetPrevious(edit_step)
+                # Change their internal values to the new ones just specified
+                edited.category = category
+                edited.index = index
+                ref = rc_master[category][index]
+                if title:
+                    edited.title = title
+                else:
+                    edited.title = ref[0]
+                if roleplaying:
+                    edited.during_roleplaying = roleplaying
+                else:
+                    edited.during_roleplaying = ref[1]
+                if minor:
+                    edited.minor_twist = minor
+                else:
+                    edited.minor_twist = ref[2]
+                if major:
+                    edited.major_twist = major
+                else:
+                    edited.major_twist = ref[3]
+                if green:
+                    edited.green_ability = green
+                else:
+                    edited.green_ability = ref[4]
+                edited.CheckRef()
+                edited_ability.name = "Principle of " + rc_master[category][index][0]
+                edited_ability.flavorname = "Principle of " + edited.title
+                edited_ability.text = edited.green_ability
+                print("Replaced " + prev_string + " with " + str(edited) + "!")
         else:
             pri = Principle(category,
                             index,
@@ -6607,10 +6909,11 @@ class Hero:
                             green,
                             stepnum=max([0, stepnum]))
             self.principles.append(pri)
-            pri_ability = Ability("Principle of " + pri.title,
+            pri_ability = Ability("Principle of " + rc_master[category][index][0],
                                   "A",
                                   pri.green_ability,
                                   0,
+                                  f_name="Principle of " + pri.title,
                                   hero_step=max([0, stepnum]))
             self.abilities.append(pri_ability)
             print("Added " + str(pri) + "!")
@@ -6623,13 +6926,20 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ChoosePrinciple: "
+        dispWidth = 100
         if len(inputs) > 0:
-            print("### ChoosePrinciple: category=" + str(category))
-            print("### ChoosePrinciple: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if category not in range(len(rc_master)):
             print("Error! Invalid category: " + str(category))
         else:
             r_options = [Principle(category, i) for i in range(len(rc_master[category]))]
+            # We don't need to check whether any of r_options match the Principle(s) the hero
+            #  already has, because Principles are customizable. A hero could take two different
+            #  Principles of Dependence for two different objects they depend on, or two different
+            #  Principles of [Energy/Element] for two different elements their hero is in touch
+            #  with. (It might not be the best decision character- or gameplay-wise, but it's
+            #  theirs to make.)
             if rc_names[category][0].upper() in "AEIOU":
                 prompt = "Choose an " + rc_names[category] + " Principle."
             else:
@@ -6640,9 +6950,15 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         prompt,
                                         [x.title for x in r_options],
-                                        [x.details() for x in r_options],
+                                        [x.details(width=-1,
+                                                   indented=False,
+                                                   breaks=2,
+                                                   hanging=False) for x in r_options],
                                         var=answer,
-                                        title="Principle Selection")
+                                        title="Principle Selection",
+                                        lwidth=30,
+                                        lbuffer=5,
+                                        rwidth=ri_width)
                 entry_index = answer.get()
             else:
                 print(prompt)
@@ -6652,33 +6968,38 @@ class Hero:
                     print("    " + entry_options[i] + ": " + r_options[i].title)
                 entry_choice = ' '
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a Principle expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Principle expanded, or an " + \
-                              "uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Principle " + \
-                                             "expanded, or an uppercase letter to select it.\n")
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt = "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and not entry_choice in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        r_options[entry_index].display("    ", width=96)
+                        r_options[entry_index].display(width=dispWidth,
+                                                       prefix="    ",
+                                                       indented=True,
+                                                       hanging=False)
                 entry_index = entry_options.find(entry_choice)
             ri = r_options[entry_index]
             print(str(ri) + " selected!")
-            entry_choice = ' '
-            entry_options = "YN"
             entry_title = ri.title
             rename_prompt = "Do you want to customize " + str(ri) + "?"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt=rename_prompt,
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes","No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt=rename_prompt,
+                                        title="Principle Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == "N":
+            if entry_choice == 1:
                 print("Standard " + str(ri) + " selected.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6687,6 +7008,8 @@ class Hero:
                                   entry_index,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # Copy the values in ri so they can be edited or left alone.
                 entry_title = ri.title
@@ -6695,7 +7018,7 @@ class Hero:
                 entry_major = ri.major_twist
                 entry_green = ri.green_ability
                 if self.UseGUI(inputs):
-                    # Create a PrincipleWindow to prompt the user.
+                    # Create a PrincipleWindow to prompt the user to modify any number of sections.
                     dispWidth = 100
                     titleVar = StringVar()
                     roleplayingVar = StringVar()
@@ -6716,9 +7039,8 @@ class Hero:
                     entry_minor = minorVar.get()
                     entry_major = majorVar.get()
                     entry_green = greenVar.get()
-                    # ...
                 else:
-                    # Ask the user what part they want to change.
+                    # Use the text shell to prompt the user, one section at a time.
                     entry_dict = dict(A="Title",
                                       B="During Roleplaying text",
                                       C="Minor Twist",
@@ -6741,51 +7063,78 @@ class Hero:
                         # Now the user has chosen a section to customize...
                         if entry_id == 'A':
                             print("Current title: " + entry_title)
+                            print("Enter a new title:")
                             if len(inputs) > 0:
-                                print("Enter a new title:")
                                 print("> Principle of " + inputs[0])
                                 entry_title = inputs.pop(0)
                             else:
-                                entry_title = input("Enter a new title:\nPrinciple of ")
-                            print("New title: Principle of " + entry_title)
+                                line_prompt = "Principle of "
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_title = input(line_prompt)
+                            printlong("New title: Principle of " + entry_title,
+                                      width=dispWidth)
                         elif entry_id == 'B':
-                            printlong("Current During Roleplaying text: " + entry_roleplaying, 100)
+                            printlong("Current During Roleplaying text: " + entry_roleplaying,
+                                      width=dispWidth)
+                            print("Enter new During Roleplaying text:")
                             if len(inputs) > 0:
-                                print("Enter new During Roleplaying text:")
-                                print("> " + str(inputs[0]))
+                                print("> " + inputs[0])
                                 entry_roleplaying = inputs.pop(0)
                             else:
-                                entry_roleplaying = input("Enter new During Roleplaying text:\n")
-                            printlong("New During Roleplaying text: " + entry_roleplaying, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_roleplaying = input(line_prompt)
+                            printlong("New During Roleplaying text: " + entry_roleplaying,
+                                      width=dispWidth)
                         elif entry_id == 'C':
-                            printlong("Current minor twist: " + entry_minor, 100)
+                            printlong("Current minor twist: " + entry_minor,
+                                      width=dispWidth)
+                            print("Enter a new minor twist:")
                             if len(inputs) > 0:
-                                print("Enter a new minor twist:")
-                                print("> " + str(inputs[0]))
+                                print("> " + inputs[0])
                                 entry_minor = inputs.pop(0)
                             else:
-                                entry_minor = input("Enter a new minor twist:\n")
-                            printlong("New minor twist: " + entry_minor, 100)
+                                print("Enter a new minor twist:")
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_minor = input(line_prompt)
+                            printlong("New minor twist: " + entry_minor,
+                                      width=dispWidth)
                         elif entry_id == 'D':
-                            printlong("Current major twist: " + entry_major, 100)
+                            printlong("Current major twist: " + entry_major,
+                                      width=dispWidth)
+                            print("Enter a new major twist:")
                             if len(inputs) > 0:
-                                print("Enter a new major twist:")
-                                print("> " + str(inputs[0]))
+                                print("> " + inputs[0])
                                 entry_major = inputs.pop(0)
                             else:
-                                entry_major = input("Enter a new major twist:\n")
-                            printlong("New major twist: " + entry_major, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_major = input(line_prompt)
+                            printlong("New major twist: " + entry_major,
+                                      width=dispWidth)
                         elif entry_id == 'E':
-                            printlong("Current Green Ability: " + entry_green, 100)
+                            printlong("Current Green Ability: " + entry_green,
+                                      width=dispWidth)
+                            print("Enter a new Green Ability:")
                             if len(inputs) > 0:
-                                print("Enter a new Green Ability:")
-                                print("> " + str(inputs[0]))
+                                print("> " + inputs[0])
                                 entry_green = inputs.pop(0)
                             else:
-                                entry_green = input("Enter a new Green Ability:\n")
-                            printlong("New Green Ability: " + entry_green, 100)
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_green = input(line_prompt)
+                            printlong("New Green Ability: " + entry_green,
+                                      width=dispWidth)
                         del entry_dict[entry_id]
                     print("OK!")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6799,13 +7148,16 @@ class Hero:
                                   entry_green,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
     def AddBackground(self, bg_index, inputs=[]):
         # Walks the user through adding the quality dice and Principle that they get from the
         #  Background specified by bg_index.
         # inputs: a set of text inputs to use automatically instead of prompting the user
         # Returns the set of dice they'll use in the Power Source step.
+        notePrefix = "### AddBackground: "
         if len(inputs) > 0:
-            print("### AddBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is Step 1 of hero creation!
         this_step = 1
         your_bg = bg_collection[bg_index]
@@ -6839,6 +7191,8 @@ class Hero:
                 #  required quality.
                 # ChoosePQDieSize returns the list of unused dice, so update remaining_dice with
                 #  that list.
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -6848,22 +7202,34 @@ class Hero:
                                                       remaining_dice,
                                                       stepnum=this_step,
                                                       inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Use AssignAllPQ to have the user assign each remaining die to one of the optional
             #  qualities.
             # AssignAllPQ runs until there are no dice left, so there's no need to update
             #  remaining_dice afterward.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AssignAllPQ(q_options, remaining_dice, stepnum=this_step, inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.RefreshFrame()
             # Use ChoosePrinciple to have the user select a Principle from the specified category.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+            self.ChoosePrinciple(r_category,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             print("That's all for your Background! Take " + str(ps_dice) + \
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
@@ -6873,8 +7239,9 @@ class Hero:
         # Walks the user through randomly selecting a Background as specified in the rulebook.
         # Returns the index of the Background selected.
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        notePrefix = "### GuidedBackground: "
         if len(inputs) > 0:
-            print("### GuidedBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # The user can reroll any number of their dice once per step.
         rerolls = 1
         prev_result = 0
@@ -6894,7 +7261,7 @@ class Hero:
             bg_options = [min(die_results), max(die_results), sum(die_results)]
             # In case of doubles, remove the duplicate roll:
             if bg_options[0] == bg_options[1]:
-                bg_options[1:2] = []
+                del bg_options[1]
             # To convert to 0-index, subtract 1 from each option.
             bg_indices = [x-1 for x in bg_options]
             # Let the user choose from the options provided by their roll...
@@ -6909,9 +7276,14 @@ class Hero:
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [BackgroundDetails(x, width=0) for x in bg_indices],
+                                        [BackgroundDetails(x,
+                                                           width=-1,
+                                                           breaks=2,
+                                                           indented=True,
+                                                           grid=False) for x in bg_indices],
                                         var=answer,
                                         title="Background Selection",
+                                        lwidth=30,
                                         rwidth=bg_width)
                 entry_index = answer.get()
             else:
@@ -6928,32 +7300,43 @@ class Hero:
                         print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Background " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options[:-1] and entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+                              "uppercase letter to select it.")
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
+                    if entry_choice.upper() in entry_options[:-1] and \
+                       entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayBackground(bg_indices[entry_index], "    ", width=96)
+                        DisplayBackground(bg_indices[entry_index],
+                                          width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
                 # User selected to reroll.
-                entry_options = "YN"
-                entry_choice = ' '
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Background Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == 'Y':
-                    decision = self.ChooseIndex([str(r) for r in die_results],
-                                                prompt="Choose which result to keep:",
-                                                inputs=inputs,
-                                                width=25)
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    prev_result = die_results[entry_index]
+                if entry_choice == 0:
+                    if die_results[0] == die_results[1]:
+                        # There are only two dice, both of the same size, and they rolled the same
+                        #  number. If the user wants to keep a previous result, they don't need to
+                        #  specify which one.
+                        prev_result = die_results[0]
+                    else:
+                        decision = self.ChooseIndex([str(r) for r in die_results],
+                                                    prompt="Choose which result to keep:",
+                                                    inputs=inputs,
+                                                    width=25)
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        prev_result = die_results[entry_index]
                 rerolls = 0
             else:
                 # User selected a background.
@@ -6963,8 +7346,9 @@ class Hero:
         # Walks the user through selecting a Background from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Background selected.
+        notePrefix = "### ConstructedBackground: "
         if len(inputs) > 0:
-            print("### ConstructedBackground: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(bg_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -6973,10 +7357,17 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose a Background from the list:",
                                     [x[0] for x in bg_collection],
-                                    [BackgroundDetails(i, width=0) \
+                                    [BackgroundDetails(i,
+                                                       width=-1,
+                                                       breaks=2,
+                                                       indented=True,
+                                                       hanging=False,
+                                                       grid=False) \
                                      for i in range(len(bg_collection))],
                                     var=answer,
                                     title="Background Selection",
+                                    lwidth=30,
+                                    lbuffer=5,
                                     rwidth=bg_width)
             entry_index = answer.get()
         else:
@@ -6984,17 +7375,20 @@ class Hero:
             for i in range(len(bg_collection)):
                 print("    " + entry_options[i] + ": " + bg_collection[i][0] + " (" + str(i+1) + ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Background expanded, or an " + \
+                      "uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Background expanded, or an uppercase " + \
-                          "letter to select it.")
-                    print("> " + str(inputs[0]))
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Background expanded, or " + \
-                                         "an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
-                    DisplayBackground(entry_index, "    ", width=96)
+                    DisplayBackground(entry_index,
+                                      width=100)
             entry_index = entry_options.find(entry_choice)
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
@@ -7079,22 +7473,60 @@ class Hero:
                 triplet_options = []
         # ... then remove any template_options with incompatible requirements
         matching_templates = []
+        template_restricted_slots = []
+##        print(notePrefix + "triplet_options: " + str(triplet_options) + " (" + \
+##              str(MixedPQs(triplet_options)) + ")")
+##        print(notePrefix + "category_req: " + str(category_req))
         for a in template_options:
-            a_matches = True
-            for i in [j for j in range(len(a.pq_options)) if len(a.pq_options[j]) > 0]:
+            # To be added, a must have EITHER:
+            #  * no power/quality slots
+            #  * >=1 power/quality slot that can match both triplet_options and category_req
+##            print(notePrefix + str(a) + ".pq_options = " + str(a.pq_options))
+            a_isMatch = False
+            a_check_slots = []
+            a_matching_slots = []
+            for i in range(len(a.pq_options)):
+                if ("%p" + str(i)) in a.text:
+                    if len(a.pq_options[i]) > 0:
+                        a_check_slots += [i]
+##                        print(notePrefix + "slot " + str(i) + " of " + str(a) + \
+##                              " is used with restrictions")
+                    else:
+                        a_matching_slots += [i]
+##                        print(notePrefix + "slot " + str(i) + " of " + str(a) + \
+##                              " is used without restrictions")
+            if len(a_check_slots) == 0:
+                a_isMatch = True
+##                print(notePrefix + str(a) + " has no Power/Quality slots; included in ability " + \
+##                      "options")
+            for i in a_check_slots:
+##                print(notePrefix + "evaluating " + str(a) + ": slot " + str(i))
+##                print(notePrefix + "pq_options[" + str(i) + ": " + str(a.pq_options[i]) + " (" + \
+##                      str(MixedPQs(a.pq_options[i])) + ")")
                 a_matching_options = [t for t in a.pq_options[i]]
                 if len(triplet_options) > 0:
-                    # If triplet_options are specified, and pq_options[i] are specified, then the
-                    #  only matching options are the ones that fit both
+                    # If triplet_options are specified, and pq_options[i] are specified, then
+                    #  the only matching options are the ones that fit both
                     a_matching_options = [t for t in a.pq_options[i] if t in triplet_options]
+##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                              " that match triplet_options: " + str(MixedPQs(a_matching_options)))
                 if category_req in [0,1]:
-                    # If category_req is specified, and pq_options[i] are specified, then the only
-                    #  matching options are the ones that fit both
+                    # If category_req is specified, and pq_options[i] are specified, then the
+                    #  only matching options are the ones that fit both
                     a_matching_options = [t for t in a.pq_options[i] if t[0]==category_req]
-                if len(a_matching_options) == 0:
-                    a_matches = False
-            if a_matches:
+##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                              " that match triplet_options and category_req: " + \
+##                              str(MixedPQs(a_matching_options)))
+                if len(a_matching_options) > 0:
+                    a_isMatch = True
+                    a_matching_slots.append(i)
+##                    print(notePrefix + ">0 matching options for slot " + str(i) + " of " + \
+##                          str(a))
+            if a_isMatch:
                 matching_templates.append(a)
+                template_restricted_slots.append(a_matching_slots)
+##                print(notePrefix + ">0 matching options for slots " + str(a_matching_slots) + \
+##                      " of " + str(a) + "; included in ability options")
         if len(matching_templates) == 0:
             print("Error! All of the ability templates had power/quality requirements " + \
                   "incompatible with the specified options (" + str(triplet_options) + ").")
@@ -7104,7 +7536,8 @@ class Hero:
                 return []
         else:
             template_options = matching_templates
-        ability_template = ""
+        ability_template = None
+        ability_matching_slots = []
         if len(template_options) == 0:
             print("Error! No Abilities were provided.")
             if add==1:
@@ -7113,6 +7546,7 @@ class Hero:
                 return []
         elif len(template_options) == 1:
             ability_template = template_options[0]
+            ability_matching_slots = template_restricted_slots[0]
         else:
             if len(triplet_options) > 0:
                 option_text = MixedPQ(triplet_options[0])
@@ -7122,15 +7556,18 @@ class Hero:
                     option_text += ","
                 if len(triplet_options) > 1:
                     option_text += " or " + MixedPQ(triplet_options[len(triplet_options)-1])
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
-                          ", using " + option_text + ":"
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ", using " + option_text + ":"
             elif category_req in [0,1]:
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
-                         ", using a " + categories_singular[category_req] + ":"
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ", using a " + categories_singular[category_req] + ":"
             else:
-                prompt = "Choose one of these Abilities to add in " + status_zones[zone] + ":"
-            printlong(prompt, 100)
+                choose_prompt = "Choose one of these Abilities to add in " + status_zones[zone] + \
+                                ":"
             col_num = 3
+            # Abilities take up much more space to display than simpler concepts like Powers and
+            #  Qualities, so section_length here needs to be fairly short so that an expanded
+            #  section can be viewed all at once.
             section_length = 9
             if len(template_options) > section_length:
                 sections = math.ceil(len(template_options)/section_length)
@@ -7148,7 +7585,9 @@ class Hero:
                         this_length = min(section_length,
                                           len(template_options) - i*section_length)
                         for j in range(this_length):
-                            details[i] += template_options[i*section_length+j].details()
+                            opt_text = template_options[i*section_length+j].details(width=-1,
+                                                                                    indented=True)
+                            details[i] += opt_text
                             if j in range(this_length-1):
                                 details[i] += "\n"
                     answer = IntVar()
@@ -7157,19 +7596,18 @@ class Hero:
                                             section_list,
                                             details,
                                             var=answer,
-                                            title="Ability Selection")
+                                            title="Ability Selection",
+                                            lwidth=40,
+                                            lbuffer=15,
+                                            rwidth=a_width)
                     entry_index = answer.get()
                 else:
                     print(options_report)
-                    columns = [0] * col_num
-                    for c in range(len(columns)):
-                        if c in range(len(template_options)):
-                            columns[c] = max([len(str(template_options[i]))+2 \
-                                              for i in range(len(template_options)) \
-                                              if i%col_num == c])
+                    maxWidth = max([len(str(t)) + 2 for t in template_options])
+                    col_num = math.floor((100-len("       "))/maxWidth)
                     for i in range(len(template_options)):
                         as_text = str(template_options[i])
-                        while len(as_text) < columns[i%col_num]:
+                        while len(as_text) < maxWidth:
                             as_text += " "
                         if i%section_length == 0:
                             if i%col_num != 0:
@@ -7190,40 +7628,45 @@ class Hero:
                 entry_start = entry_index * section_length
                 entry_end = min(entry_start + section_length, len(template_options))
                 template_options = template_options[entry_start:entry_end]
+                template_restricted_slots = template_restricted_slots[entry_start:entry_end]
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to ask the user to choose an ability
                 answer = IntVar()
                 question = ExpandWindow(self.myWindow,
-                                        prompt,
+                                        choose_prompt,
                                         [str(x) for x in template_options],
-                                        [x.details() for x in template_options],
+                                        [x.details(width=-1,
+                                                   indented=True) for x in template_options],
                                         var=answer,
                                         title="Ability Selection",
+                                        lwidth=40,
+                                        lbuffer=15,
                                         rwidth=a_width)
                 entry_index = answer.get()
             else:
                 entry_options = string.ascii_uppercase[0:len(template_options)]
                 entry_choice = ' '
+                printlong(choose_prompt, 100)
                 for i in range(len(template_options)):
                     print("    " + entry_options[i] + ": " + str(template_options[i]))
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an ability expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an ability expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an ability " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        template_options[entry_index].display(prefix="    ")
+                        template_options[entry_index].display(width=100)
                 entry_index = entry_options.find(entry_choice)
             ability_template = template_options[entry_index]
+            ability_matching_slots = template_restricted_slots[entry_index]
         notePrefix += ability_template.name + ": "
-        # The first time we need the user to make a choice for this Ability, we'll display the
-        # template text... but not before that, in case they don't have to
-        has_displayed = False
         display_str = str(ability_template)
         if ability_template.zone == 3:
             # Out Abilities don't get names
@@ -7235,9 +7678,10 @@ class Hero:
                 matching_pqs = [d.triplet() for d in p_dice + self.quality_dice \
                                 if d.triplet() in ability_template.required_pqs[i]]
                 if len(matching_pqs) == 0:
-                    print("Error! " + self.hero_name + \
-                          "doesn't have any of the required Powers/Qualities for this ability " + \
-                          "(" + MixedPQs(ability_template.required_pqs[i]) + ").")
+                    print(ability_template.details(indented=True) + "\n\n" + "Error! " + \
+                          self.hero_name + "doesn't have any of the required Powers/Qualities " + \
+                          "for this ability " + "(" + \
+                          MixedPQs(ability_template.required_pqs[i]) + ").")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
@@ -7246,23 +7690,10 @@ class Hero:
         # If the ability needs a damage category, prompt the user for it
         damage_entry = ability_template.insert_damage
         if ability_template.has_damage and damage_entry not in [0,1]:
-            if not has_displayed:
-                print("OK! Let's fill in " + display_str + "...")
-                ability_template.display()
-                has_displayed = True
-##            print("Choose a damage category for this Ability:")
-##            entry_options = "AB"
-##            entry_choice = ' '
-##            for i in [0,1]:
-##                print("    " + entry_options[i] + ": " + damage_categories[i])
-##            decision = choose_letter(entry_options, ' ', inputs=inputs)
-##            entry_choice = decision[0]
-##            inputs = decision[1]
-##            damage_entry = entry_options.find(entry_choice)
-            # EDIT: use self.ChooseIndex() instead of find()
             decision = self.ChooseIndex(damage_categories[0:2],
-                                        prompt=ability_template.details() + "\n\n" +
-                                        "Choose a damage category for this Ability:",
+                                        prompt=ability_template.details(width=-1,
+                                                                        indented=True) + \
+                                        "\n\nChoose a damage category for this Ability:",
                                         title=display_str,
                                         inputs=inputs,
                                         width=50,
@@ -7276,41 +7707,37 @@ class Hero:
             if ability_template.requires_energy:
                 power_die_options = [d for d in p_dice if d.category==1]
                 if len(power_die_options) == 0:
-                    print("Error! " + self.name + \
-                          " doesn't have any Elemental/Energy powers to use with " + \
-                          ability_template.name + "!")
+                    print(ability_template.details(indented=True) + "\n\n" + "Error! " + \
+                          self.hero_name + " doesn't have any Elemental/Energy powers to use " + \
+                          "with " + ability_template.name + "!")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
                     else:
                         return []
                 elif len(power_die_options) == 1:
-                    print(self.hero_name + "'s only Elemental/Energy power is " + \
-                          str(power_die_options[0]) + ".")
+                    print(ability_template.details(indented=True) + "\n\n" + self.hero_name + \
+                          "'s only Elemental/Energy power is " + str(power_die_options[0]) + ".")
                     element_num = power_die_options[0].index
                 else:
-                    if not has_displayed:
-                        print("OK! Let's fill in " + display_str + "...")
-                        ability_template.display()
-                        has_displayed = True
                     decision = self.ChooseIndex([str(d) for d in power_die_options],
-                                                prompt=ability_template.details() + "\n\n" +
-                                                "Choose one of your Elemental/Energy " + \
+                                                prompt=ability_template.details(width=-1,
+                                                                                indented=True) + \
+                                                "\n\n" + "Choose one of your Elemental/Energy " + \
                                                 "Powers for this ability:",
                                                 title=display_str,
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
             else:
-                if not has_displayed:
-                    print("OK! Let's fill in " + display_str + "...")
-                    ability_template.display()
-                    has_displayed = True
                 decision = self.ChooseIndex([mixed_collection[1][1][i] \
                                              for i in range(len(mixed_collection[1][1]))],
-                                            prompt=ability_template.details() + "\n\n" +
-                                            "Choose an energy or element for this Ability:",
+                                            prompt=ability_template.details(width=-1,
+                                                                            indented=True) + \
+                                            "\n\nChoose an energy or element for this Ability:",
                                             title=display_str,
                                             inputs=inputs,
                                             width=50,
@@ -7322,16 +7749,15 @@ class Hero:
         if ability_template.has_actions:
             for i in [0,1]:
                 if ("%a" + str(i)) in ability_template.text:
-                    if not has_displayed:
-                        print("OK! Let's fill in " + display_str + "...")
-                        ability_template.display()
-                        has_displayed = True
                     decision = self.ChooseIndex([basic_actions[j] \
                                                  for j in ability_template.action_options[i]],
-                                                prompt=ability_template.details() + "\n\n" +
-                                                "Choose a basic action for this Ability:",
+                                                prompt=ability_template.details(width=-1,
+                                                                                indented=True) + \
+                                                "\n\nChoose a basic action for this Ability:",
                                                 title=display_str,
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=10)
                     entry_index = decision[0]
                     inputs = decision[1]
                     action_ids[i] = ability_template.action_options[i][entry_index]
@@ -7371,16 +7797,29 @@ class Hero:
 ##                              str([str(d) for d in die_options]))
 ##                    else:
 ##                        print(notePrefix + "didn't filter by pq_options at i=" + str(i))
-                    # If triplet_options was specified, narrow the field to dice that match those
+                    # If triplet_options was specified, AND no dice have been selected so far that
+                    #  match that requirement, AND there are no later slots where that requirement
+                    #  COULD be met, narrow the field to dice that match those
+                    used_triplets = []
+                    for j in ability_matching_slots:
+                        used_triplets += pq_triplets[j]
+##                    print(notePrefix + "used_triplets: " + str(used_triplets))
                     if len(triplet_options) > 0:
-                        die_options = [d for d in die_options if d.triplet() in triplet_options]
-                        if len(die_options) == 0:
-                            error = self.hero_name + " doesn't have any " + category + \
-                                    " dice matching the specified triplet options (" + \
-                                    str(MixedPQs(triplet_options)) + ")."
-##                        print(notePrefix + "filtered by triplet_options")
-##                        print(notePrefix + "die_options for i=" + str(i) + ": " + \
-##                              str([str(d) for d in die_options]))
+                        if len([d for d in used_triplets if d in triplet_options]) == 0 and \
+                           i == max(ability_matching_slots):
+##                            print(notePrefix + str(i) + " is the last slot of " + \
+##                                  str(ability_template) + " that matches triplet_options and " + \
+##                                  "required_pqs, and no matching Powers/Qualities have been " + \
+##                                  "used yet")
+                            die_options = [d for d in die_options \
+                                           if d.triplet() in triplet_options]
+                            if len(die_options) == 0:
+                                error = self.hero_name + " doesn't have any " + category + \
+                                        " dice matching the specified triplet options (" + \
+                                        str(MixedPQs(triplet_options)) + ")."
+##                            print(notePrefix + "filtered by triplet_options")
+##                            print(notePrefix + "die_options for i=" + str(i) + ": " + \
+##                                  str([str(d) for d in die_options]))
                     if len(die_options) == 0:
                         # No valid options? Fail with an error
                         print("Error! " + error)
@@ -7391,21 +7830,22 @@ class Hero:
                             return []
                     elif len(die_options) == 1:
                         # Only 1 valid option? Select it and move on
-                        print(self.hero_name + "'s only valid " + category + \
-                              " die for this slot is " + str(die_options[0]) + ".")
+                        slot_id = "first"
+                        if i == 1:
+                            slot_id = "second"
+                        print(ability_template.details(indented=True) + "\n\n" + self.hero_name + \
+                              "'s only valid " + category + " die for this ability's " + \
+                              slot_id + " slot is " + str(die_options[0]) + ".")
                         pq_triplets[i] = die_options[0].triplet()
                         if die_options[0].flavorname != die_options[0].name:
                             pq_names[i] = die_options[0].flavorname
                     else:
                         # More than 1 valid option? Prompt the user to choose
-                        if not has_displayed:
-                            print("OK! Let's fill in " + display_str + "...")
-                            ability_template.display()
-                            has_displayed = True
+                        prompt = ability_template.details(width=-1,
+                                                          indented=True) + "\n\nChoose a " + \
+                                                          category + " die for this Ability:"
                         decision = self.ChooseIndex([str(d) for d in die_options],
-                                                    prompt=ability_template.details() + \
-                                                    "\n\n" + "Choose a " + category + \
-						    " die for this Ability:",
+                                                    prompt=prompt,
                                                     title=display_str,
                                                     inputs=inputs,
                                                     width=50,
@@ -7413,6 +7853,7 @@ class Hero:
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
+                        # If the selected die has a custom name, save that as well
                         if die_options[entry_index].flavorname != die_options[entry_index].name:
                             pq_names[i] = die_options[entry_index].flavorname
         # Phew! We've filled in all the variables for this Ability.
@@ -7434,20 +7875,21 @@ class Hero:
                               hero_step=max([0,stepnum]))
         if zone != 3:
             rename_prompt = "OK! " + self.hero_name + "'s new Ability is almost ready:"
-            rename_prompt += "\n\n" + new_ability.details()
+            rename_prompt += "\n\n" + new_ability.details(width=-1,
+                                                          indented=True)
             # Green/Yellow/Red Abilities can have custom names
-            entry_options = "YN"
-            rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name (y/n)?"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt=rename_prompt,
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            rename_prompt += "\n\nDo you want to give " + new_ability.name + " a new name?"
+            decision = self.ChooseIndex(entry_options,
+                                        prompt=rename_prompt,
+                                        title=display_str,
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            if entry_choice == "Y":
-                decision = self.EnterText(new_ability.details() + "\n\n" + \
-                                          "Enter the new name for this Ability:",
+            if entry_choice == 0:
+                decision = self.EnterText(new_ability.details(width=-1,
+                                                              indented=True) + "\n\n" + \
+                                          "Enter a new name for this Ability:",
                                           title=display_str,
                                           default=new_ability.name,
                                           inputs=inputs)
@@ -7483,9 +7925,9 @@ class Hero:
         #  If not specified here, uses self.ps_dice.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the set of dice they'll use in the Archetype step.
-        prefix = "### AddPowerSource: "
+        notePrefix = "### AddPowerSource: "
         if len(inputs) > 0:
-            print(prefix + "inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if pdice == []:
             pdice = self.ps_dice
         # This is Step 2 of hero creation!
@@ -7524,6 +7966,8 @@ class Hero:
             print("You have " + str(pdice) + " to assign to Powers.")
             if len(required_powers) > 0:
                 # Use ChoosePQ to assign one of pdice to one of required_powers
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -7532,56 +7976,66 @@ class Hero:
                                       pdice,
                                       stepnum=this_step,
                                       inputs=pass_inputs)[1]
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AssignAllPQ(optional_powers, pdice, stepnum=this_step, inputs=pass_inputs)
+            self.AssignAllPQ(optional_powers,
+                             pdice,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             for i in range(yellow_count):
                 # Use ChooseAbility to select and add a Yellow Ability from yellow_options and
                 #  update yellow_options to remove that Ability
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
                 legal_triplets = [x.triplet() for x in self.power_dice] + \
                                  [y.triplet() for y in self.quality_dice]
                 # Make a list of abilities the hero has in this zone from this Archetype
                 ps_zone_abilities = [x for x in self.abilities \
                                      if x.step == this_step and x.zone == 1]
-##                print(prefix + "ps_zone_abilities = " + \
+##                print(notePrefix + "ps_zone_abilities = " + \
 ##                      str([str(x) for x in ps_zone_abilities]))
                 if len(ps_zone_abilities) > 0:
                     # Start by making a list of the Powers/Qualities already used in
                     #  ps_zone_abilities:
                     ps_triplets = []
                     for x in ps_zone_abilities:
-                        ps_triplets += [y for y in x.insert_pqs if len(y) == 3]
-                    # Remove any repeats
-                    for i in range(len(ps_triplets)):
-                        trip = ps_triplets[i]
-                        for j in range(i + 1, len(ps_triplets)):
-                            if ps_triplets[j] == trip:
-                                del ps_triplets[j]
-##                    print(prefix + "ps_triplets = " + str(ps_triplets))
-##                    print(prefix + "(" + str(MixedPQs(ps_triplets)) + ")")
+                        ps_triplets += [y for y in x.insert_pqs \
+                                        if len(y) == 3 and y not in ps_triplets]
+##                    print(notePrefix + "ps_triplets = " + str(ps_triplets))
+##                    print(notePrefix + "(" + str(MixedPQs(ps_triplets)) + ")")
                     # Remove those previously-used triplets from the list of triplets that can be
                     #  used in this ability:
                     while len([x for x in legal_triplets if x in ps_triplets]) > 0:
                         for x in ps_triplets:
                             if x in legal_triplets:
                                 legal_triplets.remove(x)
-##                    print(prefix + "legal_triplets = " + str(legal_triplets))
-##                    print(prefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+##                    print(notePrefix + "legal_triplets = " + str(legal_triplets))
+##                    print(notePrefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
                 yellow_options = self.ChooseAbility(yellow_options,
                                                     1,
                                                     triplet_options=legal_triplets,
                                                     stepnum=this_step,
                                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             for i in range(green_count):
                 # Use ChooseAbility to select and add a Green Ability from green_options and update
                 #  green_options to remove that Ability
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -7590,6 +8044,8 @@ class Hero:
                                                    0,
                                                    stepnum=this_step,
                                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Evaluate and implement ps_bonus
             if ps_bonus == 1:
                 # Training: Next step, add a bonus d8 Quality from your Archetype's list.
@@ -7599,11 +8055,18 @@ class Hero:
             elif ps_bonus == 2:
                 # Mystical: Gain a d10 Information Quality.
                 print("Bonus: You get a d10 Information Quality.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,0), [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(Category(0,0),
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 3:
                 # Supernatural: Gain a d10 Power that ISN'T listed.
                 print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
@@ -7611,11 +8074,18 @@ class Hero:
                                   for a in range(len(mixed_collection[1]))]
                 non_optional_powers = [triplet for triplet in power_triplets \
                                        if triplet not in optional_powers]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(non_optional_powers, [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(non_optional_powers,
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 4:
                 # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more d6
                 #  Power from the Alien list.
@@ -7624,11 +8094,18 @@ class Hero:
                     # No d6s to upgrade.
                     print("Bonus: Since you can't upgrade a d6 Power or Quality, " + \
                           "you gain a d6 Power from the Alien list.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(optional_powers, [6], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(optional_powers,
+                                  [6],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 elif len(d6_pqs) == 1:
                     # Exactly 1 d6: upgrade it without prompting the user.
                     print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
@@ -7652,11 +8129,18 @@ class Hero:
                 # Genius: Gain 1 d10 Information or Mental Quality
                 print("Bonus: You get a d10 Information or Mental Quality.")
                 optional_qualities = Category(0,0) + Category(0,1)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(optional_qualities, [10], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(optional_qualities,
+                              [10],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 6:
                 # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
                 #  power by 1 die size.
@@ -7706,20 +8190,34 @@ class Hero:
             elif ps_bonus == 7:
                 # Unknown: Gain a d8 Social Quality.
                 print("Bonus: You get a d8 Social Quality.")
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,3), [8], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(Category(0,3),
+                              [8],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif ps_bonus == 8:
                 # The Multiverse: Gain a d6 Power from ANY category.
                 print("Bonus: You get a d6 Power from ANY category.")
                 power_triplets = AllCategories()
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePQ(power_triplets, [6], stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePQ(power_triplets,
+                              [6],
+                              stepnum=this_step,
+                              inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
@@ -7728,14 +8226,17 @@ class Hero:
         # Walks the user through randomly selecting a Power Source as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the selected Power Source.
+        notePrefix = "### Hero.GuidedPowerSource: "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
         if pdice == [] and self.ps_dice == []:
             print("Error! No dice have been specified for this step.")
-            return
+            return 99
         elif pdice == []:
             pdice = self.ps_dice
         elif len(pdice) not in [2,3]:
             print("Error! " + str(pdice) + " is not a valid set of Power Source dice.")
-            return
+            return 99
         # The user can reroll any number of their dice once per step.
         rerolls = 1
         prev_results = [0 for d in pdice]
@@ -7762,30 +8263,41 @@ class Hero:
                 #  the sum of all three minus the value of the third.
                 ps_options = [x for x in die_results] + [sum(die_results) - y for y in die_results]
                 ps_options.sort()
+                # Remove duplicates:
+                #  i counts forward from 0 to end-of-list -1
+                #  j counts backward from end-of-list to i
+                #  if ps_options[i] and ps_options[j] match, delete ps_options[j]
                 for i in range(len(ps_options)-1):
-                    for j in range(i+1, len(ps_options)):
+                    for j in range(len(ps_options)-1,i,-1):
                         if i < j < len(ps_options):
                             if ps_options[i] == ps_options[j]:
                                 del ps_options[j]
             print(roll_report)
+##            print(notePrefix + "ps_options: " + str(ps_options))
             # To convert to 0-index, subtract 1 from each option:
             ps_indices = [x-1 for x in ps_options]
+##            print(notePrefix + "ps_indices: " + str(ps_indices))
             # Let the user choose from the options provided by their roll...
             entry_choice = ' '
             entry_options = string.ascii_uppercase[0:len(ps_options) + rerolls]
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                options = [ps_collection[i][0] + " (" + str(ps_options[i]) + ")" \
-                           for i in ps_indices]
+                options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
+                           for i in range(len(ps_indices))]
                 if rerolls > 0:
                     options += ["REROLL"]
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [PowerSourceDetails(i, width=0) for i in ps_indices],
+                                        [PowerSourceDetails(i,
+                                                            width=-1,
+                                                            indented=True,
+                                                            breaks=2,
+                                                            grid=False) for i in ps_indices],
                                         var=answer,
                                         title="Power Source Selection",
+                                        lwidth=35,
                                         rwidth=ps_width)
                 entry_index = answer.get()
             else:
@@ -7795,46 +8307,46 @@ class Hero:
                 if rerolls > 0:
                     print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an option expanded, or an " + \
+                          "uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an option expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an option " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options[:-1] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPowerSource(ps_indices[entry_index], "    ", width=100-len("    "))
+                        DisplayPowerSource(ps_indices[entry_index],
+                                           width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(ps_options):
                 # User selected to reroll.
                 prev_results = [0 for x in die_results]
-                entry_options = "YN"
-                entry_choice = ' '
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous " + \
-                                         "results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Power Source Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
                     for i in range(len(die_results)):
-                        entry_choice = ' '
-                        decision = choose_letter(entry_options,
-                                                 ' ',
-                                                 prompt="Do you want to keep " + \
-                                                        str(die_results[i]) + " on your d" + \
-                                                        str(pdice[i]) + "? (y/n)",
-                                                 repeat_message="Please enter Y or N.",
-                                                 inputs=inputs)
+                        entry_options = ["Yes", "No"]
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt="Do you want to keep " + \
+                                                    str(die_results[i]) + " on your d" + \
+                                                    str(pdice[i]) + "?",
+                                                    title="Power Source Selection",
+                                                    inputs=inputs)
                         entry_choice = decision[0]
                         inputs = decision[1]
-                        if entry_choice == "Y":
+                        if entry_choice == 0:
                             prev_results[i] = die_results[i]
                 rerolls = 0
             else:
@@ -7845,8 +8357,9 @@ class Hero:
         # Walks the user through selecting a Power Source from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Power Source selected.
+        notePrefix = "### ConstructedPowerSource: "
         if len(inputs) > 0:
-            print("### ConstructedPowerSource: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(ps_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -7855,28 +8368,38 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose a Power Source from the list:",
                                     [x[0] for x in ps_collection],
-                                    [PowerSourceDetails(i, width=0) \
+                                    [PowerSourceDetails(i,
+                                                        width=-1,
+                                                        indented=True,
+                                                        breaks=2,
+                                                        grid=False) \
                                      for i in range(len(ps_collection))],
                                     var=answer,
                                     title="Power Source Selection",
+                                    lwidth=35,
+                                    lbuffer=5,
                                     rwidth=ps_width)
             entry_index = answer.get()
         else:
             print("Choose a Power Source from the list:")
             for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + ")")
+                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + \
+                      ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Power Source expanded, or an " + \
+                      "uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Power Source expanded, " + \
-                          "or an uppercase letter to select it.")
-                    print("> " + str(inputs[0]))
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Power Source expanded, " + \
-                                         "or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
-                    DisplayPowerSource(entry_index, "    ", width=100-len("    "))
+                    DisplayPowerSource(entry_index,
+                                       width=100)
             entry_index = entry_options.find(entry_choice)
         print(ps_collection[entry_index][0] + " Power Source selected.")
         return entry_index
@@ -7885,12 +8408,14 @@ class Hero:
                 index,
                 stepnum=0,
                 inputs=[]):
-        # Walks the user through adding a Mode based on the mode_template specified by zone and index.
+        # Walks the user through adding a Mode based on the mode_template specified by zone and
+        #  index.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddMode: "
         if len(inputs) > 0:
-            print("### AddMode: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         this_step = max([0, stepnum])
         mode_template = mc_zones[zone][index]
         t_name = mode_template[0]
@@ -7900,7 +8425,10 @@ class Hero:
         t_prohibited_actions = mode_template[4]
         t_ability_template = mode_template[5]
         print("OK! Let's fill in your new Mode:")
-        DisplayModeTemplate(zone, index, prefix="    ", width=96)
+        DisplayModeTemplate(zone,
+                            index,
+                            width=100,
+                            prefix="    ")
         # For each die size in t_die_sizes, prompt the user to choose a Power to add at that size.
         mode_power_dice = []
         print(self.hero_name + " has the following Power dice:")
@@ -7910,18 +8438,26 @@ class Hero:
             remaining_dice = [d for d in self.power_dice if d.name not in \
                               [e.name for e in mode_power_dice]]
             entry_die = ""
+            die_prompt = ""
+            if len(mode_power_dice) > 0:
+                die_prompt = self.hero_name + "'s current Powers in " + t_name + " are...\n"
+                for d in mode_power_dice:
+                    die_prompt += "    " + str(d) + "\n"
+                die_prompt += "\n"
+            die_prompt += "Choose a Power to add to this mode at d" + str(die_size) + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
                 entry_options = string.ascii_uppercase[0:len(remaining_dice)]
                 entry_choice = ' '
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
-                                            prompt="Choose a Power to add to this mode at d" + \
-                                            str(die_size) + ":",
-                                            inputs=inputs)
+                                            prompt=die_prompt,
+                                            inputs=inputs,
+                                            title="Create Mode: " + t_name,
+                                            width=45,
+                                            buffer=10)
                 entry_index = decision[0]
                 inputs = decision[1]
-                entry_index = entry_options.find(entry_choice)
                 entry_die = remaining_dice[entry_index]
             mp_die = PQDie(entry_die.ispower,
                            entry_die.category,
@@ -7946,15 +8482,24 @@ class Hero:
             remaining_dice = [d for d in self.power_dice if d.name not in \
                               [e.name for e in mode_power_dice]]
             entry_die = ""
+            die_prompt = ""
+            if len(mode_power_dice) > 0:
+                die_prompt = self.hero_name + "'s current Powers in " + t_name + " are...\n"
+                for d in mode_power_dice:
+                    die_prompt += "    " + str(d) + "\n"
+                die_prompt += "\n"
+            die_prompt += "Choose a Power to add to this mode at " + mod_text + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
                 entry_options = string.ascii_uppercase[0:len(remaining_dice)]
                 entry_choice = ' '
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
-                                            prompt="Choose a Power to add to this mode at " + \
-                                            mod_text + ":",
-                                            inputs=inputs)
+                                            prompt=die_prompt,
+                                            inputs=inputs,
+                                            title="Create Mode: " + t_name,
+                                            width=45,
+                                            buffer=10)
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -7975,6 +8520,8 @@ class Hero:
             mode_power_dice.append(mp_die)
         # Have the user fill in the mode's Ability
         m_ability = ""
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -7985,28 +8532,24 @@ class Hero:
                                        alt_powers=mode_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
         mode_name = t_name
-        entry_options = "YN"
-        decision = choose_letter(entry_options,
-                                 ' ',
-                                 prompt="Do you want to give " + t_name + " a new name? (y/n)",
-                                 repeat_message="Please enter Y or N.",
-                                 inputs=inputs)
+        entry_options = ["Yes", "No"]
+        decision = self.ChooseIndex(entry_options,
+                                    prompt="Do you want to give " + t_name + " a new name?",
+                                    title="Mode Creation: " + t_name,
+                                    inputs=inputs)
         entry_choice = decision[0]
         inputs = decision[1]
-        if entry_choice == 'Y':
+        if entry_choice == 0:
             decision = self.EnterText("Enter the new name for this Mode:",
                                       inputs=inputs,
-                                      default=t_name)
+                                      default=t_name,
+                                      title="Mode Creation: " + t_name)
             mode_name = decision[0]
             inputs = decision[1]
-##            if len(inputs) > 0:
-##                print("Enter the new name for this Mode:")
-##                print("> " + str(inputs[0]))
-##                mode_name = inputs.pop(0)
-##            else:
-##                mode_name = input("Enter the new name for this Mode:\n")
         new_mode = [mode_name,
                     zone,
                     mode_power_dice,
@@ -8021,71 +8564,36 @@ class Hero:
     def DisplayMode(self,
                     index,
                     codename=True,
-                    prefix="",
                     width=100,
-                    inputs=[]):
+                    prefix="",
+                    indented=True,
+                    hanging=True):
         # Displays the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
         notePrefix = "### Hero.DisplayMode: "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
-        indent = "    "
-        if index not in range(len(self.other_modes)):
-            printlong(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
-                      self.hero_name + "'s " + str(len(self.other_modes)) + " alternate Modes.",
-                      prefix=prefix,
-                      width=width)
-            return
-        else:
-            mode = self.other_modes[index]
-            if codename:
-                print(prefix + self.hero_name)
-                prefix += indent
-            print(prefix + mode[0] + " (" + status_zones[mode[1]] + " Mode)")
-            if mode[2] == self.power_dice:
-                print(prefix + indent + "[Standard Powers]")
-            else:
-                print(prefix + indent + "Powers:")
-                for d in mode[2]:
-                    print(prefix + indent + indent + str(d))
-            if mode[3] == self.quality_dice:
-                print(prefix + indent + "[Standard Qualities]")
-            else:
-                print(prefix + indent + "Qualities:")
-                for d in mode[3]:
-                    print(prefix + indent + indent + str(d))
-            if mode[4] in [[0,0,0], self.status_dice]:
-                print(prefix + indent + "[Standard Status]")
-            else:
-                for i in range(3):
-                    print(prefix + indent + status_zones[i] + ": " + str(mode[4][i]))
-            if len(mode[6]) > 0:
-                prohibited_text = mode[6][0]
-                for i in range(1, len(mode[6])-1):
-                    prohibited_text += ", " + mode[6][i]
-                if len(mode[6]) > 2:
-                    prohibited_text += ","
-                if len(mode[6]) > 1:
-                    prohibited_text += " or " + mode[6][len(mode[6])-1]
-                print(prefix + indent + "You cannot " + prohibited_text + " in this Mode.")
-            print(prefix + indent + "You gain access to this Ability:")
-            mode[5].display(prefix=prefix+indent+indent,
-                            width=width-len(prefix+indent+indent))
+        print(self.ModeDetails(index,
+                               codename=codename,
+                               width=width,
+                               prefix=prefix,
+                               indented=indented,
+                               hanging=hanging))
     def ModeDetails(self,
                     index,
                     codename=True,
-                    prefix="",
                     width=100,
-                    inputs=[]):
+                    prefix="",
+                    indented=True,
+                    hanging=True):
         # Returns a string containing the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### Hero.ModeDetails: "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
-        indent = "    "
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         modeString = ""
         if index not in range(len(self.other_modes)):
             printlong(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
@@ -8096,26 +8604,48 @@ class Hero:
         else:
             mode = self.other_modes[index]
             if codename:
-                modeString += prefix + self.hero_name + "\n"
+                modeString += split_text(self.hero_name,
+                                         width=width,
+                                         prefix=prefix) + "\n"
                 prefix += indent
-            modeString += prefix + mode[0] + " (" + status_zones[mode[1]] + " Mode)"
+            modeString += split_text(mode[0] + " (" + status_zones[mode[1]] + " Mode)",
+                                     width=width,
+                                     prefix=prefix)
+            if hanging:
+                prefix += "    "
             if mode[2] == self.power_dice:
-                modeString += "\n" + prefix + indent + "[Standard Powers]"
+                modeString += "\n" + split_text("[Standard Powers]",
+                                                width=width,
+                                                prefix=prefix)
             else:
-                modeString += "\n" + prefix + indent + "Powers:"
+                modeString += "\n" + split_text("Powers:",
+                                                width=width,
+                                                prefix=prefix)
                 for d in mode[2]:
-                    modeString += "\n" + prefix + indent + indent + str(d)
+                    modeString += "\n" + split_text(str(d),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             if mode[3] == self.quality_dice:
-                modeString += "\n" + prefix + indent + "[Standard Qualities]"
+                modeString += "\n" + split_text("[Standard Qualities]",
+                                                width=width,
+                                                prefix=prefix)
             else:
-                modeString += "\n" + prefix + indent + "Qualities:"
+                modeString += "\n" + split_text("Qualities:",
+                                                width=width,
+                                                prefix=prefix)
                 for d in mode[3]:
-                    modeString += "\n" + prefix + indent + indent + str(d)
+                    modeString += "\n" + split_text(str(d),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             if mode[4] in [[0,0,0], self.status_dice]:
-                modeString += "\n" + prefix + indent + "[Standard Status]"
+                modeString += "\n" + split_text("[Standard Status]",
+                                                width=width,
+                                                prefix=prefix)
             else:
                 for i in range(3):
-                    modeString += "\n" + prefix + indent + status_zones[i] + ": " + str(mode[4][i])
+                    modeString += "\n" + split_text(status_zones[i] + ": " + str(mode[4][i]),
+                                                    width=width,
+                                                    prefix=prefix)
             if len(mode[6]) > 0:
                 prohibited_text = mode[6][0]
                 for i in range(1, len(mode[6])-1):
@@ -8124,97 +8654,60 @@ class Hero:
                     prohibited_text += ","
                 if len(mode[6]) > 1:
                     prohibited_text += " or " + mode[6][len(mode[6])-1]
-                modeString += "\n" + prefix + indent + "You cannot " + prohibited_text + \
-                              " in this Mode."
-            modeString += "\n" + prefix + indent + "You gain access to this Ability:"
-            modeString += "\n" + mode[5].details(prefix=prefix+indent+indent,
-                                                 width=width-len(prefix+indent+indent))
+                modeString += "\n" + split_text("You cannot " + prohibited_text + " in this Mode.",
+                                                width=width,
+                                                prefix=prefix)
+            modeString += "\n" + split_text("You gain access to this Ability:",
+                                            width=width,
+                                            prefix=prefix)
+            modeString += "\n" + mode[5].details(width=width,
+                                                 prefix=prefix+indent,
+                                                 indented=indented)
         return modeString
     def DisplayForm(self,
                     index,
-                    prefix="",
                     width=100,
-                    codename=True,
-                    inputs=[]):
+                    prefix="",
+                    indented=True,
+                    hanging=True,
+                    codename=True):
         # Displays the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
         notePrefix = "### Hero.DisplayForm: "
-        indent = "    "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
-        if index not in range(len(self.other_forms)):
-            print(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
-                  self.hero_name + "'s " + str(len(self.other_forms)) + " alternate Forms.")
-            return
-        else:
-            form = self.other_forms[index]
-            if codename:
-                print(prefix + self.hero_name)
-                prefix += indent
-            if self.archetype_modifier == 1:
-                dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
-                dv_ps = None
-                if len(dv_check) > 0:
-                    dv_ps = dv_check[0]
-                if form[6] in [0,1]:
-                    print(prefix + form[0] + " (" + status_zones[form[1]] + " Form, " + \
-                          self.dv_tags[form[6]] + ")")
-                else:
-                    print(prefix + form[0] + " (" + status_zones[form[1]] + " Form, [undecided])")
-            else:
-                print(prefix + form[0] + " (" + status_zones[form[1]] + " Form)")
-            if form[2] == self.power_dice:
-                print(prefix + indent + "[Standard Powers]")
-            elif form[2] == [] and dv_ps:
-                print(prefix + indent + "[No Powers (see " + dv_ps.flavorname + ")]")
-            else:
-                print(prefix + indent + "Powers:")
-                for d in form[2]:
-                    print(prefix + indent + indent + str(d))
-            if form[3] == self.quality_dice:
-                print(prefix + indent + "[Standard Qualities]")
-            elif form[3] == [] and dv_ps:
-                print(prefix + indent + "[No Qualities (see " + dv_ps.flavorname + ")]")
-            else:
-                print(prefix + indent + "Qualities:")
-                for d in form[3]:
-                    print(prefix + indent + indent + str(d))
-            if form[4] in [[0,0,0], self.status_dice]:
-                print(prefix + indent + "[Standard Status]")
-            else:
-                for i in range(3):
-                    print(prefix + indent + status_zones[i] + ": " + str(form[4][i]))
-            if len(form[5]) > 1:
-                print(prefix + indent + "You gain access to the following Abilities:")
-            elif len(form[5]) == 1:
-                print(prefix + indent + "You gain access to the following Ability:")
-            for i in range(len(form[5])):
-                form[5][i].display(prefix=prefix+indent+indent,
-                                   width=width-len(prefix+indent+indent))
+        print(self.FormDetails(index,
+                               width=width,
+                               prefix=prefix,
+                               indented=indented,
+                               hanging=hanging,
+                               codename=codename))
     def FormDetails(self,
                     index,
-                    prefix="",
                     width=100,
-                    codename=True,
-                    inputs=[]):
+                    prefix="",
+                    indented=True,
+                    hanging=True,
+                    codename=True):
         # Returns a string containing the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### Hero.FormDetails: "
-        indent = "    "
-        if len(inputs) > 0:
-            print(notePrefix + "inputs=" + str(inputs))
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         formString = ""
         if index not in range(len(self.other_forms)):
             print(notePrefix + "Error! " + str(index) + " is not a valid index for any of " + \
                   self.hero_name + "'s " + str(len(self.other_forms)) + " alternate Forms.")
-            return
+            return ""
         else:
             form = self.other_forms[index]
             if codename:
-                formString = prefix + self.hero_name + "\n"
+                formString = split_text(self.hero_name,
+                                        width=width,
+                                        prefix=prefix) + "\n"
                 prefix += indent
             if self.archetype_modifier == 1:
                 dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
@@ -8222,51 +8715,97 @@ class Hero:
                 if len(dv_check) > 0:
                     dv_ps = dv_check[0]
                 if form[6] in [0,1]:
-                    formString += prefix + form[0] + " (" + status_zones[form[1]] + " Form, " + \
-                                  self.dv_tags[form[6]] + ")"
+                    formString += split_text(form[0] + " (" + status_zones[form[1]] + " Form, " + \
+                                             self.dv_tags[form[6]] + ")",
+                                             width=width,
+                                             prefix=prefix)
                 else:
-                    formString += prefix + form[0] + " (" + status_zones[form[1]] + \
-                                  " Form, [undecided])"
+                    formString += split_text(form[0] + " (" + status_zones[form[1]] + \
+                                             " Form, [undecided])",
+                                             width=width,
+                                             prefix=prefix)
             else:
-                formString += prefix + form[0] + " (" + status_zones[form[1]] + " Form)"
+                formString += split_text(form[0] + " (" + status_zones[form[1]] + " Form)",
+                                         width=width,
+                                         prefix=prefix)
+            if hanging:
+                prefix += "    "
             if form[2] == self.power_dice:
-                formString += "\n" + prefix + indent + "[Standard Powers]"
+                formString += "\n" + split_text("[Standard Powers]",
+                                                width=width,
+                                                prefix=prefix)
             elif form[2] == [] and dv_ps:
-                formString += "\n" + prefix + indent + "[No Powers (see " + dv_ps.flavorname + ")]"
+                formString += "\n" + split_text("[No Powers (see " + dv_ps.flavorname + ")]",
+                                                width=width,
+                                                prefix=prefix)
             else:
-                formString += "\n" + prefix + indent + "Powers:"
+                formString += "\n" + split_text("Powers:",
+                                                width=width,
+                                                prefix=prefix)
                 for d in form[2]:
-                    formString += "\n" + prefix + indent + indent + str(d)
+                    formString += "\n" + split_text(str(d),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             if form[3] == self.quality_dice:
-                formString += "\n" + prefix + indent + "[Standard Qualities]"
+                formString += "\n" + split_text("[Standard Qualities]",
+                                                width=width,
+                                                prefix=prefix)
             elif form[3] == [] and dv_ps:
-                formString += "\n" + prefix + indent + "[No Qualities (see " + dv_ps.flavorname + \
-                              ")]"
+                formString += "\n" + split_text("[No Qualities (see " + dv_ps.flavorname + ")]",
+                                                width=width,
+                                                prefix=prefix)
             else:
-                formString += "\n" + prefix + indent + "Qualities:"
+                formString += "\n" + split_text("Qualities:",
+                                                width=width,
+                                                prefix=prefix)
                 for d in form[3]:
-                    formString += "\n" + prefix + indent + indent + str(d)
-            if form[4] in [[0,0,0], self.status_dice]:
-                formString += "\n" + prefix + indent + "[Standard Status]"
+                    formString += "\n" + split_text(str(d),
+                                                    width=width,
+                                                    prefix=prefix+indent)
+            if form[4] in [[1,1,1], self.status_dice] or \
+               (form[4] == [0,0,0] and self.dv_personality not in range(len(pn_collection))):
+                formString += "\n" + split_text("[Standard Status]",
+                                                width=width,
+                                                prefix=prefix)
+            elif self.dv_personality in range(len(pn_collection)) and \
+                 form[6] == 0 and \
+                 form[4] == [0,0,0]:
+                formString += "\n" + split_text("[" + self.dv_tags[0] + " Status]:",
+                                                width=width,
+                                                prefix=prefix)
+                for i in range(3):
+                    formString += "\n" + split_text(status_zones[i] + ": " + str(self.dv_status[i]),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             else:
                 for i in range(3):
-                    formString += "\n" + prefix + indent + status_zones[i] + ": " + str(form[4][i])
+                    formString += "\n" + split_text(status_zones[i] + ": " + str(form[4][i]),
+                                                    width=width,
+                                                    prefix=prefix)
             if len(form[5]) > 1:
-                formString += "\n" + prefix + indent + \
-                              "You gain access to the following Abilities:"
+                formString += "\n" + split_text("You gain access to the following Abilities:",
+                                                width=width,
+                                                prefix=prefix)
             elif len(form[5]) == 1:
-                formString += "\n" + prefix + indent + "You gain access to the following Ability:"
+                formString += "\n" + split_text("You gain access to the following Ability:",
+                                                width=width,
+                                                prefix=prefix)
             for i in range(len(form[5])):
-                formString += "\n" + form[5][i].details(prefix=prefix+indent+indent,
-                                                        width=width-len(prefix+indent+indent))
+                formString += "\n" + form[5][i].details(width=width,
+                                                        prefix=prefix+indent,
+                                                        indented=indented)
         return formString
-    def ChooseForm(self, zone, stepnum=0, inputs=[]):
+    def ChooseForm(self,
+                   zone,
+                   stepnum=0,
+                   inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
         # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### ChooseForm: "
         if len(inputs) > 0:
-            print("### ChooseForm: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         this_step = max([0, stepnum])
         fc_powers = arc_collection[15][5]
         form_options = form_abilities_green
@@ -8284,13 +8823,16 @@ class Hero:
             dispWidth = 100
             answer = IntVar()
             options = [x.name for x in form_options]
-            details = [x.details() for x in form_options]
+            details = [x.details(width=-1,
+                                 indented=True) for x in form_options]
             question = ExpandWindow(self.myWindow,
                                     prompt,
                                     options,
                                     details,
                                     var=answer,
                                     title="Form Selection",
+                                    lwidth=30,
+                                    lbuffer=5,
                                     rwidth=dispWidth)
             entry_index = answer.get()
         else:
@@ -8300,14 +8842,16 @@ class Hero:
             for i in range(len(form_options)):
                 print("    " + entry_options[i] + ": " + form_options[i].name)
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see a Form expanded, " + \
+                      "or an uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see a Form expanded, " + \
-                          "or an uppercase letter to select it.")
-                    print("> " + str(inputs[0]))
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)
                 else:
-                    entry_choice = input("Enter a lowercase letter to see a Form expanded, " + \
-                                         "or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
                     form_options[entry_index].display()
@@ -8317,9 +8861,7 @@ class Hero:
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
         form_power_dice = []
         form_ability_template.display(prefix="    ")
-        print(self.hero_name + " has the following Powers:")
         for d in self.power_dice:
-            print("    " + str(d))
             form_power_dice.append(PQDie(d.ispower,
                                          d.category,
                                          d.index,
@@ -8327,9 +8869,9 @@ class Hero:
                                          d.flavorname,
                                          stepnum=d.step))
         step_options = "ABCD"
-        step_text = ["Swap 2 Power dice",
-                     "Replace a Power with a Form-Changer Power",
-                     "No further changes"]
+        step_text = ["Yes, swap 2 Power dice",
+                     "Yes, replace a Power with a Form-Changer Power",
+                     "No, no further changes"]
         step_choice = 99
         # The user can swap two power dice, or replace a power die with another Power from the
         #  Form-Changer secondary list, any number of times.
@@ -8349,7 +8891,7 @@ class Hero:
                                         buffer=15)
             step_choice = decision[0]
             inputs = decision[1]
-            if step_text[step_choice] == "Swap 2 Power dice":
+            if step_text[step_choice] == "Yes, swap 2 Power dice":
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
@@ -8400,7 +8942,7 @@ class Hero:
                 else:
                     print(swap_dice[0].name + " and " + swap_dice[1].name + \
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
-            elif step_text[step_choice] == "Replace a Power with a Form-Changer Power":
+            elif step_text[step_choice] == "Yes, replace a Power with a Form-Changer Power":
                 decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                             prompt="Choose a Power die to switch out...",
                                             inputs=inputs,
@@ -8460,6 +9002,8 @@ class Hero:
                     entry_choice = ' '
         # Have the user fill in the form's Ability
         f_ability = ""
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pass_inputs = []
         if len(inputs) > 0:
             if str(inputs[0]) != inputs[0]:
@@ -8470,28 +9014,29 @@ class Hero:
                                        alt_powers=form_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        if track_inputs:
+            print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
         form_name = form_ability_template.name
-        entry_options = "YN"
-        decision = choose_letter(entry_options,
-                                 ' ',
-                                 prompt="Do you want to give " + form_name + " a new name? (y/n)",
-                                 repeat_message="Please enter Y or N",
-                                 inputs=inputs)
+        entry_options = ["Yes", "No"]
+        decision = self.ChooseIndex(entry_options,
+                                    prompt="Do you want to give " + form_name + " a new name?",
+                                    title="Form Creation: " + form_name,
+                                    inputs=inputs)
         entry_choice = decision[0]
         inputs = decision[1]
-        if entry_choice == 'Y':
+        if entry_choice == 0:
             decision = self.EnterText("Enter the new name for this Form:",
                                       inputs=inputs,
                                       default=form_name,
-                                      title="Create Form: " + form_ability_template.name)
+                                      title="Form Creation: " + form_ability_template.name)
             form_name = decision[0]
             inputs = decision[1]
         new_form = [form_name,
                     zone,
                     form_power_dice,
                     self.quality_dice,
-                    self.status_dice,
+                    [1,1,1],
                     [f_ability],
                     -1,
                     this_step]
@@ -8508,21 +9053,29 @@ class Hero:
                                         self.dv_tags[1] + " form for " + \
 					pronouns[self.pronoun_set][1] + "?",
                                         inputs=inputs,
-                                        title="Create Form: " + form_ability_template.name)
+                                        title="Create Form: " + form_ability_template.name,
+                                        width=50,
+                                        buffer=20)
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index < 2:
                 new_form[6] = entry_index
+                new_form[4] = [entry_index] * 3
         self.other_forms.append(new_form)
         print("All set! " + form_name + " added to " + self.hero_name + "'s Form Sheet in " + \
               status_zones[zone] + ".")
-    def AddArchetype(self, arc_index, mod_index=0, a_dice=[], inputs=[]):
+    def AddArchetype(self,
+                     arc_index,
+                     mod_index=0,
+                     a_dice=[],
+                     inputs=[]):
         # Walks the user through adding the Powers/Qualities, Abilities, and Principle they gain
         #  from the specified Archetype or Archetype combo.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddArchetype: "
         if len(inputs) > 0:
-            print("### AddArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if a_dice == []:
             a_dice = self.arc_dice
         # This is Step 3 of hero creation!
@@ -8583,10 +9136,10 @@ class Hero:
         else:
             # This hero has no Archetype, so we can add this one.
             if mod_index > 0:
-                print("OK! You've chosen the " + arc_modifiers[mod_index][0] + ":" + \
-                      your_arc[0] + " Archetype.")
+                arc_title = arc_modifiers[mod_index][0] + ":" + your_arc[0]
             else:
-                print("OK! You've chosen the " + your_arc[0] + " Archetype.")
+                arc_title = your_arc[0]
+            print("OK! You've chosen the " + arc_title + " Archetype.")
             self.archetype = arc_index
             self.archetype_modifier = mod_index
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
@@ -8601,29 +9154,34 @@ class Hero:
                 primary_names = MixedPQ(primary_pqs[0])
                 for triplet in primary_pqs[1:]:
                     primary_names += ", " + MixedPQ(triplet)
-                ext_report += "\n" + split_text(primary_names, width=100, prefix="    ")
+                ext_report += "\n" + split_text(primary_names,
+                                                width=100,
+                                                prefix="    ")
                 ext_report += "\n\nYou already have..."
                 ext_names = str(primary_matches[0])
                 for d in primary_matches[1:]:
                     ext_names += ", " + str(d)
-                ext_report += "\n" + split_text(ext_names, width=100, prefix="    ")
+                ext_report += "\n" + split_text(ext_names,
+                                                width=100,
+                                                prefix="    ")
                 # primary_alt > 0, so the user gets to make a choice
                 if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
                     # Skip or choose another die to gain
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=ext_report + "\n\nDo you want to put one " + \
-                                             "of " + str(a_dice) + " into another option " + \
-                                             "above? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=ext_report + "\n\nDo you want to put " + \
+                                                "one of " + str(a_dice) + " into another " + \
+                                                "option above? (y/n)",
+                                                title="Archetype Selection: " + arc_title,
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
+                    if entry_choice == 0:
                         # Gain one of the primary_pqs that this hero doesn't already have.
                         primary_options = [triplet for triplet in primary_pqs if triplet not in \
                                            [d.triplet() for d in primary_matches]]
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
                         pass_inputs = []
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
@@ -8632,20 +9190,21 @@ class Hero:
                                                    a_dice,
                                                    stepnum=this_step,
                                                    inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
                         a_dice = remainders[1]
                 elif primary_alt == 2:
                     # Skip or swap the die with one of the new ones
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=ext_report + "\n\nDo you want to swap one " + \
-                                             "of the dice you have above for one of " + \
-                                             str(a_dice) + "? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=ext_report + "\n\nDo you want to swap " + \
+                                                "one of the dice you have above for one of " + \
+                                                str(a_dice) + "?",
+                                                title="Archetype Selection: " + arc_title,
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
+                    if entry_choice == 0:
                         swap_index = 0
                         if len(primary_matches) > 1:
                             # Choose one of primary_matches to swap out.
@@ -8655,7 +9214,9 @@ class Hero:
                             decision = self.ChooseIndex([str(x) for x in primary_matches],
                                                         prompt="Choose a " + cat_text + \
                                                         " to change die size:",
-                                                        inputs=inputs)
+                                                        inputs=inputs,
+                                                        width=40,
+                                                        buffer=10)
                             swap_index = decision[0]
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
@@ -8663,7 +9224,9 @@ class Hero:
                         decision = self.ChooseIndex([str(x) for x in a_dice],
                                                     prompt="Choose a new die size for " + \
                                                     str(primary_matches[swap_index]) + ":",
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=40,
+                                                    buffer=10)
                         a_die_index = decision[0]
                         inputs = decision[1]
                         primary_matches[swap_index].SetPrevious(this_step)
@@ -8676,6 +9239,8 @@ class Hero:
             elif len(primary_pqs)==1:
                 # This Archetype has exactly 1 primary power/quality and this hero needs to gain it.
                 # print("primary_pqs[0]: " + str(primary_pqs[0]))
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8685,12 +9250,16 @@ class Hero:
                                               a_dice,
                                               stepnum=this_step,
                                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             elif len(primary_pqs) > 1:
                 # This Archetype has more than 1 primary power/quality and this hero needs to gain
                 #  one of them.
                 primary_options = [triplet for triplet in primary_pqs if triplet not in \
                                    [d.triplet() for d in primary_matches]]
                 remainders = []
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8699,11 +9268,15 @@ class Hero:
                                            a_dice,
                                            stepnum=this_step,
                                            inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 a_dice = remainders[1]
             # Then move on to secondary Powers/Qualities, if there are any:
             if len(secondary_pqs) > 0:
                 # Add 1 of the secondary Powers/Qualities:
                 remainders = []
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8712,48 +9285,49 @@ class Hero:
                                            a_dice,
                                            stepnum=this_step,
                                            inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 a_dice = remainders[1]
                 entry_choice = ' '
-                # If secondary_count is 2 and there are dice remaining, the user can add as many
-                #  more secondary Powers/Qualities as they like
-                while secondary_count > 1 and len(a_dice) > 0 and entry_choice != 'N':
-                    entry_options = "YN"
-                    prompt = "Do you want to add another " + \
-                             categories_singular[DieCategory(secondary_pqs)] + \
-                             " from this list? (y/n)"
-                    names = MixedPQ(secondary_pqs[0])
-                    for triplet in secondary_pqs[1:]:
-                        names += ", " + MixedPQ(triplet)
-                    names = split_text(names, 100)
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt=prompt + "\n\n" + names,
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
-                    entry_choice = decision[0]
-                    inputs = decision[1]
-                    if entry_choice == "Y":
-                        pass_inputs = []
-                        if len(inputs) > 0:
-                            if str(inputs[0]) != inputs[0]:
-                                pass_inputs = inputs.pop(0)
-                        remainders = self.ChoosePQ(secondary_pqs,
-                                                   a_dice,
-                                                   stepnum=this_step,
-                                                   inputs=pass_inputs)
-                        a_dice = remainders[1]
+                # If secondary_count is >1, the user gets to assign any number of dice to
+                #  Powers/Qualities from secondary_pqs, then assign the rest within tertiary_pqs...
+                #  which is the same as saying that each remaining die should be assigned within one
+                #  of those lists.
+                if secondary_count > 1 and len(a_dice) > 0:
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.AssignAllPQ(secondary_pqs + tertiary_pqs,
+                                     a_dice,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+                    a_dice = []
             # Finally, if there are dice remaining, assign them to the tertiary Powers/Qualities:
             if len(a_dice) > 0:
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AssignAllPQ(tertiary_pqs, a_dice, stepnum=this_step, inputs=pass_inputs)
+                self.AssignAllPQ(tertiary_pqs,
+                                 a_dice,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
             #  the time to choose it.
             if self.arc_bonus_quality in legal_dice:
                 arc_q_triplets = [triplet for triplet in \
                                   primary_pqs + secondary_pqs + tertiary_pqs if triplet[0]==0]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -8762,16 +9336,25 @@ class Hero:
                               [self.arc_bonus_quality],
                               stepnum=step_names.index("Power Source"),
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # If this Archetype grants a bonus Power or Quality die, this is the time to choose it.
             if arc_grants_dice:
                 if arc_bonus == 2:
                     # Robot/Cyborg: Gain a d10 Technological Power.
                     print("Bonus: You get a d10 Technological Power.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(Category(1,8), [10], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(Category(1,8),
+                                  [10],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             # Now we start adding Abilities.
             if self.archetype_modifier == 2:
                 # If the hero is Modular, they get Modular abilities and Modes instead of the
@@ -8783,46 +9366,67 @@ class Hero:
                           "Power from any category to fill in the list:")
                     power_triplets = [[1,a,b] for b in range(len(mixed_collection[1][a])) \
                                       for a in range(len(mixed_collection[1]))]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(power_triplets, [6], stepnum=this_step, inputs=pass_inputs)
+                    self.ChoosePQ(power_triplets,
+                                  [6],
+                                  stepnum=this_step,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then add the mandatory Abilities for the Modular archetype:
                 mandatory_abilities = [a for a in arc_modular[7]]
                 for template in mandatory_abilities:
                     zone = template.zone
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChooseAbility([template], zone, stepnum=this_step, inputs=pass_inputs)
+                    self.ChooseAbility([template],
+                                       zone,
+                                       stepnum=this_step,
+                                       inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then start adding Modes.
                 # First, the user gets to choose whether to add a Powerless Mode.
                 prompt = "You can add a Powerless Mode if there are circumstances where you " + \
                          "could be separated from your power source (like having a Power Suit " + \
                          "that provides all your powers).\nDo you want to add a Powerless " + \
-                         "Mode? (y/n)"
-                DisplayModeTemplate(-1,0)
-                entry_options = "YN"
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt=prompt,
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
-                entry_choice = decision[0]
+                         "Mode?\n\n" + ModeTemplateDetails(-1,0)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt=prompt,
+                                            title="Archetype Selection: Modular",
+                                            inputs=inputs)
+                entry_index = decision[0]
                 inputs = decision[1]
-                if entry_choice == 'Y':
+                if entry_index == 0:
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AddMode(-1, 0, stepnum=this_step, inputs=pass_inputs)
+                    self.AddMode(-1,
+                                 0,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then, they get 1 additional Green Mode.
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     options = [x[0] for x in mc_green]
-                    details = [ModeTemplateDetails(0, i) for i in range(len(mc_green))]
+                    details = [ModeTemplateDetails(0,
+                                                   i,
+                                                   indented=True) for i in range(len(mc_green))]
                     rwidth = 100
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
@@ -8831,6 +9435,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype Selection: Modular",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -8840,24 +9446,32 @@ class Hero:
                     for i in range(len(mc_green)):
                         print("    " + entry_options[i] + ": " + mc_green[i][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Mode expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                 "expanded, or an uppercase letter to select " + \
-                                                 "it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
                     entry_index = entry_options.find(entry_choice)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AddMode(0, entry_index, stepnum=this_step, inputs=pass_inputs)
+                self.AddMode(0,
+                             entry_index,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 # Then, they get 2 different Yellow Modes.
                 yellow_indices = [i for i in range(len(mc_yellow))]
                 for x in range(2):
@@ -8869,7 +9483,10 @@ class Hero:
                     if self.UseGUI(inputs):
                         # Create an ExpandWindow to prompt the user
                         options = [mc_yellow[x][0] for x in yellow_indices]
-                        details = [ModeTemplateDetails(1,x) for x in yellow_indices]
+                        details = [ModeTemplateDetails(1,
+                                                       x,
+                                                       width=-1,
+                                                       indented=True) for x in yellow_indices]
                         rwidth = 100
                         answer = IntVar()
                         question = ExpandWindow(self.myWindow,
@@ -8878,6 +9495,8 @@ class Hero:
                                                 details,
                                                 var=answer,
                                                 title="Archetype Selection: Modular",
+                                                lwidth=30,
+                                                lbuffer=5,
                                                 rwidth=rwidth)
                         entry_index = answer.get()
                     else:
@@ -8888,32 +9507,43 @@ class Hero:
                             print("    " + entry_options[i] + ": " + \
                                   mc_yellow[yellow_indices[i]][0])
                         while entry_choice not in entry_options:
+                            print("Enter a lowercase letter to see a Mode expanded, " + \
+                                  "or an uppercase letter to select it.")
                             if len(inputs) > 0:
-                                print("Enter a lowercase letter to see a Mode expanded, " + \
-                                      "or an uppercase letter to select it.")
-                                print("> " + str(inputs[0]))
+                                print("> " + inputs[0])
                                 entry_choice = inputs.pop(0)[0]
                             else:
-                                entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                     "expanded, or an uppercase letter to " + \
-                                                     "select it.\n")[0]
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_choice = input(line_prompt)[0]
                             if entry_choice.upper() in entry_options and \
                                entry_choice not in entry_options:
                                 entry_index = entry_options.find(entry_choice.upper())
                                 DisplayModeTemplate(1, yellow_indices[entry_index])
                         entry_index = entry_options.find(entry_choice)
                     mode_index = yellow_indices[entry_index]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AddMode(1, mode_index, stepnum=this_step, inputs=pass_inputs)
+                    self.AddMode(1,
+                                 mode_index,
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     options = [x[0] for x in mc_red]
-                    details = [ModeTemplateDetails(2, i) for i in range(len(mc_red))]
+                    details = [ModeTemplateDetails(2,
+                                                   i,
+                                                   width=-1,
+                                                   indented=True) for i in range(len(mc_red))]
                     rwidth = 100
                     answer = IntVar()
                     question = ExpandWindow(self.myWindow,
@@ -8922,6 +9552,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Archetype Selection: Modular",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -8931,34 +9563,38 @@ class Hero:
                     for i in range(len(mc_red)):
                         print("    " + entry_options[i] + ": " + mc_red[i][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Mode expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Mode " + \
-                                                 "expanded, or an uppercase letter to select " + \
-                                                 "it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
                     entry_index = entry_options.find(entry_choice)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AddMode(2, entry_index, stepnum=this_step, inputs=pass_inputs)
+                self.AddMode(2,
+                             entry_index,
+                             stepnum=this_step,
+                             inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # As long as the hero isn't Modular, they get the Abilities from their main
                 #  Archetype.
                 # Start with the mandatory Abilities for the Archetype, if applicable:
                 for template in mandatory_abilities:
                     zone = template.zone
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
@@ -8973,13 +9609,8 @@ class Hero:
                             #  arc_zone_abilities:
                             arc_triplets = []
                             for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
                             if (zone == 0 and len(arc_triplets) < green_unique) or \
                                (zone == 1 and len(arc_triplets) < yellow_unique):
                                 # This Ability needs to use a Power/Quality that hasn't been used
@@ -8992,21 +9623,25 @@ class Hero:
                         # This is a Green Ability, and Green Abilities from this Archetype use only
                         #  Powers/Qualities from this Archetype
                         legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     self.ChooseAbility([template],
                                        zone,
                                        triplet_options=legal_triplets,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Then move on to the Green Abilities:
                 # If mixed_abilities exists, then that's the list of Green Ability options
                 if len(mixed_abilities) > 0:
                     green_abilities = mixed_abilities
                 for i in range(green_count):
                     # Add another Green Ability from the list.
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     category_req = -1
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
@@ -9033,13 +9668,8 @@ class Hero:
                             #  arc_zone_abilities:
                             arc_triplets = []
                             for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
 ##                            print("### AddArchetype: arc_triplets=" + str(arc_triplets))
 ##                            print("### AddArchetype: len(arc_triplets)=" + str(len(arc_triplets)))
                             if len(arc_triplets) < green_unique:
@@ -9055,12 +9685,20 @@ class Hero:
                         legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
 ##                    print("### AddArchetype: legal_triplets=" + str(legal_triplets))
                     # Finally, add the ability
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     green_abilities = self.ChooseAbility(green_abilities,
                                                          0,
                                                          triplet_options=legal_triplets,
                                                          category_req=category_req,
                                                          stepnum=this_step,
                                                          inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # Next add the Yellow Abilities, if there are any
                 # If mixed_abilities exists, then green_abilities is the list of Yellow Ability
                 #  options
@@ -9068,10 +9706,6 @@ class Hero:
                     yellow_abilities = green_abilities
                 for i in range(yellow_count):
                     # Add another Yellow Ability from the list.
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
                     legal_triplets = [x.triplet() for x in self.power_dice] + \
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
@@ -9084,33 +9718,42 @@ class Hero:
                             #  met, and if not, restrict this Ability to unused ones.
                             # Start by making a list of the Powers/Qualities already used in
                             #  arc_zone_abilities:
-                            arc_triplets = [[y for y in x.insert_pqs] for x in arc_zone_abilities]
-                            # Remove any repeats
-                            for i in range(len(arc_triplets)):
-                                trip = arc_triplets[i]
-                                for j in range(i + 1, len(arc_triplets)):
-                                    if arc_triplets[j] == trip:
-                                        del arc_triplets[j]
+                            for x in arc_zone_abilities:
+                                arc_triplets += [y for y in x.insert_pqs \
+                                                 if len(y) == 3 and y not in arc_triplets]
                             if len(arc_triplets) < yellow_unique:
                                 # This Ability needs to use a Power/Quality that hasn't been used
                                 #  in this zone before
                                 while len([x for x in legal_triplets if x in arc_triplets]) > 0:
                                     for x in arc_triplets:
-                                        legal_triplets.remove(x)
+                                        if x in legal_triplets:
+                                            legal_triplets.remove(x)
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
                     yellow_abilities = self.ChooseAbility(yellow_abilities,
                                                           1,
                                                           triplet_options=legal_triplets,
                                                           stepnum=this_step,
                                                           inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                 # If the hero is a Form-Changer, create their Forms
                 if self.archetype == 15:
                     # Add 2 Green Forms and 1 Yellow Form.
                     for f_zone in [0,0,1]:
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
                         pass_inputs = []
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
                                 pass_inputs = inputs.pop(0)
                         self.ChooseForm(f_zone, inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
                 # If the hero is a Minion-Maker, select their Minion Forms
                 if self.archetype == 13:
                     entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
@@ -9118,7 +9761,9 @@ class Hero:
                                                 prompt="Choose a Quality to determine the " + \
                                                 "number of Minion Forms " + self.hero_name + \
                                                 " has access to:",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=50,
+                                                buffer=15)
                     entry_index = decision[0]
                     inputs = decision[1]
                     max_forms = self.quality_dice[entry_index].diesize
@@ -9131,23 +9776,54 @@ class Hero:
                         # The user needs to choose their Minion Forms.
                         min_indices = [i for i in range(len(min_collection))]
                         while len(self.min_forms) < max_forms:
-                            entry_options = string.ascii_uppercase[0:len(min_indices)]
-                            print("Choose a Minion Form (#" + str(len(self.min_forms) + 1) + \
-                                  " of " + str(max_forms) + "):")
-                            for i in range(len(min_indices)):
-                                printlong(entry_options[i] + ": " + \
-                                          MinionFormStr(min_collection[min_indices[i]]),
-                                          96, prefix="    ")
-                            decision = choose_letter(entry_options, ' ', inputs=inputs)
-                            entry_choice = decision[0]
-                            inputs = decision[1]
-                            entry_index = entry_options.find(entry_choice)
-                            # EDIT: Use choose_index(), not find()? printlong complicates things
-                            # ...
-                            mf_index = min_indices[entry_index]
-                            self.min_forms.append(min_collection[min_indices.pop(entry_index)])
-                            print("OK! Added " + min_collection[mf_index][0] + " to " + \
-                                  self.hero_name + "'s Minion sheet.")
+                            if self.UseGUI(inputs):
+                                # Use AssignWindow to choose any number of minion forms at once
+                                result = StringVar(self.myFrame)
+                                remaining = max_forms - len(self.min_forms)
+                                questions = AssignWindow(self.myWindow,
+                                                         "Choose exactly " + str(remaining) + \
+                                                         " Minion Forms to add...",
+                                                         ["Add", "Don't Add"],
+                                                         [MinionFormStr(i,
+                                                                        width=-1,
+                                                                        breaks=1) for i in \
+                                                          min_indices],
+                                                         result,
+                                                         default=1,
+                                                         rwidth=10,
+                                                         firstMin=remaining,
+                                                         firstMax=remaining,
+                                                         counter=True,
+                                                         title="Archetype Selection: Minion-Maker")
+                                answers = result.get()
+                                self.min_forms += [min_indices[i] \
+                                                   for i in range(len(min_indices)) \
+                                                   if answers[i] == string.ascii_uppercase[0]]
+                                # ...
+                            else:
+                                # Use the text shell to choose the next minion form
+                                entry_options = string.ascii_uppercase[0:len(min_indices)]
+                                print("Choose a Minion Form (#" + str(len(self.min_forms) + 1) + \
+                                      " of " + str(max_forms) + "):")
+                                for i in range(len(min_indices)):
+                                    printlong(entry_options[i] + ": " + \
+                                              MinionFormStr(min_indices[i],
+                                                            width=-1,
+                                                            breaks=0),
+                                              width=100,
+                                              prefix="    ")
+                                decision = choose_letter(entry_options,
+                                                         ' ',
+                                                         inputs=inputs)
+                                entry_choice = decision[0]
+                                inputs = decision[1]
+                                entry_index = entry_options.find(entry_choice)
+                                # EDIT: Use self.ChooseIndex(), not find()?
+                                # ...
+                                mf_index = min_indices.pop(entry_index)
+                                self.min_forms.append(mf_index)
+                                print("OK! Added " + min_collection[mf_index][0] + " to " + \
+                                      self.hero_name + "'s Minion sheet.")
                         self.mf_step = this_step
             # Next, add any bonus content:
             if arc_bonus == 1:
@@ -9159,49 +9835,70 @@ class Hero:
             # Then add the Principle:
             if self.archetype_modifier == 1:
                 # If the hero is Divided, they take some extra steps here
-                entry_options = "YN"
-                entry_choice = ' '
-                printlong("As a Divided hero, you have two very different forms, such as a " + \
-                          "nonpowered civilian form and a powered heroic form.",
-                          100)
-                print("The default names for these forms are " + self.dv_tags[0] + " and " + \
-                      self.dv_tags[1] + ".")
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to give them custom names? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                prompt = "As a Divided hero, you have two very different forms, such as a " + \
+                         "nonpowered civilian form and a powered heroic form."
+                prompt += "\n" + "The default names for these forms are " + self.dv_tags[0] + \
+                          " and " + self.dv_tags[1] + "."
+                prompt += "\n" + "Do you want to give them custom names?"
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt=prompt,
+                                            title="Archetype Selection: Divided",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
                     for i in range(len(self.dv_tags)):
                         decision = self.EnterText("Enter a new name for your " + self.dv_tags[i] + \
                                                   " form.",
-                                                  inputs=inputs)
+                                                  inputs=inputs,
+                                                  title="Archetype Selection: Divided")
                         self.dv_tags[i] = decision[0]
                         inputs = decision[1]
                         if len(self.dv_tags[i]) == 0:
                             self.dv_tags[i] = dv_defaults[i]
                 # Choose a method of transition
-                entry_options = string.ascii_uppercase[0:len(tr_collection)]
-                entry_choice = ' '
-                print("Choose a method of transformation between your " + self.dv_tags[0] + \
-                      " and " + self.dv_tags[1] + " forms:")
-                for i in range(len(tr_collection)):
-                    print("    " + entry_options[i] + ": " + tr_collection[i][0])
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a transition method expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a transition " + \
-                                             "method expanded, or an uppercase letter to " + \
-                                             "select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
-                entry_index = entry_options.find(entry_choice)
+                tr_prompt = "Choose a method of transformation between your " + self.dv_tags[0] + \
+                            " and " + self.dv_tags[1] + " forms:"
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    answer = IntVar()
+                    options = [tr_collection[i][0] for i in range(len(tr_collection))]
+                    details = [TransitionDetails(i,
+                                                 width=-1,
+                                                 indented=True) for i in range(len(tr_collection))]
+                    question = ExpandWindow(self.myWindow,
+                                            tr_prompt,
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype: Divided - Transition Selection",
+                                            lwidth=35,
+                                            lbuffer=5,
+                                            rwidth=100)
+                    entry_index = answer.get()
+                else:
+                    # Use the shell to prompt the user
+                    entry_options = string.ascii_uppercase[0:len(tr_collection)]
+                    entry_choice = ' '
+                    print(tr_prompt)
+                    for i in range(len(tr_collection)):
+                        print("    " + entry_options[i] + ": " + tr_collection[i][0])
+                    while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a transition method " + \
+                              "expanded, or an uppercase letter to select it.")
+                        if len(inputs) > 0:
+                            print("> " + inputs[0])
+                            entry_choice = inputs.pop(0)[0]
+                        else:
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
+                        if entry_choice.upper() in entry_options and \
+                           entry_choice not in entry_options:
+                            DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
+                    entry_index = entry_options.find(entry_choice)
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
                 # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
@@ -9211,6 +9908,8 @@ class Hero:
                                  if triplet not in arc_triplets]
                 arc_triplets += [triplet for triplet in tertiary_pqs \
                                  if triplet not in arc_triplets]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -9220,28 +9919,55 @@ class Hero:
                                    triplet_options=arc_triplets,
                                    stepnum=this_step,
                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 # Then, choose a build option and create your heroic & civilian forms
                 build_options = [a_divided_psyche, a_split_form]
-                entry_options = string.ascii_uppercase[0:len(build_options)]
-                entry_choice = ' '
-                print("Choose one as the nature of your divided self:")
-                for i in range(len(build_options)):
-                    print("    " + entry_options[i] + ": " + build_options[i].name)
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
+                bo_prompt = "Choose one as the nature of your divided self:"
+                if self.UseGUI(inputs):
+                    # Create an ExpandWindow to prompt the user
+                    answer = IntVar()
+                    options = [build_options[i].name for i in range(len(build_options))]
+                    details = [build_options[i].details(width=-1,
+                                                        indented=False) \
+                               for i in range(len(build_options))]
+                    question = ExpandWindow(self.myWindow,
+                                            bo_prompt,
+                                            options,
+                                            details,
+                                            var=answer,
+                                            title="Archetype: Divided - Divided Nature",
+                                            lwidth=30,
+                                            rwidth=100)
+                    dv_nature = build_options[answer.get()]
+                else:
+                    # Use the shell to prompt the user
+                    entry_options = string.ascii_uppercase[0:len(build_options)]
+                    entry_choice = ' '
+                    print(bo_prompt)
+                    for i in range(len(build_options)):
+                        print("    " + entry_options[i] + ": " + build_options[i].name)
+                    while entry_choice not in entry_options:
                         print("Enter a lowercase letter to see a divided nature expanded, " + \
                               "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        entry_choice = input("Enter a lowercase letter to see a divided nature " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        build_options[entry_options.find(entry_choice.upper())].display(prefix="    ",
-                                                                                        width=96)
-                dv_nature = build_options[entry_options.find(entry_choice)]
+                        if len(inputs) > 0:
+                            print("> " + inputs[0])
+                            entry_choice = inputs.pop(0)[0]
+                        else:
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
+                        if entry_choice.upper() in entry_options and \
+                           entry_choice not in entry_options:
+                            expand_index = entry_options.find(entry_choice.upper())
+                            build_options[expand_index].display(prefix="    ",
+                                                                width=100)
+                    dv_nature = build_options[entry_options.find(entry_choice)]
                 if dv_nature == a_divided_psyche:
                     # Add the Divided Psyche Green Ability
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
@@ -9250,14 +9976,15 @@ class Hero:
                                        0,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
                     # Create a Civilian Form with standard Qualities & Status but no Powers
                     cf_name = self.dv_tags[0] + " Form"
-                    cf_status = self.status_dice
                     civilian_form = [cf_name,
                                      0,
                                      [],
                                      self.quality_dice,
-                                     cf_status,
+                                     [0,0,0],
                                      [],
                                      0,
                                      this_step]
@@ -9266,12 +9993,11 @@ class Hero:
                           "'s Form Sheet in Green.")
                     # Create a Heroic Form with standard Powers and Status but no Qualities
                     hr_name = self.dv_tags[1] + " Form"
-                    hr_status = self.status_dice
                     heroic_form = [hr_name,
                                    0,
                                    self.power_dice,
                                    [],
-                                   hr_status,
+                                   [1,1,1],
                                    [],
                                    1,
                                    this_step]
@@ -9280,7 +10006,7 @@ class Hero:
                           "'s Form Sheet in Green.")
                 elif dv_nature == a_split_form:
                     # Split Form isn't really an Ability, just a set of instructions to follow
-                    #  during this step
+                    #  during this step and the next one
                     if self.archetype == 15:
                         print("I honestly have no idea how this works")
                         # Form-Changer lets you lose and gain Powers when you switch Forms. How
@@ -9296,57 +10022,142 @@ class Hero:
                         unassigned_qualities = [d for d in self.quality_dice]
                         # Pick 2 Powers to be available in both forms.
                         while len(constant_powers) < 2:
-                            entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
-                            decision = self.ChooseIndex([str(x) for x in unassigned_powers],
-                                                        prompt="Choose a Power for " + \
-                                                        self.hero_name + " to have access to " + \
-                                                        "in both " + self.dv_tags[0] + " and " + \
-                                                        self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(unassigned_powers[entry_index]) + \
-                                  " as a constant Power.")
-                            constant_powers.append(unassigned_powers.pop(entry_index))
+                            if len(constant_powers) == 0 and self.UseGUI(inputs):
+                                # Use a SwapWindow to select both constant Powers at once
+                                dispWidth = 100
+                                answer0 = IntVar()
+                                answer1 = IntVar()
+                                prompt = "Choose 2 Powers for " + self.hero_name + \
+                                         " to have access to in both " + self.dv_tags[0] + \
+                                         " and " + self.dv_tags[1] + " Forms:"
+                                title = "Archetype Selection: Divided"
+                                question = SwapWindow(self.myWindow,
+                                                      prompt,
+                                                      [str(x) for x in unassigned_powers],
+                                                      answer0,
+                                                      answer1,
+                                                      title=title,
+                                                      width=dispWidth)
+                                constantIndices = [answer0.get(), answer1.get()]
+                                # Move corresponding power dice from unassigned to constant, in
+                                #  descending order so the indices don't change
+                                constant_powers.append(unassigned_powers.pop(max(constantIndices)))
+                                constant_powers.append(unassigned_powers.pop(min(constantIndices)))
+                            else:
+                                # Select one constant Power at a time
+                                entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
+                                decision = self.ChooseIndex([str(x) for x in unassigned_powers],
+                                                            prompt="Choose a Power for " + \
+                                                            self.hero_name + " to have access " + \
+                                                            "to in both " + self.dv_tags[0] + \
+                                                            " and " + self.dv_tags[1] + " Forms:",
+                                                            inputs=inputs,
+                                                            title="Archetype Selection: Divided",
+                                                            width=50,
+                                                            buffer=15)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(unassigned_powers[entry_index]) + \
+                                      " as a constant Power.")
+                                constant_powers.append(unassigned_powers.pop(entry_index))
                         # Pick 2 Qualities to be available in both forms.
                         while len(constant_qualities) < 2:
-                            entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
-                            decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
-                                                        prompt="Choose a Quality for " + \
-                                                        self.hero_name + " to have access to " + \
-                                                        "in both " + self.dv_tags[0] + " and " + \
-							self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
-                                  " as a constant Quality.")
-                            constant_qualities.append(unassigned_qualities.pop(entry_index))
+                            if len(constant_qualities) == 0 and self.UseGUI(inputs):
+                                # Use a SwapWindow to select both constant Qualities at once
+                                dispWidth = 100
+                                answer0 = IntVar()
+                                answer1 = IntVar()
+                                prompt = "Choose 2 Qualities for " + self.hero_name + \
+                                         " to have access to in both " + self.dv_tags[0] + \
+                                         " and " + self.dv_tags[1] + " Forms:"
+                                title = "Archetype Selection: Divided"
+                                question = SwapWindow(self.myWindow,
+                                                      prompt,
+                                                      [str(x) for x in unassigned_qualities],
+                                                      answer0,
+                                                      answer1,
+                                                      title=title,
+                                                      width=dispWidth)
+                                constantIndices = [answer0.get(), answer1.get()]
+                                # Move corresponding quality dice from unassigned to constant, in
+                                #  descending order so the indices don't change
+                                constant_qualities.append(unassigned_qualities.pop(max(constantIndices)))
+                                constant_qualities.append(unassigned_qualities.pop(min(constantIndices)))
+                            else:
+                                # Select one constant Quality at a time
+                                entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
+                                decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
+                                                            prompt="Choose a Quality for " + \
+                                                            self.hero_name + " to have access " + \
+                                                            "to in both " + self.dv_tags[0] + \
+                                                            " and " + self.dv_tags[1] + " Forms:",
+                                                            inputs=inputs,
+                                                            width=50,
+                                                            buffer=15)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
+                                      " as a constant Quality.")
+                                constant_qualities.append(unassigned_qualities.pop(entry_index))
                         # Assign each remaining Power and Quality to either Civilian or Heroic.
                         unassigned_dice = unassigned_powers + unassigned_qualities
                         while len(unassigned_dice) > 0:
-                            assigning_die = unassigned_dice.pop(0)
-                            entry_options = "AB"
-                            decision = self.ChooseIndex(self.dv_tags,
-                                                        prompt="Which of " + self.hero_name + \
-                                                        "'s Divided Forms should have access " + \
-                                                        "to " + str(assigning_die) + "?",
-                                                        inputs=inputs)
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(assigning_die) + " as a " + \
-                                  self.dv_tags[entry_index] + " " + \
-                                  categories_singular[assigning_die.ispower] + ".")
-                            if entry_index == 0:
-                                if assigning_die.ispower:
-                                    civilian_powers.append(assigning_die)
-                                else:
-                                    civilian_qualities.append(assigning_die)
+                            if self.UseGUI(inputs):
+                                # Use an AssignWindow to assign the remaining dice
+                                result = StringVar(self.myFrame)
+                                questions = AssignWindow(self.myWindow,
+                                                         "Assign " + self.hero_name + \
+                                                         "'s remaining Powers & Qualities to " + \
+                                                         "one of " + \
+                                                         pronouns[self.pronoun_set][2] + \
+                                                         " Divided Forms...",
+                                                         self.dv_tags,
+                                                         [str(x) for x in unassigned_dice],
+                                                         result,
+                                                         title="Archetype Selection: Divided")
+                                answer = result.get()
+                                for i in range(len(unassigned_dice)):
+                                    if answer[i] == string.ascii_uppercase[0]:
+                                        if unassigned_dice[i].ispower:
+                                            civilian_powers.append(unassigned_dice[i])
+                                        else:
+                                            civilian_qualities.append(unassigned_dice[i])
+                                    else:
+                                        if unassigned_dice[i].ispower:
+                                            heroic_powers.append(unassigned_dice[i])
+                                        else:
+                                            heroic_qualities.append(unassigned_dice[i])
+                                unassigned_dice = [x for x in unassigned_dice \
+                                                   if x not in civilian_powers + \
+                                                   civilian_qualities + heroic_powers + \
+                                                   heroic_qualities]
                             else:
-                                if assigning_die.ispower:
-                                    heroic_powers.append(assigning_die)
+                                # Use ChooseIndex to assign the next die
+                                assigning_die = unassigned_dice.pop(0)
+                                entry_options = "AB"
+                                decision = self.ChooseIndex(self.dv_tags,
+                                                            prompt="Which of " + self.hero_name + \
+                                                            "'s Divided Forms should have " + \
+                                                            "access to " + str(assigning_die) + \
+                                                            "?",
+                                                            inputs=inputs,
+                                                            width=50,
+                                                            buffer=10)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + str(assigning_die) + " as a " + \
+                                      self.dv_tags[entry_index] + " " + \
+                                      categories_singular[assigning_die.ispower] + ".")
+                                if entry_index == 0:
+                                    if assigning_die.ispower:
+                                        civilian_powers.append(assigning_die)
+                                    else:
+                                        civilian_qualities.append(assigning_die)
                                 else:
-                                    heroic_qualities.append(assigning_die)
+                                    if assigning_die.ispower:
+                                        heroic_powers.append(assigning_die)
+                                    else:
+                                        heroic_qualities.append(assigning_die)
                         # We're leaving self.power_dice and self.quality_dice as complete lists.
                         # The Heroic form gets the Heroic dice plus the Constant ones:
                         hr_power_dice = [d for d in constant_powers + heroic_powers]
@@ -9357,12 +10168,11 @@ class Hero:
                         # >> Split up the Abilities? <<
                         # ...
                         cf_name = self.dv_tags[0] + " Form"
-                        cf_status = self.status_dice
                         civilian_form = [cf_name,
                                          0,
                                          cf_power_dice,
                                          cf_quality_dice,
-                                         cf_status,
+                                         [0,0,0],
                                          [],
                                          0,
                                          this_step]
@@ -9370,12 +10180,11 @@ class Hero:
                         print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
                               "'s Form Sheet in Green.")
                         hr_name = self.dv_tags[1] + " Form"
-                        hr_status = self.status_dice
                         heroic_form = [hr_name,
                                        0,
                                        hr_power_dice,
                                        hr_quality_dice,
-                                       hr_status,
+                                       [1,1,1],
                                        [],
                                        1,
                                        this_step]
@@ -9393,10 +10202,13 @@ class Hero:
                                                     "hero. Is " + f[0] + " a " + \
                                                     self.dv_tags[0] + " or " + self.dv_tags[1] + \
                                                     " form for them?",
-                                                    inputs=inputs)
+                                                    inputs=inputs,
+                                                    width=50,
+                                                    buffer=20)
                         entry_index = decision[0]
                         inputs = decision[1]
                         f[6] = entry_index
+                        f[4] = [entry_index] * 3
                         print("OK! " + f[0] + " is now marked as a " + self.dv_tags[f[6]] + \
                               " Form.")
                     if dv_nature == a_divided_psyche:
@@ -9412,19 +10224,31 @@ class Hero:
                                 form_editing[3] = []
                 # Finally, choose a Principle from the Divided archetype
                 r_category = arc_divided[18]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePrinciple(r_category,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             else:
                 # As long as your hero isn't Divided, they get their Principle from their main
                 #  Archetype
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.ChoosePrinciple(r_category, stepnum=this_step, inputs=pass_inputs)
+                self.ChoosePrinciple(r_category,
+                                     stepnum=this_step,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             print("That's all for your Archetype!")
     def GuidedArchetype(self, adice=[], inputs=[]):
         # Walks the user through randomly selecting an Archetype as specified in the rulebook.
@@ -9432,8 +10256,9 @@ class Hero:
         #  Defaults to self.arc_dice if not specified.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [Archetype index, modifier index]
+        notePrefix = "### GuidedArchetype: "
         if len(inputs) > 0:
-            print("### GuidedArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         if adice == [] and self.arc_dice == []:
             print("Error! No dice have been specified for this step.")
             return
@@ -9482,15 +10307,21 @@ class Hero:
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" for i in range(len(arc_options))]
+                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
+                           for i in range(len(arc_options))]
                 if rerolls > 0:
                     options += ["REROLL"]
                 question = ExpandWindow(self.myWindow,
                                         roll_report + "\nChoose one:",
                                         options,
-                                        [ArchetypeDetails(i, width=0) for i in arc_indices],
+                                        [ArchetypeDetails(i,
+                                                          width=-1,
+                                                          indented=True,
+                                                          breaks=2,
+                                                          grid=False) for i in arc_indices],
                                         var=answer,
                                         title="Archetype Selection",
+                                        lwidth=35,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -9502,44 +10333,46 @@ class Hero:
                 if rerolls > 0:
                     print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an Archetype expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options[:len(arc_options)] and \
                        entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(arc_indices[entry_index], "    ", 96)
+                        DisplayArchetype(arc_indices[entry_index],
+                                         width=100)
                 entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(arc_options):
                 # User selected to reroll.
                 prev_results = [0 for x in die_results]
-                entry_options = "YN"
-                decision = choose_letter(entry_options,
-                                         ' ',
-                                         prompt="Do you want to keep any of the previous " + \
-                                         "results? (y/n)",
-                                         repeat_message="Please enter Y or N.",
-                                         inputs=inputs)
+                entry_options = ["Yes", "No"]
+                decision = self.ChooseIndex(entry_options,
+                                            prompt="Do you want to keep any of the previous " + \
+                                            "results?",
+                                            title="Archetype Selection",
+                                            inputs=inputs)
                 entry_choice = decision[0]
                 inputs = decision[1]
-                if entry_choice == "Y":
+                if entry_choice == 0:
+                    entry_options = ["Yes", "No"]
                     for i in range(len(die_results)):
-                        decision = choose_letter(entry_options,
-                                                 ' ',
-                                                 prompt="Do you want to keep " + \
-                                                        str(die_results[i]) + " on your d" + \
-                                                        str(adice[i]) + "? (y/n)",
-                                                 repeat_message="Please enter Y or N.",
-                                                 inputs=inputs)
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt="Do you want to keep " + \
+                                                    str(die_results[i]) + " on your d" + \
+                                                    str(adice[i]) + "?",
+                                                    title="Archetype Selection",
+                                                    inputs=inputs)
                         entry_choice = decision[0]
                         inputs = decision[1]
-                        if entry_choice == "Y":
+                        if entry_choice == 0:
                             prev_results[i] = die_results[i]
                 rerolls = 0
             elif arc_indices[entry_index] in range(len(arc_simple)):
@@ -9551,21 +10384,23 @@ class Hero:
                 modifier_index = arc_indices[entry_index] - len(arc_collection) + \
                                  len(arc_modifiers)
                 arc_mod = arc_modifiers[modifier_index]
-                print(arc_mod[0] + " requires another Archetype to modify.")
+                complexText = arc_mod[0] + " requires another Archetype to modify."
                 entry_choice = " "
                 if modifier_index == 2:
                     # Modular gives the user a choice: reroll their dice, or choose the other
                     #  Archetype from their existing options.
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt="Do you want to reroll your Archetype " + \
-                                             "dice before choosing your other Archetype? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=complexText + "\nDo you want to " + \
+                                                "reroll your Archetype dice before choosing " + \
+                                                "your other Archetype? (y/n)",
+                                                title="Archetype Selection: Modular",
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                if modifier_index == 1 or entry_choice == 'Y':
+                else:
+                    print(complexText)
+                if modifier_index == 1 or entry_choice == 0:
                     # Either the modifier is Divided, which requires a reroll, or the modifier is
                     #  Modular and the user has chosen to reroll.
                     print("Rolling " + dice_combo(adice) + " for other Archetype...")
@@ -9618,10 +10453,16 @@ class Hero:
                     question = ExpandWindow(self.myWindow,
                                             roll_report + "\nChoose one:",
                                             options,
-                                            [ArchetypeDetails(i, width=0) \
+                                            [ArchetypeDetails(i,
+                                                              width=-1,
+                                                              indented=True,
+                                                              breaks=2,
+                                                              grid=False) \
                                              for i in arc_indices],
                                             var=answer,
                                             title="Archetype Selection",
+                                            lwidth=35,
+                                            lbuffer=5,
                                             rwidth=arc_width)
                     entry_index = answer.get()
                 else:
@@ -9630,19 +10471,21 @@ class Hero:
                         print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
                               arc_simple[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")")
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see an Archetype expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see an Archetype expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see an " + \
-                                                 "Archetype expanded, or an uppercase letter " + \
-                                                 "to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayArchetype(arc_indices[entry_index], "    ", 96)
+                            DisplayArchetype(arc_indices[entry_index],
+                                             width=100)
                     entry_index = entry_options.find(entry_choice)
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
@@ -9652,8 +10495,9 @@ class Hero:
         # Walks the user through selecting an Archetype from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [Archetype index, modifier index]
+        notePrefix = "### ConstructedArchetype: "
         if len(inputs) > 0:
-            print("### ConstructedArchetype: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         entry_options = string.ascii_uppercase[0:len(arc_collection)]
         entry_choice = ' '
         if self.UseGUI(inputs):
@@ -9662,10 +10506,15 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     "Choose an Archetype from the list:",
                                     [x[0] for x in arc_collection],
-                                    [ArchetypeDetails(i, width=0) \
+                                    [ArchetypeDetails(i,
+                                                      width=-1,
+                                                      indented=True,
+                                                      breaks=2,
+                                                      grid=False) \
                                      for i in range(len(arc_collection))],
                                     var=answer,
                                     title="Archetype Selection",
+                                    lwidth=35,
                                     rwidth=arc_width)
             entry_index = answer.get()
         else:
@@ -9674,17 +10523,20 @@ class Hero:
                 print("    " + entry_options[i] + ": " + arc_collection[i][0] + " (" + str(i+1) + \
                       ")")
             while entry_choice not in entry_options:
+                print("Enter a lowercase letter to see an Archetype expanded, " + \
+                      "or an uppercase letter to select it.")
                 if len(inputs) > 0:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
-                    print("> " + str(inputs[0]))
+                    print("> " + inputs[0])
                     entry_choice = inputs.pop(0)[0]
                 else:
-                    entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                         "expanded, or an uppercase letter to select it.\n")[0]
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt += "> "
+                    entry_choice = input(line_prompt)[0]
                 if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                     entry_index = entry_options.find(entry_choice.upper())
-                    DisplayArchetype(entry_index, "    ", 96)
+                    DisplayArchetype(entry_index,
+                                     width=100)
             entry_index = entry_options.find(entry_choice)
         print(arc_collection[entry_index][0] + " Archetype selected.")
         if entry_index in range(len(arc_simple)):
@@ -9701,10 +10553,16 @@ class Hero:
                                         arc_mod[0] + " modifies another Archetype. Choose " + \
                                         "another Archetype from the list:",
                                         [x[0] for x in arc_simple],
-                                        [ArchetypeDetails(i, width=0) \
+                                        [ArchetypeDetails(i,
+                                                          width=-1,
+                                                          indented=True,
+                                                          breaks=2,
+                                                          grid=False) \
                                          for i in range(len(arc_simple))],
                                         var=answer,
                                         title="Archetype Selection",
+                                        lwidth=35,
+                                        lbuffer=5,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -9714,31 +10572,38 @@ class Hero:
                     print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
                           arc_simple[i][0] + " (" + str(i+1) + ")")
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see an Archetype expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see an Archetype " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(entry_index, "    ", 96)
+                        DisplayArchetype(entry_index,
+                                         width=100)
                 entry_index = entry_options.find(entry_choice)
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
-    def AddPersonality(self, pn_index, dv_index=99, out_index=99, inputs=[]):
+    def AddPersonality(self,
+                       pn_index,
+                       dv_index=99,
+                       out_index=99,
+                       inputs=[]):
         # Adds the Status dice and Out Ability granted by the specified Personality (or
         #  Personalities, in the case of a Divided hero)
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### Hero.AddPersonality: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        print(notePrefix + "pn_index=" + str(pn_index) + " (" + pn_collection[pn_index][0] + ")")
-        if dv_index in range(len(pn_collection)):
-            print(notePrefix + "dv_index=" + str(dv_index) + " (" + pn_collection[dv_index][0] + \
-                  ")")
+##        print(notePrefix + "pn_index=" + str(pn_index) + " (" + pn_collection[pn_index][0] + ")")
+##        if dv_index in range(len(pn_collection)):
+##            print(notePrefix + "dv_index=" + str(dv_index) + " (" + pn_collection[dv_index][0] + \
+##                  ")")
         # This is Step 4 of hero creation!
         this_step = 4
         your_pn = pn_collection[pn_index]
@@ -9752,8 +10617,8 @@ class Hero:
                           self.dv_tags[0] + " form."
             print("Error! " + self.hero_name + " already has " + pn_text)
             input()
-        else:
-            # This hero doesn't have a Personality, so we can add this one.
+        elif pn_index in range(len(pn_collection)):
+            # This hero doesn't have a Personality, and we can add this one.
             self.personality = pn_index
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
@@ -9770,25 +10635,67 @@ class Hero:
             else:
                 print("OK! You've chosen the " + your_pn[0] + " Personality.")
             # Start by giving the hero their Roleplaying Quality at d8.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.ChoosePQDieSize(0, [4, 0], [8], stepnum=this_step, inputs=pass_inputs)
+            self.ChoosePQDieSize(0,
+                                 [4, 0],
+                                 [8],
+                                 stepnum=this_step,
+                                 inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
+            # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
+            #  Psyche and gets no Qualities in Heroic Form(s)
+            matching_dice = [x for x in self.quality_dice if x.step == this_step]
+            rpq_die = matching_dice[0]
+            dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
+            if len(dv_check) > 0:
+                dv_ps = dv_check[0]
+                print(notePrefix + "Divided Psyche found (" + dv_ps.flavorname + ")")
+                # All Civilian Form(s) get this Quality
+                for fm in self.other_forms:
+                    print(notePrefix + "checking " + fm[0] + "...")
+                    if fm[6] == 0 and rpq_die not in fm[3]:
+                        print(notePrefix + fm[0] + " is " + self.dv_tags[fm[6]] + \
+                              ", adding " + rpq_die.flavorname)
+                        fm[3].append(rpq_die)
+                    elif fm[6] != 0:
+                        print(notePrefix + fm[0] + " is " + self.dv_tags[fm[6]])
+                    elif rpq_die in fm[3]:
+                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
+            else:
+##                print(notePrefix + "Divided Psyche not found")
+                # All Form(s) and Mode(s) get this Quality
+                for fm in self.other_forms:
+                    if rpq_die not in fm[3]:
+##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
+                        fm[3].append(rpq_die)
+##                    else:
+##                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
+                for md in self.other_modes:
+                    if rpq_die not in md[3]:
+##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md[0])
+                        md[3].append(rpq_die)
+##                    else:
+##                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
             # Then fill in their status dice and Out Ability.
             out_options = []
             if has_multiple:
                 self.status_dice = [d for d in your_pn[1]]
-                dv_status_dice = [d for d in your_dv_pn[1]]
+                self.dv_status = [d for d in your_dv_pn[1]]
                 printlong("You get " + str(self.status_dice) + " as Status dice in " + \
-                          self.dv_tags[1] + ", and " + str(dv_status_dice) + " in " + \
-                          self.dv_tags[0] + ".", 100)
+                          self.dv_tags[1] + " Form(s), and " + str(self.dv_status) + " in " + \
+                          self.dv_tags[0] + " Form(s).", 100)
                 for i in range(len(self.other_forms)):
                     form_editing = self.other_forms[i]
                     # If this Form isn't the same dv_tag as the base form, give it the status dice
                     #  from the non-base Personality.
-                    if form_editing[6] != 1:
-                        form_editing[4] = [x for x in dv_status_dice]
+                    if form_editing[6] == 0:
+                        form_editing[4] = [0,0,0]
                 out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
                 if out_options[0] == out_options[1]:
                     del out_options[1]
@@ -9802,6 +10709,8 @@ class Hero:
                 #  or GuidedPersonality()
                 out_options = [out_options[out_index]]
             # Add the Out Ability (letting the user choose, if there's more than one).
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -9810,6 +10719,8 @@ class Hero:
                                3,
                                stepnum=this_step,
                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add any bonus content, if applicable
             your_personalities = [self.personality]
             if has_multiple:
@@ -9880,6 +10791,15 @@ class Hero:
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f[0] + ".")
+                        # Other Modes always have their own Power lists using a subset of the base
+                        #  Powers, so check those too
+                        for m in self.other_modes:
+                            for d in m[2]:
+                                if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
+                                    d.SetPrevious(this_step)
+                                    d.diesize += 2
+                                    print("Upgraded " + d.flavorname + " to d" + \
+                                          str(d.diesize) + " in " + m[0] + ".")
                     else:
                         # Upgrading a Quality
                         # Find all Quality dice matching this triplet that can be upgraded, and
@@ -9905,6 +10825,8 @@ class Hero:
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f[0] + ".")
+                        # Other Modes always use the Qualities from the base sheet (so far), so no
+                        #  need to check them
                 elif this_bonus == 2:
                     # Mischievous: You may use any Power or Quality to determine Health.
                     for i in range(len(mixed_collection)):
@@ -9912,28 +10834,28 @@ class Hero:
                             self.health_pqs += [triplet for triplet in Category(i, j) \
                                                 if triplet not in self.health_pqs]
             print("That's all for your Personality.")
+        else:
+            # This hero doesn't have a Personality, but pn_index is invalid
+            print("Error! Invalid Personality index: " + str(pn_index))
     def GuidedPersonality(self, inputs=[]):
         # Walks the user through randomly choosing Personality(ies) as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### GuidedPersonality: "
         if len(inputs) > 0:
-            print("### GuidedPersonality: inputs=" + str(inputs))
-        multiple_choice = False
+            print(notePrefix + "inputs=" + str(inputs))
+        is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is
             #  1 (Divided), then they get to choose whether their hero gets more than 1
             #  Personality.
-            multiple_choice = True
-        is_multiple = False
-        if multiple_choice:
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to use two different Personalities? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to use two different Personalities?",
+                                        title="Personality Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            is_multiple = (entry_choice == "Y")
+            is_multiple = (entry_choice == 0)
         if is_multiple:
             # The rulebook says "you may take two different personalities - one for each of your
             #  forms"... but doesn't specify whether you should ROLL twice when using the Guided
@@ -9950,13 +10872,13 @@ class Hero:
             while rerolls >= 0:
                 die_results = []
                 if prev_result < 1:
-                    print("Rolling 2d10 for Personality...")
+                    roll_report = "Rolling 2d10 for Personality..."
                     die_results = [random.randint(1, 10), random.randint(1, 10)]
                 else:
-                    print("Keeping " + str(prev_result) + \
-                          " from previous roll. Rolling 1d10 for Personality...")
+                    roll_report = "Keeping " + str(prev_result) + \
+                                  " from previous roll. Rolling 1d10 for Personality..."
                     die_results = [prev_result, random.randint(1, 10)]
-                print("Rolled " + str(die_results[0]) + " and " + str(die_results[1]) + ".")
+                roll_report = "Rolled " + str(die_results[0]) + " and " + str(die_results[1]) + "."
                 # The player can choose between any single result or the sum of any pair of results.
                 # Since there are only two dice, this is a straightforward list: the two results
                 #  and their sum.
@@ -9976,54 +10898,71 @@ class Hero:
                                for i in range(len(pn_indices))]
                     if rerolls > 0:
                         options += ["REROLL"]
-                    details = [PersonalityDetails(i, width=0) for i in pn_indices]
+                    details = [PersonalityDetails(i,
+                                                  width=-1,
+                                                  indented=True,
+                                                  breaks=2) for i in pn_indices]
                     question = ExpandWindow(self.myWindow,
-                                            "Choose one:",
+                                            roll_report + "\n\nChoose one:",
                                             options,
                                             details,
                                             var=answer,
                                             title="Personality Selection",
-                                            rwidth=pn_Width)
+                                            lwidth=20,
+                                            lbuffer=0,
+                                            rwidth=pn_width)
                     entry_index = answer.get()
                 else:
+                    print(roll_report)
                     for i in range(len(entry_options)-rerolls):
                         print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0] + \
                               " (" + str(pn_options[i]) + ")")
                     if rerolls > 0:
                         print("    " + entry_options[len(entry_options)-1] + ": REROLL")
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Personality expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Personality expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a Personality " + \
-                                                 "expanded, or an uppercase letter to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice.upper() in entry_options[:-1] and \
                            entry_choice not in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(pn_indices[entry_index], "    ")
+                            DisplayPersonality(pn_indices[entry_index],
+                                               width=100)
                     entry_index = entry_options.find(entry_choice)
                 # Now we have a commitment to a valid choice from the list.
                 if entry_index == len(pn_options):
                     # User selected to reroll.
-                    entry_options = "YN"
-                    decision = choose_letter(entry_options,
-                                             ' ',
-                                             prompt="Do you want to keep any of the previous results? (y/n)",
-                                             repeat_message="Please enter Y or N.",
-                                             inputs=inputs)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt="Do you want to keep any of the " + \
+                                                "previous results? (y/n)",
+                                                title="Personality Selection",
+                                                inputs=inputs)
                     entry_choice = decision[0]
                     inputs = decision[1]
-                    if entry_choice == 'Y':
-                        entry_options = string.ascii_uppercase[0:len(die_results)]
-                        decision = self.ChooseIndex([str(x) for x in die_results],
-                                                    prompt="Choose which result to keep:",
-                                                    inputs=inputs,
-                                                    width=25)
-                        inputs = decision[1]
-                        prev_result = die_results[decision[0]]
+                    if entry_choice == 0:
+                        # Only two dice were rolled. There's no point in rolling again if you want
+                        #  to keep both, and no point in keeping anything if you want to keep
+                        #  neither. Therefore, the user wants to keep exactly one.
+                        if die_results[0] == die_results[1]:
+                            # If both values are the same, there's no choice to make here
+                            prev_result = die_results[0]
+                        else:
+                            entry_options = string.ascii_uppercase[0:len(die_results)]
+                            decision = self.ChooseIndex([str(x) + " (" + pn_collection[x-1][0] + \
+                                                         ")" for x in die_results],
+                                                        prompt="Choose which result to keep:",
+                                                        inputs=inputs,
+                                                        width=25)
+                            inputs = decision[1]
+                            prev_result = die_results[decision[0]]
                     rerolls = 0
                 else:
                     # User selected a personality.
@@ -10032,24 +10971,21 @@ class Hero:
     def ConstructedPersonality(self, inputs=[]):
         # Walks the user through choosing Personality(ies) from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### ConstructedPersonality: "
         if len(inputs) > 0:
-            print("### ConstructedPersonality: inputs=" + str(inputs))
-        multiple_choice = False
+            print(notePrefix + "inputs=" + str(inputs))
+        is_multiple = False
         if self.archetype_modifier in [1,99]:
             # If the hero has no assigned Archetype modifier, or if their Archetype modifier is 1
             #  (Divided), then they get to choose whether their hero gets more than 1 Personality.
-            multiple_choice = True
-        is_multiple = False
-        if multiple_choice:
-            entry_options = "YN"
-            decision = choose_letter(entry_options,
-                                     ' ',
-                                     prompt="Do you want to use two different Personalities? (y/n)",
-                                     repeat_message="Please enter Y or N.",
-                                     inputs=inputs)
+            entry_options = ["Yes", "No"]
+            decision = self.ChooseIndex(entry_options,
+                                        prompt="Do you want to use two different Personalities?",
+                                        title="Personality Selection",
+                                        inputs=inputs)
             entry_choice = decision[0]
             inputs = decision[1]
-            is_multiple = (entry_choice == "Y")
+            is_multiple = (entry_choice == 0)
         if is_multiple:
             # Choose 2 Personalities and 1 Out Ability.
             # Returns [Heroic Personality index, Civilian Personality index, Out Ability index]
@@ -10064,13 +11000,18 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [pn_collection[x][0] for x in pn_indices]
-                    details = [PersonalityDetails(x, width=0) for x in pn_indices]
+                    details = [PersonalityDetails(x,
+                                                  width=-1,
+                                                  indented=True,
+                                                  breaks=2) for x in pn_indices]
                     question = ExpandWindow(self.myWindow,
                                             prompt,
                                             options,
                                             details,
                                             var=answer,
                                             title="Personality Selection",
+                                            lwidth=30,
+                                            lbuffer=10,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -10078,19 +11019,21 @@ class Hero:
                     for i in range(len(pn_indices)):
                         print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0])
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see a Personality expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see a Personality expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see a " + \
-                                                 "Personality expanded, or an uppercase " + \
-                                                 "letter to select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice not in entry_options and \
                            entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(entry_index)
+                            DisplayPersonality(entry_index,
+                                               width=100)
                     entry_index = entry_options.find(entry_choice)
                 print(pn_collection[entry_index][0] + " Personality selected.")
                 # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
@@ -10125,13 +11068,18 @@ class Hero:
                 # Create an ExpandWindow to prompt the user.
                 answer = IntVar()
                 options = [x[0] for x in pn_collection]
-                details = [PersonalityDetails(i, width=0) for i in range(len(pn_collection))]
+                details = [PersonalityDetails(i,
+                                              width=-1,
+                                              indented=True,
+                                              breaks=2) for i in range(len(pn_collection))]
                 question = ExpandWindow(self.myWindow,
                                         "Choose a Personality from the list:",
                                         options,
                                         details,
                                         var=answer,
                                         title="Personality Selection",
+                                        lwidth=35,
+                                        lbuffer=10,
                                         rwidth=pn_width)
                 entry_index = answer.get()
             else:
@@ -10139,17 +11087,20 @@ class Hero:
                 for i in range(len(pn_collection)):
                     print("    " + entry_options[i] + ": " + pn_collection[i][0])
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a Personality expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a Personality " + \
-                                             "expanded, or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice not in entry_options and entry_choice.upper() in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPersonality(entry_index)
+                        DisplayPersonality(entry_index,
+                                           width=100)
                 entry_index = entry_options.find(entry_choice)
             print(pn_collection[entry_index][0] + " Personality selected.")
             return [entry_index]
@@ -10158,8 +11109,9 @@ class Hero:
         #  the hero's current Powers and Qualities.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddRedAbility: "
         if len(inputs) > 0:
-            print("### AddRedAbility: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         slots_remaining = True
         # This is Step 5 of hero creation!
         this_step = 5
@@ -10239,13 +11191,11 @@ class Hero:
                 pq_sublists.append([d for d in self.power_dice])
                 ra_sublists.append([rt for rt in ra_minion_maker])
                 sublist_strings.append("for Minion-Maker heroes")
-                # ...
             # Show the user the list of sublists of Red Abilities and corresponding
             #  Powers/Qualities
             if self.UseGUI(inputs):
                 # Create an ExpandWindow to prompt the user
                 answer = IntVar()
-                dispWidth = 100
                 details = ["" for i in range(len(pq_sublists))]
                 for i in range(len(pq_sublists)):
                     pq_first = pq_sublists[i][0]
@@ -10267,14 +11217,17 @@ class Hero:
                         sublist_strings[i] = "using " + str(pq_first)
                     details[i] = "Red Abilities " + sublist_strings[i] + ":"
                     for rt in ra_sublists[i]:
-                        details[i] += "\n" + rt.details(width=dispWidth)
+                        details[i] += "\n" + rt.details(width=-1,
+                                                        indented=True)
                 question = ExpandWindow(self.myWindow,
                                         "Choose a category to gain a Red Ability from:",
                                         sublist_strings,
                                         details,
                                         var=answer,
                                         title="Red Ability Selection",
-                                        rwidth=dispWidth)
+                                        lwidth=35,
+                                        lbuffer=15,
+                                        rwidth=100)
                 entry_index = answer.get()
             else:
                 entry_options = string.ascii_uppercase[0:len(pq_sublists)]
@@ -10301,24 +11254,29 @@ class Hero:
                     for rt in ra_sublists[i]:
                         print("            " + str(rt))
                 while entry_choice not in entry_options:
+                    print("Enter a lowercase letter to see a category expanded, " + \
+                          "or an uppercase letter to select it.")
                     if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a category expanded, " + \
-                              "or an uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
+                        print("> " + inputs[0])
                         entry_choice = inputs.pop(0)[0]
                     else:
-                        entry_choice = input("Enter a lowercase letter to see a category expanded, " + \
-                                             "or an uppercase letter to select it.\n")[0]
+                        line_prompt = ""
+                        if track_inputs:
+                            line_prompt += "> "
+                        entry_choice = input(line_prompt)[0]
                     if entry_choice.upper() in entry_options and entry_choice not in entry_options:
                         entry_index = entry_options.find(entry_choice.upper())
                         print("Red Abilities " + sublist_strings[entry_index] + ":")
                         for rt in ra_sublists[entry_index]:
-                            rt.display(prefix="    ", width=96)
+                            rt.display(prefix="    ",
+                                       width=96)
                 entry_index = entry_options.find(entry_choice)
             # Now we have the user's choice of category.
             # Send that set of Red Abilities and the corresponding restrictions on which
             #  Powers/Qualities to use to ChooseAbility to let them pick an Ability to finish and
             #  add.
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10328,13 +11286,17 @@ class Hero:
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
                                inputs=pass_inputs)
-    def AddRetcon(self, inputs=[]):
+            if track_inputs:
+                print(notePrefix + tracker_close)
+    def AddRetcon(self,
+                  inputs=[]):
         # Walks the user through choosing and implementing one of the AddRetcon options defined in
         #  the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
+        notePrefix = "### AddRetcon: "
         if len(inputs) > 0:
-            print("### AddRetcon: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is step 6 of hero creation!
         this_step = 6
         if self.used_retcon:
@@ -10464,14 +11426,18 @@ class Hero:
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
                     options = [str(x) for x in ability_options]
-                    details = [x.details(width=100) for x in ability_options]
+                    details = [x.details(width=-1,
+                                         indented=True) for x in ability_options]
                     prompt = "Choose an Ability to edit:"
                     question = ExpandWindow(self.myWindow,
                                             prompt,
                                             options,
                                             details,
                                             var=answer,
-                                            title="Retcon",
+                                            title="Retcon: Change an Ability's related " + \
+                                            "Power/Quality",
+                                            lwidth=30,
+                                            lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
                 else:
@@ -10481,15 +11447,16 @@ class Hero:
                     for i in range(len(ability_options)):
                         print("    " + entry_options[i] + ": " + str(ability_options[i]))
                     while entry_choice not in entry_options:
+                        print("Enter a lowercase letter to see an Ability expanded, " + \
+                              "or an uppercase letter to select it.")
                         if len(inputs) > 0:
-                            print("Enter a lowercase letter to see an Ability expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            print("> " + str(inputs[0]))
+                            print("> " + inputs[0])
                             entry_choice = inputs.pop(0)[0]
                         else:
-                            entry_choice = input("Enter a lowercase letter to see an " + \
-                                                 "Ability expanded, or an uppercase letter to " + \
-                                                 "select it.\n")[0]
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0]
                         if entry_choice not in entry_options and \
                            entry_choice.upper() in entry_options:
                             entry_index = entry_options.find(entry_choice.upper())
@@ -10503,7 +11470,9 @@ class Hero:
                     decision = self.ChooseIndex([MixedPQ(x) for x in non_empty_inserts],
                                                 prompt="Which Power/Quality would you like to " + \
                                                 "replace?",
-                                                inputs=inputs)
+                                                inputs=inputs,
+                                                width=40,
+                                                buffer=10)
                     edit_index = decision[0]
                     inputs = decision[1]
                 # Find the correct list of powers and qualities to choose a replacement from
@@ -10534,7 +11503,9 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in pq_options],
                                             prompt="Choose a Power or Quality to replace " + \
                                             str(replaced_pq) + " in " + str(edit_ability) + ":",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
@@ -10550,6 +11521,8 @@ class Hero:
                 # Let the user choose a Power or Quality to add from any category using ChoosePQ
                 power_triplets = AllCategories(1)
                 quality_triplets = AllCategories(0)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -10558,6 +11531,8 @@ class Hero:
                               [6],
                               stepnum=this_step,
                               inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
                 # red_upgrade_sizes: list of individually defined Red status die sizes that can be
@@ -10567,23 +11542,49 @@ class Hero:
                 #  sizes in red_upgrade_sizes
                 red_upgrade_forms = []
                 base_form = "Base Form"
+                alt_pn_form = self.dv_tags[0] + " Form"
                 if self.status_dice[2] < max(legal_dice):
                     # The Red die in the base form is small enough that it can be upgraded
                     red_upgrade_sizes.append(self.status_dice[2])
                     # Include it in the list of form indices as 99
                     red_upgrade_forms.append(99)
                 if self.archetype_modifier == 1:
-                    base_form = self.dv_tags[1]
+                    # Divided heroes don't have a "base" form, just two forms/sets of forms that
+                    #  they switch between
+                    base_form = self.dv_tags[1] + " Form"
+                    if self.dv_status[2] in legal_dice and self.dv_status[2] < max(legal_dice):
+                        # The Red die in the alternate form is small enough that it can be upgraded
+                        red_upgrade_sizes.append(self.dv_status[2])
+                        # Include it in the list of form indices as 100
+                        red_upgrade_forms.append(100)
                 # Check each alternate Form to see if its Red status die is individually defined,
                 #  and if so, whether it can be upgraded
                 for i in range(len(self.other_forms)):
                     fm = self.other_forms[i]
-                    if fm[4][2] == 0:
-                        # This form relies on the base form for its status dice, and won't need to
-                        #  be updated if that die is changed
-                        base_form += "/" + fm[0]
+                    if fm[4] == [1,1,1]:
+                        # This form relies on the base/Heroic form for its status dice, and won't
+                        #  need to be updated if that die is changed
+                        if len(fm[5]) > 0:
+                            # This form has an Ability, which means it's from Form-Changer, so its
+                            #  name goes at the end of the list
+                            if len(base_form) > 0:
+                                base_form += "/"
+                            base_form += fm[0]
+                        # If the form has no Ability, it's from Divided, and its name is already
+                        #  on the list
+                    elif fm[4] == [0,0,0]:
+                        # This form relies on the Divided/Civilian form for its status dice, and
+                        #  won't need to be updated if that die is changed
+                        if len(fm[5]) > 0:
+                            # This form has an Ability, which means it's from Form-Changer, so its
+                            #  name goes at the end of the list
+                            if len(alt_pn_form) > 0:
+                                alt_pn_form += "/"
+                            base_form += fm[0]
+                        # If the form has no Ability, it's from Divided, and its name is already
+                        #  on the list
                     elif fm[4][2] < max(legal_dice):
-                        # This form's status dice are individually defined (fm[4][2] != 0)...
+                        # This form's status dice are individually defined (fm[4] isn't all 0 or 1),
                         # ... and the Red one is small enough that it can be upgraded
                         #  (fm[4][2] < max(legal_dice))
                         red_upgrade_sizes.append(fm[4][2])
@@ -10599,23 +11600,37 @@ class Hero:
                     #  one?
                     # For now, let the user choose.
                     entry_options = string.ascii_uppercase[0:len(red_upgrade_sizes)+1]
-                    print("Which Red status die should be upgraded?")
+                    prompt = "Which Red status die should be upgraded?"
                     # Options for upgrading the Red die of a specific non-base form
+                    upgrade_options = []
                     for i in range(len(red_upgrade_sizes)):
                         if red_upgrade_forms[i] == 99:
-                            print("    " + entry_options[i] + ": d" + str(red_upgrade_sizes[i]) + \
-                                  " (" + base_form + ")")
+                            upgrade_options.append("d" + str(red_upgrade_sizes[i]) + " (" + \
+                                                   base_form + ")")
+                        elif red_upgrade_forms[i] == 100:
+                            upgrade_options.append("d" + str(red_upgrade_sizes[i]) + " (" + \
+                                                   alt_pn_form + ")")
                         else:
-                            print("    " + entry_options[i] + ": d" + str(red_upgrade_sizes[i]) + \
-                                  " (" + self.other_forms[red_upgrade_forms[i]][0] + ")")
+                            upgrade_options.append("d" + str(red_upgrade_sizes[i]) + " (" + \
+                                                   self.other_forms[red_upgrade_forms[i]][0] + ")")
                     # Last option: upgrade all Red dice
-                    print("    " + entry_options[-1] + ": All")
-                    decision = choose_letter(entry_options, ' ', inputs=inputs)
-                    entry_choice = decision[0]
+                    upgrade_options.append("All")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    decision = self.ChooseIndex(upgrade_options,
+                                                prompt,
+                                                title="Retcon: Upgrade Red status die",
+                                                inputs=pass_inputs,
+                                                width=50,
+                                                buffer=15)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+                    entry_index = decision[0]
                     inputs = decision[1]
-                    entry_index = entry_options.find(entry_choice)
-                    # EDIT: Use choose_index(), not find()? print_options would be complex...
-                    # ...
                     if entry_index == len(entry_options) - 1:
                         # User chose to upgrade all Red status dice
                         print("Upgrading all of " + self.hero_name + "'s Red status dice...")
@@ -10638,6 +11653,14 @@ class Hero:
                         print("Upgraded " + self.hero_name + "'s " + base_form + \
                               " Red status die to d" + str(self.status_dice[2]) + ".")
                         self.used_retcon = True
+                    elif red_upgrade_forms[entry_index] == 100:
+                        # User chose to upgrade the Red status die from their Divided personality
+                        self.dv_status[2] += 2
+                        if this_step not in self.status_steps_modified:
+                            self.status_steps_modified.append(this_step)
+                        print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
+                              " Red status die to d" + str(self.dv_status[2]) + ".")
+                        self.used_retcon = True
                     else:
                         # User chose to upgrade an alternate Red status die
                         edit_form = self.other_forms[red_upgrade_forms[entry_index]]
@@ -10652,11 +11675,14 @@ class Hero:
                         self.status_steps_modified.append(this_step)
                     print("Upgraded " + self.hero_name + "'s Red status die to d" + \
                           str(self.status_dice[2]) + ".")
-                    for fm in self.other_forms:
-                        if fm[4][2] not in [0, self.status_dice[2]]:
-                            # These were the same when we started; they should be the same now
-                            fm[4][2] = self.status_dice[2]
                     self.used_retcon = True
+                elif red_upgrade_forms[0] == 100:
+                    # Only one Red die size can be upgraded, and it's from the Divided personality.
+                    self.dv_status[2] += 2
+                    if this_step not in self.status_steps_modified:
+                        self.status_steps_modified.append(this_step)
+                    print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
+                          " Red status die to d" + str(self.status_dice[2]) + ".")
                 else:
                     # Only one Red die size can be upgraded, and it's from an alternate form.
                     edit_form = self.other_forms[red_upgrade_forms[0]]
@@ -10685,6 +11711,8 @@ class Hero:
                                             details,
                                             var=answer,
                                             title="Retcon: Change a Principle",
+                                            lwidth=25,
+                                            lbuffer=5,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -10700,9 +11728,14 @@ class Hero:
                             print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0].upper()
                         else:
-                            entry_choice = input()[0].upper()
+                            line_prompt = ""
+                            if track_inputs:
+                                line_prompt += "> "
+                            entry_choice = input(line_prompt)[0].upper()
                     entry_index = entry_options.find(entry_choice)
                 # Then use ChoosePrinciple to let them choose which to add
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
@@ -10710,15 +11743,21 @@ class Hero:
                 self.ChoosePrinciple(entry_index,
                                      stepnum=this_step,
                                      inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Gain another Red Ability":
                 # Let the user add another Red Ability using AddRedAbility
+                if track_inputs:
+                    print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
                 self.AddRedAbility(retcon_step=this_step,
                                    inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 self.used_retcon = True
         if self.used_retcon:
             self.RefreshFrame()
@@ -10736,8 +11775,9 @@ class Hero:
         # Walks the user through determining the hero's max Health and ranges for each status zone.
         # roll: the result of 1d8, prepared earlier
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### AddHealth: "
         if len(inputs) > 0:
-            print("### AddHealth: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         # This is step 7 of hero creation!
         this_step = 7
         if self.health_zones != [0,0,0]:
@@ -10774,7 +11814,9 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in pq_options],
                                             prompt="Choose a Power or Quality to use for " + \
                                             self.hero_name + "'s max Health:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 pq_report = "Using " + str(pq_options[entry_index]) + " from " + self.hero_name + \
@@ -10789,7 +11831,7 @@ class Hero:
                     red_options.append(md[4][2])
                     red_sources.append(md[0])
             for fm in self.other_forms:
-                if fm[4][2] not in [0] + red_options:
+                if fm[4][2] not in [0,1] + red_options:
                     red_options.append(fm[4][2])
                     red_sources.append(fm[0])
             red_part = 0
@@ -10802,7 +11844,9 @@ class Hero:
                                              for i in range(len(red_options))],
                                             prompt="Choose a Red status die to use for " + \
                                             self.hero_name + "'s max Health:",
-                                            inputs=inputs)
+                                            inputs=inputs,
+                                            width=50,
+                                            buffer=15)
                 entry_index = decision[0]
                 inputs = decision[1]
                 red_report = "Using d" + str(red_options[entry_index]) + " from " + \
@@ -10842,8 +11886,9 @@ class Hero:
     def CreateHero(self, health_roll=99, inputs=[]):
         # Walks the user through hero creation from start to finish.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        notePrefix = "### CreateHero: "
         if len(inputs) > 0:
-            print("### CreateHero: inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         indent = "    "
@@ -10863,6 +11908,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10871,12 +11918,19 @@ class Hero:
                 bg_index = self.GuidedBackground(inputs=pass_inputs)
             else:
                 bg_index = self.ConstructedBackground(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Background
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddBackground(bg_index, inputs=pass_inputs)
+            self.AddBackground(bg_index,
+                               inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose a Power Source
         print("2. Power Source")
         if self.power_source in range(len(ps_collection)):
@@ -10893,6 +11947,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10901,12 +11957,19 @@ class Hero:
                 ps_index = self.GuidedPowerSource(inputs=pass_inputs)
             else:
                 ps_index = self.ConstructedPowerSource(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Power Source
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddPowerSource(ps_index, inputs=pass_inputs)
+            self.AddPowerSource(ps_index,
+                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose an Archetype
         print("3. Archetype")
         if self.archetype in range(len(arc_collection)):
@@ -10925,6 +11988,8 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10933,12 +11998,20 @@ class Hero:
                 arc_indices = self.GuidedArchetype(inputs=pass_inputs)
             else:
                 arc_indices = self.ConstructedArchetype(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Archetype
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddArchetype(arc_indices[0], arc_indices[1], inputs=pass_inputs)
+            self.AddArchetype(arc_indices[0],
+                              arc_indices[1],
+                              inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Choose one or more Personalities
         print("4. Personality")
         if self.personality in range(len(pn_collection)):
@@ -10964,23 +12037,35 @@ class Hero:
                                         buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.GuidedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
                     pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             else:
                 pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Add the chosen Personality/ies
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -10997,6 +12082,8 @@ class Hero:
                                     dv_index=pn_indices[1],
                                     out_index=pn_indices[2],
                                     inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Add 2 Red Abilities
         print("5. Red Abilities")
         rs_abilities = [a for a in self.abilities if a.step == 5]
@@ -11004,11 +12091,15 @@ class Hero:
             print(indent + self.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
         while len(rs_abilities) < 2:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddRedAbility(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             rs_abilities = [a for a in self.abilities if a.step == 5]
         # Take a Retcon
         print("6. Retcon")
@@ -11016,31 +12107,66 @@ class Hero:
             print(indent + self.hero_name + " already used " + pronouns[self.pronoun_set][2] + \
                   " Retcon.")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddRetcon(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         # Determine Max Health
         print("7. Health")
         if self.health_zones != [0,0,0]:
             print(indent + self.hero_name + " already has maximum Health (" + \
                   str(self.health_zones[0]) + ").")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddHealth(roll=health_roll, inputs=pass_inputs)
+            self.AddHealth(roll=health_roll,
+                           inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         print("Done!")
     def Abilities(self, zone):
         # Returns the set of Abilities on this hero's main sheet that match the specified zone.
         return [a for a in self.abilities if a.zone == zone]
-    def DisplayStep(self, stepnum, prefix="", width=100):
+    def DisplayStep(self,
+                    stepnum,
+                    width=100,
+                    prefix="",
+                    indented=True,
+                    hanging=False):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in the specified step of hero creation.
         # No return value.
-        indent = "    "
+        print(self.StepDetails(stepnum,
+                               width=width,
+                               prefix=prefix,
+                               indented=indented,
+                               hanging=hanging))
+    def StepDetails(self,
+                    stepnum,
+                    width=100,
+                    prefix="",
+                    indented=True,
+                    hanging=True):
+        # Returns a formatted list of attributes (Powers, Qualities, Principles, Abilities, Modes,
+        #  Forms, etc.) that the hero gained or modified during the specified step of hero
+        #  creation.
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
+        secPrefix = prefix
+        if hanging:
+            secPrefix += "    "
+        stepText = ""
         if stepnum in range(1,len(step_names)):
             step_powers = [d for d in self.power_dice if d.step == stepnum]
             step_qualities = [d for d in self.quality_dice if d.step == stepnum]
@@ -11055,66 +12181,156 @@ class Hero:
                              len(step_forms),
                              len(step_modes)])
             if stepnum in [self.status_step, self.health_step] or \
-               (stepnum == self.mf_step and len(self.min_forms) > 0):
+               (stepnum == self.mf_step and len(self.min_forms) > 0) or \
+               (stepnum == 1 and self.background != 99) or \
+               (stepnum == 2 and self.power_source != 99) or \
+               (stepnum == 3 and (self.archetype != 99 or self.archetype_modifier != 99)) or \
+               (stepnum == 4 and (self.personality != 99 or self.dv_personality != 99)):
                 any_added = 1
             if any_added > 0:
-                print(prefix + "Step " + str(stepnum) + " (" + step_names[stepnum] + ") provided:")
+                stepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
+                                       ") provided:",
+                                       width=width,
+                                       prefix=prefix)
+                if step_names[stepnum] == "Background" and self.background != 99:
+                    stepText += "\n" + split_text("Background: " + \
+                                                  bg_collection[self.background][0],
+                                                  width=width,
+                                                  prefix=secPrefix)
+                elif step_names[stepnum] == "Power Source" and self.power_source != 99:
+                    stepText += "\n" + split_text("Power Source: " + \
+                                                  ps_collection[self.power_source][0],
+                                                  width=width,
+                                                  prefix=secPrefix)
+                elif step_names[stepnum] == "Archetype" and \
+                     (self.archetype != 99 or self.archetype_modifier != 99):
+                    arcTitle = ""
+                    if self.archetype in range(len(arc_simple)):
+                        arcTitle += arc_simple[self.archetype][0]
+                    else:
+                        arcTitle += "*"
+                    if self.archetype_modifier > 0 and \
+                       self.archetype_modifier in range(len(arc_modifiers)):
+                        arcTitle = arc_modifiers[self.archetype_modifier][0] + ":" + arcTitle
+                    stepText += "\n" + split_text("Archetype: " + arcTitle,
+                                                  width=width,
+                                                  prefix=secPrefix)
+                elif step_names[stepnum] == "Personality" and \
+                     (self.personality != 99 or self.dv_personality != 99):
+                    pnTitle = ""
+                    if self.personality in range(len(pn_collection)):
+                        pnTitle += pn_collection[self.personality][0]
+                    else:
+                        pnTitle += "*"
+                    if self.dv_personality in range(len(pn_collection)):
+                        pnTitle = pn_collection[self.dv_personality][0] + "/" + pnTitle
                 if len(step_principles) > 0:
-                    print(prefix + indent + "Principles:")
-                    for pri in step_principles:
-                        pri.display(prefix=prefix+indent+indent,
-                                    width=width-len(prefix)-len(indent)*2,
-                                    green=False)
+                    stepText += "\n" + split_text("Principles:",
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    for r in step_principles:
+                        rPrime = r.RetrievePrior(stepnum+1)
+                        stepText += "\n" + rPrime.details(width=width,
+                                                          prefix=secPrefix+indent,
+                                                          green=False,
+                                                          indented=indented,
+                                                          breaks=1)
                 if len(step_powers) > 0:
-                    print(prefix + indent + "Powers:")
+                    stepText += "\n" + split_text("Powers:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for d in step_powers:
-                        print(prefix + indent + indent + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 if len(step_qualities) > 0:
-                    print(prefix + indent + "Qualities:")
+                    stepText += "\n" + split_text("Qualities:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for d in step_qualities:
-                        print(prefix + indent + indent + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 if stepnum == self.status_step:
-                    print(prefix + indent + "Status:")
-                    for x in range(len(self.status_dice)):
-                        print(prefix + indent + indent + status_zones[x] + ": " + \
-                              str(self.status_dice[x]))
+                    if self.dv_personality in range(len(pn_collection)):
+                        stepText += "\n" + split_text("Status (" + self.dv_tags[0] + "):",
+                                                      width=width,
+                                                      prefix=secPrefix)
+                        for x in range(len(self.dv_status)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.dv_status[x]),
+                                                          width=width,
+                                                          prefix=secPrefix+indent)
+                        stepText += "\n" + split_text("Status (" + self.dv_tags[1] + "):",
+                                                      width=width,
+                                                      prefix=secPrefix)
+                        for x in range(len(self.dv_status)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.status_dice[x]),
+                                                          width=width,
+                                                          prefix=secPrefix+indent)
+                    else:
+                        stepText += "\n" + split_text("Status:",
+                                                      width=width,
+                                                      prefix=secPrefix)
+                        for x in range(len(self.status_dice)):
+                            stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                          str(self.status_dice[x]),
+                                                          width=width,
+                                                          prefix=secPrefix+indent)
                 if stepnum == self.health_step:
-                    print(prefix + indent + "Health:")
+                    stepText += "\n" + split_text("Health:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     rn = self.HealthRanges()
                     for i in range(len(rn)):
-                        print(prefix + indent + indent + status_zones[i] + " Zone: " + \
-                              str(rn[i][0]) + "-" + str(rn[i][1]))
+                        stepText += "\n" + split_text(status_zones[i] + " Zone: " + \
+                                                      str(rn[i][0]) + "-" + str(rn[i][1]),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 for z in range(len(status_zones)):
                     step_zone_abilities = [ab for ab in step_abilities if ab.zone == z]
                     if len(step_zone_abilities) > 0:
-                        print(prefix + indent + "Abilities (" + status_zones[z] + "):")
+                        stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
+                                                      width=width,
+                                                      prefix=secPrefix)
                         for a in step_zone_abilities:
-                            a.RetrievePrior(stepnum+1).display(prefix=prefix+indent+indent,
-                                                               width=width-len(prefix+indent+indent))
+                            aPrime = a.RetrievePrior(stepnum+1)
+                            stepText += "\n" + aPrime.details(prefix=secPrefix+indent,
+                                                              width=width,
+                                                              indented=indented)
                 if stepnum == self.mf_step and len(self.min_forms) > 0:
-                    print(prefix + indent + "Minion Forms:")
+                    stepText += "\n" + split_text("Minion Forms:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for x in range(len(self.min_forms)):
-                        printlong(MinionFormStr(self.min_forms[x]),
-                                  width=width-len(prefix+indent+indent),
-                                  prefix=prefix+indent+indent)
+                        stepText += "\n" + MinionFormStr(self.min_forms[x],
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                 if len(step_forms) > 0:
-                    print(prefix + indent + "Forms:")
+                    stepText += "\n" + split_text("Forms:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for x in range(len(step_forms)):
-                        self.DisplayForm(x,
-                                         codename=False,
-                                         prefix=prefix+indent+indent,
-                                         width=width-len(prefix+indent+indent))
+                        stepText += "\n" + self.FormDetails(x,
+                                                            codename=False,
+                                                            width=width,
+                                                            prefix=secPrefix+indent)
                 if len(step_modes) > 0:
-                    print(prefix + indent + "Modes:")
+                    stepText += "\n" + split_text("Modes:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for x in range(len(step_modes)):
-                        self.DisplayMode(x,
-                                         codename=False,
-                                         prefix=prefix+indent+indent,
-                                         width=width-len(prefix+indent+indent))
+                        stepText += "\n" + self.ModeDetails(x,
+                                                            codename=False,
+                                                            width=width,
+                                                            prefix=secPrefix+indent)
             modified_powers = [d for d in self.power_dice if stepnum in d.steps_modified and \
                                d not in step_powers]
             modified_qualities = [d for d in self.quality_dice if stepnum in d.steps_modified and \
                                   d not in step_qualities]
+            modified_principles = [r for r in self.principles if stepnum in r.steps_modified and \
+                                   r not in step_principles]
             modified_abilities = [a for a in self.abilities if stepnum in a.steps_modified and \
                                   a not in step_abilities]
             any_modified = max([len(modified_powers),
@@ -11123,142 +12339,129 @@ class Hero:
             if stepnum in self.status_steps_modified:
                 any_modified = 1
             if any_modified > 0:
-                print(prefix + "Step " + str(stepnum) + " modified:")
+                if len(stepText) > 0:
+                    stepText += "\n"
+                stepText +=  split_text("Step " + str(stepnum) + " (" + \
+                                        step_names[stepnum] + ") modified:",
+                                        width=width,
+                                        prefix=prefix)
                 if len(modified_powers) > 0:
-                    print(prefix + indent + "Powers:")
+                    stepText += "\n" + split_text("Powers:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for d in modified_powers:
-                        print(prefix + indent + indent + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 if len(modified_qualities) > 0:
-                    print(prefix + indent + "Qualities:")
+                    stepText += "\n" + split_text("Qualities:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for d in modified_qualities:
-                        print(prefix + indent + indent + str(d.RetrievePrior(stepnum+1)))
+                        stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
+                if len(modified_principles) > 0:
+                    stepText += "\n" + split_text("Principles:",
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    for pri in modified_principles:
+                        stepText += "\n" + pri.details(width=width,
+                                                       prefix=secPrefix+indent,
+                                                       green=False,
+                                                       indented=indented,
+                                                       breaks=1)
                 if stepnum in self.status_steps_modified:
-                    print(prefix + indent + "Status:")
+                    stepText += "\n" + split_text("Status:",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     for x in range(len(self.status_dice)):
-                        print(prefix + indent + indent + status_zones[x] + ": " + \
-                              str(self.status_dice[x]))
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(self.status_dice[x]),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 for z in range(len(status_zones)):
                     modified_zone_abilities = [ab for ab in modified_abilities if ab.zone == z]
                     if len(modified_zone_abilities) > 0:
-                        print(prefix + indent + "Abilities (" + status_zones[z] + "):")
+                        stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
+                                                      width=width,
+                                                      prefix=secPrefix)
                         for a in modified_zone_abilities:
-                            a.RetrievePrior(stepnum+1).display(prefix=prefix+indent+indent,
-                                                               width=width - \
-                                                               len(prefix+indent+indent))
-            # ...
+                            aPrime = a.RetrievePrior(stepnum+1)
+                            stepText += "\n" + aPrime.details(width=width,
+                                                              prefix=secPrefix+indent*2,
+                                                              indented=indented)
         else:
-            print(prefix + "Error! " + str(stepnum) + " is not a valid step of hero creation.")
-    def DisplaySteps(self, prefix="", width=100):
+            stepText += split_text("Error! " + str(stepnum) + \
+                                   " is not a valid step of hero creation.",
+                                   width=width,
+                                   prefix=prefix)
+        return stepText
+    def DisplaySteps(self,
+                     width=100,
+                     prefix="",
+                     indented=True,
+                     hanging=True):
         # Iterates through DisplayStep for all steps of hero creation
         # No return value
+        print(self.AllStepDetails(width=width,
+                                  prefix=prefix,
+                                  indented=indented,
+                                  hanging=hanging))
+    def AllStepDetails(self,
+                       width=100,
+                       prefix="",
+                       indented=True,
+                       hanging=True):
+        # Compiles the output of StepDetails for all steps of hero creation
+        stepsText = ""
         for i in range(1, len(step_names)):
-            self.DisplayStep(i, prefix=prefix, width=width)
-    def display(self, prefix="", width=100):
+            if len(stepsText) > 0:
+                stepsText += "\n"
+            stepsText += self.StepDetails(i,
+                                          width=width,
+                                          prefix=prefix,
+                                          indented=indented,
+                                          hanging=hanging)
+        return stepsText
+    def display(self,
+                width=100,
+                prefix="",
+                indented=True):
         # Prints a full list of the hero's mechanical attributes: codename, name, Principles,
         #  Powers, Qualities, Status, Health ranges, Abilities, etc.
         # No return value.
-        indent = "    "
-        if self.hero_name == "":
-            print(prefix + "[unnamed hero]")
-        else:
-            print(prefix + "Hero Name:  " + self.hero_name)
-        if self.alias != "":
-            print(prefix + "Alias:      " + self.alias)
-        bg_text = ps_text = arc_text = pn_text = "[none]"
-        if self.background in range(len(bg_collection)):
-            bg_text = bg_collection[self.background][0]
-        if self.power_source in range(len(ps_collection)):
-            ps_text = ps_collection[self.power_source][0]
-        if self.archetype in range(len(arc_collection)):
-            arc_text = arc_collection[self.archetype][0]
-            if self.archetype_modifier > 0 and \
-               self.archetype_modifier in range(len(arc_modifiers)):
-                arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
-        if self.personality in range(len(pn_collection)):
-            pn_text = pn_collection[self.personality][0]
-            if self.dv_personality in range(len(pn_collection)):
-                pn_text = pn_collection[self.dv_personality][0] + " (" + self.dv_tags[0] + \
-                          ") / " + pn_collection[self.personality][0] + " (" + self.dv_tags[1] + \
-                          ")"
-        print(prefix + indent + "Background:    " + bg_text)
-        print(prefix + indent + "Power Source:  " + ps_text)
-        print(prefix + indent + "Archetype:     " + arc_text)
-        print(prefix + indent + "Personality:   " + pn_text)
-        if len(self.principles) > 0:
-            print(prefix + indent + "Principles:")
-            for pri in self.principles:
-                pri.display(prefix=prefix+indent+indent,
-                            width=width-len(prefix+indent+indent),
-                            green=False)
-        if len(self.power_dice) > 0:
-            print(prefix + indent + "Powers:")
-            for d in self.power_dice:
-                print(prefix + indent + indent + str(d))
-        if len(self.quality_dice) > 0:
-            print(prefix + indent + "Qualities:")
-            for d in self.quality_dice:
-                print(prefix + indent + indent + str(d))
-        if self.status_dice != [0,0,0]:
-            print(prefix + indent + "Status:")
-            for i in range(len(self.status_dice)):
-                print(prefix + indent + indent + status_zones[i] + ": " + str(self.status_dice[i]))
-        if self.health_zones != [0,0,0]:
-            print(prefix + indent + "Health:")
-            rn = self.HealthRanges()
-            for i in range(len(rn)):
-                print(prefix + indent + indent + status_zones[i] + " Zone: " + str(rn[i][0]) + \
-                      "-" + str(rn[i][1]))
-        for z in range(len(status_zones)):
-            zone_abilities = self.Abilities(z)
-            if len(zone_abilities) > 0:
-                print(prefix + indent + "Abilities (" + status_zones[z] + "):")
-                for a in zone_abilities:
-                    a.display(prefix=prefix+indent+indent,
-                              width=width-len(prefix+indent+indent))
-        if len(self.min_forms) > 0:
-            print(prefix + indent + "Minion Forms:")
-            for x in range(len(self.min_forms)):
-                printlong(MinionFormStr(self.min_forms[x]),
-                          width=width-len(prefix+indent+indent),
-                          prefix=prefix+indent+indent)
-        if len(self.other_forms) > 0:
-            print(prefix + indent + "Forms:")
-            # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
-            # Divided grants 2 Green Forms, each with no Abilities
-            # To separate the two categories, display Forms with no Abilities before ones with
-            #  Abilities
-            for x in range(len(self.other_forms)):
-                if len(self.other_forms[x][5]) == 0:
-                    self.DisplayForm(x,
-                                     codename=False,
-                                     prefix=prefix+indent+indent,
-                                     width=width-len(prefix+indent+indent))
-            for x in range(len(self.other_forms)):
-                if len(self.other_forms[x][5]) > 0:
-                    self.DisplayForm(x,
-                                     codename=False,
-                                     prefix=prefix+indent+indent,
-                                     width=width-len(prefix+indent+indent))
-        if len(self.other_modes) > 0:
-            print(prefix + indent + "Modes:")
-            for x in range(len(self.other_modes)):
-                self.DisplayMode(x,
-                                 codename=False,
-                                 prefix=prefix+indent+indent,
-                                 width=width-len(prefix+indent+indent))
-    def details(self, prefix="", width=100):
+        print(self.details(width=width,
+                           prefix=prefix,
+                           indented=indented))
+    def details(self,
+                width=100,
+                prefix="",
+                indented=True,
+                hanging=False):
         # Returns a string containing a full list of the hero's mechanical attributes: codename,
         #  name, characteristics, Principles, Powers, Qualities, Status, Health ranges, Abilities,
         #  etc.
-        indent = "    "
+        if indented:
+            indent = "    "
+        else:
+            indent = ""
         notePrefix = "### Hero.details: "
         heroString = ""
         if self.hero_name == "":
-            heroString += prefix + "[unnamed hero]"
+            heroString += split_text("[unnamed hero]",
+                                     width=width,
+                                     prefix=prefix)
         else:
-            heroString += prefix + "Hero Name:  " + self.hero_name
+            heroString += split_text("Hero Name:  " + self.hero_name,
+                                     width=width,
+                                     prefix=prefix)
         if self.alias != "":
-            heroString += "\n" + prefix + "Alias:      " + self.alias
+            heroString += "\n" + split_text("Alias:      " + self.alias,
+                                            width=width,
+                                            prefix=prefix)
+        if hanging:
+            prefix += "    "
         bg_text = ps_text = arc_text = pn_text = "[none]"
 ##        print(notePrefix + "self.background = " + str(self.background))
         if self.background in range(len(bg_collection)):
@@ -11280,51 +12483,86 @@ class Hero:
                 pn_text = pn_collection[self.dv_personality][0] + " (" + self.dv_tags[0] + \
                           ") / " + pn_collection[self.personality][0] + " (" + self.dv_tags[1] + \
                           ")"
-        heroString += "\n" + prefix + indent + "Background:    " + bg_text
-        heroString += "\n" + prefix + indent + "Power Source:  " + ps_text
-        heroString += "\n" + prefix + indent + "Archetype:     " + arc_text
-        heroString += "\n" + prefix + indent + "Personality:   " + pn_text
+        heroString += "\n" + split_text("Background:    " + bg_text,
+                                        width=width,
+                                        prefix=prefix)
+        heroString += "\n" + split_text("Power Source:  " + ps_text,
+                                        width=width,
+                                        prefix=prefix)
+        heroString += "\n" + split_text("Archetype:     " + arc_text,
+                                        width=width,
+                                        prefix=prefix)
+        heroString += "\n" + split_text("Personality:   " + pn_text,
+                                        width=width,
+                                        prefix=prefix)
         if len(self.principles) > 0:
-            heroString += "\n" + prefix + indent + "Principles:"
+            heroString += "\n" + split_text("Principles:",
+                                            width=width,
+                                            prefix=prefix)
             for pri in self.principles:
-                heroString += "\n" + pri.details(prefix=prefix+indent+indent,
-                                                 width=width-len(prefix+indent+indent),
+                heroString += "\n" + pri.details(width=width,
+                                                 prefix=prefix+indent,
+                                                 indented=indented,
                                                  green=False,
                                                  breaks=1)
         if len(self.power_dice) > 0:
-            heroString += "\n" + prefix + indent + "Powers:"
+            heroString += "\n" + split_text("Powers:",
+                                            width=width,
+                                            prefix=prefix)
             for d in self.power_dice:
-                heroString += "\n" + prefix + indent + indent + str(d)
+                heroString += "\n" + split_text(str(d),
+                                                width=width,
+                                                prefix=prefix+indent)
         if len(self.quality_dice) > 0:
-            heroString += "\n" + prefix + indent + "Qualities:"
+            heroString += "\n" + split_text("Qualities:",
+                                            width=width,
+                                            prefix=prefix)
             for d in self.quality_dice:
-                heroString += "\n" + prefix + indent + indent + str(d)
+                heroString += "\n" + split_text(str(d),
+                                                width=width,
+                                                prefix=prefix+indent)
         if self.status_dice != [0,0,0]:
-            heroString += "\n" + prefix + indent + "Status:"
+            heroString += "\n" + split_text("Status:",
+                                            width=width,
+                                            prefix=prefix)
             for i in range(len(self.status_dice)):
-                heroString += "\n" + prefix + indent + indent + status_zones[i] + ": " + \
-                              str(self.status_dice[i])
+                heroString += "\n" + split_text(status_zones[i] + ": " + str(self.status_dice[i]),
+                                                width=width,
+                                                prefix=prefix+indent)
         if self.health_zones != [0,0,0]:
-            heroString += "\n" + prefix + indent + "Health:"
+            heroString += "\n" + split_text("Health:",
+                                            width=width,
+                                            prefix=prefix)
             rn = self.HealthRanges()
             for i in range(len(rn)):
-                heroString += "\n" + prefix + indent + indent + status_zones[i] + " Zone: " + \
-                              str(rn[i][0]) + "-" + str(rn[i][1])
+                heroString += "\n" + split_text(status_zones[i] + " Zone: " + str(rn[i][0]) + \
+                                                "-" + str(rn[i][1]),
+                                                width=width,
+                                                prefix=prefix+indent)
         for z in range(len(status_zones)):
             zone_abilities = self.Abilities(z)
             if len(zone_abilities) > 0:
-                heroString += "\n" + prefix + indent + "Abilities (" + status_zones[z] + "):"
+                heroString += "\n" + split_text("Abilities (" + status_zones[z] + "):",
+                                                width=width,
+                                                prefix=prefix)
                 for a in zone_abilities:
-                    heroString += "\n" + a.details(prefix=prefix+indent+indent,
-                                                   width=width-len(prefix+indent+indent))
+                    heroString += "\n" + a.details(width=width,
+                                                   prefix=prefix+indent,
+                                                   indented=indented)
         if len(self.min_forms) > 0:
-            heroString += "\n" + prefix + indent + "Minion Forms:"
+            heroString += "\n" + split_text("Minion Forms:",
+                                            width=width,
+                                            prefix=prefix)
             for x in range(len(self.min_forms)):
-                heroString += "\n" + split_text(MinionFormStr(self.min_forms[x]),
-                                                width=width-len(prefix+indent+indent),
-                                                prefix=prefix+indent+indent)
+                heroString += "\n" + MinionFormStr(self.min_forms[x],
+                                                   width=width,
+                                                   prefix=prefix+indent)
+        # Modes and Forms get hanging=True even if hanging=False in this method, because it's
+        #  important to see where each one stops and the next one begins
         if len(self.other_forms) > 0:
-            heroString += "\n" + prefix + indent + "Forms:"
+            heroString += "\n" + split_text("Forms:",
+                                            width=width,
+                                            prefix=prefix)
             # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
             # Divided grants 2 Green Forms, each with no Abilities
             # To separate the two categories, display Forms with no Abilities before ones with
@@ -11333,363 +12571,932 @@ class Hero:
                 if len(self.other_forms[x][5]) == 0:
                     heroString += "\n" + self.FormDetails(x,
                                                           codename=False,
-                                                          prefix=prefix+indent+indent,
-                                                          width=width-len(prefix+indent+indent))
+                                                          width=width,
+                                                          prefix=prefix+indent,
+                                                          indented=indented,
+                                                          hanging=True)
             for x in range(len(self.other_forms)):
                 if len(self.other_forms[x][5]) > 0:
                     heroString += "\n" + self.FormDetails(x,
                                                           codename=False,
-                                                          prefix=prefix+indent+indent,
-                                                          width=width-len(prefix+indent+indent))
+                                                          width=width,
+                                                          prefix=prefix+indent,
+                                                          indented=indented,
+                                                          hanging=True)
         if len(self.other_modes) > 0:
-            heroString += "\n" + prefix + indent + "Modes:"
+            heroString += "\n" + split_text("Modes:",
+                                            width=width,
+                                            prefix=prefix)
             for x in range(len(self.other_modes)):
                 heroString += "\n" + self.ModeDetails(x,
                                                       codename=False,
-                                                      prefix=prefix+indent+indent,
-                                                      width=width-len(prefix+indent+indent))
+                                                      width=width,
+                                                      prefix=prefix+indent,
+                                                      indented=indented,
+                                                      hanging=True)
         return heroString
         
 
 # Sample heroes, for testing purposes...
 # Shikari is an Interstellar Genetic Flier with no Archetype modifier.
 def Create_Shikari(step=len(step_names)):
+    notePrefix = "### Create_Shikari: "
     shikari = Hero("Shikari", "Shikari Lonestar", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = shikari.ConstructedBackground(inputs=["Q"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddBackground(bg,
-                              inputs=[[["i",["a"]],["b"]],["K","y","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+                              inputs=[[["i",["a"]],["b"]],["K","a","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = shikari.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddPowerSource(ps,
-                               inputs=[[["o",["a"]],["h",["a"]],["c",[["y","Warskin"]]]],["A","b","y","Advance Tracking"],["A","a","y","Know the Way"],["A","a","y","Warrior's Instinct"]])
+                               inputs=[[["o",["a"]],["h",["a"]],["c",[["a","Warskin"]]]],["A","b","a","Advance Tracking"],["A","a","a","Know the Way"],["A","a","a","Warrior's Instinct"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = shikari.ConstructedArchetype(inputs=["H"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddArchetype(arc[0],
                              arc[1],
-                             inputs=[["a",["b"]],["b",["a"]],"n",[["i"]],["D","y","Watch Your Sprocking Head"],["A","f","y","Coming Through!"],["A","d","y","Follow Me!"],["J","n"]])
+                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","a","Watch Your Sprocking Head"],["A","f","a","Coming Through!"],["A","d","a","Follow Me!"],["J","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = shikari.ConstructedPersonality(inputs=["I"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddPersonality(pn[0],
-                               inputs=[[["Y","Lone Star Legion"]]])
+                               inputs=[[["a","Lone Star Legion"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        shikari.AddRedAbility(inputs=["F",["D","y","End of the Road"]])
-        shikari.AddRedAbility(inputs=["H",["E","y","Obstacle Avoidance"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        shikari.AddRedAbility(inputs=["F",["D","a","End of the Road"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        shikari.AddRedAbility(inputs=["H",["E","a","Obstacle Avoidance"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
-        shikari.AddRetcon(inputs=["g",["C",["D","y","Protective Escort"]]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        shikari.AddRetcon(inputs=["g",["C",["D","a","Protective Escort"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         shikari.AddHealth(roll=2,
                           inputs=["b","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     shikari.display()
     return shikari
 
 # Ultra Boy is a Criminal Radiation Modular:Physical Powerhouse.
 def Create_Ultra_Boy(step=len(step_names)):
+    notePrefix = "### Create_Ultra_Boy: "
     jo = Hero("Ultra Boy", "Jo Nah", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = jo.ConstructedBackground(inputs=["L"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddBackground(bg,
-                         inputs=[[["a",["a"]],["c"]],["L","n"]])
+                         inputs=[[["a",["a"]],["c"]],["L","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = jo.ConstructedPowerSource(inputs=["I"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddPowerSource(ps,
-                          inputs=[[["a"],["a",[["y","Legion Flight Ring"]]],["e"]],["C","b","y","Yoink!"],["A","b","y","That Tickles"],["C","a","y","Zap!"]])
+                          inputs=[[["a"],["a",[["a","Legion Flight Ring"]]],["e"]],["C","b","a","Yoink!"],["A","b","a","That Tickles"],["C","a","a","Zap!"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = jo.ConstructedArchetype(inputs=["T","C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddArchetype(arc[0],
                         arc[1],
                         inputs=[["a"],["f",["b"]],[["f"]],
-                                ["f","y","I'm On It"],
-                                ["y","'Scuse Me"],
-                                ["y","Now I'm Mad"],
-                                "n",
+                                ["f","a","I'm On It"],
+                                ["a","'Scuse Me"],
+                                ["a","Now I'm Mad"],
+                                "b",
                                 "A",
-                                ["a","b","c","a",["c","y","Who Let You Play With These?"],"y","Ultra Speed"],
+                                ["a","b","c","a",["c","a","Who Let You Play With These?"],"a","Ultra Speed"],
                                 "D",
-                                ["b","c","a","b",["c","y","Sprock These Two In Particular"],"y","Flash Vision"],
+                                ["b","c","a","b",["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
                                 "D",
-                                ["d","a","a","a",["d","y","Everybody Behind Me!"],"y","Ultra Invulnerability"],
+                                ["d","a","a","a",["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
                                 "B",
-                                ["d","b",["a","y","Was That Important?"],"y","Ultra Strength"],
-                                ["D","n"]])
+                                ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
+                                ["D","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = jo.ConstructedPersonality(inputs=["O"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddPersonality(pn[0],
-                          inputs=[[["y","Gangster Made Good"]],["c"]])
+                          inputs=[[["a","Gangster Made Good"]],["c"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        jo.AddRedAbility(inputs=["F",["C","y","Ring-Sling"]])
-        jo.AddRedAbility(inputs=["A",["A","y","Street Smarts"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        jo.AddRedAbility(inputs=["F",["C","a","Ring-Sling"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        jo.AddRedAbility(inputs=["A",["A","a","Street Smarts"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddRetcon(inputs=["e"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         jo.AddHealth(roll=6,
                      inputs=["b","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     jo.display()
     return jo
 
 # Chameleon is an Interstellar Alien Form-Changer with no Archetype modifier.
 def Create_Chameleon(step=len(step_names)):
+    notePrefix = "### Create_Chameleon: "
     cham = Hero("Chameleon", "Reep Daggle", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = cham.ConstructedBackground(inputs=["Q"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddBackground(bg,
-                           inputs=[[["k",["a"]],["k"]],["D", "n"]])
+                           inputs=[[["k",["a"]],["k"]],["D", "b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = cham.ConstructedPowerSource(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddPowerSource(ps,
-                            inputs=[[["a","p",["a"]],["a","a",["b", ["y","Legion Flight Ring"]]],["a","b"]],["C","c","y","Slippery"],["A","a","y","Excellent Listener"],"b"])
+                            inputs=[[["a","p",["a"]],["a","a",["b", ["a","Legion Flight Ring"]]],["a","b"]],["C","c","a","Slippery"],["A","a","a","Excellent Listener"],"b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = cham.ConstructedArchetype(inputs=["P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddArchetype(arc[0],
                           arc[1],
                           inputs=[["h"],
                                   ["n"],
-                                  "n",
-                                  [["n"]],
-                                  ["a","n"],
-                                  ["y","Improvise"],
-                                  ["B", "a", "y", "Distracting Strike"],
-                                  ["C","a","a","b","a","b","e","b","e","b","d",["e","y","Natural Weaponry"],"y","Beast Form"],
-                                  ["D","a","b","e","b","e","q","d",["a","y","Critical Discovery"],"y","Stealth Form"],
-                                  ["G","a","a","d","a","b","e","b","e","l","d","d","a",["d","y","Who Do You Think I Am!?"],"y","Imitation Form"],
-                                  ["K","n"]])
+                                  [["b","j"]],
+                                  ["a","b"],
+                                  ["a","Improvise"],
+                                  ["B", "a", "a", "Distracting Strike"],
+                                  ["C","a","a","b","a","b","e","b","e","b","c",["e","a","Natural Weaponry"],"a","Beast Form"],
+                                  ["D","a","b","e","b","e","q","c",["a","a","Critical Discovery"],"a","Stealth Form"],
+                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","a","Who Do You Think I Am!?"],"a","Imitation Form"],
+                                  ["K","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = cham.ConstructedPersonality(inputs=["O"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddPersonality(pn[0],
-                            inputs=[[["y","Frontline Ambassador"]],["a"]])
+                            inputs=[[["a","Frontline Ambassador"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        cham.AddRedAbility(inputs=["A",["B","a","y","Lateral Thinking"]])
-        cham.AddRedAbility(inputs=["F",["B","a","y","Change for the Better"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        cham.AddRedAbility(inputs=["A",["B","a","a","Think Outside Your Head"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        cham.AddRedAbility(inputs=["F",["B","a","a","Change for the Better"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
-        cham.AddRetcon(inputs=["f","c",["E","n",["B"]]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        cham.AddRetcon(inputs=["f","c",["E","b",["B"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         cham.AddHealth(inputs=["b","a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     cham.display()
     return cham
 
 # Lori Morning is an Anachronistic Relic Divided:Form-Changer who uses Divided Psyche.
 def Create_Future_Girl(step=len(step_names)):
+    notePrefix = "### Create_Future_Girl: "
     lori = Hero("Future Girl", "Lori Morning", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = lori.ConstructedBackground(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddBackground(bg,
-                           inputs=[[["C",["A"]],["H"]],["L","N"]])
+                           inputs=[[["C",["A"]],["H"]],["L","B"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = lori.ConstructedPowerSource(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddPowerSource(ps,
-                            inputs=[[["A","D",["A",["Y","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","Y","Natural Heroism"],["B","B","Y","Synthetic Power"],["A","A","Y","One-Hour Superpower"]])
+                            inputs=[[["A","D",["A",["A","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","A","Natural Heroism"],["B","B","A","Synthetic Power"],["A","A","A","One-Hour Superpower"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = lori.ConstructedArchetype(inputs=["S","P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddArchetype(arc[0],
                           arc[1],
                           inputs=[["H",["A"]],
                                   ["T",["A"]],
-                                  "N",
-                                  [["C"]],
-                                  ["y","Redial"],
-                                  ["y","Dial ICE"],
-                                  ["B","Y","Collect Call"],
-                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","d",["b","y","Where Was I?"],"y","Mobile Hero","B"],
-                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","d",["b","y","Wrap It Up"],"y","Capture Hero","C"],
-                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","d","e","c",["e","y","Lights Out"],"y","Powerhouse Hero","B"],
-                                  "N",
+                                  [["A","Y"]],
+                                  ["A","Redial"],
+                                  ["A","Dial ICE"],
+                                  ["B","A","Collect Call"],
+                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","A","Where Was I?"],"a","Mobile Hero","B"],
+                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","A","Wrap It Up"],"a","Capture Hero","C"],
+                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","A","Lights Out"],"a","Powerhouse Hero","B"],
                                   "B",
-                                  ["y","Dial H for Hero"],
+                                  "B",
+                                  ["A","Dial H for Hero"],
                                   "A",
-                                  ["Y","Unlisted Numbers"],
+                                  ["A","Unlisted Numbers"],
                                   "B",
-                                  ["H","n"]])
+                                  ["H","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
-        pn = lori.ConstructedPersonality(inputs=["N","D"])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = lori.ConstructedPersonality(inputs=["B","D"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddPersonality(pn[0],
-                            inputs=[[["Y","Future Girl"]],["e"]])
+                            inputs=[[["A","Future Girl"]],["e"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        lori.AddRedAbility(inputs=["B",["B","Y","Please Hold"]])
-        lori.AddRedAbility(inputs=["F",["A","Y","Wrong Number"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        lori.AddRedAbility(inputs=["B",["B","A","Please Hold"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        lori.AddRedAbility(inputs=["F",["A","A","Wrong Number"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddRetcon(inputs=["e"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         lori.AddHealth(roll=1,
                        inputs=["a","b"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     lori.display()
     return lori
 
 # Knockout (credit to NovaSpark#2117) is a Medical Alien Divided:Robot/Cyborg who uses Split Form.
 def Create_Knockout(step=len(step_names)):
+    notePrefix = "### Create_Knockout: "
     knockout = Hero("Knockout", "n/a", 1)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = knockout.ConstructedBackground(inputs=["M"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddBackground(bg,
-                               inputs=[["b"],[["b",["a"]],["f"]],["E","n"]])
+                               inputs=[["b"],[["b",["a"]],["f"]],["E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = knockout.ConstructedPowerSource(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddPowerSource(ps,
-                                inputs=[[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]])
+                                inputs=[[["a","b",["b",["a","Doctor's Tools"]]],["a","a",["a",["a","Aston Martin"]]],["b","l"]],["B","c","a","Field Treatment"],["B","b","a","Watch the Paint!"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = knockout.ConstructedArchetype(inputs=["S","J"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddArchetype(arc[0],
                               arc[1],
-                              inputs=[["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]])
+                              inputs=[["a","a"],
+                                      [["a","h"],["b","c"]],
+                                      ["b"],
+                                      ["D","e","a","Touch Up"],
+                                      ["D","b","a","12-Car Pileup"],
+                                      ["B","a","a",'Say "Ahh!"'],
+                                      "a",
+                                      "Vehicle",
+                                      "Robot",
+                                      "B",
+                                      ["a","Robot in Disguise"],
+                                      "B",
+                                      "D",
+                                      "D",
+                                      "D",
+                                      "B",
+                                      "B",
+                                      "A",
+                                      "B",
+                                      "B",
+                                      "B",
+                                      "B",
+                                      ["H","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
-        pn = knockout.ConstructedPersonality(inputs=["N","T"])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = knockout.ConstructedPersonality(inputs=["B","T"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddPersonality(pn[0],
-                                inputs=[[["Y","Mad Doctor"]],["e"]])
+                                inputs=[[["A","Mad Doctor"]],["e"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        knockout.AddRedAbility(inputs=["D",["C","y","Peel Out"]])
-        knockout.AddRedAbility(inputs=["D",["A","y","Anesthetic"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        knockout.AddRedAbility(inputs=["D",["C","a","Peel Out"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        knockout.AddRedAbility(inputs=["D",["A","a","Anesthetic"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
-        knockout.AddRetcon(inputs=["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        knockout.AddRetcon(inputs=["g",["C",["C","a","You Scratch My Paint, I Scratch Yours"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         knockout.AddHealth(inputs=["c","a"])
-##    knockout.CreateHero(inputs=["b",
-##                                ["M"],
-##                                [["b"],[["b",["a"]],["f"]],["E","n"]],
-##                                "b",
-##                                ["N"],
-##                                [[["a","b",["b",["y","Doctor's Tools"]]],["a","a",["a",["y","Aston Martin"]]],["b","l"]],["B","c","y","Field Treatment"],["B","b","y","Watch the Paint!"]],
-##                                "b",
-##                                ["S","J"],
-##                                [["a","a"],"y",["a","h"],"n",[["b"]],["b"],["D","e","y","Touch Up"],["D","b","y","12-Car Pileup"],["B","a","y",'Say "Ahh!"'],"y","Vehicle","Robot","B",["y","Robot in Disguise"],"B","D","D","D","B","B","A","B","B","B","B",["H","n"]],
-##                                "b",
-##                                ["N","T"],
-##                                [[["Y","Mad Doctor"]],["e"]],
-##                                ["D",["C","y","Peel Out"]],
-##                                ["D",["A","y","Anesthetic"]],
-##                                ["g",["C",["C","y","You Scratch My Paint, I Scratch Yours"]]],
-##                                ["c","a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     knockout.display()
     return knockout
 
 # The second Architect is a Dynasty Relic Minion-Maker with no Archetype modifier.
 def Create_Architect(step=len(step_names)):
+    notePrefix = "### Create_Architect: "
     kim = Hero("The Architect", "Kimberly Harris", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = kim.ConstructedBackground(inputs=["R"])
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddBackground(bg,
-                          inputs=[[["b"],["b"]],["K","n"]])
+                          inputs=[[["b"],["b"]],["K","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = kim.ConstructedPowerSource(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddPowerSource(ps,
-                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]])
+                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","a","Environmental Planning"],["B","a","a","Aerial Survey"],["c"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = kim.ConstructedArchetype(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddArchetype(arc[0],
                          arc[1],
-                         inputs=[["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+                         inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","a","Concept Art"],["a","a","Detailing"],["C","d","a","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","a","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = kim.ConstructedPersonality(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddPersonality(pn[0],
-                           inputs=[[["Y", "Super Mom"]],["D"]])
+                           inputs=[[["A", "Super Mom"]],["D"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        kim.AddRedAbility(inputs=["H",["A","D","y","Economy of Scale"]])
-        kim.AddRedAbility(inputs=["E",["A","y","Blot Out"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        kim.AddRedAbility(inputs=["H",["A","D","a","Economy of Scale"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        kim.AddRedAbility(inputs=["E",["A","a","Blot Out"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
-        kim.AddRetcon(inputs=["G",["G",["F","y","Constructive Criticism"]]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        kim.AddRetcon(inputs=["G",["G",["F","a","Constructive Criticism"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         kim.AddHealth(roll=6,
                       inputs=["A","B"])
-##    kim.CreateHero(health_roll=6,
-##                   inputs=["B",
-##                           ["R"],
-##                           [[["b"],["b"]],["K","n"]],
-##                           "B",
-##                           ["E"],
-##                           [[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","y","Environmental Planning"],["B","a","y","Aerial Survey"],["c"]],
-##                           "B",
-##                           ["N"],
-##                           [["Q",["a"]],"n",[["i"],["g"]],["d","y","Concept Art"],["a","y","Detailing"],["C","d","y","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","y","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]],
-##                           "B",
-##                           ["G"],
-##                           [[["Y", "Super Mom"]],["D"]],
-##                           ["H",["A","D","y","Economy of Scale"]],
-##                           ["E",["A","y","Blot Out"]],
-##                           ["G",["G",["F","y","Constructive Criticism"]]],
-##                           ["A","B"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     kim.display()
     return kim
 
 # Spark is an Unremarkable Accident Blaster who uses some element/energy-limited Abilities.
 def Create_Spark(step=len(step_names)):
+    notePrefix = "### Create_Spark: "
     spark = Hero("Spark", "Ayla Ranzz", 0)
     if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         bg = spark.ConstructedBackground(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddBackground(bg,
-                            inputs=[[["i",["b"]],["d"]],["e","E","n"]])
+                            inputs=[[["i",["b"]],["d"]],["e","E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         ps = spark.ConstructedPowerSource(inputs=["a","A"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddPowerSource(ps,
-                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]])
+                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","a","Charge!"],["A","b","a","Made You Look"],["B","a","a","Electric Atmosphere"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         arc = spark.ConstructedArchetype(inputs=["E"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddArchetype(arc[0],
                            arc[1],
-                           inputs=[["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+                           inputs=[["c",["a"]],["j"],["D","b","a","Thread the Needle"],["C","a","a","Enough for Everyone"],["B","d","a","Complete Circuit"],["A","a","No Fear"],["B","a","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         pn = spark.ConstructedPersonality(inputs=["P"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddPersonality(pn[0],
-                             inputs=[[["Y","Bright Lights"]],["d"]])
+                             inputs=[[["a","Bright Lights"]],["d"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 5:
-        spark.AddRedAbility(inputs=["D",["A","y","Finishing Strike"]])
-        spark.AddRedAbility(inputs=["G",["B","y","Living Battery"]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        spark.AddRedAbility(inputs=["D",["A","a","Finishing Strike"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        spark.AddRedAbility(inputs=["G",["B","a","Living Battery"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 6:
-        spark.AddRetcon(inputs=["G",["A",["B","y","Struck by Inspiration"]]])
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        spark.AddRetcon(inputs=["G",["A",["B","a","Struck by Inspiration"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
         spark.AddHealth(roll=7,
                         inputs=["b","b"])
-##    spark.CreateHero(health_roll=7,
-##                     inputs=["b",
-##                             ["E"],
-##                             [[["i",["b"]],["d"]],["e","E","n"]],
-##                             "b",
-##                             ["a","A"],
-##                             [[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","y","Charge!"],["A","b","y","Made You Look"],["B","a","y","Electric Atmosphere"]],
-##                             "b",
-##                             ["E"],
-##                             [["c",["a"]],["j"],["D","b","y","Thread the Needle"],["C","a","y","Enough for Everyone"],["B","d","y","Complete Circuit"],["A","y","No Fear"],["B","y","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]],
-##                             "b",
-##                             ["P"],
-##                             [[["Y","Bright Lights"]],["d"]],
-##                             ["D",["A","y","Finishing Strike"]],
-##                             ["G",["B","y","Living Battery"]],
-##                             ["G",["A",["B","y","Struck by Inspiration"]]],
-##                             ["b","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
     print()
     spark.display()
     return spark
 
+# Curveball is a Military Genetic Transporter who swaps in a new primary die size in the Archetype
+#  step.
+def Create_Curveball(step=len(step_names)):
+    notePrefix = "### Create_Curveball: "
+    curveball = Hero("Curveball", "Talyn Dol'Goch", 1)
+    if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        bg = curveball.ConstructedBackground(inputs=["J"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddBackground(bg, inputs=[[["g",["a"]],["c"]],["E","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        ps = curveball.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddPowerSource(ps, inputs=[[["q",["a"]],["b"],["e"]],["A","c","a","Motion Sensor"],["A","b","a","Tactical Relocation"],["A","a","a","Vantage Point"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        arc = curveball.ConstructedArchetype(inputs=["M"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddArchetype(arc[0], arc[1], inputs=["a","a",["e"],[["a","w"],["b","b"]],["A","b","a","Going My Way"],["d","D","a","a","Scattershot"],["A","a","a","Cover Fire"],["F","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = curveball.ConstructedPersonality(inputs=["N"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddPersonality(pn[0], inputs=[[["a","Rules of Engagement"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRedAbility(inputs=["A",["B","a","Go for the Knees"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRedAbility(inputs=["B",["b","B","a","Look, No Hands"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddRetcon(inputs=["g",["F",["C","a","Emergency Stop"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        curveball.AddHealth(inputs=["a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    print()
+    curveball.display()
+    return curveball
+
+# "Platypus" is an Academic Genetic Shadow that I've been using as a set of sample inputs
+def Create_Platypus(step=len(step_names)):
+    notePrefix = "### Create_Platypus: "
+    platypus = Hero("Platypus", "Chaz Villette", 1)
+    if step >= 1:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        bg = platypus.ConstructedBackground(inputs=["G"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddBackground(bg, inputs=[[["E",["A"]],["H"]],["I","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 2:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        ps = platypus.ConstructedPowerSource(inputs=["C"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddPowerSource(ps, inputs=[[["G",["A"]],["Q"]],
+                                            ["B","A","a","Recalculate"],
+                                            ["A","a","Raise the Mirror"],
+                                            ["A","A","a","Statistical Inference"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 3:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        arc = platypus.ConstructedArchetype(inputs=["B"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddArchetype(arc[0], arc[1], inputs=[["b"],
+                                                      [["g",["b"]],["b"]],
+                                                      ["B","c","a","No One Here But You"],
+                                                      ["B","a","Reflection"],
+                                                      ["A","c","a","Behind the Scenes"],
+                                                      ["M","b"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 4:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        pn = platypus.ConstructedPersonality(inputs=["A"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddPersonality(pn[0], inputs=[[["a", "Wind-Up Boogeyman"]],["a"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 5:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRedAbility(inputs=["C",["B","a","Stand Up On It"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRedAbility(inputs=["E",["F","a","In Their Own Words"]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 6:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddRetcon(inputs=["f","d",["G","b",["b"]]])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    if step >= 7:
+        if track_inputs:
+            print(notePrefix + tracker_open)
+        platypus.AddHealth(inputs=["a"])
+        if track_inputs:
+            print(notePrefix + tracker_close)
+    print()
+    platypus.display()
+    return platypus
+
+# Template for new Create_*() method.
+# >> COPY BEFORE FILLING IN. <<
+# Before using, make sure you've replaced all of the following:
+# {HERO NAME HERE}
+# {CAMELCASE HERO NAME}
+# {CIVILIAN NAME HERE}
+# {PRONOUN INDEX HERE}
+# {D8 RESULT HERE}
+# You'll also want to add the new hero to SampleMaker (below) as a class variable, an entry in
+#  codenames, and a get*() method, and probably to HeroFrame (even further below) in SwitchHero
+# ...
+# {HERO SUMMARY}
+##def Create_{CAMELCASE HERO NAME}(step=len(step_names)):
+##    notePrefix = "### Create_{CAMELCASE HERO NAME}: "
+##    {HERO NAME HERE} = Hero("{CAMELCASE HERO NAME}", "{CIVILIAN NAME HERE}", {PRONOUN INDEX HERE})
+##    if step >= 1:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        bg = {HERO NAME HERE}.ConstructedBackground(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddBackground(bg, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 2:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        ps = {HERO NAME HERE}.ConstructedPowerSource(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddPowerSource(ps, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 3:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        arc = {HERO NAME HERE}.ConstructedArchetype(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddArchetype(arc[0], arc[1], inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 4:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        pn = {HERO NAME HERE}.ConstructedPersonality(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddPersonality(pn[0], inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 5:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRedAbility(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRedAbility(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 6:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddRetcon(inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    if step >= 7:
+##        if track_inputs:
+##            print(notePrefix + tracker_open)
+##        {HERO NAME HERE}.AddHealth(roll={D8 RESULT HERE}, inputs=[])
+##        if track_inputs:
+##            print(notePrefix + tracker_close)
+##    print()
+##    {HERO NAME HERE}.display()
+##    return {HERO NAME HERE}
+
 class SampleMaker:
     def __init__(self):
-        self.shikari = [None, 0]
-        self.jo = [None, 0]
-        self.cham = [None, 0]
-        self.lori = [None, 0]
-        self.knockout = [None, 0]
-        self.kim = [None, 0]
-        self.ayla = [None, 0]
+        self.stepRange = range(0, len(step_names) + 1)
+        self.shikari = [None, -1]
+        self.jo = [None, -1]
+        self.cham = [None, -1]
+        self.lori = [None, -1]
+        self.knockout = [None, -1]
+        self.kim = [None, -1]
+        self.ayla = [None, -1]
+        self.talyn = [None, -1]
+        self.chaz = [None, -1]
         self.codenames = ["Shikari",
                           "Ultra Boy",
                           "Chameleon",
                           "Future Girl",
                           "Knockout",
                           "The Architect",
-                          "Spark"]
+                          "Spark",
+                          "Curveball",
+                          "Platypus"]
     def getShikari(self,
                    step=len(step_names)):
         notePrefix = "### SampleMaker.getShikari: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.shikari[1]))
-        if step in range(1, len(step_names) + 1) and step != self.shikari[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.shikari[1]))
+        if step in self.stepRange and step != self.shikari[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.shikari[0] = Create_Shikari(step=step)
             self.shikari[1] = step
-        if step not in range(1, len(step_names) + 1) and self.shikari[1] != len(step_names):
+        if step not in self.stepRange and self.shikari[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.shikari[0] = Create_Shikari()
@@ -11698,14 +13505,14 @@ class SampleMaker:
     def getJo(self,
               step=len(step_names)):
         notePrefix = "### SampleMaker.getJo: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.jo[1]))
-        if step in range(1, len(step_names) + 1) and step != self.jo[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.jo[1]))
+        if step in self.stepRange and step != self.jo[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.jo[0] = Create_Ultra_Boy(step=step)
             self.jo[1] = step
-        if step not in range(1, len(step_names) + 1) and self.jo[1] != len(step_names):
+        if step not in self.stepRange and self.jo[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.jo[0] = Create_Ultra_Boy()
@@ -11714,14 +13521,14 @@ class SampleMaker:
     def getCham(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getCham: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.cham[1]))
-        if step in range(1, len(step_names) + 1) and step != self.cham[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.cham[1]))
+        if step in self.stepRange and step != self.cham[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.cham[0] = Create_Chameleon(step=step)
             self.cham[1] = step
-        if step not in range(1, len(step_names) + 1) and self.cham[1] != len(step_names):
+        if step not in self.stepRange and self.cham[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.cham[0] = Create_Chameleon()
@@ -11730,14 +13537,14 @@ class SampleMaker:
     def getLori(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getLori: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.lori[1]))
-        if step in range(1, len(step_names) + 1) and step != self.lori[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.lori[1]))
+        if step in self.stepRange and step != self.lori[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.lori[0] = Create_Future_Girl(step=step)
             self.lori[1] = step
-        if step not in range(1, len(step_names) + 1) and self.lori[1] != len(step_names):
+        if step not in self.stepRange and self.lori[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.lori[0] = Create_Future_Girl()
@@ -11746,14 +13553,14 @@ class SampleMaker:
     def getKnockout(self,
                     step=len(step_names)):
         notePrefix = "### SampleMaker.getKnockout: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.knockout[1]))
-        if step in range(1, len(step_names) + 1) and step != self.knockout[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.knockout[1]))
+        if step in self.stepRange and step != self.knockout[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.knockout[0] = Create_Knockout(step=step)
             self.knockout[1] = step
-        if step not in range(1, len(step_names) + 1) and self.knockout[1] != len(step_names):
+        if step not in self.stepRange and self.knockout[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.knockout[0] = Create_Knockout()
@@ -11762,14 +13569,14 @@ class SampleMaker:
     def getKim(self,
                step=len(step_names)):
         notePrefix = "### SampleMaker.getKim: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.kim[1]))
-        if step in range(1, len(step_names) + 1) and step != self.kim[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.kim[1]))
+        if step in self.stepRange and step != self.kim[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.kim[0] = Create_Architect(step=step)
             self.kim[1] = step
-        if step not in range(1, len(step_names) + 1) and self.kim[1] != len(step_names):
+        if step not in self.stepRange and self.kim[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.kim[0] = Create_Architect()
@@ -11778,19 +13585,70 @@ class SampleMaker:
     def getAyla(self,
                 step=len(step_names)):
         notePrefix = "### SampleMaker.getAyla: "
-        print(notePrefix + "step=" + str(step))
-        print(notePrefix + "prev step=" + str(self.ayla[1]))
-        if step in range(1, len(step_names) + 1) and step != self.ayla[1]:
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.ayla[1]))
+        if step in self.stepRange and step != self.ayla[1]:
             # If step is valid and doesn't match the step where the previous instance stopped,
             #  create a new instance stopping at [step] and save that number
             self.ayla[0] = Create_Spark(step=step)
             self.ayla[1] = step
-        if step not in range(1, len(step_names) + 1) and self.ayla[1] != len(step_names):
+        if step not in self.stepRange and self.ayla[1] != len(step_names):
             # If step is invalid, but the previous step number isn't the final step, create a
             #  new instance stopping at the final step and save its step number
             self.ayla[0] = Create_Spark()
             self.ayla[1] = len(step_names)
         return self.ayla[0]
+    def getTalyn(self, step=len(step_names)):
+        notePrefix = "### SampleMaker.getTalyn: "
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.talyn[1]))
+        if step in self.stepRange and step != self.talyn[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.talyn[0] = Create_Curveball(step=step)
+            self.talyn[1] = step
+        if step not in self.stepRange and self.talyn[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.talyn[0] = Create_Curveball()
+            self.talyn[1] = len(step_names)
+        return self.talyn[0]
+    def getChaz(self, step=len(step_names)):
+        notePrefix = "### SampleMaker.getChaz: "
+##        print(notePrefix + "step=" + str(step))
+##        print(notePrefix + "prev step=" + str(self.chaz[1]))
+        if step in self.stepRange and step != self.chaz[1]:
+            # If step is valid and doesn't match the step where the previous instance stopped,
+            #  create a new instance stopping at [step] and save that number
+            self.chaz[0] = Create_Platypus(step=step)
+            self.chaz[1] = step
+        if step not in self.stepRange and self.chaz[1] != len(step_names):
+            # If step is invalid, but the previous step number isn't the final step, create a
+            #  new instance stopping at the final step and save its step number
+            self.chaz[0] = Create_Platypus()
+            self.chaz[1] = len(step_names)
+        return self.chaz[0]
+    # Template for new get*() method
+    # >> COPY BEFORE FILLING IN <<
+    # Before using, make sure you've replaced all of the following:
+    # {CAMELCASE SHORT NAME}
+    # {CAMELCASE HERO NAME}
+    # {SHORT VARIABLE NAME}
+##    def get{CAMELCASE SHORT NAME}(self, step=len(step_names)):
+##        notePrefix = "### SampleMaker.get{CAMELCASE SHORT NAME}: "
+####        print(notePrefix + "step=" + str(step))
+####        print(notePrefix + "prev step=" + str(self.{SHORT VARIABLE NAME}[1]))
+##        if step in self.stepRange and step != self.{SHORT VARIABLE NAME}[1]:
+##            # If step is valid and doesn't match the step where the previous instance stopped,
+##            #  create a new instance stopping at [step] and save that number
+##            self.{SHORT VARIABLE NAME}[0] = Create_{CAMELCASE HERO NAME}(step=step)
+##            self.{SHORT VARIABLE NAME}[1] = step
+##        if step not in self.stepRange and self.{SHORT VARIABLE NAME}[1] != len(step_names):
+##            # If step is invalid, but the previous step number isn't the final step, create a
+##            #  new instance stopping at the final step and save its step number
+##            self.{SHORT VARIABLE NAME}[0] = Create_{CAMELCASE HERO NAME}()
+##            self.{SHORT VARIABLE NAME}[1] = len(step_names)
+##        return self.{SHORT VARIABLE NAME}[0]
         
 class SampleGUI:
     def __init__(self, parent):
@@ -11871,6 +13729,7 @@ class HeroFrame(Frame):
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
 ##        print(notePrefix + "height=" + str(self.height))
 ##        print(notePrefix + "rowHeight=" + str(self.rowHeight))
+        self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
         # Set up Hero Name and Alias labels spanning rows 1-2
@@ -12213,202 +14072,279 @@ class HeroFrame(Frame):
                                   sticky=N+E+S+W)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
-        buttonColumn = 33
-        firstButtonRow = 8
-        prevButtons = 0
-        self.buttonWidth = 4
+        # Set up buttons in rows 3-52 of columns 33-*
+        buttonFrameColumn = 33
+        buttonFrameRow = 3
+        self.buttonWidth = 3
         self.buttonHeight = 2
+        self.buttonPadX = 2
+        self.buttonPadY = 0
         self.stepAnchor = W
         self.stepReason = LEFT
-        self.modeButton = Button(self,
-                                 text="Modes ("+str(self.myModeCount)+")",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchModeWindow,
-                                 font=self.dispFonts[self.fontIndex])
-        self.modeButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=buttonColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtons += 1
-        if self.myModeCount == 0:
-            self.modeButton.grid_remove()
-        self.formButton = Button(self,
-                                 text="Forms ("+str(self.myFormCount)+")",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchFormWindow,
-                                 font=self.dispFonts[self.fontIndex])
-        self.formButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=buttonColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtons += 1
-        if self.myFormCount == 0:
-            self.formButton.grid_remove()
-        self.minionButton = Button(self,
-                                 text="Minions ("+str(self.myMinionCount)+")",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.LaunchMinionWindow,
-                                 font=self.dispFonts[self.fontIndex])
-        self.minionButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                               column=buttonColumn,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
-        prevButtons += 1
-        if self.myMinionCount == 0:
-            self.minionButton.grid_remove()
-        self.nameButton = Button(self,
-                                 anchor=self.stepAnchor,
-                                 justify=self.stepReason,
-                                 text="0. Edit Names",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.AddHeroNames,
-                                 font=self.dispFonts[self.fontIndex])
-        self.nameButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=buttonColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.backgroundButton = Button(self,
-                                       anchor=self.stepAnchor,
-                                       justify=self.stepReason,
-                                       text="1. Add Background",
-                                       width=self.columnWidth*self.buttonWidth,
-                                       height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroBackground,
-                                       font=self.dispFonts[self.fontIndex])
-        self.backgroundButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                   column=buttonColumn,
-                                   rowspan=self.buttonHeight,
-                                   columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.powerSourceButton = Button(self,
-                                        anchor=self.stepAnchor,
-                                        justify=self.stepReason,
-                                        text="2. Add Power Source",
+        self.buttonFrame = Frame(self,
+                                 width=self.columnWidth*self.buttonWidth*2,
+                                 height=self.rowHeight*(52-buttonFrameRow+1),
+                                 padx=5)
+        self.buttonFrame.grid(row=buttonFrameRow,
+                              column=buttonFrameColumn,
+                              rowspan=52-buttonFrameRow+1,
+                              columnspan=self.buttonWidth*2,
+                              sticky=N+E+S+W)
+        # Auxiliary sheet buttons (Modes, Forms, Minion Forms) go in the first 2 rows of columns
+        #  1-4 of buttonFrame, and use self.auxColors
+        # These can display in the same spot for now- we don't have any way of creating a hero that
+        #  uses more than one of them
+##        self.auxColors = ["DarkOrange" + str(x) for x in range(2,4)]
+        self.auxColors = ["#FFC76C", "#FFBB4D"]
+        self.auxCommands = [self.LaunchModeWindow,
+                            self.LaunchFormWindow,
+                            self.LaunchMinionWindow]
+        self.auxWords = ["Modes", "Forms", "Minions"]
+        self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
+                        for i in range(len(self.auxWords))]
+        firstBFRow = 1
+        firstBFCol = 1
+        prevButtonRows = 0
+        self.auxButtons = [None for x in range(len(self.auxCommands))]
+        # We want a big gap between these buttons, which just display additional info on this hero,
+        #  and the other buttons, which modify, clear, or replace this hero
+        # This many button heights should do it...
+        self.auxBufferHeight = 6
+        # This buffer will span all the columns in buttonFrame
+        self.auxBufferWidth = 2
+        self.auxBuffer = Label(self.buttonFrame,
+                               width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
+                               height=self.rowHeight*self.buttonHeight*self.auxBufferHeight,
+                               padx=self.buttonPadX,
+                               pady=self.buttonPadY)
+        self.auxBuffer.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
+                            column=firstBFCol,
+                            rowspan=self.buttonHeight*self.auxBufferHeight,
+                            columnspan=self.buttonWidth*self.auxBufferWidth)
+        for i in range(len(self.auxButtons)):
+            self.auxButtons[i] = Button(self.buttonFrame,
+                                        background=self.auxColors[0],
+                                        activebackground=self.auxColors[1],
+                                        text=self.auxText[i],
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPowerSource,
-                                        font=self.dispFonts[self.fontIndex])
-        self.powerSourceButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                    column=buttonColumn,
+                                        font=self.dispFonts[self.fontIndex],
+                                        command=self.auxCommands[i],
+                                        padx=self.buttonPadX,
+                                        pady=self.buttonPadY)
+            self.auxButtons[i].grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
+                                    column=firstBFCol,
                                     rowspan=self.buttonHeight,
                                     columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.archetypeButton = Button(self,
-                                      anchor=self.stepAnchor,
-                                      justify=self.stepReason,
-                                      text="3. Add Archetype",
-                                      width=self.columnWidth*self.buttonWidth,
-                                      height=self.rowHeight*self.buttonHeight,
-                                      command=self.AddHeroArchetype,
-                                      font=self.dispFonts[self.fontIndex])
-        self.archetypeButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                  column=buttonColumn,
-                                  rowspan=self.buttonHeight,
-                                  columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.personalityButton = Button(self,
-                                        anchor=self.stepAnchor,
-                                        justify=self.stepReason,
-                                        text="4. Add Personality",
-                                        width=self.columnWidth*self.buttonWidth,
-                                        height=self.rowHeight*self.buttonHeight,
-                                        command=self.AddHeroPersonality,
-                                        font=self.dispFonts[self.fontIndex])
-        self.personalityButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                    column=buttonColumn,
-                                    rowspan=self.buttonHeight,
-                                    columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.redAbilityButton = Button(self,
-                                       anchor=self.stepAnchor,
-                                       justify=self.stepReason,
-                                       text="5. Add Red Abilities",
-                                       width=self.columnWidth*self.buttonWidth,
-                                       height=self.rowHeight*self.buttonHeight,
-                                       command=self.AddHeroRedAbilities,
-                                       font=self.dispFonts[self.fontIndex])
-        self.redAbilityButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                   column=buttonColumn,
-                                   rowspan=self.buttonHeight,
-                                   columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.retconButton = Button(self,
-                                   anchor=self.stepAnchor,
-                                   justify=self.stepReason,
-                                   text="6. Retcon",
-                                   width=self.columnWidth*self.buttonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroRetcon,
-                                   font=self.dispFonts[self.fontIndex])
-        self.retconButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                               column=buttonColumn,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.healthButton = Button(self,
-                                   anchor=self.stepAnchor,
-                                   justify=self.stepReason,
-                                   text="7. Health",
-                                   width=self.columnWidth*self.buttonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   command=self.AddHeroHealth,
-                                   font=self.dispFonts[self.fontIndex])
-        self.healthButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                               column=buttonColumn,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.printButton = Button(self,
+            # If this button isn't relevant to this hero, hide it
+            if self.myAuxCounts[i] == 0:
+                self.auxButtons[i].grid_remove()
+        prevButtonRows += self.auxBufferHeight
+        # Text manipulation buttons (Display Text, Display Steps, Save as TXT) go in the next 6
+        #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
+        self.buttonColors = ["PaleTurquoise" + str(x) for x in range(1,5)]
+##        self.textButtonColor = self.buttonColor + str(1)
+        # All hero manipulation buttons will be in this row or lower
+        editRow = firstBFRow + self.buttonHeight * prevButtonRows
+        prevButtonRows = 0
+        self.printButton = Button(self.buttonFrame,
+                                  background=self.buttonColors[0],
+                                  activebackground=self.buttonColors[1],
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  command=lambda arg1=-1 : \
+                                  font=self.dispFonts[self.fontIndex],
+                                  command=lambda arg1=100 : \
                                   print(self.myHero.details(width=arg1)),
-                                  font=self.dispFonts[self.fontIndex])
-        self.printButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                              column=buttonColumn,
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.printButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.stepsButton = Button(self,
+        prevButtonRows += 1
+        self.stepsButton = Button(self.buttonFrame,
+                                  background=self.buttonColors[0],
+                                  activebackground=self.buttonColors[1],
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
+                                  font=self.dispFonts[self.fontIndex],
                                   command=self.DisplayHeroSteps,
-                                  font=self.dispFonts[self.fontIndex])
-        self.stepsButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                              column=buttonColumn,
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.stepsButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.saveButton = Button(self,
+        prevButtonRows += 1
+        self.saveButton = Button(self.buttonFrame,
+                                 background=self.buttonColors[0],
+                                 activebackground=self.buttonColors[1],
                                  text="Save as TXT",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
                                  command=self.SaveTxt,
-                                 font=self.dispFonts[self.fontIndex])
-        self.saveButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=buttonColumn,
+                                 font=self.dispFonts[self.fontIndex],
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.saveButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        prevButtonRows += 1
+        # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
+        #  self.buttonColors[2:4]
+        secondBFCol = firstBFCol + self.buttonWidth
+        prevButtonRows = 0
+        self.stepCommands = [self.EditNames,
+                             self.AddHeroBackground,
+                             self.AddHeroPowerSource,
+                             self.AddHeroArchetype,
+                             self.AddHeroPersonality,
+                             self.AddHeroRedAbilities,
+                             self.AddHeroRetcon,
+                             self.AddHeroHealth]
+        self.stepText = ["Names"] + [x for x in step_names[1:]]
+        self.stepButtons = [None for x in step_names]
+        self.resetButton = Button(self.buttonFrame,
+                                  background=self.buttonColors[2],
+                                  activebackground=self.buttonColors[3],
+                                  text="Reset Hero",
+                                  width=self.columnWidth*self.buttonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  font=self.dispFonts[self.fontIndex],
+                                  command=lambda arg1=True : self.Empty(buttonPressed=arg1),
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.resetButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=secondBFCol,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.buttonWidth)
+        prevButtonRows += 1
+        self.stepButtons[0] = Button(self.buttonFrame,
+                                     background=self.buttonColors[2],
+                                     activebackground=self.buttonColors[3],
+                                     anchor=self.stepAnchor,
+                                     justify=self.stepReason,
+                                     text="0. Edit Names",
+                                     width=self.columnWidth*self.buttonWidth,
+                                     height=self.rowHeight*self.buttonHeight,
+                                     font=self.dispFonts[self.fontIndex],
+                                     command=self.EditNames,
+                                     padx=self.buttonPadX,
+                                     pady=self.buttonPadY)
+        self.stepButtons[0].grid(row=editRow+self.buttonHeight*prevButtonRows,
+                                 column=secondBFCol,
+                                 rowspan=self.buttonHeight,
+                                 columnspan=self.buttonWidth)
+        prevButtonRows += 1
+        # stepButtons 1-7 all display in the same place- for now, we'll only be seeing one of them
+        #  at a time
+        for i in range(1, len(self.stepButtons)):
+            self.stepButtons[i] = Button(self.buttonFrame,
+                                         background=self.buttonColors[2],
+                                         activebackground=self.buttonColors[3],
+                                         anchor=self.stepAnchor,
+                                         justify=self.stepReason,
+                                         text=str(i) + ". Add " + self.stepText[i],
+                                         width=self.columnWidth*self.buttonWidth,
+                                         height=self.rowHeight*self.buttonHeight,
+                                         font=self.dispFonts[self.fontIndex],
+                                         command=self.stepCommands[i],
+                                         padx=self.buttonPadX,
+                                         pady=self.buttonPadY)
+            self.stepButtons[i].grid(row=editRow+self.buttonHeight*prevButtonRows,
+                                     column=secondBFCol,
+                                     rowspan=self.buttonHeight,
+                                     columnspan=self.buttonWidth)
+        prevButtonRows += 1
+        # Buttons for switching to another hero (for demonstration purposes) go in the following
+        #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
+        # We want a large gap between these buttons and the ones that will be in the final GUI.
+        #  demoBuffer will cover that gap, plus the height of the demo buttons
+        # This many rows should do it...
+        self.demoBufferHeight = 2
+        self.demoBuffer = Label(self.buttonFrame,
+                                width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
+                                height=self.buttonHeight*self.demoBufferHeight,
+                                padx=self.buttonPadX,
+                                pady=self.buttonPadY)
+        self.demoBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight*self.demoBufferHeight,
+                             columnspan=self.buttonWidth*self.auxBufferWidth)
+        prevButtonRows += self.demoBufferHeight - 1
+        self.demoColors = ["plum1", "plum2"]
+        self.backButton = Button(self.buttonFrame,
+                                 background=self.demoColors[0],
+                                 activebackground=self.demoColors[1],
+                                 text="<< Prev Hero",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.dispFonts[self.fontIndex],
+                                 command=lambda arg1=-1 : self.SwitchHero(arg1),
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.backButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth)
+        self.forwardButton = Button(self.buttonFrame,
+                                    background=self.demoColors[0],
+                                    activebackground=self.demoColors[1],
+                                    text="Next Hero >>",
+                                    width=self.columnWidth*self.buttonWidth,
+                                    height=self.rowHeight*self.buttonHeight,
+                                    font=self.dispFonts[self.fontIndex],
+                                    command=self.SwitchHero,
+                                    padx=self.buttonPadX,
+                                    pady=self.buttonPadY)
+        self.forwardButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                                column=secondBFCol,
+                                rowspan=self.buttonHeight,
+                                columnspan=self.buttonWidth)
+        prevButtonRows += 1
+        # If necessary, additional buttons go below these
+        # Button for updating relief option (for design purposes)
+##        self.reliefButton = Button(self.buttonFrame,
+##                                   background=self.demoColors[0],
+##                                   activebackground=self.demoColors[1],
+##                                   text=str(self.reliefOptions[self.reliefIndex]),
+##                                   width=self.columnWidth*self.buttonWidth,
+##                                   height=self.rowHeight*self.buttonHeight,
+##                                   command=self.UpdateRelief,
+##                                   padx=self.buttonPadX,
+##                                   pady=self.buttonPadY)
+##        self.reliefButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+##                               column=firstBFCol,
+##                               rowspan=self.buttonHeight,
+##                               columnspan=self.buttonWidth)
+##        # Button for modifying wrap length in ability Text labels (for design purposes)
+##        self.wrapButton = Button(self.buttonFrame,
+##                                 background=self.demoColors[0],
+##                                 activebackground=self.demoColors[1],
+##                                 text=str(self.principleWrap),
+##                                 width=self.columnWidth*self.buttonWidth,
+##                                 height=self.rowHeight*self.buttonHeight,
+##                                 command=self.UpdateWrap,
+##                                 padx=self.buttonPadX,
+##                                 pady=self.buttonPadY)
+##        self.wrapButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+##                             column=secondBFCol,
+##                             rowspan=self.buttonHeight,
+##                             columnspan=self.buttonWidth)
+##        prevButtonRows += 1
         # Hide all creation step buttons by default
-        self.backgroundButton.grid_remove()
-        self.powerSourceButton.grid_remove()
-        self.archetypeButton.grid_remove()
-        self.personalityButton.grid_remove()
-        self.redAbilityButton.grid_remove()
-        self.retconButton.grid_remove()
-        self.healthButton.grid_remove()
+        for i in range(1,len(self.stepButtons)):
+            self.stepButtons[i].grid_remove()
+##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
-            self.completeSteps = [self.myHero.background in range(len(bg_collection)),
+            self.completeSteps = [isinstance(self.myHero, Hero),
+                                  self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
                                   self.myHero.archetype in range(len(arc_collection)),
                                   self.myHero.personality in range(len(pn_collection)),
@@ -12418,85 +14354,15 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 0:
-                self.backgroundButton.grid()
-            elif self.firstIncomplete == 1:
-                self.powerSourceButton.grid()
-            elif self.firstIncomplete == 2:
-                self.archetypeButton.grid()
-            elif self.firstIncomplete == 3:
-                self.personalityButton.grid()
-            elif self.firstIncomplete == 4:
-                self.redAbilityButton.grid()
-            elif self.firstIncomplete == 5:
-                self.retconButton.grid()
-            elif self.firstIncomplete == 6:
-                self.healthButton.grid()
-        # ...
-        toolboxColumn = buttonColumn + self.buttonWidth
-        prevButtons = 0
-##        # Button for updating relief option (for design purposes)
-##        self.reliefButton = Button(self,
-##                                   text=str(self.reliefOptions[self.reliefIndex]),
-##                                   width=self.columnWidth*self.buttonWidth,
-##                                   height=self.rowHeight*self.buttonHeight,
-##                                   command=self.UpdateRelief,
-##                                   font=self.dispFonts[self.fontIndex])
-##        self.reliefButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-##                               column=toolboxColumn,
-##                               rowspan=self.buttonHeight,
-##                               columnspan=self.buttonWidth)
-##        prevButtons += 1
-##        # Button for modifying wrap length in ability Text labels (for design purposes)
-##        self.wrapButton = Button(self,
-##                                 text=str(self.principleWrap),
-##                                 width=self.columnWidth*self.buttonWidth,
-##                                 height=self.rowHeight*self.buttonHeight,
-##                                 command=self.UpdateWrap,
-##                                 font=self.dispFonts[self.fontIndex])
-##        self.wrapButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-##                             column=toolboxColumn,
-##                             rowspan=self.buttonHeight,
-##                             columnspan=self.buttonWidth)
-##        prevButtons += 1
-        # Button for switching to another hero (for testing purposes)
-        self.forwardButton = Button(self,
-                                    text="Next Hero >>",
-                                    width=self.columnWidth*self.buttonWidth,
-                                    height=self.rowHeight*self.buttonHeight,
-                                    command=self.SwitchHero,
-                                    font=self.dispFonts[self.fontIndex])
-        self.forwardButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                                column=toolboxColumn,
-                                rowspan=self.buttonHeight,
-                                columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.backButton = Button(self,
-                                 text="<< Prev Hero",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=lambda arg1=-1 : self.SwitchHero(arg1),
-                                 font=self.dispFonts[self.fontIndex])
-        self.backButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=toolboxColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtons += 1
-        self.fontButton = Button(self,
-                                 text="Next Font",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 command=self.SwitchFont,
-                                 font=self.dispFonts[(self.fontIndex+1)%len(self.dispFonts)])
-        self.fontButton.grid(row=firstButtonRow+self.buttonHeight*prevButtons,
-                             column=toolboxColumn,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
-        prevButtons += 1
+            if self.firstIncomplete in range(1,len(self.stepButtons)):
+                self.stepButtons[self.firstIncomplete].grid()
+##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
+##                      step_names[i] + ") shown")
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
         self.UpdateAll(hero)
+        self.focus_set()
     def RangeText(self, zone):
         # Returns the text representation of the health range for the specified status zone if legal
         #  and valid, and "" otherwise
@@ -12522,18 +14388,26 @@ class HeroFrame(Frame):
         for i in range(len(self.prinSectionValues)):
             for j in range(len(self.prinSectionValues[i])):
                 flatText = self.prinSectionValues[i][j]["text"].replace("\n", " ")
-                newSplit = split_text(flatText, width=self.principleWrap)
+                newSplit = split_text(flatText,
+                                      width=self.principleWrap)
                 self.prinSectionValues[i][j]["text"] = newSplit
                 self.prinSectionValues[i][j].update_idletasks()
         self.wrapButton["text"] = str(self.principleWrap)
         self.wrapButton.update_idletasks()
     def SwitchHero(self, update=1):
-        if self.myHeroNames[0] == "Spark":
-            self.UpdateAll(factory.getKim())
-        else:
-            self.UpdateAll(factory.getAyla())
-        # Shikari, Jo, Cham, Lori, Knockout, Kim, Ayla
-        self.sampleIndex = (self.sampleIndex + update) % 7
+        self.sampleIndex = -1
+        if self.myHeroNames[0] in factory.codenames:
+            self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
+        elif self.myHero:
+            # There is a Hero associated with this frame but it's not one of the samples
+            # Ask the user if they want to save it before switching away
+            saveFirst = messagebox.askyesno(title="Save Changes?",
+                                            message="Switching to a different hero will clear " + \
+                                            "all data for your current one. Do you want to " + \
+                                            "save this hero to a TXT file before you switch?")
+            if saveFirst:
+                self.SaveTxt()
+        self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
         if self.sampleIndex == 0:
             self.UpdateAll(factory.getShikari())
         elif self.sampleIndex == 1:
@@ -12548,12 +14422,28 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getKim())
         elif self.sampleIndex == 6:
             self.UpdateAll(factory.getAyla())
+        elif self.sampleIndex == 7:
+            self.UpdateAll(factory.getTalyn())
+        elif self.sampleIndex == 8:
+            self.UpdateAll(factory.getChaz())
     def SwitchFont(self):
         self.fontIndex = (self.fontIndex + 1) % len(self.dispFonts)
         print(str(self.dispFonts[self.fontIndex]))
         self.UpdateAll(self.myHero)
-    def Empty(self):
+    def Empty(self,
+              buttonPressed=False):
         # Clears all hero attributes
+        notePrefix = "### HeroFrame.Empty: "
+        clearDisplay = False
+        if self.myHero and buttonPressed:
+            clearDisplay = True
+            if self.myHero.hero_name not in factory.codenames:
+                saveFirst = messagebox.askyesno(title="Save Changes?",
+                                                message="This will clear all data for your " + \
+                                                "current hero. Do you want to save this hero " + \
+                                                "to a TXT file first?")
+                if saveFirst:
+                    self.SaveTxt()
         self.myHero = None
         self.myHeroNames = ["", ""]
         self.myHeroChars = ["" for i in range(4)]
@@ -12567,12 +14457,14 @@ class HeroFrame(Frame):
                                 [None for i in range(4)],
                                 [None for i in range(4)]]
         self.myOutAbility = None
-        self.myFormCount = 0
-        self.myModeCount = 0
-        self.myMinionCount = 0
+        self.myAuxCounts = [0,0,0]
+        if clearDisplay:
+            self.UpdateAll()
     def SetHero(self, hero=None):
         # Sets all hero attributes
-        self.Empty()
+        notePrefix = "### HeroFrame.SetHero: "
+        if hero != self.myHero or hero == None:
+            self.Empty()
         if isinstance(hero, Hero):
             self.myHero = hero
             self.myHero.SetFrame(self)
@@ -12660,9 +14552,9 @@ class HeroFrame(Frame):
             if len(givenOutAbilities) > 1:
                 print("Error! Too many Out Abilities: " + str(len(givenOutAbilities)))
                 print("Displaying first Out Ability: " + givenOutAbilities[0].disptext())
-            self.myFormCount = len(self.myHero.other_forms)
-            self.myModeCount = len(self.myHero.other_modes)
-            self.myMinionCount = len(self.myHero.min_forms)
+            self.myAuxCounts = [len(self.myHero.other_modes),
+                                len(self.myHero.other_forms),
+                                len(self.myHero.min_forms)]
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
@@ -12678,11 +14570,11 @@ class HeroFrame(Frame):
         for x in range(len(self.myHeroPowers)):
             if isinstance(self.myHeroPowers[x], PQDie):
                 pqDiceValues[x][0] = split_text(self.myHeroPowers[x].flavorname,
-                                                sectionWidths[0]*self.columnWidth)
+                                                width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][1] = str(self.myHeroPowers[x].diesize)
             if isinstance(self.myHeroQualities[x], PQDie):
                 pqDiceValues[x][2] = split_text(self.myHeroQualities[x].flavorname,
-                                                sectionWidths[0]*self.columnWidth)
+                                                width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
             for j in range(len(pqDiceValues)):
@@ -12718,8 +14610,7 @@ class HeroFrame(Frame):
             for j in range(len(prinSectionHeights)):
                 prinSectionHeights[j][i] = thisSectionHeights[j]
         sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
-        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
-        # ...
+##        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
         firstRow = 29
         titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
@@ -12756,8 +14647,10 @@ class HeroFrame(Frame):
         for a in self.myZoneAbilities[0]:
             rowCount = 1
             if isinstance(a, Ability):
-                textRows = split_text(a.dispText(), width=self.abilityWraps[2])
-                nameRows = split_text(a.name, width=self.abilityWraps[0])
+                textRows = split_text(a.dispText(),
+                                      width=self.abilityWraps[2])
+                nameRows = split_text(a.name,
+                                      width=self.abilityWraps[0])
                 rowCount = 1 + max(len([x for x in textRows if x == "\n"]),
                                    len([y for y in nameRows if y == "\n"]))
             greenRows += rowCount
@@ -12772,7 +14665,8 @@ class HeroFrame(Frame):
                 sectionValues = [self.myPrinAbilities[i].flavorname,
                                  self.myPrinAbilities[i].type,
                                  self.myPrinAbilities[i].dispText()]
-                sectionValues = [split_text(sectionValues[j], self.abilityWraps[j]) \
+                sectionValues = [split_text(sectionValues[j],
+                                            width=self.abilityWraps[j]) \
                                  for j in range(len(sectionValues))]
                 rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
             rword = " rows"
@@ -12803,7 +14697,8 @@ class HeroFrame(Frame):
                     sectionValues = [self.myZoneAbilities[z][a].flavorname,
                                      self.myZoneAbilities[z][a].type,
                                      self.myZoneAbilities[z][a].dispText()]
-                    sectionValues = [split_text(sectionValues[j], self.abilityWraps[j]) \
+                    sectionValues = [split_text(sectionValues[j],
+                                                width=self.abilityWraps[j]) \
                                      for j in range(len(sectionValues))]
                     rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
                 rword = " rows"
@@ -12824,7 +14719,8 @@ class HeroFrame(Frame):
         outText = ""
         rowsNeeded = 1
         if isinstance(self.myOutAbility, Ability):
-            outText = split_text(self.myOutAbility.dispText(), sum(self.abilityWraps))
+            outText = split_text(self.myOutAbility.dispText(),
+                                 width=sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
         self.outAbilityValue.config(text=outText,
                                     height=rowsNeeded,
@@ -12834,47 +14730,34 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(sectionWidths),
                                   sticky=N+E+S+W)
-        self.modeButton.config(text="Modes ("+str(self.myModeCount)+")",
-                               font=self.dispFonts[self.fontIndex])
-        self.formButton.config(text="Forms ("+str(self.myFormCount)+")",
-                               font=self.dispFonts[self.fontIndex])
-        self.minionButton.config(text="Minions ("+str(self.myMinionCount)+")",
-                                 font=self.dispFonts[self.fontIndex])
-        self.backgroundButton.config(font=self.dispFonts[self.fontIndex])
-        self.powerSourceButton.config(font=self.dispFonts[self.fontIndex])
-        self.archetypeButton.config(font=self.dispFonts[self.fontIndex])
-        self.personalityButton.config(font=self.dispFonts[self.fontIndex])
-        self.redAbilityButton.config(font=self.dispFonts[self.fontIndex])
-        self.retconButton.config(font=self.dispFonts[self.fontIndex])
-        self.healthButton.config(font=self.dispFonts[self.fontIndex])
-        # Hide the Forms button if it's not relevant, otherwise show it
-        if self.myFormCount == 0:
-            self.formButton.grid_remove()
-        else:
-            self.formButton.grid()
-        # Hide the Modes button if it's not relevant, otherwise show it
-        if self.myModeCount == 0:
-            self.modeButton.grid_remove()
-        else:
-            self.modeButton.grid()
-        # Hide the Minion Forms button if it's not relevant, otherwise show it
-        if self.myMinionCount == 0:
-            self.minionButton.grid_remove()
-        else:
-            self.minionButton.grid()
-        # Hide all creation step buttons by default
-        self.backgroundButton.grid_remove()
-        self.powerSourceButton.grid_remove()
-        self.archetypeButton.grid_remove()
-        self.personalityButton.grid_remove()
-        self.redAbilityButton.grid_remove()
-        self.retconButton.grid_remove()
-        self.healthButton.grid_remove()
-        # ...
         if isinstance(self.myHero, Hero):
-            # Display ONLY the button for the first hero creation step that ISN'T complete for this hero
+            self.myAuxCounts = [len(self.myHero.other_modes),
+                                len(self.myHero.other_forms),
+                                len(self.myHero.min_forms)]
+        else:
+            self.myAuxCounts = [0,0,0]
+        self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
+                        for i in range(len(self.auxWords))]
+        for i in range(len(self.auxButtons)):
+            # Update this button's text
+            self.auxButtons[i].config(text=self.auxText[i],
+                                      font=self.dispFonts[self.fontIndex])
+            # If this button is relevant, show it; otherwise, hide it
+            if self.myAuxCounts[i] > 0:
+                self.auxButtons[i].grid()
+            else:
+                self.auxButtons[i].grid_remove()
+        # Hide all creation step buttons by default
+        for i in range(1,len(self.stepButtons)):
+            self.stepButtons[i].config(font=self.dispFonts[self.fontIndex])
+            self.stepButtons[i].grid_remove()
+##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
+        if isinstance(self.myHero, Hero):
+            # Display ONLY the button for the first hero creation step that ISN'T complete for this
+            #  hero
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
-            self.completeSteps = [self.myHero.background in range(len(bg_collection)),
+            self.completeSteps = [isinstance(self.myHero, Hero),
+                                  self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
                                   self.myHero.archetype in range(len(arc_collection)),
                                   self.myHero.personality in range(len(pn_collection)),
@@ -12884,47 +14767,40 @@ class HeroFrame(Frame):
             self.firstIncomplete = 99
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete == 0:
-                self.backgroundButton.grid()
-            elif self.firstIncomplete == 1:
-                self.powerSourceButton.grid()
-            elif self.firstIncomplete == 2:
-                self.archetypeButton.grid()
-            elif self.firstIncomplete == 3:
-                self.personalityButton.grid()
-            elif self.firstIncomplete == 4:
-                self.redAbilityButton.grid()
-            elif self.firstIncomplete == 5:
-                self.retconButton.grid()
-            elif self.firstIncomplete == 6:
-                self.healthButton.grid()
-        # ...
+            if self.firstIncomplete in range(1,len(self.stepButtons)):
+                self.stepButtons[self.firstIncomplete].grid()
+##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
+##                      step_names[i] + ") shown")
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame: LaunchModeWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.other_modes)) + " other Modes)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.other_modes)) + " other Modes)")
         # If the hero has other Modes, create a new Toplevel window with a ModeFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_modes) > 0:
-            myModeWindow = ModeWindow(self, title=self.myHeroNames[0] + " Modes", hero=self.myHero)
+            myModeWindow = ModeWindow(self,
+                                      title=self.myHeroNames[0] + " Mode Sheet",
+                                      hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def LaunchFormWindow(self):
         notePrefix = "HeroFrame: LaunchFormWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.other_forms)) + " other Forms)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.other_forms)) + " other Forms)")
         # If the hero has other Forms, create a new Toplevel window with a FormFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.other_forms) > 0:
-            myFormWindow = FormWindow(self, title=self.myHeroNames[0] + " Forms", hero=self.myHero)
+            myFormWindow = FormWindow(self,
+                                      title=self.myHeroNames[0] + " Form Sheet",
+                                      hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def LaunchMinionWindow(self):
         notePrefix = "HeroFrame: LaunchMinionWindow: "
-        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
-              str(len(self.myHero.min_forms)) + " minion forms)")
+##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
+##              str(len(self.myHero.min_forms)) + " minion forms)")
         # If the hero has Minion Forms, create a new Toplevel window with a MinionFrame featuring
         #  them, and use this frame's wait_window method to ignore input while that one is open
         if len(self.myHero.min_forms) > 0:
@@ -12932,14 +14808,14 @@ class HeroFrame(Frame):
                                           title=self.myHeroNames[0] + " Minion Sheet",
                                           hero=self.myHero)
         else:
+            # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
-        # Otherwise, create a simple dialog window that informs the user there's been a problem
     def AddHeroBackground(self, inputs=[]):
         # Walk the user through adding a Background to their hero.
         notePrefix = "### HeroFrame: AddHeroBackground: "
         indent = "    "
         if len(inputs) > 0:
-            print(notePrefix + " inputs=" + str(inputs))
+            print(notePrefix + "inputs=" + str(inputs))
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("1. Background")
@@ -12957,6 +14833,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -12965,12 +14843,19 @@ class HeroFrame(Frame):
                 bg_index = self.myHero.GuidedBackground(inputs=pass_inputs)
             else:
                 bg_index = self.myHero.ConstructedBackground(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Background
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddBackground(bg_index, inputs=pass_inputs)
+            self.myHero.AddBackground(bg_index,
+                                      inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroPowerSource(self, inputs=[]):
         # Walk the user through adding a Power Source to their hero.
@@ -12995,6 +14880,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13003,12 +14890,18 @@ class HeroFrame(Frame):
                 ps_index = self.myHero.GuidedPowerSource(inputs=pass_inputs)
             else:
                 ps_index = self.myHero.ConstructedPowerSource(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Power Source
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddPowerSource(ps_index, inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroArchetype(self, inputs=[]):
         # Walk the user through adding an Archetype to their hero.
@@ -13035,6 +14928,8 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13043,12 +14938,20 @@ class HeroFrame(Frame):
                 arc_indices = self.myHero.GuidedArchetype(inputs=pass_inputs)
             else:
                 arc_indices = self.myHero.ConstructedArchetype(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             # Add the chosen Archetype
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddArchetype(arc_indices[0], arc_indices[1], inputs=pass_inputs)
+            self.myHero.AddArchetype(arc_indices[0],
+                                     arc_indices[1],
+                                     inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             self.UpdateAll(self.myHero)
     def AddHeroPersonality(self, inputs=[]):
         # Walks the user through adding a Personality (or Personalities) to their hero.
@@ -13083,23 +14986,35 @@ class HeroFrame(Frame):
                                                buffer=15)
             entry_index = decision[0]
             inputs = decision[1]
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.myHero.GuidedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
                     pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
             else:
                 pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
             # Add the chosen Personality/ies
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
@@ -13116,6 +15031,8 @@ class HeroFrame(Frame):
                                            dv_index=pn_indices[1],
                                            out_index=pn_indices[2],
                                            inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         self.UpdateAll(self.myHero)
     def AddHeroRedAbilities(self, inputs=[]):
         # Add 2 Red Abilities
@@ -13127,11 +15044,15 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
         while len(rs_abilities) < 2:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddRedAbility(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
         self.UpdateAll(self.myHero)
     def AddHeroRetcon(self, inputs=[]):
@@ -13143,11 +15064,15 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already used " + \
                   pronouns[self.myHero.pronoun_set][2] + " Retcon.")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddRetcon(inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         self.UpdateAll(self.myHero)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
         # Determine Max Health
@@ -13158,16 +15083,21 @@ class HeroFrame(Frame):
             print(indent + self.myHero.hero_name + " already has maximum Health (" + \
                   str(self.myHero.health_zones[0]) + ").")
         else:
+            if track_inputs:
+                print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddHealth(roll=health_roll, inputs=pass_inputs)
+            self.myHero.AddHealth(roll=health_roll,
+                                  inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
         print("Done!")
         self.UpdateAll(self.myHero)
-    def AddHeroNames(self, inputs=[]):
+    def EditNames(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
-        notePrefix = "### HeroFrame: AddHeroNames: "
+        notePrefix = "### HeroFrame: EditNames: "
         indent = "    "
         if not isinstance(self.myHero, Hero):
             self.SetHero(Hero())
@@ -13206,11 +15136,31 @@ class HeroFrame(Frame):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
         if isinstance(self.myHero, Hero):
-            self.myHero.DisplaySteps()
+            self.myHero.DisplaySteps(width=100)
     def SaveTxt(self, inputs=[]):
-        # Let the user save the hero's attributes to a txt file.
+        # Lets the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
         indent = "    "
+        # Ask the user what they want to save
+        options = ["Hero details (Powers, Qualities, Abilities, Principles, etc.)",
+                   "Hero creation process (what you did at each step)",
+                   "Both"]
+        answer = IntVar()
+        question = SelectWindow(self.myParent,
+                                "What information about this hero would you like to save?",
+                                options,
+                                var=answer,
+                                title="Save Hero")
+        includeSections = answer.get()
+        writeText = ""
+        if includeSections == 0:
+            writeText = self.myHero.details(width=-1)
+        elif includeSections == 1:
+            writeText = self.myHero.AllStepDetails(width=-1)
+        else:
+            writeText = self.myHero.details(width=-1) + "\n\n" + \
+                        self.myHero.AllStepDetails(width=-1)
+        # Then ask where they want to save it
         prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
                  "name a .txt file that already exists " + \
                  "in this folder. It WILL be overwritten."
@@ -13219,9 +15169,15 @@ class HeroFrame(Frame):
                                prompt,
                                textVar,
                                title="Save Hero")
-        fname = textVar.get() + ".txt"
+        fname = textVar.get()
+        # Remove illegal filename characters, plus .
+        for char in '\\/:*?><|.':
+            fname = fname.replace(char, '')
+        # Add file extension, unless the user included it
+        if not fname.endswith(".txt"):
+            fname += ".txt"
         heroFile = open(fname, mode='w')
-        heroFile.write(self.myHero.details(width=-1))
+        heroFile.write(writeText)
         heroFile.close()
 
 class SubWindow(Toplevel):
@@ -13384,7 +15340,8 @@ class ModeFrame(Frame):
                 thisPowerDie = ""
                 thisPowerHeight = 1
                 if isinstance(thisPower, PQDie):
-                    thisPowerText = split_text(thisPower.flavorname, self.powerWrap)
+                    thisPowerText = split_text(thisPower.flavorname,
+                                               width=self.powerWrap)
                     thisPowerDie = str(thisPower.diesize)
                     thisPowerHeight = max(self.powerHeight,
                                           1 + len([x for x in thisPowerText if x == "\n"]))
@@ -13411,7 +15368,8 @@ class ModeFrame(Frame):
                               " columns")
                 leftHeight += thisPowerHeight
             # Display mode rules across columns 6-21 starting at the second row
-            thisRulesSections = [split_text(x, width=self.rulesWrap) \
+            thisRulesSections = [split_text(x,
+                                            width=self.rulesWrap) \
                                  for x in self.myModeRules[i].split("\n")]
             thisRulesText = "\n".join(thisRulesSections)
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
@@ -13459,7 +15417,8 @@ class ModeFrame(Frame):
                 thisAbilityType = self.myModeAbilities[i].type
                 thisAbilityText = self.myModeAbilities[i].dispText()
             thisAbilitySections = [thisAbilityName, thisAbilityType, thisAbilityText]
-            thisAbilitySections = [split_text(thisAbilitySections[i], self.abilityWraps[i]) \
+            thisAbilitySections = [split_text(thisAbilitySections[i],
+                                              width=self.abilityWraps[i]) \
                                    for i in range(len(thisAbilitySections))]
             thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
@@ -13665,7 +15624,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.sizeRules, self.rulesWrap),
+                                       text=split_text(self.sizeRules,
+                                                       width=self.rulesWrap),
                                        width=sum(self.sizeWidths)*self.columnWidth,
                                        height=math.floor(2*self.rowHeight))
         self.myMinionSizeRules.grid(row=1,
@@ -13679,7 +15639,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Sizes", self.titleWrap),
+                                       text=split_text("Minion Sizes",
+                                                       width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionSizeTitle.grid(row=3,
@@ -13695,7 +15656,8 @@ your minion one of the following upgrades:"
                                anchor=W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.sizeHeaders[i], self.sizeWraps[i]),
+                               text=split_text(self.sizeHeaders[i],
+                                               width=self.sizeWraps[i]),
                                width=self.sizeWidths[i]*self.columnWidth,
                                height=math.floor(self.rowHeight))
             self.myMinionSizeHeaders[i] = thisHeader
@@ -13713,7 +15675,8 @@ your minion one of the following upgrades:"
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.sizeText[c][r], self.sizeWraps[c]),
+                                  text=split_text(self.sizeText[c][r],
+                                                  width=self.sizeWraps[c]),
                                   width=self.sizeWidths[c]*self.columnWidth,
                                   height=math.floor(self.rowHeight))
                 self.myMinionSizeEntries[c][r] = thisEntry
@@ -13730,7 +15693,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.formRules, self.rulesWrap),
+                                       text=split_text(self.formRules,
+                                                       width=self.rulesWrap),
                                        width=sum(self.formWidths)*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionFormRules.grid(row=12,
@@ -13744,7 +15708,8 @@ your minion one of the following upgrades:"
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Forms", self.titleWrap),
+                                       text=split_text("Minion Forms",
+                                                       width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
                                        height=math.floor(self.rowHeight))
         self.myMinionFormTitle.grid(row=13,
@@ -13760,7 +15725,8 @@ your minion one of the following upgrades:"
                                anchor=W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.formHeaders[i], self.formWraps[i]),
+                               text=split_text(self.formHeaders[i],
+                                               width=self.formWraps[i]),
                                width=self.formWidths[i]*self.columnWidth,
                                height=math.floor(self.rowHeight))
             self.myMinionFormHeaders[i] = thisHeader
@@ -13778,7 +15744,8 @@ your minion one of the following upgrades:"
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.myMinionInfo[r][c], self.formWraps[c]),
+                                  text=split_text(self.myMinionInfo[r][c],
+                                                  width=self.formWraps[c]),
                                   width=self.formWidths[c]*self.columnWidth,
                                   height=math.floor(self.rowHeight))
                 self.myMinionFormEntries[r][c] = thisEntry
@@ -13799,8 +15766,10 @@ your minion one of the following upgrades:"
             self.myMinionCount = len(self.myHero.min_forms)
             self.myMinionInfo = [["","",-1] for i in range(self.myMinionCount)]
             for i in range(self.myMinionCount):
-                thisMinion = self.myHero.min_forms[i]
-                self.myMinionInfo[i] = [str(thisMinion[0]), "+" + str(thisMinion[2]), str(thisMinion[1])]
+                thisMinion = min_collection[self.myHero.min_forms[i]]
+                self.myMinionInfo[i] = [str(thisMinion[0]),
+                                        "+" + str(thisMinion[2]),
+                                        str(thisMinion[1])]
 
 class FormWindow(SubWindow):
     def __init__(self, parent, title=None, hero=None):
@@ -13828,7 +15797,6 @@ class FormFrame(Frame):
 ##        print(notePrefix + "columnWidth: " + str(self.columnWidth))
         self.SetHero(hero)
         self.numRows = 11 * self.myFormCount - 1
-        # ...
         self.rowHeight = 1
         self.height = max(1,self.numRows*self.rowHeight)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
@@ -13854,19 +15822,27 @@ class FormFrame(Frame):
         self.pqModifier = 1
         self.pqWrap = math.floor(self.upperWidths[0]*self.columnWidth*self.pqModifier)
         self.abilityModifiers = [1,1,1]
-        self.abilityWraps = [math.floor(self.lowerWidths[x+5]*self.columnWidth*self.abilityModifiers[x]) for x in range(len(self.abilityModifiers))]
+        self.abilityWraps = [math.floor(self.lowerWidths[x+5] * self.columnWidth * \
+                                        self.abilityModifiers[x]) \
+                             for x in range(len(self.abilityModifiers))]
         # Form name labels are organized by form
         self.myFormNames = [None for x in range(self.myFormCount)]
         # Header labels are organized by form, then by category (in headerText)
-        self.myHeaders = [[None for x in range(len(self.headerText))] for y in range(self.myFormCount)]
+        self.myHeaders = [[None for x in range(len(self.headerText))] \
+                          for y in range(self.myFormCount)]
         # Status die labels are organized by form, then by zone
-        self.myStatusDice = [[None for x in range(len(self.zoneColors))] for y in range(self.myFormCount)]
+        self.myStatusDice = [[None for x in range(len(self.zoneColors))] \
+                             for y in range(self.myFormCount)]
         # Power/Quality die labels are organized by form, then by column (in headerText[0:4]),
         #  then by row
-        self.myPQDice = [[[None for x in range(8)] for y in range(4)] for z in range(self.myFormCount)]
+        self.myPQDice = [[[None for x in range(8)] \
+                          for y in range(4)] \
+                         for z in range(self.myFormCount)]
         # Ability labels are organized by form, then by Ability (in thisForm[5]), then by section
         #  (in headerText[4:])
-        self.myAbilities = [[[None for x in range(3)] for y in range(len(self.myFormInfo[z][5]))] for z in range(self.myFormCount)]
+        self.myAbilities = [[[None for x in range(3)] \
+                             for y in range(len(self.myFormInfo[z][5]))] \
+                            for z in range(self.myFormCount)]
         firstRow = 1
         for i in range(self.myFormCount):
             thisForm = self.myFormInfo[i]
@@ -13876,12 +15852,14 @@ class FormFrame(Frame):
             leftHeight = 2
             # If this form has Powers, leftHeight adds the height of each Power
             for p in thisForm[2]:
-                leftHeight += 1 + len([x for x in split_text(p.flavorname, self.pqWrap) if x == "\n"])
+                leftHeight += 1 + len([x for x in split_text(p.flavorname,
+                                                             width=self.pqWrap) if x == "\n"])
             # centerHeight starts with 1 for form name plus 1 for Quality headers
             centerHeight = 2
             # If this form has Qualities, centerHeight adds the height of each Quality
             for q in thisForm[3]:
-                centerHeight += 1 + len([x for x in split_text(q.flavorname, self.pqWrap) if x == "\n"])
+                centerHeight += 1 + len([x for x in split_text(q.flavorname,
+                                                               width=self.pqWrap) if x == "\n"])
             # rightHeight starts with 1 for form name plus 2 for description
             rightHeight = 3
             # If this form has Abilities, rightHeight adds 1 for Ability headers...
@@ -13889,8 +15867,12 @@ class FormFrame(Frame):
                 rightHeight += 1
             # ... plus the height of each Ability
             for a in thisForm[5]:
-                rightHeight += 1 + max(len([x for x in split_text(a.flavorname, self.abilityWraps[0]) if x == "\n"]),
-                                       len([x for x in split_text(a.dispText(), self.abilityWraps[2]) if x == "\n"]))
+                rightHeight += 1 + max(len([x for x in split_text(a.flavorname,
+                                                                  width=self.abilityWraps[0]) \
+                                            if x == "\n"]),
+                                       len([x for x in split_text(a.dispText(),
+                                                                  width=self.abilityWraps[2]) \
+                                            if x == "\n"]))
             # rightHeight always needs to have room for form name, status header, and 3 status dice
             rightHeight = max(rightHeight, 5)
 ##            print(notePrefix + thisName + " leftHeight: " + str(leftHeight))
@@ -13930,7 +15912,8 @@ class FormFrame(Frame):
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Label(self,
-                                                background=self.zoneColors[j] + str(self.darkColorIndex),
+                                                background=self.zoneColors[j] + \
+                                                str(self.darkColorIndex),
                                                 anchor=self.targets[4],
                                                 justify=self.reasons[4],
                                                 relief=self.statusRelief,
@@ -13950,7 +15933,10 @@ class FormFrame(Frame):
                     if r < len(thisForm[c]):
                         if isinstance(thisForm[c][r], PQDie):
                             pqHeights[r] = max(pqHeights[r],
-                                               1 + len([x for x in split_text(thisForm[c][r].flavorname, self.pqWrap) if x == "\n"]))
+                                               1 + len([x for x in \
+                                                        split_text(thisForm[c][r].flavorname,
+                                                                   width=self.pqWrap) \
+                                                        if x == "\n"]))
 ##                    print(notePrefix + thisName + " row " + str(r) + ", column " + str(c) + \
 ##                          " height: " + str(pqHeights[r]))
             for j in range(4):
@@ -13962,7 +15948,8 @@ class FormFrame(Frame):
                 for d in range(len(columnDice)):
                     if isinstance(columnDice[d], PQDie):
                         if j%2 == 0:
-                            columnText[d] = split_text(columnDice[d].flavorname, self.pqWrap)
+                            columnText[d] = split_text(columnDice[d].flavorname,
+                                                       width=self.pqWrap)
                         else:
                             columnText[d] = str(columnDice[d].diesize)
 ##                print(notePrefix + thisName + " " + self.headerText[j] + " justify: " + \
@@ -14004,13 +15991,21 @@ class FormFrame(Frame):
                     thisAbility = thisForm[5][j]
                     # Get the max height of the text boxes for this Ability. That will be the
                     #  rowspan of these labels.
-                    abilityHeight = 1 + max(len([x for x in split_text(thisAbility.flavorname, self.abilityWraps[0]) if x == "\n"]),
-                                            len([x for x in split_text(thisAbility.dispText(), self.abilityWraps[2]) if x == "\n"]))
+                    abilityHeight = 1 + max(len([x for x in \
+                                                 split_text(thisAbility.flavorname,
+                                                            width=self.abilityWraps[0]) \
+                                                 if x == "\n"]),
+                                            len([x for x in \
+                                                 split_text(thisAbility.dispText(),
+                                                            width=self.abilityWraps[2]) \
+                                                 if x == "\n"]))
 ##                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
 ##                          str(abilityHeight))
-                    thisAbilityText = [split_text(thisAbility.flavorname, self.abilityWraps[0]),
+                    thisAbilityText = [split_text(thisAbility.flavorname,
+                                                  width=self.abilityWraps[0]),
                                        thisAbility.type,
-                                       split_text(thisAbility.dispText(), self.abilityWraps[2])]
+                                       split_text(thisAbility.dispText(),
+                                                  width=self.abilityWraps[2])]
                     for k in range(3):
                         self.myAbilities[i][j][k] = Label(self,
                                                           background=thisBG,
@@ -14026,9 +16021,7 @@ class FormFrame(Frame):
                                                        columnspan=self.lowerWidths[5+k],
                                                        sticky=self.abilityGlue)
                     thisRow += abilityHeight
-            # ...
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
-        # ...
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -14036,7 +16029,6 @@ class FormFrame(Frame):
         self.isDivided = False
         self.myDividedTags = []
         self.myFormInfo = []
-        # ...
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -14049,29 +16041,19 @@ class FormFrame(Frame):
             # Divided grants 2 Green Forms, each with no Abilities
             # To separate the two categories, display Green Forms with no Abilities before ones with
             #  Abilities
-            self.myFormInfo = [[x for x in y] for y in self.myHero.other_forms if y[1] == 0 and len(y[5]) <= 0] + \
-                              [[x for x in y] for y in self.myHero.other_forms if y[1] == 0 and len(y[5]) > 0] + \
+            self.myFormInfo = [[x for x in y] for y in self.myHero.other_forms \
+                               if y[1] == 0 and len(y[5]) <= 0] + \
+                              [[x for x in y] for y in self.myHero.other_forms \
+                               if y[1] == 0 and len(y[5]) > 0] + \
                               [[x for x in y] for y in self.myHero.other_forms if y[1] == 1] + \
                               [[x for x in y] for y in self.myHero.other_forms if y[1] == 2]
             # For each form, if the status dice are empty, replace them with the hero's main
             #  status dice
             for i in range(self.myFormCount):
                 if self.myFormInfo[i][4] == [0,0,0]:
+                    self.myFormInfo[i][4] = [x for x in self.myHero.dv_status]
+                elif self.myFormInfo[i][4] == [1,1,1]:
                     self.myFormInfo[i][4] = [x for x in self.myHero.status_dice]
-
-class ModeWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
-        SubWindow.__init__(self, parent, title)
-        if isinstance(hero, Hero):
-            self.myHero = hero
-        else:
-            self.myHero = None
-        self.myModeFrame = ModeFrame(self, hero=self.myHero)
-        self.activate(self.myModeFrame)
-    def body(self, master):
-        self.container = master
-        master.grid(row=0, column=0)
-        return master
 
 class SelectWindow(SubWindow):
     def __init__(self,
@@ -14094,13 +16076,21 @@ class SelectWindow(SubWindow):
                                          self.myOptions,
                                          self.myVariable,
                                          width=width,
-                                         buffer=buffer)
+                                         buffer=buffer,
+                                         titleWidth=len(str(title)))
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0)
         return master
+
+# A value used to represent the discrepancy between "number of characters in this title" and
+#  "width (in characters) of a window that will fully display this title"- that is, the width of
+#  the buttons and icons that also take up space in the title bar
+# Global because it's useful for SelectFrame, EntryFrame, etc.
+global titleBuffer
+titleBuffer = 10
 
 class SelectFrame(Frame):
     # A frame that poses a multiple-choice question to the user and reports the answer.
@@ -14114,18 +16104,21 @@ class SelectFrame(Frame):
                  destination,
                  printing=False,
                  width=40,
-                 buffer=5):
+                 buffer=5,
+                 titleWidth=-1):
         Frame.__init__(self, parent)
         notePrefix = "### SelectFrame.__init__: "
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
-        self.myWidth = max(width, max([len(x) for x in self.myOptions]))
+        self.myTitleWidth = titleWidth + titleBuffer
+        self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
 ##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
-        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
+##        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
         self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         self.myPromptLabel = Label(self,
@@ -14134,8 +16127,8 @@ class SelectFrame(Frame):
                                    text=self.myPrompt,
                                    width=self.myWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
@@ -14144,8 +16137,8 @@ class SelectFrame(Frame):
                                        *self.myOptions)
         self.myOptionMenu.config(anchor=W,
                                  justify=LEFT)
-        self.myOptionMenu.grid(row=1,
-                               column=0,
+        self.myOptionMenu.grid(row=2,
+                               column=1,
                                rowspan=1,
                                columnspan=3,
                                sticky=N+E+S+W)
@@ -14155,8 +16148,8 @@ class SelectFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
+        self.myOKButton.grid(row=3,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
@@ -14172,16 +16165,16 @@ class SelectFrame(Frame):
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-        self.myBPlusButton.grid(row=4,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myBMinusButton.grid(row=4,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myBPlusButton.grid(row=5,
+##                                column=1,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myBMinusButton.grid(row=5,
+##                                 column=2,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         self.myWPlusButton = Button(self,
                                     anchor=CENTER,
                                     justify=CENTER,
@@ -14194,26 +16187,175 @@ class SelectFrame(Frame):
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-        self.myWPlusButton.grid(row=5,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myWMinusButton.grid(row=5,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
+##        self.myWPlusButton.grid(row=6,
+##                                column=1,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myWMinusButton.grid(row=6,
+##                                 column=2,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
-    def update(self, event=None):
+        self.bind("<Down>", self.nextoption)
+        self.bind("<Up>", self.prevoption)
+    def update(self,
+               event=None,
+               edited=False):
+        # Make sure myWidth never gets narrower than the widest option
+        self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
         self.myPromptLabel.config(text=self.myPrompt,
                                   width=self.myWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
-        print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
-              ", myBuffer = " + str(self.myBuffer))
+        if edited:
+            print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
+                  ", myBuffer = " + str(self.myBuffer))
+    def plusbuffer(self, event=None):
+        self.myBuffer += 5
+        self.update(edited=True)
+    def minusbuffer(self, event=None):
+        self.myBuffer -= 5
+        self.update(edited=True)
+    def pluswidth(self, event=None):
+        self.myWidth += 5
+        self.update(edited=True)
+    def minuswidth(self, event=None):
+        self.myWidth -= 5
+        self.update(edited=True)
+    def nextoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index+1])
+                self.update()
+    def prevoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index-1])
+                self.update()
+    def finish(self, *args):
+        notePrefix = "### SelectFrame.finish: "
+        if len(self.myOptions) > 0:
+            answer = self.myOptions.index(self.myString.get())
+            if answer in range(len(self.myOptions)):
+##                print(self.myPrompt)
+##                for i in range(len(self.myOptions)):
+##                    print(str(i) + ": " + self.myOptions[i])
+##                print(str(answer))
+                # Return self.myAnswer to the destination
+                self.myDestination.set(answer)
+                # Destroy this window...
+                if isinstance(self.myParent, SubWindow):
+                    self.myParent.cancel()
+            else:
+                print(notePrefix + "Invalid value of answer (" + str(answer) + ")")
+        else:
+            print(notePrefix + "Invalid length of self.myOptions (" + \
+                  str(len(self.myOptions)) + ")")
+
+class EntryWindow(SubWindow):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 var=None,
+                 title="",
+                 width=60,
+                 buffer=15):
+        SubWindow.__init__(self, parent, title)
+        self.myPrompt = prompt
+        if isinstance(var, StringVar):
+            self.myVariable = var
+        else:
+            self.myVariable = None
+        self.myEntryFrame = EntryFrame(self,
+                                       self.myPrompt,
+                                       self.myVariable,
+                                       width=width,
+                                       buffer=buffer,
+                                       titleWidth=len(str(title)))
+        self.activate(self.myEntryFrame)
+    def body(self, master):
+        self.container = master
+        master.grid(row=0, column=0)
+        return master
+
+class EntryFrame(Frame):
+    # A frame that asks the user for a line of text and returns the answer.
+    # prompt -> self.myPrompt: the text of the question.
+    # destination -> self.myDestination: the variable to save the user's response to
+    def __init__(self,
+                 parent,
+                 prompt,
+                 destination,
+                 printing=False,
+                 width=60,
+                 buffer=15,
+                 titleWidth=-1):
+        Frame.__init__(self, parent)
+        self.myParent = parent
+        self.myTitleWidth = titleWidth + titleBuffer
+        self.myWidth = max(width, self.myTitleWidth)
+        self.myBuffer = buffer
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myRawPrompt = str(prompt)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
+        self.myText = StringVar(self, destination.get())
+        self.myDestination = destination
+        self.myPromptLabel = Label(self,
+                                   anchor=W,
+                                   justify=LEFT,
+                                   text=self.myPrompt,
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
+        self.myPromptLabel.grid(row=1,
+                                column=1,
+                                rowspan=1,
+                                columnspan=3,
+                                sticky=N+E+S+W)
+        # Create Entry widget
+        self.myTextEntry = Entry(self,
+                                 justify=LEFT,
+                                 textvariable=self.myText)
+        self.myTextEntry.grid(row=2,
+                              column=1,
+                              rowspan=1,
+                              columnspan=3,
+                              sticky=N+E+S+W)
+        # Select all text
+        self.myTextEntry.select_range(0,"end")
+        self.myOKButton = Button(self,
+                                 anchor=CENTER,
+                                 justify=CENTER,
+                                 text="OK",
+                                 padx=2,
+                                 command=self.finish)
+        self.myOKButton.grid(row=3,
+                             column=2,
+                             rowspan=1,
+                             columnspan=1,
+                             sticky=N+E+S+W)
+        # Bind the Enter key to the same method as the OK button
+        self.bind("<Return>", self.finish)
+        self.myTextEntry.bind("<Return>", self.finish)
+        # Give focus to myTextEntry immediately
+        self.initial_focus = self.myTextEntry
+        self.initial_focus.focus_set()
+    def update(self, event=None):
+        self.myWidth = max(self.myWidth, self.myTitleWidth)
+        self.myWrap = self.myWidth + self.myBuffer
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myWrap)
+        self.myPromptLabel.config(text=self.myPrompt,
+                                  width=self.myWidth,
+                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
+        print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
+              str(self.myBuffer))
     def plusbuffer(self, event=None):
         self.myBuffer += 5
         self.update()
@@ -14227,99 +16369,16 @@ class SelectFrame(Frame):
         self.myWidth -= 5
         self.update()
     def finish(self, *args):
-        if len(self.myOptions) > 0:
-            answer = self.myOptions.index(self.myString.get())
-            if answer in range(len(self.myOptions)):
-##                print(self.myPrompt)
-##                for i in range(len(self.myOptions)):
-##                    print(str(i) + ": " + self.myOptions[i])
-##                print(str(answer))
-                # Return self.myAnswer to the destination
-                self.myDestination.set(answer)
-                # Destroy this window...
-                if isinstance(self.myParent, SubWindow):
-                    self.myParent.cancel()
-                # ...
-            else:
-                print("SelectFrame.finish: Invalid value of answer (" + str(answer) + ")")
-        else:
-            print("SelectFrame.finish: Invalid length of self.myOptions (" + \
-                  str(len(self.myOptions)) + ")")
-        # ...
-
-class EntryWindow(SubWindow):
-    def __init__(self, parent, prompt, var=None, title=None):
-        SubWindow.__init__(self, parent, title)
-        self.myPrompt = prompt
-        if isinstance(var, StringVar):
-            self.myVariable = var
-        else:
-            self.myVariable = None
-        self.myEntryFrame = EntryFrame(self, self.myPrompt, self.myVariable)
-        self.activate(self.myEntryFrame)
-    def body(self, master):
-        self.container = master
-        master.grid(row=0, column=0)
-        return master
-
-class EntryFrame(Frame):
-    # A frame that asks the user for a line of text and returns the answer.
-    # prompt -> self.myPrompt: the text of the question.
-    # destination -> self.myDestination: the variable to save the user's response to
-    def __init__(self, parent, prompt, destination, printing=False):
-        Frame.__init__(self, parent)
-        self.myParent = parent
-        self.myPrompt = prompt
-        self.myText = StringVar(self, destination.get())
-        self.myDestination = destination
-        self.myPromptLabel = Label(self,
-                                   anchor=W,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
-                                rowspan=1,
-                                columnspan=3,
-                                sticky=N+E+S+W)
-        # Create Entry widget
-        self.myTextEntry = Entry(self,
-                                 justify=LEFT,
-                                 textvariable=self.myText)
-        self.myTextEntry.grid(row=1,
-                              column=0,
-                              rowspan=1,
-                              columnspan=3,
-                              sticky=N+E+S+W)
-        # ...
-        self.myOKButton = Button(self,
-                                 anchor=CENTER,
-                                 justify=CENTER,
-                                 text="OK",
-                                 padx=2,
-                                 command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
-                             rowspan=1,
-                             columnspan=1,
-                             sticky=N+E+S+W)
-        # Bind the Enter key to the same method as the OK button
-        self.bind("<Return>", self.finish)
-        self.myTextEntry.bind("<Return>", self.finish)
-        # Give focus to myTextEntry immediately
-        self.initial_focus = self.myTextEntry
-        self.initial_focus.focus_set()
-    def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
             # Return self.myText to the destination
-            print(notePrefix + "passing '" + self.myText.get() + "'")
+##            print(notePrefix + "passing '" + self.myText.get() + "'")
             self.myDestination.set(self.myText.get())
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
                 self.myParent.cancel()
         else:
-            print("EntryFrame.finish: no text entered")
+            print(notePrefix + "No text entered")
 
 class ExpandWindow(SubWindow):
     def __init__(self,
@@ -14330,8 +16389,10 @@ class ExpandWindow(SubWindow):
                  var=None,
                  title=None,
                  lwidth=40,
-                 rwidth=100):
-        SubWindow.__init__(self, parent, title)
+                 lbuffer=-1,
+                 rwidth=100,
+                 rbuffer=-1):
+        SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
         self.myDetails = [str(x) for x in details]
@@ -14345,7 +16406,9 @@ class ExpandWindow(SubWindow):
                                          self.myDetails,
                                          self.myVariable,
                                          lwidth=lwidth,
-                                         rwidth=rwidth)
+                                         lbuffer=lbuffer,
+                                         rwidth=rwidth,
+                                         rbuffer=rbuffer)
         self.activate(self.myExpandFrame)
     def body(self, master):
         self.container = master
@@ -14368,7 +16431,9 @@ class ExpandFrame(Frame):
                  expand_options,
                  destination,
                  lwidth=40,
+                 lbuffer=-1,
                  rwidth=100,
+                 rbuffer=-1,
                  printing=False):
         Frame.__init__(self, parent)
         notePrefix = "### ExpandFrame.__init__: "
@@ -14387,100 +16452,116 @@ class ExpandFrame(Frame):
 ##        print(notePrefix + "max len = " + str(max([len(x) for x in self.myOptions])))
         self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
 ##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
-        self.myPromptBuffer = math.floor(0.43 * self.myPromptWidth - 20)
+        # If lbuffer isn't specified, use this formula
+        self.myPromptBuffer = max(0, math.floor(0.43 * self.myPromptWidth - 20))
+        if isinstance(lbuffer, int) and lbuffer >= 0:
+            self.myPromptBuffer = lbuffer
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
         self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt, width=self.myPromptWrap)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myPromptWrap)
         self.myDispWidth = rwidth
-        self.myDispBuffer = math.floor(0.43 * self.myDispWidth - 20)
+        # If rbuffer isn't specified, use this formula
+        self.myDispBuffer = max(0, math.floor(0.43 * self.myDispWidth - 20))
+        if isinstance(rbuffer, int) and rbuffer >= 0:
+            self.myDispBuffer = rbuffer
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.myDetails = [str(x) for x in expand_options]
-        self.myPromptLabel = Label(self,
+        self.myLeftFrame = Frame(self,
+                                 width=self.myPromptWidth,
+                                 height=4+len([x for x in self.myPrompt if x == "\n"]))
+        self.myLeftFrame.grid(row=1,
+                              column=1,
+                              rowspan=1,
+                              columnspan=1,
+                              sticky=N+E+S+W)
+        self.myPromptLabel = Label(self.myLeftFrame,
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=self.myPromptWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myOptionMenu = OptionMenu(self,
+        self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
                                        command=self.expand)
         self.myOptionMenu.config(anchor=W,
                                  justify=LEFT)
-        self.myOptionMenu.grid(row=1,
-                               column=0,
+        self.myOptionMenu.grid(row=2,
+                               column=1,
                                rowspan=1,
                                columnspan=3,
                                sticky=E+W)
-        self.myOKButton = Button(self,
+        self.myOKButton = Button(self.myLeftFrame,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=2,
-                             column=1,
+        self.myOKButton.grid(row=3,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=E+W)
-        self.myBufferLabel = Label(self,
+        self.myBufferLabel = Label(self.myLeftFrame,
                                    anchor=W,
                                    text="")
-        self.myBufferLabel.grid(row=3,
-                                column=0,
+        self.myBufferLabel.grid(row=4,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myBPlusButton = Button(self,
+        self.myBPlusButton = Button(self.myLeftFrame,
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+B",
                                     padx=1,
                                     command=self.plusbuffer)
-        self.myBMinusButton = Button(self,
+        self.myBMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-B",
                                      padx=1,
                                      command=self.minusbuffer)
-        self.myBPlusButton.grid(row=4,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myBMinusButton.grid(row=4,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
-        self.myWPlusButton = Button(self,
+##        self.myBPlusButton.grid(row=5,
+##                                column=1,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myBMinusButton.grid(row=5,
+##                                 column=2,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
+        self.myWPlusButton = Button(self.myLeftFrame,
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+W",
                                     padx=1,
                                     command=self.pluswidth)
-        self.myWMinusButton = Button(self,
+        self.myWMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-W",
                                      padx=1,
                                      command=self.minuswidth)
-        self.myWPlusButton.grid(row=5,
-                                column=0,
-                                rowspan=1,
-                                columnspan=1,
-                                sticky=N+E+S+W)
-        self.myWMinusButton.grid(row=5,
-                                 column=1,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
-        detailsHeight = max([1 + len([x for x in split_text(y, width=self.myDispWrap) \
+##        self.myWPlusButton.grid(row=6,
+##                                column=1,
+##                                rowspan=1,
+##                                columnspan=1,
+##                                sticky=N+E+S+W)
+##        self.myWMinusButton.grid(row=6,
+##                                 column=2,
+##                                 rowspan=1,
+##                                 columnspan=1,
+##                                 sticky=N+E+S+W)
+        detailsHeight = max([1 + len([x for x in split_text(y,
+                                                            width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
         self.myDispLabel = Label(self,
                                  anchor=NW,
@@ -14490,40 +16571,76 @@ class ExpandFrame(Frame):
                                  relief=GROOVE)
         if detailsHeight < 40:
             self.myDispLabel.config(height=detailsHeight)
-        self.myDispLabel.grid(row=0,
-                              column=4,
-                              rowspan=len(self.myOptions)+3,
+        self.myDispLabel.grid(row=1,
+                              column=2,
+                              rowspan=1,
+                              columnspan=1,
                               sticky=N+E+S+W)
-        self.expand()
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
-    def expand(self, event=None):
+        self.bind("<Up>", self.prevoption)
+        self.bind("<Down>", self.nextoption)
+        self.expand()
+    def expand(self,
+               edited=False,
+               event=None):
+        # Make sure myPromptWidth never gets narrower than the widest option
+        self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
+        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=self.myPromptWrap)
+        self.myLeftFrame.config(width=self.myPromptWidth)
+        self.myPromptLabel.config(text=self.myPrompt,
+                                  width=self.myPromptWidth,
+                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
-##        if index in range(len(self.myDetails)):
-##            dispText = split_text(self.myDetails[index], width=self.myDispWrap)
+        if index in range(len(self.myDetails)):
+            dispText = split_text(self.myDetails[index],
+                                  width=self.myDispWrap)
         self.myDispLabel.config(text=dispText,
                                 width=self.myDispWidth)
-        print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
-              ", myDispBuffer = " + str(self.myDispBuffer))
+        detailsHeight = max([1 + len([x for x in split_text(y,
+                                                            width=self.myDispWrap) \
+                                      if x == "\n"]) for y in self.myDetails])
+        if detailsHeight < 40:
+            self.myDispLabel.config(height=detailsHeight)
+        if edited:
+            print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
+                  ", myDispBuffer = " + str(self.myDispBuffer))
+            print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
+                  ", myPromptBuffer = " + str(self.myPromptBuffer))
         self.myAnswer.set(index)
     def plusbuffer(self, event=None):
         self.myDispBuffer += 5
-        self.expand()
+        self.expand(edited=True)
     def minusbuffer(self, event=None):
         self.myDispBuffer -= 5
-        self.expand()
+        self.expand(edited=True)
     def pluswidth(self, event=None):
         self.myDispWidth += 5
-        self.expand()
+        self.expand(edited=True)
     def minuswidth(self, event=None):
         self.myDispWidth -= 5
-        self.expand()
+        self.expand(edited=True)
+    def nextoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index+1])
+                self.expand()
+    def prevoption(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myString.get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myString.get())
+                self.myString.set(self.myOptions[index-1])
+                self.expand()
     def finish(self, *args):
+        notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
             if self.myAnswer.get() in range(len(self.myOptions)):
-                print(self.myPrompt)
+##                print(self.myPrompt)
 ##                for i in range(len(self.myOptions)):
 ##                    print(str(i) + ": " + self.myOptions[i])
 ##                print(str(self.myAnswer.get()))
@@ -14533,11 +16650,11 @@ class ExpandFrame(Frame):
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
             else:
-                print("ExpandFrame.finish: Invalid value at self.myAnswer (" + \
+                print(notePrefix + "Invalid value at self.myAnswer (" + \
                       str(self.myAnswer.get()) + ")")
         else:
-            print("ExpandFrame.finish: Invalid length of self.myOptions (" + \
-                  str(len(self.myOptions)) + ")")
+            print(notePrefix + "Invalid length of self.myOptions (" + str(len(self.myOptions)) + \
+                  ")")
 
 class SwapWindow(SubWindow):
     def __init__(self,
@@ -14548,7 +16665,7 @@ class SwapWindow(SubWindow):
                  var1,
                  title=None,
                  width=100):
-        SubWindow.__init__(self, parent, title)
+        SubWindow.__init__(self, parent, str(title))
         self.myPrompt = str(prompt)
         self.myOptions = [str(x) for x in options]
         self.myVariables = [None, None]
@@ -14564,7 +16681,8 @@ class SwapWindow(SubWindow):
                                      self.myPrompt,
                                      self.myOptions,
                                      self.myVariables,
-                                     width=width)
+                                     width=width,
+                                     titleWidth=len(str(title)))
         self.activate(self.mySwapFrame)
     def body(self, master):
         self.container = master
@@ -14583,12 +16701,15 @@ class SwapFrame(Frame):
                  options,
                  destinations,
                  width=100,
+                 titleWidth=-1,
                  printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myOptions = [str(x) for x in options]
-        self.myWidth = max(width, max([len(s) for s in self.myOptions]))
-        self.myPrompt = split_text(str(prompt), self.myWidth)
+        self.myTitleWidth = titleWidth
+        self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
+        self.myPrompt = split_text(str(prompt),
+                                   width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
         self.myPromptLabel = Label(self,
@@ -14596,8 +16717,8 @@ class SwapFrame(Frame):
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=0,
-                                column=0,
+        self.myPromptLabel.grid(row=1,
+                                column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
@@ -14606,8 +16727,8 @@ class SwapFrame(Frame):
             self.myAnswers[i].set(self.myOptions[i])
             self.myDestinations[i].set(-1)
             self.myOptionMenus[i] = OptionMenu(self, self.myAnswers[i], *self.myOptions)
-            self.myOptionMenus[i].grid(row=i+1,
-                                       column=0,
+            self.myOptionMenus[i].grid(row=i+2,
+                                       column=1,
                                        rowspan=1,
                                        columnspan=3,
                                        sticky=N+E+S+W)
@@ -14617,14 +16738,36 @@ class SwapFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=3,
-                             column=1,
+        self.myOKButton.grid(row=4,
+                             column=2,
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+    def nextoption0(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[0].get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myAnswers[0].get())
+                self.myAnswers[0].set(self.myOptions[index+1])
+                self.update()
+    def prevoption0(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[0].get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myAnswers[0].get())
+                self.myAnswers[0].set(self.myOptions[index-1])
+    def nextoption1(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[1].get() != self.myOptions[len(self.myOptions)-1]:
+                index = self.myOptions.index(self.myAnswers[1].get())
+                self.myAnswers[1].set(self.myOptions[index+1])
+    def prevoption1(self, event=None):
+        if len(self.myOptions) > 1:
+            if self.myAnswers[1].get() != self.myOptions[0]:
+                index = self.myOptions.index(self.myAnswers[1].get())
+                self.myAnswers[1].set(self.myOptions[index-1])
     def finish(self, *args):
+        notePrefix = "### SwapFrame.finish: "
         if len(self.myOptions) > 0:
             for i in range(2):
                 if self.myAnswers[i].get() in self.myOptions:
@@ -14632,23 +16775,23 @@ class SwapFrame(Frame):
                     # Pass the value of self.myAnswer to the destination
                     self.myDestinations[i].set(answerIndex)
                 else:
-                    print("SwapFrame.finish: Invalid value at self.myAnswers[" + str(i) + \
+                    print(notePrefix + "Invalid value at self.myAnswers[" + str(i) + \
                           "] (" + str(self.myAnswers[i].get()) + ")")
             # If both options are valid and they don't match...
             if self.myDestinations[0].get() >= 0 and \
                self.myDestinations[1].get() >= 0 and \
                self.myDestinations[0].get() != self.myDestinations[1].get():
-                print("SwapFrame.finish: returning " + str(self.myDestinations[0].get()) + \
-                      " and " + str(self.myDestinations[1].get()))
+##                print(notePrefix + "returning " + str(self.myDestinations[0].get()) + \
+##                      " and " + str(self.myDestinations[1].get()))
                 # Destroy this window
                 if isinstance(self.myParent, SubWindow):
                     self.myParent.cancel()
             elif self.myDestinations[0].get() == self.myDestinations[1].get():
-                print("SwapFrame.finish: invalid selections (both " + \
+                print(notePrefix + "invalid selections (both " + \
                       str(self.myDestinations[0].get()) + ")")
         else:
-            print("SwapFrame.finish: Invalid length of self.myOptions (" + \
-                  str(len(self.myOptions)) + ")")
+            print(notePrefix + "Invalid length of self.myOptions (" + str(len(self.myOptions)) + \
+                  ")")
 
 class PrincipleWindow(SubWindow):
     def __init__(self,
@@ -14661,7 +16804,7 @@ class PrincipleWindow(SubWindow):
                  greenVar,
                  title=None,
                  width=100):
-        SubWindow.__init__(self, parent, title)
+        SubWindow.__init__(self, parent, str(title))
         if isinstance(principle, Principle):
             self.myPrinciple = principle
         else:
@@ -14673,7 +16816,8 @@ class PrincipleWindow(SubWindow):
                                                minorVar,
                                                majorVar,
                                                greenVar,
-                                               width=width)
+                                               width=width,
+                                               titleWidth=len(str(title)))
         self.activate(self.myPrincipleFrame)
     def body(self, master):
         self.container = master
@@ -14689,7 +16833,8 @@ class PrincipleFrame(Frame):
                  minorVar,
                  majorVar,
                  greenVar,
-                 width=100):
+                 width=100,
+                 titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myPrinciple = principle
@@ -14708,7 +16853,9 @@ class PrincipleFrame(Frame):
         self.prinSectionVars[2].set(self.myPrinciple.minor_twist)
         self.prinSectionVars[3].set(self.myPrinciple.major_twist)
         self.prinSectionVars[4].set(self.myPrinciple.green_ability)
-        self.entryWidth = max(width, max([len(x.get()) for x in self.prinSectionVars]))
+        self.myTitleWidth = titleWidth
+        self.entryWidth = max(width, self.myTitleWidth,
+                              max([len(x.get()) for x in self.prinSectionVars]))
         self.mySectionLabels = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
@@ -14718,15 +16865,15 @@ class PrincipleFrame(Frame):
                                             background="white",
                                             text=self.prinSectionNames[i],
                                             padx=2)
-            self.mySectionLabels[i].grid(row=i,
-                                         column=0,
+            self.mySectionLabels[i].grid(row=i+1,
+                                         column=1,
                                          sticky=N+E+S+W)
             self.mySectionEntries[i] = Entry(self,
                                              justify=LEFT,
                                              textvariable=self.prinSectionVars[i],
                                              width=self.entryWidth)
-            self.mySectionEntries[i].grid(row=i,
-                                          column=1,
+            self.mySectionEntries[i].grid(row=i+1,
+                                          column=2,
                                           columnspan=4,
                                           sticky=N+E+S+W)
         self.myOKButton = Button(self,
@@ -14735,12 +16882,13 @@ class PrincipleFrame(Frame):
                                  text="OK",
                                  padx=2,
                                  command=self.finish)
-        self.myOKButton.grid(row=len(self.prinSectionNames),
-                             column=2,
+        self.myOKButton.grid(row=len(self.prinSectionNames)+1,
+                             column=3,
                              sticky=N+E+S+W)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def finish(self, *args):
+        notePrefix = "### PrincipleFrame.finish: "
         complete = True
         for i in range(len(self.prinSectionNames)):
             if self.prinSectionVars[i].get() == "":
@@ -14760,51 +16908,267 @@ class PrincipleFrame(Frame):
                                          major=self.prinSectionVars[3].get(),
                                          green=self.prinSectionVars[4].get(),
                                          stepnum=step)
-            print("PrincipleFrame.finish: returning " + str(self.myPrinciple) + ":")
+##            print(notePrefix + "returning " + str(self.myPrinciple) + ":")
             self.myPrinciple.display()
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
                 self.myParent.cancel()
-            
 
+class AssignWindow(SubWindow):
+    def __init__(self,
+                 parent,
+                 prompt,
+                 categories,
+                 items,
+                 destination,
+                 default=-1,
+                 lwidth=40,
+                 rwidth=20,
+                 firstMin=-1,
+                 firstMax=-1,
+                 counter=False,
+                 title=""):
+        SubWindow.__init__(self, parent, str(title))
+        self.myTitle = str(title)
+        self.myAssignFrame = AssignFrame(self,
+                                         prompt=prompt,
+                                         categories=categories,
+                                         items=items,
+                                         destination=destination,
+                                         default=default,
+                                         lwidth=lwidth,
+                                         rwidth=rwidth,
+                                         firstMin=firstMin,
+                                         firstMax=firstMax,
+                                         counter=counter,
+                                         titleWidth=len(self.myTitle))
+        self.activate(self.myAssignFrame)
+    def body(self, master):
+        self.container = master
+        master.grid(row=0, column=0, sticky=N+E+S+W)
+        return master
+
+class AssignFrame(Frame):
+    # Presents the user with a list of items that each need to be assigned to one of a number of
+    #  categories, and lets them assign each value to a category using a set of radiobuttons.
+    # prompt: string. the overall question the user is answering
+    # categories: list of strings. the categories to assign between
+    # items: list of strings. the values to assign
+    # destination: StringVar. the variable to save the results in
+    # lwidth: int. the width in characters of each label identifying a value
+    # rwidth: int. the width in characters of each label identifying a category
+    # firstMin: int. the minimum number of values that need to be assigned to the first category
+    # firstMax: int. the maximum number of values that need to be assigned to the first category
+    def __init__(self,
+                 parent,
+                 prompt,
+                 categories,
+                 items,
+                 destination,
+                 default=-1,
+                 lwidth=40,
+                 rwidth=20,
+                 firstMin=-1,
+                 firstMax=-1,
+                 counter=False,
+                 titleWidth=-1):
+        notePrefix = "### AssignFrame.__init__: "
+        Frame.__init__(self, parent)
+        self.myParent = parent
+        self.myPrompt = str(prompt)
+        self.myCategories = [str(x) for x in categories]
+        self.myItems = [str(x) for x in items]
+        self.myDestination = StringVar(self)
+        if isinstance(destination, StringVar):
+            self.myDestination = destination
+        self.myItemWidth = max(lwidth, max([max([len(y) for y in x.split("\n")]) \
+                                                for x in self.myItems]))
+##        print(notePrefix + "myItemWidth=" + str(self.myItemWidth))
+        self.myColumnWidth = rwidth
+        self.myFirstMin = -1
+        self.myFirstMax = -1
+        self.myDefault = -1
+        if firstMin in range(0, len(self.myItems)+1):
+            self.myFirstMin = firstMin
+        if firstMax in range(0, len(self.myItems)+1):
+            self.myFirstMax = firstMax
+        if default in range(len(self.myCategories)):
+            self.myDefault = default
+        self.useCounter = False
+        if counter == True:
+            self.useCounter = True
+        # Until the assignment values are ready to be returned, they'll be stored as individual
+        #  IntVars in self.myAssignments
+        # self.myAssignments[3].get() == 0 will indicate that self.myItems[3] is assigned to
+        #  self.myCategories[0], for instance.
+        self.myAssignments = [IntVar(value=-1) for x in self.myItems]
+        # When the answers are preparing to be returned, they'll be represented by letters in the
+        #  array self.myAnswer, like responses to a multiple-choice test.
+        # self.myAnswer[3] == self.myAnswerKey[0] will indicate that self.myItems[3] is assigned
+        #  to self.myCategories[0], etc.
+        # self.myDestination will then be set to str.join(self.myAnswer).
+        self.myAnswer = [' '] * len(self.myItems)
+        self.myAnswerKey = string.ascii_uppercase[0:len(self.myCategories)]
+        totalWidth = max(self.myItemWidth + self.myColumnWidth*len(self.myCategories),
+                         titleWidth + titleBuffer)
+        promptLines = split_text(self.myPrompt,
+                                 width=totalWidth)
+        # myPromptLabel goes across the full first row
+        self.myPromptLabel = Label(self,
+                                   anchor=W,
+                                   justify=LEFT,
+                                   text=promptLines,
+                                   width=totalWidth,
+                                   height=1+len([x for x in promptLines if x == "\n"]))
+        self.myPromptLabel.grid(row=1,
+                                column=1,
+                                rowspan=1,
+                                columnspan=1+len(self.myCategories),
+                                sticky=N+E+S+W)
+        # Each of myItems gets its own label...
+        self.myItemLabels = [None for y in range(len(self.myItems))]
+        #... and its own set of radio buttons, one for each category
+        self.myRadioButtons = [[None for x in range(len(self.myCategories))] \
+                               for y in range(len(self.myItems))]
+        # These take up the next len(self.myItems) rows beneath the prompt
+        for i in range(len(self.myItems)):
+            thisRow = i + 2
+            self.myItemLabels[i] = Label(self,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         text=self.myItems[i],
+                                         width=self.myItemWidth,
+                                         relief=GROOVE)
+            self.myItemLabels[i].grid(row=thisRow,
+                                      column=1,
+                                      rowspan=1,
+                                      columnspan=1,
+                                      sticky=N+E+S+W)
+            if self.myDefault in range(len(self.myCategories)):
+                self.myAssignments[i].set(self.myDefault)
+            for j in range(len(self.myCategories)):
+                thisCol = j + 2
+                self.myRadioButtons[i][j] = Radiobutton(self,
+                                                        anchor=CENTER,
+                                                        justify=CENTER,
+                                                        text=self.myCategories[j],
+                                                        variable=self.myAssignments[i],
+                                                        value=j,
+                                                        indicatoron=0,
+                                                        command=self.update)
+                self.myRadioButtons[i][j].grid(row=thisRow,
+                                               column=thisCol,
+                                               rowspan=1,
+                                               columnspan=1,
+                                               sticky=N+E+S+W)
+            self.myCountLabel = Label(self,
+                                      anchor=SE,
+                                      justify=RIGHT,
+                                      text="")
+            self.myCountLabel.grid(row=len(self.myItems)+3,
+                                   column=1,
+                                   rowspan=1,
+                                   columnspan=1,
+                                   sticky=N+E+S+W)
+            self.myOKButton = Button(self,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="OK",
+                                     command=self.finish)
+            self.myOKButton.grid(row=len(self.myItems)+3,
+                                 column=2,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+            self.bind("<Return>", self.finish)
+            self.update()
+    def update(self, *args):
+        notePrefix = "### AssignFrame.update: "
+        firstCount = len([x for x in self.myAssignments if x.get()==0])
+        for i in range(len(self.myItems)):
+            choice = self.myAssignments[i].get()
+            if choice in range(len(self.myCategories)):
+##                if choice != self.myDefault:
+##                    print(notePrefix + str(self.myItems[i]).split()[0] + " assigned to " + \
+##                          str(self.myCategories[choice]))
+                self.myAnswer[i] = self.myAnswerKey[choice]
+        if self.useCounter:
+            cText = str(firstCount) + " selected"
+            if self.myFirstMin in range(len(self.myItems)+1) and firstCount < self.myFirstMin:
+                remainder = self.myFirstMin - firstCount
+                cText += ", " + str(remainder) + " to go..."
+            elif self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
+                cText += " (limit " + str(self.myFirstMax) + ")..."
+            self.myCountLabel.config(text=cText)
+    def finish(self, *args):
+        notePrefix = "### AssignFrame.finish: "
+        complete = True
+        firstCount = len([x for x in self.myAssignments if x.get()==0])
+        for i in range(len(self.myItems)):
+            choice = self.myAssignments[i].get()
+            if choice in range(len(self.myCategories)):
+                if choice != self.myDefault:
+                    print(notePrefix + str(self.myItems[i]).split()[0] + " assigned to " + \
+                          str(self.myCategories[choice]))
+                self.myAnswer[i] = self.myAnswerKey[choice]
+            else:
+                complete = False
+        if self.myFirstMin in range(len(self.myItems)+1) and firstCount < self.myFirstMin:
+            complete = False
+        if self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
+            complete = False
+        if complete:
+##            print(notePrefix + "myAnswer: " + str(self.myAnswer))
+            self.myDestination.set("".join(self.myAnswer))
+##            print(notePrefix + "returning '" + self.myDestination.get() + "'")
+            if isinstance(self.myParent, SubWindow):
+                self.myParent.cancel()
+        elif len([x for x in self.myAssignments if x.get() in range(len(self.myCategories))]) < \
+             len(self.myItems):
+            print("Error! Not all items have been assigned...")
+        elif self.myFirstMin in range(len(self.myItems)) and firstCount < self.myFirstMin:
+            print("Error! Less than " + str(self.myFirstMin) + " items have been assigned to " + \
+                  "the first category...")
+        else:
+            print("Error! More than " + str(self.myFirstMax) + " items have been assigned to " + \
+                  "the first category...")
+                
 factory = SampleMaker()
 
 root = Tk()
 root.geometry("+0+0")
+root.title("SCRPG Hero Creator")
 
+# Testing SampleGUI
 ##gui = SampleGUI(root)
 
 # Testing HeroFrame
 
-# Using the sample heroes
-firstHero = factory.getAyla()
+# Using the sample heroes (full or partial)
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
-
-# Using a partially constructed hero
-##platypus = Hero(codename="Platypus", civ_name="Chaz Villette")
-##disp_frame = HeroFrame(root, hero=platypus)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##platypus.AddBackground(6, inputs=[[["E",["A"]],["H"]],["I","n"]])
-##platypus.AddPowerSource(2, inputs=[[["G",["A"]],["Q"]],
-##                                   ["B","A","y","Recalculate"],
-##                                   ["A","B","y","Raise the Mirror"],
-##                                   ["A","A","y","Statistical Inference"]])
-##platypus.AddArchetype(1, inputs=[["b"],
-##                                 [["g",["b"]],["b"]],
-##                                 ["B","c","y","No One Here But You"],
-##                                 ["B","y","Reflection"],
-##                                 ["A","c","y","Behind the Scenes"],
-##                                 ["M","n"]])
-##platypus.AddPersonality(0, inputs=[[["y", "Wind-Up Boogeyman"]],["a"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["C",["B","y","Stand Up On It"]])
-##platypus.AddRedAbility(retcon_step=0, inputs=["E",["F","y","In Their Own Words"]])
-##platypus.AddRetcon(inputs=["f","d",["G","n",["b"]]])
-##platypus.AddHealth(inputs=["a"])
-##root.mainloop()
 
 # Using a not-yet-constructed hero
 ##dispFrame = HeroFrame(root)
 ##dispFrame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
+
+##w=40
+##pf="123  "
+##ind=True
+##hg=True
+##
+##for s in range(1,len(step_names)):
+##    print()
+##    firstHero.DisplayStep(s,
+##                          width=w,
+##                          prefix=pf,
+##                          indented=ind,
+##                          hanging=hg)
+##    print(firstHero.StepDetails(s,
+##                                width=w,
+##                                prefix=pf,
+##                                indented=ind,
+##                                hanging=hg))
