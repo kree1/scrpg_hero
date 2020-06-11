@@ -15829,6 +15829,11 @@ class FormFrame(Frame):
         self.rowHeight = 1
         self.height = max(1,self.numRows*self.rowHeight)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          family="Calibri",
+                                          size=10,
+                                          name="Calibri10pt",
+                                          exists=True)
         self.mainColorIndex = 1
         self.darkColorIndex = 2
         self.titleBG = "orange"
@@ -15917,7 +15922,8 @@ class FormFrame(Frame):
                                         justify=LEFT,
                                         text=thisName,
                                         width=self.numCols*self.columnWidth,
-                                        height=self.rowHeight)
+                                        height=self.rowHeight,
+                                        font=self.dispFont)
             self.myFormNames[i].grid(row=firstRow,
                                      column=1,
                                      rowspan=1,
@@ -15932,7 +15938,8 @@ class FormFrame(Frame):
                                              relief=self.titleRelief,
                                              text=self.headerText[j],
                                              width=self.upperWidths[j]*self.columnWidth,
-                                             height=self.rowHeight)
+                                             height=self.rowHeight,
+                                             font=self.dispFont)
                 self.myHeaders[i][j].grid(row=firstRow+1,
                                           column=1+sum(self.upperWidths[0:j]),
                                           rowspan=1,
@@ -15948,7 +15955,8 @@ class FormFrame(Frame):
                                                 relief=self.statusRelief,
                                                 text=str(thisForm[4][j]),
                                                 width=self.upperWidths[4]*self.columnWidth,
-                                                height=self.rowHeight)
+                                                height=self.rowHeight,
+                                                font=self.dispFont)
                 self.myStatusDice[i][j].grid(row=firstRow+2+j,
                                              column=1+sum(self.upperWidths[0:4]),
                                              rowspan=1,
@@ -15991,7 +15999,8 @@ class FormFrame(Frame):
                                                    relief=self.diceRelief,
                                                    text=columnText[k],
                                                    width=self.upperWidths[j]*self.columnWidth,
-                                                   height=self.rowHeight*pqHeights[k])
+                                                   height=self.rowHeight*pqHeights[k],
+                                                   font=self.dispFont)
                     self.myPQDice[i][j][k].grid(row=firstRow+2+sum(pqHeights[0:k]),
                                                 column=1+sum(self.upperWidths[0:j]),
                                                 rowspan=pqHeights[k],
@@ -16008,7 +16017,8 @@ class FormFrame(Frame):
                                                  relief=self.titleRelief,
                                                  text=self.headerText[j],
                                                  width=self.lowerWidths[j]*self.columnWidth,
-                                                 height=self.rowHeight)
+                                                 height=self.rowHeight,
+                                                 font=self.dispFont)
                     self.myHeaders[i][j].grid(row=firstRow+3,
                                               column=1+sum(self.lowerWidths[0:j]),
                                               rowspan=1,
@@ -16043,7 +16053,8 @@ class FormFrame(Frame):
                                                           relief=self.abilityRelief,
                                                           text=thisAbilityText[k],
                                                           width=self.lowerWidths[5+k],
-                                                          height=abilityHeight)
+                                                          height=abilityHeight,
+                                                          font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
                                                        column=1+sum(self.lowerWidths[0:5+k]),
                                                        rowspan=abilityHeight,
@@ -16079,8 +16090,11 @@ class FormFrame(Frame):
             # For each form, if the status dice are empty, replace them with the hero's main
             #  status dice
             for i in range(self.myFormCount):
-                if self.myFormInfo[i][4] == [0,0,0]:
+                if self.myFormInfo[i][4] == [0,0,0] and \
+                   self.myHero.dv_personality in range(len(pn_collection)):
                     self.myFormInfo[i][4] = [x for x in self.myHero.dv_status]
+                elif self.myFormInfo[i][4] == [0,0,0]:
+                    self.myFormInfo[i][4] = [x for x in self.myHero.status_dice]
                 elif self.myFormInfo[i][4] == [1,1,1]:
                     self.myFormInfo[i][4] = [x for x in self.myHero.status_dice]
 
@@ -17174,7 +17188,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
