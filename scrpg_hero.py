@@ -5,6 +5,7 @@ import os
 import random
 import string
 import tkinter
+import tkinter.font
 import tkSimpleDialog
 from tkinter import *
 from tkinter import messagebox
@@ -302,7 +303,7 @@ def choose_letter(entry_options,
     if len(inputs) > 0:
         if len(prompt) > 0:
             print(prompt)
-        print("> " + inputs[0])
+        print("> " + str(inputs[0]))
         entry_choice = inputs.pop(0)[0].upper()
     elif entry_options == "YN":
         # If there are no inputs and the choices are Y and N, we can use a simple dialog to
@@ -323,7 +324,7 @@ def choose_letter(entry_options,
     while entry_choice not in entry_options:
         if len(inputs) > 0:
             print(repeat_message)
-            print("> " + inputs[0])
+            print("> " + str(inputs[0]))
             entry_choice = inputs.pop(0)[0].upper()
         else:
             entry_choice = input(repeat_message + "\n")[0].upper()
@@ -7297,7 +7298,7 @@ class Hero:
                     if len(inputs) > 0:
                         print("Enter a lowercase letter to see a Background expanded, or an " + \
                               "uppercase letter to select it.")
-                        print("> " + inputs[0])
+                        print("> " + str(inputs[0]))
                         entry_choice = inputs.pop(0)[0]
                     else:
                         print("Enter a lowercase letter to see a Background expanded, or an " + \
@@ -11725,7 +11726,7 @@ class Hero:
                             print("            " + rc_master[i][j][0])
                     while entry_choice not in entry_options:
                         if len(inputs) > 0:
-                            print("> " + inputs[0])
+                            print("> " + str(inputs[0]))
                             entry_choice = inputs.pop(0)[0].upper()
                         else:
                             line_prompt = ""
@@ -13699,9 +13700,28 @@ class HeroFrame(Frame):
                  width=160,
                  height=52):
         Frame.__init__(self, parent)
-        notePrefix = "HeroFrame: "
+        notePrefix = "### HeroFrame.__init__: "
         self.zoneColors = ["PaleGreen1", "LightGoldenrod1", "IndianRed1"]
         self.myParent = parent
+        self.dispFonts = [tkinter.font.Font(root=self.myParent,
+                                            family="Calibri",
+                                            size=10,
+                                            name="Calibri10pt"),
+                          tkinter.font.Font(root=self.myParent,
+                                            family="Arial",
+                                            size=9,
+                                            name="Arial9pt"),
+                          tkinter.font.Font(root=self.myParent,
+                                            family="Times",
+                                            size=10,
+                                            name="Times10pt")]
+        self.fontIndex = 0
+        self.currentFont = tkinter.font.Font(root=self.myParent,
+                                             family=self.dispFonts[self.fontIndex].cget("family"),
+                                             size=self.dispFonts[self.fontIndex].cget("size"),
+                                             name="HeroFrame Display Font")
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
         self.numCols = 32
         self.numRows = 52
         self.width = width
@@ -13729,12 +13749,14 @@ class HeroFrame(Frame):
                                        text=self.nameTitleText[i],
                                        anchor=W, relief=titleRelief,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.currentFont)
             self.nameValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.currentFont)
             self.nameTitles[i].grid(row=firstRow,
                                     column=firstCol+i*2*groupWidth,
                                     rowspan=groupHeight,
@@ -13763,13 +13785,15 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.currentFont)
             self.charValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        relief=charRelief,
                                        width=self.columnWidth*valueWidth,
-                                       height=self.rowHeight*groupHeight)
+                                       height=self.rowHeight*groupHeight,
+                                       font=self.currentFont)
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
 ##                  " rows")
@@ -13809,7 +13833,8 @@ class HeroFrame(Frame):
                                      justify=reason,
                                      relief=titleRelief,
                                      width=self.columnWidth*groupWidth,
-                                     height=self.rowHeight*groupHeight)
+                                     height=self.rowHeight*groupHeight,
+                                     font=self.currentFont)
             self.pqTitles[i].grid(row=firstRow,
                                   column=groupCol,
                                   rowspan=groupHeight,
@@ -13822,13 +13847,14 @@ class HeroFrame(Frame):
                                             justify=reason,
                                             relief=pqRelief,
                                             width=self.columnWidth*groupWidth,
-                                            height=self.rowHeight*groupHeight)
+                                            height=self.rowHeight*groupHeight,
+                                            font=self.currentFont)
                 self.pqValues[j][i].grid(row=firstRow+(j+1)*groupHeight,
                                          column=groupCol,
                                          rowspan=groupHeight,
                                          columnspan=groupWidth,
                                          sticky=N+S+E+W)
-        # EDIT: Set up hero Status die labels for columns 11-13 of rows 8-25
+        # Set up hero Status die labels for columns 11-13 of rows 8-25
         titleRow = 8
         firstCol = 11
         groupWidth = 3
@@ -13839,7 +13865,8 @@ class HeroFrame(Frame):
                                  background=statusBG,
                                  text="Status Dice",
                                  width=self.columnWidth*groupWidth,
-                                 height=self.rowHeight*titleHeight)
+                                 height=self.rowHeight*titleHeight,
+                                 font=self.currentFont)
         self.statusTitle.grid(row=titleRow,
                               column=firstCol,
                               rowspan=titleHeight,
@@ -13853,7 +13880,8 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight)
+                                         height=self.rowHeight*groupHeight,
+                                         font=self.currentFont)
             self.statusValues[i].grid(row=firstRow+i*groupHeight,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -13867,9 +13895,10 @@ class HeroFrame(Frame):
         self.healthTitle = Label(self,
                                  background=statusBG,
                                  text="Health Range",
-                                 anchor=E,
+                                 anchor=CENTER,
                                  width=self.columnWidth*titleWidth,
-                                 height=self.rowHeight*titleHeight)
+                                 height=self.rowHeight*titleHeight,
+                                 font=self.currentFont)
         self.healthTitle.grid(row=titleRow,
                               column=titleCol,
                               rowspan=titleHeight,
@@ -13886,7 +13915,8 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight)
+                                         height=self.rowHeight*groupHeight,
+                                         font=self.currentFont)
             self.healthValues[i].grid(row=firstRow+i*groupVSpace,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -13918,7 +13948,8 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*mainTitleHeight)
+                                       height=self.rowHeight*mainTitleHeight,
+                                       font=self.currentFont)
             self.prinTitles[i].grid(row=firstRow,
                                     column=groupCol,
                                     rowspan=mainTitleHeight,
@@ -13932,7 +13963,8 @@ class HeroFrame(Frame):
                                                      text=self.prinSectionNames[j],
                                                      relief=sectionRelief,
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*titleHeight)
+                                                     height=self.rowHeight*titleHeight,
+                                                     font=self.currentFont)
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
                                                   rowspan=titleHeight,
@@ -13941,7 +13973,8 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j] = Label(self,
                                                      background="white",
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*sectionHeight)
+                                                     height=self.rowHeight*sectionHeight,
+                                                     font=self.currentFont)
                 self.prinSectionValues[i][j].grid(row=sectionRow,
                                                   column=groupCol,
                                                   rowspan=sectionHeight,
@@ -13969,7 +14002,8 @@ class HeroFrame(Frame):
                                           anchor=sectionAnchors[i],
                                           relief=titleRelief,
                                           width=self.columnWidth*sectionWidths[i],
-                                          height=self.rowHeight*titleHeight)
+                                          height=self.rowHeight*titleHeight,
+                                          font=self.currentFont)
 ##            print(notePrefix + str(self.abilityTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow) + " and spans " + str(titleHeight) + " rows")
             self.abilityTitles[i].grid(row=firstRow,
@@ -13995,7 +14029,8 @@ class HeroFrame(Frame):
                                                      justify=sectionReasons[j],
                                                      relief=abilityRelief,
                                                      width=self.columnWidth*sectionWidths[j],
-                                                     height=self.rowHeight*rowsNeeded)
+                                                     height=self.rowHeight*rowsNeeded,
+                                                     font=self.currentFont)
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -14016,9 +14051,9 @@ class HeroFrame(Frame):
                                                             anchor=sectionAnchors[s],
                                                             justify=sectionReasons[s],
                                                             relief=abilityRelief,
-                                                            width=self.columnWidth * \
-                                                            sectionWidths[s],
-                                                            height=self.rowHeight*rowsNeeded)
+                                                            width=self.columnWidth*sectionWidths[s],
+                                                            height=self.rowHeight*rowsNeeded,
+                                                            font=self.currentFont)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -14031,7 +14066,8 @@ class HeroFrame(Frame):
                                      anchor=W,
                                      justify=LEFT,
                                      width=self.columnWidth*sum(sectionWidths),
-                                     height=rowsNeeded)
+                                     height=rowsNeeded,
+                                     font=self.currentFont)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -14095,6 +14131,7 @@ class HeroFrame(Frame):
                                         text=self.auxText[i],
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
+                                        font=self.currentFont,
                                         command=self.auxCommands[i],
                                         padx=self.buttonPadX,
                                         pady=self.buttonPadY)
@@ -14113,12 +14150,14 @@ class HeroFrame(Frame):
         # All hero manipulation buttons will be in this row or lower
         editRow = firstBFRow + self.buttonHeight * prevButtonRows
         prevButtonRows = 0
+        self.textButtons = []
         self.printButton = Button(self.buttonFrame,
                                   background=self.buttonColors[0],
                                   activebackground=self.buttonColors[1],
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
                                   command=lambda arg1=100 : \
                                   print(self.myHero.details(width=arg1)),
                                   padx=self.buttonPadX,
@@ -14127,6 +14166,7 @@ class HeroFrame(Frame):
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
+        self.textButtons.append(self.printButton)
         prevButtonRows += 1
         self.stepsButton = Button(self.buttonFrame,
                                   background=self.buttonColors[0],
@@ -14134,6 +14174,7 @@ class HeroFrame(Frame):
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
                                   command=self.DisplayHeroSteps,
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
@@ -14141,6 +14182,7 @@ class HeroFrame(Frame):
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
+        self.textButtons.append(self.stepsButton)
         prevButtonRows += 1
         self.saveButton = Button(self.buttonFrame,
                                  background=self.buttonColors[0],
@@ -14149,12 +14191,14 @@ class HeroFrame(Frame):
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
                                  command=self.SaveTxt,
+                                 font=self.currentFont,
                                  padx=self.buttonPadX,
                                  pady=self.buttonPadY)
         self.saveButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        self.textButtons.append(self.saveButton)
         prevButtonRows += 1
         # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
         #  self.buttonColors[2:4]
@@ -14176,6 +14220,7 @@ class HeroFrame(Frame):
                                   text="Reset Hero",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
                                   command=lambda arg1=True : self.Empty(buttonPressed=arg1),
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
@@ -14192,6 +14237,7 @@ class HeroFrame(Frame):
                                      text="0. Edit Names",
                                      width=self.columnWidth*self.buttonWidth,
                                      height=self.rowHeight*self.buttonHeight,
+                                     font=self.currentFont,
                                      command=self.EditNames,
                                      padx=self.buttonPadX,
                                      pady=self.buttonPadY)
@@ -14211,6 +14257,7 @@ class HeroFrame(Frame):
                                          text=str(i) + ". Add " + self.stepText[i],
                                          width=self.columnWidth*self.buttonWidth,
                                          height=self.rowHeight*self.buttonHeight,
+                                         font=self.currentFont,
                                          command=self.stepCommands[i],
                                          padx=self.buttonPadX,
                                          pady=self.buttonPadY)
@@ -14236,12 +14283,14 @@ class HeroFrame(Frame):
                              columnspan=self.buttonWidth*self.auxBufferWidth)
         prevButtonRows += self.demoBufferHeight - 1
         self.demoColors = ["plum1", "plum2"]
+        self.demoButtons = []
         self.backButton = Button(self.buttonFrame,
                                  background=self.demoColors[0],
                                  activebackground=self.demoColors[1],
                                  text="<< Prev Hero",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
+                                 font=self.currentFont,
                                  command=lambda arg1=-1 : self.SwitchHero(arg1),
                                  padx=self.buttonPadX,
                                  pady=self.buttonPadY)
@@ -14249,12 +14298,14 @@ class HeroFrame(Frame):
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        self.demoButtons.append(self.backButton)
         self.forwardButton = Button(self.buttonFrame,
                                     background=self.demoColors[0],
                                     activebackground=self.demoColors[1],
                                     text="Next Hero >>",
                                     width=self.columnWidth*self.buttonWidth,
                                     height=self.rowHeight*self.buttonHeight,
+                                    font=self.currentFont,
                                     command=self.SwitchHero,
                                     padx=self.buttonPadX,
                                     pady=self.buttonPadY)
@@ -14262,8 +14313,58 @@ class HeroFrame(Frame):
                                 column=secondBFCol,
                                 rowspan=self.buttonHeight,
                                 columnspan=self.buttonWidth)
+        self.demoButtons.append(self.forwardButton)
         prevButtonRows += 1
         # If necessary, additional buttons go below these
+        # Buttons for updating font (for design purposes)
+        self.fontButton = Button(self.buttonFrame,
+                                 background=self.demoColors[0],
+                                 activebackground=self.demoColors[1],
+                                 text="Next Font",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.currentFont,
+                                 command=self.SwitchFont,
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.fontButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth)
+        self.demoButtons.append(self.fontButton)
+        self.miniButtonWidth = 1
+        buttonCol2B = secondBFCol + self.miniButtonWidth
+        self.fPlusButton = Button(self.buttonFrame,
+                                  background=self.demoColors[0],
+                                  activebackground=self.demoColors[1],
+                                  text="+",
+                                  width=self.columnWidth*self.miniButtonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
+                                  command=self.UpdateFontSize,
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.fPlusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=secondBFCol,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.miniButtonWidth)
+        self.demoButtons.append(self.fPlusButton)
+        self.fMinusButton = Button(self.buttonFrame,
+                                   background=self.demoColors[0],
+                                   activebackground=self.demoColors[1],
+                                   text="-",
+                                   width=self.columnWidth*self.miniButtonWidth,
+                                   height=self.rowHeight*self.buttonHeight,
+                                   font=self.currentFont,
+                                   command=lambda arg1=-1 : self.UpdateFontSize(increment=arg1),
+                                   padx=self.buttonPadX,
+                                   pady=self.buttonPadY)
+        self.fMinusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                               column=buttonCol2B,
+                               rowspan=self.buttonHeight,
+                               columnspan=self.miniButtonWidth)
+        self.demoButtons.append(self.fMinusButton)
+        prevButtonRows += 1
         # Button for updating relief option (for design purposes)
 ##        self.reliefButton = Button(self.buttonFrame,
 ##                                   background=self.demoColors[0],
@@ -14352,6 +14453,23 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j].update_idletasks()
         self.wrapButton["text"] = str(self.principleWrap)
         self.wrapButton.update_idletasks()
+    def SwitchFont(self, increment=1):
+        notePrefix = "### HeroFrame.SwitchFont: "
+        self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
+        self.currentFont.config(family=self.dispFonts[self.fontIndex].cget("family"),
+                                size=self.dispFonts[self.fontIndex].cget("size"))
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
+        self.UpdateAll(hero=self.myHero)
+    def UpdateFontSize(self,
+                       increment=1):
+        notePrefix = "### HeroFrame.UpdateFontSize: "
+        newSize = self.currentFont.actual(option="size") + increment
+        print(notePrefix + "newSize: " + str(newSize))
+        self.currentFont.config(size=newSize)
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
+        self.UpdateAll(hero=self.myHero)
     def SwitchHero(self, update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -14512,6 +14630,8 @@ class HeroFrame(Frame):
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
         for i in range(len(self.charTitles)):
@@ -14585,6 +14705,8 @@ class HeroFrame(Frame):
                                                     height=self.rowHeight*sectionMaxHeights[j])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
+        for l in self.abilityTitles:
+            l.config(font=self.dispFonts[self.fontIndex])
         firstRow = 3
         firstCol = 17
         sectionWidths = [4, 2, 10]
@@ -14683,7 +14805,8 @@ class HeroFrame(Frame):
                         for i in range(len(self.auxWords))]
         for i in range(len(self.auxButtons)):
             # Update this button's text
-            self.auxButtons[i].config(text=self.auxText[i])
+            self.auxButtons[i].config(text=self.auxText[i],
+                                      font=self.dispFonts[self.fontIndex])
             # If this button is relevant, show it; otherwise, hide it
             if self.myAuxCounts[i] > 0:
                 self.auxButtons[i].grid()
@@ -14693,6 +14816,12 @@ class HeroFrame(Frame):
         for i in range(1,len(self.stepButtons)):
             self.stepButtons[i].grid_remove()
 ##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
+        for b in self.textButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
+        for b in self.demoButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
+        for b in self.stepButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -14721,7 +14850,8 @@ class HeroFrame(Frame):
         if len(self.myHero.other_modes) > 0:
             myModeWindow = ModeWindow(self,
                                       title=self.myHeroNames[0] + " Mode Sheet",
-                                      hero=self.myHero)
+                                      hero=self.myHero,
+                                      font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
@@ -14734,7 +14864,8 @@ class HeroFrame(Frame):
         if len(self.myHero.other_forms) > 0:
             myFormWindow = FormWindow(self,
                                       title=self.myHeroNames[0] + " Form Sheet",
-                                      hero=self.myHero)
+                                      hero=self.myHero,
+                                      font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
@@ -14747,7 +14878,8 @@ class HeroFrame(Frame):
         if len(self.myHero.min_forms) > 0:
             myMinionWindow = MinionWindow(self,
                                           title=self.myHeroNames[0] + " Minion Sheet",
-                                          hero=self.myHero)
+                                          hero=self.myHero,
+                                          font=self.currentFont)
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
@@ -15149,13 +15281,19 @@ class SubWindow(Toplevel):
         self.destroy()
 
 class ModeWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myModeFrame = ModeFrame(self, hero=self.myHero)
+        self.myModeFrame = ModeFrame(self,
+                                     hero=self.myHero,
+                                     font=font)
         self.activate(self.myModeFrame)
     def body(self, master):
         self.container = master
@@ -15163,7 +15301,13 @@ class ModeWindow(SubWindow):
         return master
 
 class ModeFrame(Frame):
-    def __init__(self, parent, hero=None, width=105, height=27, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=105,
+                 height=27,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "### ModeFrame: __init__: "
@@ -15173,11 +15317,18 @@ class ModeFrame(Frame):
         self.height = height
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          name="Calibri10pt",
+                                          exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         if printing:
             print(notePrefix + "width=" + str(self.width))
             print(notePrefix + "columnWidth=" + str(self.columnWidth))
             print(notePrefix + "height=" + str(self.height))
             print(notePrefix + "rowHeight=" + str(self.rowHeight))
+            print(notePrefix + "dispFont: " + str(self.dispFont.actual(option="family")) + \
+                  str(self.dispFont.actual(option="size")) + "pt")
         self.SetHero(hero)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
         self.mainColorIndex = 1
@@ -15236,7 +15387,8 @@ class ModeFrame(Frame):
                                                     relief=self.titleRelief,
                                                     text=self.sectionTitles[j],
                                                     width=self.sectionWidths[j]*self.columnWidth,
-                                                    height=self.powerHeight*self.rowHeight)
+                                                    height=self.powerHeight*self.rowHeight,
+                                                    font=self.dispFont)
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
@@ -15249,7 +15401,8 @@ class ModeFrame(Frame):
                                           relief=self.headerRelief,
                                           text=self.myModeNames[i],
                                           width=sum(self.sectionWidths)*self.columnWidth,
-                                          height=self.headerHeight*self.rowHeight)
+                                          height=self.headerHeight*self.rowHeight,
+                                          font=self.dispFont)
             self.myModeHeaders[i].grid(row=topRow,
                                        column=firstCol,
                                        rowspan=self.headerHeight,
@@ -15294,8 +15447,10 @@ class ModeFrame(Frame):
                                                         justify=self.sectionReasons[k],
                                                         relief=self.dieRelief,
                                                         text=thisPowerValues[k],
-                                                        width=self.sectionWidths[k]*self.columnWidth,
-                                                        height=thisPowerHeight)
+                                                        width=self.sectionWidths[k] * \
+                                                        self.columnWidth,
+                                                        height=thisPowerHeight,
+                                                        font=self.dispFont)
                     self.myPowerValues[i][j][k].grid(row=topRow+leftHeight,
                                                      column=firstCol+sum(self.sectionWidths[0:k]),
                                                      rowspan=thisPowerHeight,
@@ -15320,7 +15475,8 @@ class ModeFrame(Frame):
                                          justify=LEFT,
                                          text=thisRulesText,
                                          width=sum(self.sectionWidths[2:])*self.columnWidth,
-                                         height=thisRulesHeight*self.rowHeight)
+                                         height=thisRulesHeight*self.rowHeight,
+                                         font=self.dispFont)
             self.myRuleValues[i].grid(row=topRow+rightHeight,
                                       column=firstCol+sum(self.sectionWidths[0:2]),
                                       rowspan=thisRulesHeight,
@@ -15361,7 +15517,8 @@ class ModeFrame(Frame):
             thisAbilitySections = [split_text(thisAbilitySections[i],
                                               width=self.abilityWraps[i]) \
                                    for i in range(len(thisAbilitySections))]
-            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) for y in thisAbilitySections])
+            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
+                                         for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Label(self,
                                                    background=modeColor,
@@ -15370,7 +15527,8 @@ class ModeFrame(Frame):
                                                    relief=self.abilityRelief,
                                                    text=thisAbilitySections[j],
                                                    width=self.sectionWidths[j+2]*self.columnWidth,
-                                                   height=thisAbilityHeight*self.rowHeight)
+                                                   height=thisAbilityHeight*self.rowHeight,
+                                                   font=self.dispFont)
                 self.myAbilityValues[i][j].grid(row=topRow+rightHeight,
                                                 column=firstCol+sum(self.sectionWidths[0:j+2]),
                                                 rowspan=thisAbilityHeight,
@@ -15406,7 +15564,8 @@ class ModeFrame(Frame):
                                                 background=modeColor,
                                                 text=" ",
                                                 width=cBufferWidth*self.columnWidth,
-                                                height=cBufferHeight*self.rowHeight)
+                                                height=cBufferHeight*self.rowHeight,
+                                                font=self.dispFont)
                 self.myColumnBuffers[i].grid(row=cBufferRow,
                                              column=cBufferCol,
                                              rowspan=cBufferHeight,
@@ -15428,7 +15587,8 @@ class ModeFrame(Frame):
                 self.myBuffers[i] = Label(self,
                                           text=" ",
                                           width=sum(self.sectionWidths)*self.columnWidth,
-                                          height=self.bufferHeight*self.rowHeight)
+                                          height=self.bufferHeight*self.rowHeight,
+                                          font=self.dispFont)
                 self.myBuffers[i].grid(row=bufferRow,
                                        column=firstCol,
                                        rowspan=self.bufferHeight,
@@ -15493,13 +15653,20 @@ class ModeFrame(Frame):
                 self.myModeRules[i] = rulesText
 
 class MinionWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
+        notePrefix = "### MinionWindow.__init__: "
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myMinionFrame = MinionFrame(self, hero=self.myHero)
+        self.myMinionFrame = MinionFrame(self,
+                                         hero=self.myHero,
+                                         font=font)
         self.activate(self.myMinionFrame)
     def body(self, master):
         self.container = master
@@ -15507,7 +15674,12 @@ class MinionWindow(SubWindow):
         return master
 
 class MinionFrame(Frame):
-    def __init__(self, parent, hero=None, width=160, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=160,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "MinionFrame: __init__: "
@@ -15518,11 +15690,18 @@ class MinionFrame(Frame):
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
         self.rowHeight = 1.6875
         self.height = math.ceil(self.rowHeight*self.numRows)
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          name="Calibri10pt",
+                                          exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         if printing:
             print(notePrefix + "numRows: " + str(self.numRows))
             print(notePrefix + "height: " + str(self.height))
             print(notePrefix + "width: " + str(self.width))
             print(notePrefix + "columnWidth: " + str(self.columnWidth))
+            print(notePrefix + "dispFont: " + str(self.dispFont.actual(option="family")) + \
+                  str(self.dispFont.actual(option="size")) + "pt")
         self.sizeHeaders = ["Key Die Value", "Die Size", "Sample Forms"]
         self.sizeWidths = [2, 1, 13]
         self.sizeText = [["0 or less", "1-3", "4-7", "8-11", "12 or more"],
@@ -15532,14 +15711,15 @@ class MinionFrame(Frame):
                           "Small humanoid or large animal",
                           "Standard humanoid or large machine",
                           "Massive humanoid or immense animal"]]
-        self.sizeRules = "When you create a Minion with an ability during a scene, you choose \
-which of the basic actions it can take (Attack, Boost, Defend, Hinder, or Overcome). It acts like \
-a minion under your control and takes its action at the beginning of your turn. The size of the \
-minion die is based on the result of your roll:"
+        self.sizeRules = "When you create a Minion with an ability during a scene, you choose " + \
+                         "which of the basic actions it can take (Attack, Boost, Defend, " + \
+                         "Hinder, or Overcome). It acts like a minion under your control and " + \
+                         "takes its action at the beginning of your turn. The size of the " + \
+                         "minion die is based on the result of your roll:"
         self.formHeaders = ["Name", "Bonus Required", "Description"]
         self.formWidths = [2, 2, 12]
-        self.formRules = "When creating a minion, you may discard a bonus on you or a willing ally to give \
-your minion one of the following upgrades:"
+        self.formRules = "When creating a minion, you may discard a bonus on you or a willing " + \
+                         "ally to give your minion one of the following upgrades:"
         self.rulesModifier = 1
         self.rulesWrap = math.floor(sum(self.sizeWidths)*self.columnWidth*self.rulesModifier)
         self.titleModifier = 1
@@ -15569,7 +15749,8 @@ your minion one of the following upgrades:"
                                        text=split_text(self.sizeRules,
                                                        width=self.rulesWrap),
                                        width=sum(self.sizeWidths)*self.columnWidth,
-                                       height=math.floor(2*self.rowHeight))
+                                       height=math.floor(2*self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionSizeRules.grid(row=1,
                                     column=1,
                                     rowspan=2,
@@ -15584,7 +15765,8 @@ your minion one of the following upgrades:"
                                        text=split_text("Minion Sizes",
                                                        width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionSizeTitle.grid(row=3,
                                     column=1,
                                     rowspan=1,
@@ -15601,7 +15783,8 @@ your minion one of the following upgrades:"
                                text=split_text(self.sizeHeaders[i],
                                                width=self.sizeWraps[i]),
                                width=self.sizeWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight))
+                               height=math.floor(self.rowHeight),
+                               font=self.dispFont)
             self.myMinionSizeHeaders[i] = thisHeader
             self.myMinionSizeHeaders[i].grid(row=4,
                                              column=1+sum(self.sizeWidths[0:i]),
@@ -15620,7 +15803,8 @@ your minion one of the following upgrades:"
                                   text=split_text(self.sizeText[c][r],
                                                   width=self.sizeWraps[c]),
                                   width=self.sizeWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight))
+                                  height=math.floor(self.rowHeight),
+                                  font=self.dispFont)
                 self.myMinionSizeEntries[c][r] = thisEntry
                 self.myMinionSizeEntries[c][r].grid(row=5+r,
                                                     column=1+sum(self.sizeWidths[0:c]),
@@ -15638,7 +15822,8 @@ your minion one of the following upgrades:"
                                        text=split_text(self.formRules,
                                                        width=self.rulesWrap),
                                        width=sum(self.formWidths)*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionFormRules.grid(row=12,
                                     column=1,
                                     rowspan=1,
@@ -15653,7 +15838,8 @@ your minion one of the following upgrades:"
                                        text=split_text("Minion Forms",
                                                        width=self.titleWrap),
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight))
+                                       height=math.floor(self.rowHeight),
+                                       font=self.dispFont)
         self.myMinionFormTitle.grid(row=13,
                                     column=1,
                                     rowspan=1,
@@ -15670,7 +15856,8 @@ your minion one of the following upgrades:"
                                text=split_text(self.formHeaders[i],
                                                width=self.formWraps[i]),
                                width=self.formWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight))
+                               height=math.floor(self.rowHeight),
+                               font=self.dispFont)
             self.myMinionFormHeaders[i] = thisHeader
             self.myMinionFormHeaders[i].grid(row=14,
                                              column=1+sum(self.formWidths[0:i]),
@@ -15689,7 +15876,8 @@ your minion one of the following upgrades:"
                                   text=split_text(self.myMinionInfo[r][c],
                                                   width=self.formWraps[c]),
                                   width=self.formWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight))
+                                  height=math.floor(self.rowHeight),
+                                  font=self.dispFont)
                 self.myMinionFormEntries[r][c] = thisEntry
                 self.myMinionFormEntries[r][c].grid(row=15+r,
                                                     column=1+sum(self.formWidths[0:c]),
@@ -15714,13 +15902,19 @@ your minion one of the following upgrades:"
                                         str(thisMinion[1])]
 
 class FormWindow(SubWindow):
-    def __init__(self, parent, title=None, hero=None):
+    def __init__(self,
+                 parent,
+                 title=None,
+                 hero=None,
+                 font=None):
         SubWindow.__init__(self, parent, title)
         if isinstance(hero, Hero):
             self.myHero = hero
         else:
             self.myHero = None
-        self.myFormFrame = FormFrame(self, hero=self.myHero)
+        self.myFormFrame = FormFrame(self,
+                                     hero=self.myHero,
+                                     font=font)
         self.activate(self.myFormFrame)
     def body(self, master):
         self.container = master
@@ -15728,7 +15922,12 @@ class FormWindow(SubWindow):
         return master
 
 class FormFrame(Frame):
-    def __init__(self, parent, hero=None, width=104, printing=False):
+    def __init__(self,
+                 parent,
+                 hero=None,
+                 width=104,
+                 font=None,
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "FormFrame: __init__: "
@@ -15742,6 +15941,11 @@ class FormFrame(Frame):
         self.rowHeight = 1
         self.height = max(1,self.numRows*self.rowHeight)
         self.zoneColors = ["PaleGreen", "LightGoldenrod", "IndianRed"]
+        self.dispFont = tkinter.font.Font(root=self.myParent,
+                                          name="Calibri10pt",
+                                          exists=True)
+        if isinstance(font, tkinter.font.Font):
+            self.dispFont = font
         self.mainColorIndex = 1
         self.darkColorIndex = 2
         self.titleBG = "orange"
@@ -15830,7 +16034,8 @@ class FormFrame(Frame):
                                         justify=LEFT,
                                         text=thisName,
                                         width=self.numCols*self.columnWidth,
-                                        height=self.rowHeight)
+                                        height=self.rowHeight,
+                                        font=self.dispFont)
             self.myFormNames[i].grid(row=firstRow,
                                      column=1,
                                      rowspan=1,
@@ -15845,7 +16050,8 @@ class FormFrame(Frame):
                                              relief=self.titleRelief,
                                              text=self.headerText[j],
                                              width=self.upperWidths[j]*self.columnWidth,
-                                             height=self.rowHeight)
+                                             height=self.rowHeight,
+                                             font=self.dispFont)
                 self.myHeaders[i][j].grid(row=firstRow+1,
                                           column=1+sum(self.upperWidths[0:j]),
                                           rowspan=1,
@@ -15861,7 +16067,8 @@ class FormFrame(Frame):
                                                 relief=self.statusRelief,
                                                 text=str(thisForm[4][j]),
                                                 width=self.upperWidths[4]*self.columnWidth,
-                                                height=self.rowHeight)
+                                                height=self.rowHeight,
+                                                font=self.dispFont)
                 self.myStatusDice[i][j].grid(row=firstRow+2+j,
                                              column=1+sum(self.upperWidths[0:4]),
                                              rowspan=1,
@@ -15904,7 +16111,8 @@ class FormFrame(Frame):
                                                    relief=self.diceRelief,
                                                    text=columnText[k],
                                                    width=self.upperWidths[j]*self.columnWidth,
-                                                   height=self.rowHeight*pqHeights[k])
+                                                   height=self.rowHeight*pqHeights[k],
+                                                   font=self.dispFont)
                     self.myPQDice[i][j][k].grid(row=firstRow+2+sum(pqHeights[0:k]),
                                                 column=1+sum(self.upperWidths[0:j]),
                                                 rowspan=pqHeights[k],
@@ -15921,7 +16129,8 @@ class FormFrame(Frame):
                                                  relief=self.titleRelief,
                                                  text=self.headerText[j],
                                                  width=self.lowerWidths[j]*self.columnWidth,
-                                                 height=self.rowHeight)
+                                                 height=self.rowHeight,
+                                                 font=self.dispFont)
                     self.myHeaders[i][j].grid(row=firstRow+3,
                                               column=1+sum(self.lowerWidths[0:j]),
                                               rowspan=1,
@@ -15956,7 +16165,8 @@ class FormFrame(Frame):
                                                           relief=self.abilityRelief,
                                                           text=thisAbilityText[k],
                                                           width=self.lowerWidths[5+k],
-                                                          height=abilityHeight)
+                                                          height=abilityHeight,
+                                                          font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
                                                        column=1+sum(self.lowerWidths[0:5+k]),
                                                        rowspan=abilityHeight,
