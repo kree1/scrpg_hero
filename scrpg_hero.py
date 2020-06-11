@@ -13720,7 +13720,6 @@ class HeroFrame(Frame):
                                              family=self.dispFonts[self.fontIndex].cget("family"),
                                              size=self.dispFonts[self.fontIndex].cget("size"),
                                              name="HeroFrame Display Font")
-        print(notePrefix + "display font: " + self.dispFonts[self.fontIndex].name)
         print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
               str(self.currentFont.actual(option="size")) + "pt")
         self.numCols = 32
@@ -14317,7 +14316,7 @@ class HeroFrame(Frame):
         self.demoButtons.append(self.forwardButton)
         prevButtonRows += 1
         # If necessary, additional buttons go below these
-        # Button for updating font (for design purposes)
+        # Buttons for updating font (for design purposes)
         self.fontButton = Button(self.buttonFrame,
                                  background=self.demoColors[0],
                                  activebackground=self.demoColors[1],
@@ -14333,6 +14332,38 @@ class HeroFrame(Frame):
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
         self.demoButtons.append(self.fontButton)
+        self.miniButtonWidth = 1
+        buttonCol2B = secondBFCol + self.miniButtonWidth
+        self.fPlusButton = Button(self.buttonFrame,
+                                  background=self.demoColors[0],
+                                  activebackground=self.demoColors[1],
+                                  text="+",
+                                  width=self.columnWidth*self.miniButtonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
+                                  command=self.UpdateFontSize,
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.fPlusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=secondBFCol,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.miniButtonWidth)
+        self.demoButtons.append(self.fPlusButton)
+        self.fMinusButton = Button(self.buttonFrame,
+                                   background=self.demoColors[0],
+                                   activebackground=self.demoColors[1],
+                                   text="-",
+                                   width=self.columnWidth*self.miniButtonWidth,
+                                   height=self.rowHeight*self.buttonHeight,
+                                   font=self.currentFont,
+                                   command=lambda arg1=-1 : self.UpdateFontSize(increment=arg1),
+                                   padx=self.buttonPadX,
+                                   pady=self.buttonPadY)
+        self.fMinusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                               column=buttonCol2B,
+                               rowspan=self.buttonHeight,
+                               columnspan=self.miniButtonWidth)
+        self.demoButtons.append(self.fMinusButton)
         prevButtonRows += 1
         # Button for updating relief option (for design purposes)
 ##        self.reliefButton = Button(self.buttonFrame,
@@ -14427,6 +14458,15 @@ class HeroFrame(Frame):
         self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
         self.currentFont.config(family=self.dispFonts[self.fontIndex].cget("family"),
                                 size=self.dispFonts[self.fontIndex].cget("size"))
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
+        self.UpdateAll(hero=self.myHero)
+    def UpdateFontSize(self,
+                       increment=1):
+        notePrefix = "### HeroFrame.UpdateFontSize: "
+        newSize = self.currentFont.actual(option="size") + increment
+        print(notePrefix + "newSize: " + str(newSize))
+        self.currentFont.config(size=newSize)
         print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
               str(self.currentFont.actual(option="size")) + "pt")
         self.UpdateAll(hero=self.myHero)
@@ -14590,7 +14630,8 @@ class HeroFrame(Frame):
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
-        print(notePrefix + "display font: " + self.dispFonts[self.fontIndex].name)
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
         for i in range(len(self.charTitles)):
@@ -15598,7 +15639,7 @@ class ModeFrame(Frame):
                 if len(thisMode[6]) > 0:
                     rulesText = "You cannot " + thisMode[6][0]
                     for j in range(1, len(thisMode[6])-1):
-                        rulesText += ", " + thisMode[6][i]
+                        rulesText += ", " + thisMode[6][j]
                     if len(thisMode[6]) > 2:
                         rulesText += ","
                     if len(thisMode[6]) > 1:
