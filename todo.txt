@@ -88,6 +88,15 @@ Symbol 7', 'MS Reference Sans Serif', 'MS Reference Specialty', 'Tw Cen MT Conde
 'LowRider BB', 'Lato', 'Lato Light', 'Lato Semibold', 'RedStateBlueState BB', 'Roboto'
 
 'Terminal', 'Modern', 'Roman', 'Script', 'Courier', 'Arial', 'Calibri', 'Times New Roman', 
+
+Terminal, Courier: not good looks
+Script, Modern, Roman: even worse
+
+'Arial', 'Calibri', 'Times New Roman', 
+
+Best options seem to be Arial.9 & Calibri.10
+
+Switch from using config in EVERY label and button during updates to just setting them to self.currentFont to begin with and updating the font attributes in SwitchFont
  
 Finding proper display sizes...
  BackgroundDetails

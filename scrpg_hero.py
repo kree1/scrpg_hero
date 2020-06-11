@@ -13700,7 +13700,7 @@ class HeroFrame(Frame):
                  width=160,
                  height=52):
         Frame.__init__(self, parent)
-        notePrefix = "HeroFrame: "
+        notePrefix = "### HeroFrame.__init__: "
         self.zoneColors = ["PaleGreen1", "LightGoldenrod1", "IndianRed1"]
         self.myParent = parent
         self.dispFonts = [tkinter.font.Font(root=self.myParent,
@@ -13709,17 +13709,20 @@ class HeroFrame(Frame):
                                             name="Calibri10pt"),
                           tkinter.font.Font(root=self.myParent,
                                             family="Arial",
-                                            size=10,
-                                            name="Arial10pt"),
+                                            size=9,
+                                            name="Arial9pt"),
                           tkinter.font.Font(root=self.myParent,
                                             family="Times",
                                             size=10,
-                                            name="Times10pt"),
-                          tkinter.font.Font(root=self.myParent,
-                                            family="Terminal",
-                                            size=10,
-                                            name="Terminal10pt")]
+                                            name="Times10pt")]
         self.fontIndex = 0
+        self.currentFont = tkinter.font.Font(root=self.myParent,
+                                             family=self.dispFonts[self.fontIndex].cget("family"),
+                                             size=self.dispFonts[self.fontIndex].cget("size"),
+                                             name="HeroFrame Display Font")
+        print(notePrefix + "display font: " + self.dispFonts[self.fontIndex].name)
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
         self.numCols = 32
         self.numRows = 52
         self.width = width
@@ -13852,7 +13855,7 @@ class HeroFrame(Frame):
                                          rowspan=groupHeight,
                                          columnspan=groupWidth,
                                          sticky=N+S+E+W)
-        # EDIT: Set up hero Status die labels for columns 11-13 of rows 8-25
+        # Set up hero Status die labels for columns 11-13 of rows 8-25
         titleRow = 8
         firstCol = 11
         groupWidth = 3
@@ -14148,6 +14151,7 @@ class HeroFrame(Frame):
         # All hero manipulation buttons will be in this row or lower
         editRow = firstBFRow + self.buttonHeight * prevButtonRows
         prevButtonRows = 0
+        self.textButtons = []
         self.printButton = Button(self.buttonFrame,
                                   background=self.buttonColors[0],
                                   activebackground=self.buttonColors[1],
@@ -14163,6 +14167,7 @@ class HeroFrame(Frame):
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
+        self.textButtons.append(self.printButton)
         prevButtonRows += 1
         self.stepsButton = Button(self.buttonFrame,
                                   background=self.buttonColors[0],
@@ -14178,6 +14183,7 @@ class HeroFrame(Frame):
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
+        self.textButtons.append(self.stepsButton)
         prevButtonRows += 1
         self.saveButton = Button(self.buttonFrame,
                                  background=self.buttonColors[0],
@@ -14193,6 +14199,7 @@ class HeroFrame(Frame):
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        self.textButtons.append(self.saveButton)
         prevButtonRows += 1
         # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
         #  self.buttonColors[2:4]
@@ -14277,6 +14284,7 @@ class HeroFrame(Frame):
                              columnspan=self.buttonWidth*self.auxBufferWidth)
         prevButtonRows += self.demoBufferHeight - 1
         self.demoColors = ["plum1", "plum2"]
+        self.demoButtons = []
         self.backButton = Button(self.buttonFrame,
                                  background=self.demoColors[0],
                                  activebackground=self.demoColors[1],
@@ -14291,6 +14299,7 @@ class HeroFrame(Frame):
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth)
+        self.demoButtons.append(self.backButton)
         self.forwardButton = Button(self.buttonFrame,
                                     background=self.demoColors[0],
                                     activebackground=self.demoColors[1],
@@ -14305,8 +14314,26 @@ class HeroFrame(Frame):
                                 column=secondBFCol,
                                 rowspan=self.buttonHeight,
                                 columnspan=self.buttonWidth)
+        self.demoButtons.append(self.forwardButton)
         prevButtonRows += 1
         # If necessary, additional buttons go below these
+        # Button for updating font (for design purposes)
+        self.fontButton = Button(self.buttonFrame,
+                                 background=self.demoColors[0],
+                                 activebackground=self.demoColors[1],
+                                 text="Next Font",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.dispFonts[self.fontIndex],
+                                 command=self.SwitchFont,
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.fontButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth)
+        self.demoButtons.append(self.fontButton)
+        prevButtonRows += 1
         # Button for updating relief option (for design purposes)
 ##        self.reliefButton = Button(self.buttonFrame,
 ##                                   background=self.demoColors[0],
@@ -14395,6 +14422,14 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j].update_idletasks()
         self.wrapButton["text"] = str(self.principleWrap)
         self.wrapButton.update_idletasks()
+    def SwitchFont(self, increment=1):
+        notePrefix = "### HeroFrame.SwitchFont: "
+        self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
+        self.currentFont.config(family=self.dispFonts[self.fontIndex].cget("family"),
+                                size=self.dispFonts[self.fontIndex].cget("size"))
+        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+              str(self.currentFont.actual(option="size")) + "pt")
+        self.UpdateAll(hero=self.myHero)
     def SwitchHero(self, update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -14427,10 +14462,6 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getTalyn())
         elif self.sampleIndex == 8:
             self.UpdateAll(factory.getChaz())
-    def SwitchFont(self):
-        self.fontIndex = (self.fontIndex + 1) % len(self.dispFonts)
-        print(str(self.dispFonts[self.fontIndex]))
-        self.UpdateAll(self.myHero)
     def Empty(self,
               buttonPressed=False):
         # Clears all hero attributes
@@ -14559,10 +14590,13 @@ class HeroFrame(Frame):
     def UpdateAll(self, hero=None):
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
+        print(notePrefix + "display font: " + self.dispFonts[self.fontIndex].name)
         for i in range(len(self.nameTitles)):
+##            self.nameTitles[i].config(font=self.dispFonts[self.fontIndex])
             self.nameValues[i].config(text=self.myHeroNames[i],
                                       font=self.dispFonts[self.fontIndex])
         for i in range(len(self.charTitles)):
+            self.charTitles[i].config(font=self.dispFonts[self.fontIndex])
             self.charValues[i].config(text=self.myHeroChars[i],
                                       font=self.dispFonts[self.fontIndex])
         sectionWidths = [4, 1]
@@ -14578,6 +14612,7 @@ class HeroFrame(Frame):
                                                 width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
+            self.pqTitles[i].config(font=self.dispFonts[self.fontIndex])
             for j in range(len(pqDiceValues)):
 ##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
@@ -14589,12 +14624,14 @@ class HeroFrame(Frame):
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
 ##                      str(self.pqValues[j][i]["justify"]))
+        self.statusTitle.config(font=self.dispFonts[self.fontIndex])
         for i in range(len(self.statusValues)):
             disp = ""
             if self.myHeroStatus[i] in legal_dice:
                 disp = str(self.myHeroStatus[i])
             self.statusValues[i].config(text=disp,
                                         font=self.dispFonts[self.fontIndex])
+        self.healthTitle.config(font=self.dispFonts[self.fontIndex])
         for i in range(len(self.healthValues)):
             self.healthValues[i].config(text=self.RangeText(i),
                                         font=self.dispFonts[self.fontIndex])
@@ -14640,6 +14677,8 @@ class HeroFrame(Frame):
                                                     font=self.dispFonts[self.fontIndex])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
+        for l in self.abilityTitles:
+            l.config(font=self.dispFonts[self.fontIndex])
         firstRow = 3
         firstCol = 17
         sectionWidths = [4, 2, 10]
@@ -14753,6 +14792,13 @@ class HeroFrame(Frame):
             self.stepButtons[i].config(font=self.dispFonts[self.fontIndex])
             self.stepButtons[i].grid_remove()
 ##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
+        self.resetButton.config(font=self.dispFonts[self.fontIndex])
+        for b in self.textButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
+        for b in self.demoButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
+        for b in self.stepButtons:
+            b.config(font=self.dispFonts[self.fontIndex])
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
