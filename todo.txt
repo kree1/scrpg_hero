@@ -96,7 +96,7 @@ Script, Modern, Roman: even worse
 
 Best options seem to be Arial.9 & Calibri.10
 
-Switch from using config in EVERY label and button during updates to just setting them to self.currentFont to begin with and updating the font attributes in SwitchFont
+cget(option="size") returns an int
  
 Finding proper display sizes...
  BackgroundDetails

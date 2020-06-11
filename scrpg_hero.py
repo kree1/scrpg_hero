@@ -13751,13 +13751,13 @@ class HeroFrame(Frame):
                                        anchor=W, relief=titleRelief,
                                        width=self.columnWidth*groupWidth,
                                        height=self.rowHeight*groupHeight,
-                                       font=self.dispFonts[self.fontIndex])
+                                       font=self.currentFont)
             self.nameValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        width=self.columnWidth*groupWidth,
                                        height=self.rowHeight*groupHeight,
-                                       font=self.dispFonts[self.fontIndex])
+                                       font=self.currentFont)
             self.nameTitles[i].grid(row=firstRow,
                                     column=firstCol+i*2*groupWidth,
                                     rowspan=groupHeight,
@@ -13787,14 +13787,14 @@ class HeroFrame(Frame):
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
                                        height=self.rowHeight*groupHeight,
-                                       font=self.dispFonts[self.fontIndex])
+                                       font=self.currentFont)
             self.charValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
                                        relief=charRelief,
                                        width=self.columnWidth*valueWidth,
                                        height=self.rowHeight*groupHeight,
-                                       font=self.dispFonts[self.fontIndex])
+                                       font=self.currentFont)
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
 ##                  " rows")
@@ -13835,7 +13835,7 @@ class HeroFrame(Frame):
                                      relief=titleRelief,
                                      width=self.columnWidth*groupWidth,
                                      height=self.rowHeight*groupHeight,
-                                     font=self.dispFonts[self.fontIndex])
+                                     font=self.currentFont)
             self.pqTitles[i].grid(row=firstRow,
                                   column=groupCol,
                                   rowspan=groupHeight,
@@ -13849,7 +13849,7 @@ class HeroFrame(Frame):
                                             relief=pqRelief,
                                             width=self.columnWidth*groupWidth,
                                             height=self.rowHeight*groupHeight,
-                                            font=self.dispFonts[self.fontIndex])
+                                            font=self.currentFont)
                 self.pqValues[j][i].grid(row=firstRow+(j+1)*groupHeight,
                                          column=groupCol,
                                          rowspan=groupHeight,
@@ -13867,7 +13867,7 @@ class HeroFrame(Frame):
                                  text="Status Dice",
                                  width=self.columnWidth*groupWidth,
                                  height=self.rowHeight*titleHeight,
-                                 font=self.dispFonts[self.fontIndex])
+                                 font=self.currentFont)
         self.statusTitle.grid(row=titleRow,
                               column=firstCol,
                               rowspan=titleHeight,
@@ -13882,7 +13882,7 @@ class HeroFrame(Frame):
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
                                          height=self.rowHeight*groupHeight,
-                                         font=self.dispFonts[self.fontIndex])
+                                         font=self.currentFont)
             self.statusValues[i].grid(row=firstRow+i*groupHeight,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -13896,10 +13896,10 @@ class HeroFrame(Frame):
         self.healthTitle = Label(self,
                                  background=statusBG,
                                  text="Health Range",
-                                 anchor=E,
+                                 anchor=CENTER,
                                  width=self.columnWidth*titleWidth,
                                  height=self.rowHeight*titleHeight,
-                                 font=self.dispFonts[self.fontIndex])
+                                 font=self.currentFont)
         self.healthTitle.grid(row=titleRow,
                               column=titleCol,
                               rowspan=titleHeight,
@@ -13917,7 +13917,7 @@ class HeroFrame(Frame):
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
                                          height=self.rowHeight*groupHeight,
-                                         font=self.dispFonts[self.fontIndex])
+                                         font=self.currentFont)
             self.healthValues[i].grid(row=firstRow+i*groupVSpace,
                                       column=firstCol,
                                       rowspan=groupHeight,
@@ -13950,7 +13950,7 @@ class HeroFrame(Frame):
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
                                        height=self.rowHeight*mainTitleHeight,
-                                       font=self.dispFonts[self.fontIndex])
+                                       font=self.currentFont)
             self.prinTitles[i].grid(row=firstRow,
                                     column=groupCol,
                                     rowspan=mainTitleHeight,
@@ -13965,7 +13965,7 @@ class HeroFrame(Frame):
                                                      relief=sectionRelief,
                                                      width=self.columnWidth*groupWidth,
                                                      height=self.rowHeight*titleHeight,
-                                                     font=self.dispFonts[self.fontIndex])
+                                                     font=self.currentFont)
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
                                                   rowspan=titleHeight,
@@ -13975,7 +13975,7 @@ class HeroFrame(Frame):
                                                      background="white",
                                                      width=self.columnWidth*groupWidth,
                                                      height=self.rowHeight*sectionHeight,
-                                                     font=self.dispFonts[self.fontIndex])
+                                                     font=self.currentFont)
                 self.prinSectionValues[i][j].grid(row=sectionRow,
                                                   column=groupCol,
                                                   rowspan=sectionHeight,
@@ -14004,7 +14004,7 @@ class HeroFrame(Frame):
                                           relief=titleRelief,
                                           width=self.columnWidth*sectionWidths[i],
                                           height=self.rowHeight*titleHeight,
-                                          font=self.dispFonts[self.fontIndex])
+                                          font=self.currentFont)
 ##            print(notePrefix + str(self.abilityTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow) + " and spans " + str(titleHeight) + " rows")
             self.abilityTitles[i].grid(row=firstRow,
@@ -14031,7 +14031,7 @@ class HeroFrame(Frame):
                                                      relief=abilityRelief,
                                                      width=self.columnWidth*sectionWidths[j],
                                                      height=self.rowHeight*rowsNeeded,
-                                                     font=self.dispFonts[self.fontIndex])
+                                                     font=self.currentFont)
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -14054,7 +14054,7 @@ class HeroFrame(Frame):
                                                             relief=abilityRelief,
                                                             width=self.columnWidth*sectionWidths[s],
                                                             height=self.rowHeight*rowsNeeded,
-                                                            font=self.dispFonts[self.fontIndex])
+                                                            font=self.currentFont)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -14068,7 +14068,7 @@ class HeroFrame(Frame):
                                      justify=LEFT,
                                      width=self.columnWidth*sum(sectionWidths),
                                      height=rowsNeeded,
-                                     font=self.dispFonts[self.fontIndex])
+                                     font=self.currentFont)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -14132,7 +14132,7 @@ class HeroFrame(Frame):
                                         text=self.auxText[i],
                                         width=self.columnWidth*self.buttonWidth,
                                         height=self.rowHeight*self.buttonHeight,
-                                        font=self.dispFonts[self.fontIndex],
+                                        font=self.currentFont,
                                         command=self.auxCommands[i],
                                         padx=self.buttonPadX,
                                         pady=self.buttonPadY)
@@ -14158,7 +14158,7 @@ class HeroFrame(Frame):
                                   text="Display Text",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  font=self.dispFonts[self.fontIndex],
+                                  font=self.currentFont,
                                   command=lambda arg1=100 : \
                                   print(self.myHero.details(width=arg1)),
                                   padx=self.buttonPadX,
@@ -14175,7 +14175,7 @@ class HeroFrame(Frame):
                                   text="Display Steps",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  font=self.dispFonts[self.fontIndex],
+                                  font=self.currentFont,
                                   command=self.DisplayHeroSteps,
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
@@ -14192,7 +14192,7 @@ class HeroFrame(Frame):
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
                                  command=self.SaveTxt,
-                                 font=self.dispFonts[self.fontIndex],
+                                 font=self.currentFont,
                                  padx=self.buttonPadX,
                                  pady=self.buttonPadY)
         self.saveButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
@@ -14221,7 +14221,7 @@ class HeroFrame(Frame):
                                   text="Reset Hero",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
-                                  font=self.dispFonts[self.fontIndex],
+                                  font=self.currentFont,
                                   command=lambda arg1=True : self.Empty(buttonPressed=arg1),
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
@@ -14238,7 +14238,7 @@ class HeroFrame(Frame):
                                      text="0. Edit Names",
                                      width=self.columnWidth*self.buttonWidth,
                                      height=self.rowHeight*self.buttonHeight,
-                                     font=self.dispFonts[self.fontIndex],
+                                     font=self.currentFont,
                                      command=self.EditNames,
                                      padx=self.buttonPadX,
                                      pady=self.buttonPadY)
@@ -14258,7 +14258,7 @@ class HeroFrame(Frame):
                                          text=str(i) + ". Add " + self.stepText[i],
                                          width=self.columnWidth*self.buttonWidth,
                                          height=self.rowHeight*self.buttonHeight,
-                                         font=self.dispFonts[self.fontIndex],
+                                         font=self.currentFont,
                                          command=self.stepCommands[i],
                                          padx=self.buttonPadX,
                                          pady=self.buttonPadY)
@@ -14291,7 +14291,7 @@ class HeroFrame(Frame):
                                  text="<< Prev Hero",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 font=self.dispFonts[self.fontIndex],
+                                 font=self.currentFont,
                                  command=lambda arg1=-1 : self.SwitchHero(arg1),
                                  padx=self.buttonPadX,
                                  pady=self.buttonPadY)
@@ -14306,7 +14306,7 @@ class HeroFrame(Frame):
                                     text="Next Hero >>",
                                     width=self.columnWidth*self.buttonWidth,
                                     height=self.rowHeight*self.buttonHeight,
-                                    font=self.dispFonts[self.fontIndex],
+                                    font=self.currentFont,
                                     command=self.SwitchHero,
                                     padx=self.buttonPadX,
                                     pady=self.buttonPadY)
@@ -14324,7 +14324,7 @@ class HeroFrame(Frame):
                                  text="Next Font",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
-                                 font=self.dispFonts[self.fontIndex],
+                                 font=self.currentFont,
                                  command=self.SwitchFont,
                                  padx=self.buttonPadX,
                                  pady=self.buttonPadY)
@@ -14592,13 +14592,9 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.UpdateAll: "
         print(notePrefix + "display font: " + self.dispFonts[self.fontIndex].name)
         for i in range(len(self.nameTitles)):
-##            self.nameTitles[i].config(font=self.dispFonts[self.fontIndex])
-            self.nameValues[i].config(text=self.myHeroNames[i],
-                                      font=self.dispFonts[self.fontIndex])
+            self.nameValues[i].config(text=self.myHeroNames[i])
         for i in range(len(self.charTitles)):
-            self.charTitles[i].config(font=self.dispFonts[self.fontIndex])
-            self.charValues[i].config(text=self.myHeroChars[i],
-                                      font=self.dispFonts[self.fontIndex])
+            self.charValues[i].config(text=self.myHeroChars[i])
         sectionWidths = [4, 1]
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
@@ -14612,29 +14608,23 @@ class HeroFrame(Frame):
                                                 width=sectionWidths[0]*self.columnWidth)
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
-            self.pqTitles[i].config(font=self.dispFonts[self.fontIndex])
             for j in range(len(pqDiceValues)):
 ##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
 ##                      str(self.pqValues[j][i]["justify"]))
-                self.pqValues[j][i].config(text=pqDiceValues[j][i],
-                                           font=self.dispFonts[self.fontIndex])
+                self.pqValues[j][i].config(text=pqDiceValues[j][i])
 ##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
 ##                      str(self.pqValues[j][i]["justify"]))
-        self.statusTitle.config(font=self.dispFonts[self.fontIndex])
         for i in range(len(self.statusValues)):
             disp = ""
             if self.myHeroStatus[i] in legal_dice:
                 disp = str(self.myHeroStatus[i])
-            self.statusValues[i].config(text=disp,
-                                        font=self.dispFonts[self.fontIndex])
-        self.healthTitle.config(font=self.dispFonts[self.fontIndex])
+            self.statusValues[i].config(text=disp)
         for i in range(len(self.healthValues)):
-            self.healthValues[i].config(text=self.RangeText(i),
-                                        font=self.dispFonts[self.fontIndex])
+            self.healthValues[i].config(text=self.RangeText(i))
         # Get the maximum height of each Principle section across all Principles
         prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
         for i in range(len(self.myHeroPrinciples)):
@@ -14663,18 +14653,15 @@ class HeroFrame(Frame):
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
             sectionValues = [split_text(x, width=self.principleWrap) for x in sectionValues]
-            self.prinTitles[i].config(text=title,
-                                      font=self.dispFonts[self.fontIndex])
+            self.prinTitles[i].config(text=title)
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
 ##                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
 ##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
 ##                      str(self.rowHeight*sectionMaxHeights[j]))
-                self.prinSectionTitles[i][j].config(font=self.dispFonts[self.fontIndex])
                 self.prinSectionTitles[i][j].grid(row=titleRow)
                 self.prinSectionValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*sectionMaxHeights[j],
-                                                    font=self.dispFonts[self.fontIndex])
+                                                    height=self.rowHeight*sectionMaxHeights[j])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
         for l in self.abilityTitles:
@@ -14716,8 +14703,7 @@ class HeroFrame(Frame):
 ##                  " and takes up " + str(rowsNeeded) + rword)
             for j in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*rowsNeeded,
-                                                    font=self.dispFonts[self.fontIndex])
+                                                    height=self.rowHeight*rowsNeeded)
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -14748,8 +14734,7 @@ class HeroFrame(Frame):
 ##                      " and takes up " + str(rowsNeeded) + rword)
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s].config(text=sectionValues[s],
-                                                           height=self.rowHeight*rowsNeeded,
-                                                           font=self.dispFonts[self.fontIndex])
+                                                           height=self.rowHeight*rowsNeeded)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -14763,8 +14748,7 @@ class HeroFrame(Frame):
                                  width=sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
         self.outAbilityValue.config(text=outText,
-                                    height=rowsNeeded,
-                                    font=self.dispFonts[self.fontIndex])
+                                    height=rowsNeeded)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -14789,10 +14773,8 @@ class HeroFrame(Frame):
                 self.auxButtons[i].grid_remove()
         # Hide all creation step buttons by default
         for i in range(1,len(self.stepButtons)):
-            self.stepButtons[i].config(font=self.dispFonts[self.fontIndex])
             self.stepButtons[i].grid_remove()
 ##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
-        self.resetButton.config(font=self.dispFonts[self.fontIndex])
         for b in self.textButtons:
             b.config(font=self.dispFonts[self.fontIndex])
         for b in self.demoButtons:
