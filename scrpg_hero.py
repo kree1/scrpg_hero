@@ -14471,6 +14471,15 @@ class HeroFrame(Frame):
         print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
               str(self.currentFont.actual(option="size")) + "pt")
         self.UpdateAll(hero=self.myHero)
+    def ClipboardCopy(self,
+                      event=None):
+        notePrefix = "### HeroFrame.ClipboardCopy: "
+        label = event.widget
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+##            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def SwitchHero(self, update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -14635,8 +14644,12 @@ class HeroFrame(Frame):
               str(self.currentFont.actual(option="size")) + "pt")
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
+            self.nameValues[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
         for i in range(len(self.charTitles)):
             self.charValues[i].config(text=self.myHeroChars[i])
+            self.charValues[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
         sectionWidths = [4, 1]
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
@@ -14656,6 +14669,8 @@ class HeroFrame(Frame):
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
 ##                      str(self.pqValues[j][i]["justify"]))
                 self.pqValues[j][i].config(text=pqDiceValues[j][i])
+                self.pqValues[j][i].bind("<Double-1>",
+                                         self.ClipboardCopy)
 ##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
 ##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
 ##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
@@ -14665,8 +14680,12 @@ class HeroFrame(Frame):
             if self.myHeroStatus[i] in legal_dice:
                 disp = str(self.myHeroStatus[i])
             self.statusValues[i].config(text=disp)
+            self.statusValues[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
         for i in range(len(self.healthValues)):
             self.healthValues[i].config(text=self.RangeText(i))
+            self.healthValues[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
         # Get the maximum height of each Principle section across all Principles
         prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
         for i in range(len(self.myHeroPrinciples)):
@@ -14706,6 +14725,8 @@ class HeroFrame(Frame):
                                                     height=self.rowHeight*sectionMaxHeights[j])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
+                self.prinSectionValues[i][j].bind("<Double-1>",
+                                                  self.ClipboardCopy)
         for l in self.abilityTitles:
             l.config(font=self.dispFonts[self.fontIndex])
         firstRow = 3
@@ -14751,6 +14772,8 @@ class HeroFrame(Frame):
                                                   rowspan=rowsNeeded,
                                                   columnspan=sectionWidths[j],
                                                   sticky=N+S+E+W)
+                self.prinAbilityValues[i][j].bind("<Double-1>",
+                                                  self.ClipboardCopy)
             thisRow += rowsNeeded
             prinHeight += rowsNeeded
         firstRows = [5, 26, 38]
@@ -14782,6 +14805,8 @@ class HeroFrame(Frame):
                                                          rowspan=rowsNeeded,
                                                          columnspan=sectionWidths[s],
                                                          sticky=N+S+E+W)
+                    self.zoneAbilityValues[z][a][s].bind("<Double-1>",
+                                                         self.ClipboardCopy)
                 thisRow += rowsNeeded
         outText = ""
         rowsNeeded = 1
@@ -14796,6 +14821,8 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(sectionWidths),
                                   sticky=N+E+S+W)
+        self.outAbilityValue.bind("<Double-1>",
+                                  self.ClipboardCopy)
         if isinstance(self.myHero, Hero):
             self.myAuxCounts = [len(self.myHero.other_modes),
                                 len(self.myHero.other_forms),
@@ -14817,12 +14844,6 @@ class HeroFrame(Frame):
         for i in range(1,len(self.stepButtons)):
             self.stepButtons[i].grid_remove()
 ##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
-        for b in self.textButtons:
-            b.config(font=self.dispFonts[self.fontIndex])
-        for b in self.demoButtons:
-            b.config(font=self.dispFonts[self.fontIndex])
-        for b in self.stepButtons:
-            b.config(font=self.dispFonts[self.fontIndex])
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
@@ -15409,6 +15430,8 @@ class ModeFrame(Frame):
                                        rowspan=self.headerHeight,
                                        columnspan=sum(self.sectionWidths),
                                        sticky=self.headerGlue)
+            self.myModeHeaders[i].bind("<Double-1>",
+                                       self.ClipboardCopy)
             if printing:
                 print(notePrefix + self.myModeNames[i] + " header starts at row " + str(topRow) + \
                       ", column " + str(firstCol) + " and takes up " + str(self.headerHeight) + \
@@ -15457,6 +15480,8 @@ class ModeFrame(Frame):
                                                      rowspan=thisPowerHeight,
                                                      columnspan=self.sectionWidths[k],
                                                      sticky=self.powerGlue)
+                    self.myPowerValues[i][j][k].bind("<Double-1>",
+                                                     self.ClipboardCopy)
                     if printing:
                         print(notePrefix + self.myPowerValues[i][j][k]["text"] + \
                               " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -15483,6 +15508,8 @@ class ModeFrame(Frame):
                                       rowspan=thisRulesHeight,
                                       columnspan=sum(self.sectionWidths[2:]),
                                       sticky=self.rulesGlue)
+            self.myRuleValues[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
             if printing:
                 print(notePrefix + self.myModeNames[i] + " rules label starts at row " + \
                       str(topRow+rightHeight) + ", column " + \
@@ -15535,6 +15562,8 @@ class ModeFrame(Frame):
                                                 rowspan=thisAbilityHeight,
                                                 columnspan=self.sectionWidths[j+2],
                                                 sticky=self.abilityGlue)
+                self.myAbilityValues[i][j].bind("<Double-1>",
+                                                self.ClipboardCopy)
                 if printing:
                     print(notePrefix + self.myAbilityValues[i][j]["text"] + \
                           " label starts at row " + str(topRow+rightHeight) + ", column " + \
@@ -15610,6 +15639,15 @@ class ModeFrame(Frame):
         self.myModePowers = []
         self.myModeRules = []
         self.myModeAbilities = []
+    def ClipboardCopy(self,
+                      event=None):
+        notePrefix = "### ModeFrame.ClipboardCopy: "
+        label = event.widget
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+##            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def SetHero(self, hero=None):
         # Sets all hero attributes
         notePrefix = "### ModeFrame.SetHero: "
@@ -15757,6 +15795,8 @@ class MinionFrame(Frame):
                                     rowspan=2,
                                     columnspan=sum(self.sizeWidths),
                                     sticky=self.rulesGlue)
+        self.myMinionSizeRules.bind("<Double-1>",
+                                    self.ClipboardCopy)
         # Display Minion Sizes title in columns 1-4 of row 3
         self.myMinionSizeTitle = Label(self,
                                        background=self.titleBG,
@@ -15793,7 +15833,8 @@ class MinionFrame(Frame):
                                              columnspan=self.sizeWidths[i],
                                              sticky=self.headerGlue)
         # Display minion size column entries in rows 5-9
-        self.myMinionSizeEntries = [[None for i in range(len(self.sizeText[0]))] for j in range(len(self.sizeText))]
+        self.myMinionSizeEntries = [[None for i in range(len(self.sizeText[0]))] \
+                                    for j in range(len(self.sizeText))]
         for c in range(len(self.myMinionSizeEntries)):
             for r in range(len(self.myMinionSizeEntries[c])):
                 thisEntry = Label(self,
@@ -15812,6 +15853,8 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.sizeWidths[c],
                                                     sticky=self.tableGlue)
+                self.myMinionSizeEntries[c][r].bind("<Double-1>",
+                                                    self.ClipboardCopy)
         # Insert buffer between rows 9 and 12
         # ...
         # Display minion form rules in columns 1-16 of row 12
@@ -15830,6 +15873,8 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths),
                                     sticky=self.rulesGlue)
+        self.myMinionFormRules.bind("<Double-1>",
+                                    self.ClipboardCopy)
         # Display Minion Forms title in columns 1-4 of row 13
         self.myMinionFormTitle = Label(self,
                                        background=self.titleBG,
@@ -15885,11 +15930,22 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.formWidths[c],
                                                     sticky=self.tableGlue)
+                self.myMinionFormEntries[r][c].bind("<Double-1>",
+                                                    self.ClipboardCopy)
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
         self.myMinionCount = 0
         self.myMinionInfo = []
+    def ClipboardCopy(self,
+                      event=None):
+        notePrefix = "### MinionFrame.ClipboardCopy: "
+        label = event.widget
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -16042,6 +16098,8 @@ class FormFrame(Frame):
                                      rowspan=1,
                                      columnspan=sum(self.upperWidths),
                                      sticky=self.rulesGlue)
+            self.myFormNames[i].bind("<Double-1>",
+                                     self.ClipboardCopy)
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
             for j in range(5):
                 self.myHeaders[i][j] = Label(self,
@@ -16075,6 +16133,8 @@ class FormFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.upperWidths[4],
                                              sticky=self.diceGlue)
+                self.myStatusDice[i][j].bind("<Double-1>",
+                                             self.ClipboardCopy)
             # Display Power and Quality dice across columns 1-10 of the third through
             #  [2+max(len(powers),len(qualities))]th rows
             pqHeights = [1 for x in range(8)]
@@ -16119,6 +16179,8 @@ class FormFrame(Frame):
                                                 rowspan=pqHeights[k],
                                                 columnspan=self.upperWidths[j],
                                                 sticky=self.diceGlue)
+                    self.myPQDice[i][j][k].bind("<Double-1>",
+                                                self.ClipboardCopy)
             # If thisForm has associated Abilities...
             if len(thisForm[5]) > 0:
                 # Display Ability headers across columns 13-28 of the fourth row
@@ -16173,6 +16235,8 @@ class FormFrame(Frame):
                                                        rowspan=abilityHeight,
                                                        columnspan=self.lowerWidths[5+k],
                                                        sticky=self.abilityGlue)
+                        self.myAbilities[i][j][k].bind("<Double-1>",
+                                                       self.ClipboardCopy)
                     thisRow += abilityHeight
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
     def Empty(self):
@@ -16182,6 +16246,15 @@ class FormFrame(Frame):
         self.isDivided = False
         self.myDividedTags = []
         self.myFormInfo = []
+    def ClipboardCopy(self,
+                      event=None):
+        notePrefix = "### FormFrame.ClipboardCopy: "
+        label = event.widget
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+##            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -17299,7 +17372,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

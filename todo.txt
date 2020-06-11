@@ -202,3 +202,8 @@ Standard orange:
 #FFA500
 
 Let the user copy a label's text to the clipboard by clicking on it
+.  HeroFrame
+.  ModeFrame
+.  FormFrame
+.  MinionFrame
+  ExpandFrame?
