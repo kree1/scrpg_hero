@@ -15166,7 +15166,7 @@ class ModeFrame(Frame):
     def __init__(self, parent, hero=None, width=105, height=27, printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
-        notePrefix = "ModeFrame: __init__: "
+        notePrefix = "### ModeFrame: __init__: "
         self.numRows = 16
         self.numCols = 26
         self.width = width
@@ -15451,6 +15451,7 @@ class ModeFrame(Frame):
         self.myModeAbilities = []
     def SetHero(self, hero=None):
         # Sets all hero attributes
+        notePrefix = "### ModeFrame.SetHero: "
         self.Empty()
         if isinstance(hero, Hero):
             self.myHero = hero
@@ -15479,7 +15480,7 @@ class ModeFrame(Frame):
                 if len(thisMode[6]) > 0:
                     rulesText = "You cannot " + thisMode[6][0]
                     for j in range(1, len(thisMode[6])-1):
-                        rulesText += ", " + thisMode[6][i]
+                        rulesText += ", " + thisMode[6][j]
                     if len(thisMode[6]) > 2:
                         rulesText += ","
                     if len(thisMode[6]) > 1:
@@ -17087,7 +17088,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
