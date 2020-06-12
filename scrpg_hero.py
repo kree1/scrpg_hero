@@ -484,7 +484,7 @@ class Status:
         self.reference = -1
         if ref in [-1, 0, 1]:
             self.reference = ref
-        if self.reference in [0, 1]:
+        if self.reference in range(len(dv_defaults)):
             # ref is specified and it's 0 or 1? This is a reference Status- it points to another
             #  one in the associated Hero. All die sizes should be filled in with ref.
             self.green = self.reference
@@ -14505,8 +14505,8 @@ class HeroFrame(Frame):
         self.UpdateAll(hero)
         self.focus_set()
     def RangeText(self, zone):
-        # Returns the text representation of the health range for the specified status zone if legal
-        #  and valid, and "" otherwise
+        # Returns the text representation of the health range for the specified status zone if
+        #  legal and valid, and "" otherwise
         t = ""
         if zone in range(len(self.myHeroHealth)):
             z_max = self.myHeroHealth[zone]

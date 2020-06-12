@@ -204,6 +204,25 @@ Standard orange:
 Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
   Status
+   Where does this need to be used?
+?   x[1] for x in pn_collection
+?	PersonalityDetails, 6311
+	Hero.__init__, 6334
+	Hero.__init__, 6349
+	Hero.AddMode, 8639
+	Hero.ModeDetails, 8722
+	Hero.FormDetails, 8847:8866
+	Hero.AddArchetype, 10065:10085
+	Hero.AddPersonality, 10770:10785
+	Hero.AddRetcon, 11619:11778
+	Hero.AddHealth, 11909:11937
+	Hero.StepDetails, 12265:12362
+	Hero.StepDetails, 12421:12464
+	Hero.details, 12606:12613
+	HeroFrame.SetHero, 14671
+	HeroFrame.UpdateAll, 14761
+	FormFrame.__init__, 16208
+	FormFrame.SetHero, 16359:16364
   Mode
   Form
  Implement rollback methods for Hero
