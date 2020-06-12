@@ -16348,10 +16348,17 @@ class SelectFrame(Frame):
                                    width=self.myWrap)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="SelectFrame Display Font")
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
+                                   font=self.myFont,
                                    width=self.myWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myPromptLabel.grid(row=1,
@@ -16365,7 +16372,8 @@ class SelectFrame(Frame):
                                        self.myString,
                                        *self.myOptions)
         self.myOptionMenu.config(anchor=W,
-                                 justify=LEFT)
+                                 justify=LEFT,
+                                 font=self.myFont)
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
@@ -16375,6 +16383,7 @@ class SelectFrame(Frame):
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
+                                 font=self.myFont,
                                  padx=2,
                                  command=self.finish)
         self.myOKButton.grid(row=3,
@@ -16386,12 +16395,14 @@ class SelectFrame(Frame):
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+B",
+                                    font=self.myFont,
                                     padx=1,
                                     command=self.plusbuffer)
         self.myBMinusButton = Button(self,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-B",
+                                     font=self.myFont,
                                      padx=1,
                                      command=self.minusbuffer)
 ##        self.myBPlusButton.grid(row=5,
@@ -16408,12 +16419,14 @@ class SelectFrame(Frame):
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+W",
+                                    font=self.myFont,
                                     padx=1,
                                     command=self.pluswidth)
         self.myWMinusButton = Button(self,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-W",
+                                     font=self.myFont,
                                      padx=1,
                                      command=self.minuswidth)
 ##        self.myWPlusButton.grid(row=6,
@@ -16544,11 +16557,18 @@ class EntryFrame(Frame):
                                    width=self.myWrap)
         self.myText = StringVar(self, destination.get())
         self.myDestination = destination
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="EntryFrame Display Font")
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+                                   font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -16559,7 +16579,8 @@ class EntryFrame(Frame):
         # Create Entry widget
         self.myTextEntry = Entry(self,
                                  justify=LEFT,
-                                 textvariable=self.myText)
+                                 textvariable=self.myText,
+                                 font=self.myFont)
         self.myTextEntry.grid(row=2,
                               column=1,
                               rowspan=1,
@@ -16571,6 +16592,7 @@ class EntryFrame(Frame):
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
+                                 font=self.myFont,
                                  padx=2,
                                  command=self.finish)
         self.myOKButton.grid(row=3,
@@ -16711,6 +16733,12 @@ class ExpandFrame(Frame):
         if isinstance(rbuffer, int) and rbuffer >= 0:
             self.myDispBuffer = rbuffer
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="ExpandFrame Display Font")
         self.myDetails = [str(x) for x in expand_options]
         self.myLeftFrame = Frame(self,
                                  width=self.myPromptWidth,
@@ -16725,7 +16753,8 @@ class ExpandFrame(Frame):
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=self.myPromptWidth,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+                                   font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -16738,7 +16767,8 @@ class ExpandFrame(Frame):
                                        *self.myOptions,
                                        command=self.expand)
         self.myOptionMenu.config(anchor=W,
-                                 justify=LEFT)
+                                 justify=LEFT,
+                                 font=self.myFont)
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
@@ -16748,6 +16778,7 @@ class ExpandFrame(Frame):
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
+                                 font=self.myFont,
                                  padx=2,
                                  command=self.finish)
         self.myOKButton.grid(row=3,
@@ -16757,7 +16788,8 @@ class ExpandFrame(Frame):
                              sticky=E+W)
         self.myBufferLabel = Label(self.myLeftFrame,
                                    anchor=W,
-                                   text="")
+                                   text="",
+                                   font=self.myFont)
         self.myBufferLabel.grid(row=4,
                                 column=1,
                                 rowspan=1,
@@ -16767,12 +16799,14 @@ class ExpandFrame(Frame):
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+B",
+                                    font=self.myFont,
                                     padx=1,
                                     command=self.plusbuffer)
         self.myBMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-B",
+                                     font=self.myFont,
                                      padx=1,
                                      command=self.minusbuffer)
 ##        self.myBPlusButton.grid(row=5,
@@ -16789,12 +16823,14 @@ class ExpandFrame(Frame):
                                     anchor=CENTER,
                                     justify=CENTER,
                                     text="+W",
+                                    font=self.myFont,
                                     padx=1,
                                     command=self.pluswidth)
         self.myWMinusButton = Button(self.myLeftFrame,
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="-W",
+                                     font=self.myFont,
                                      padx=1,
                                      command=self.minuswidth)
 ##        self.myWPlusButton.grid(row=6,
@@ -16814,6 +16850,7 @@ class ExpandFrame(Frame):
                                  anchor=NW,
                                  justify=LEFT,
                                  text="",
+                                 font=self.myFont,
                                  width=self.myDispWidth,
                                  relief=GROOVE)
         if detailsHeight < 40:
@@ -16978,11 +17015,18 @@ class SwapFrame(Frame):
                                    width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="SwapFrame Display Font")
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+                                   font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -16994,7 +17038,12 @@ class SwapFrame(Frame):
         for i in range(2):
             self.myAnswers[i].set(self.myOptions[i])
             self.myDestinations[i].set(-1)
-            self.myOptionMenus[i] = OptionMenu(self, self.myAnswers[i], *self.myOptions)
+            self.myOptionMenus[i] = OptionMenu(self,
+                                               self.myAnswers[i],
+                                               *self.myOptions)
+            self.myOptionMenus[i].config(anchor=W,
+                                         justify=LEFT,
+                                         font=self.myFont)
             self.myOptionMenus[i].grid(row=i+2,
                                        column=1,
                                        rowspan=1,
@@ -17004,6 +17053,7 @@ class SwapFrame(Frame):
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
+                                 font=self.myFont,
                                  padx=2,
                                  command=self.finish)
         self.myOKButton.grid(row=4,
@@ -17113,7 +17163,7 @@ class PrincipleFrame(Frame):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myPrinciple = principle
-        self.prinSectionNames = ["Title: Principle of ",
+        self.prinSectionNames = ["Principle of ",
                                  "During Roleplaying",
                                  "Minor Twist",
                                  "Major Twist",
@@ -17131,6 +17181,12 @@ class PrincipleFrame(Frame):
         self.myTitleWidth = titleWidth
         self.entryWidth = max(width, self.myTitleWidth,
                               max([len(x.get()) for x in self.prinSectionVars]))
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="PrincipleFrame Display Font")
         self.mySectionLabels = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
@@ -17139,6 +17195,7 @@ class PrincipleFrame(Frame):
                                             justify=RIGHT,
                                             background="white",
                                             text=self.prinSectionNames[i],
+                                            font=self.myFont,
                                             padx=2)
             self.mySectionLabels[i].grid(row=i+1,
                                          column=1,
@@ -17146,7 +17203,8 @@ class PrincipleFrame(Frame):
             self.mySectionEntries[i] = Entry(self,
                                              justify=LEFT,
                                              textvariable=self.prinSectionVars[i],
-                                             width=self.entryWidth)
+                                             width=self.entryWidth,
+                                             font=self.myFont)
             self.mySectionEntries[i].grid(row=i+1,
                                           column=2,
                                           columnspan=4,
@@ -17155,6 +17213,7 @@ class PrincipleFrame(Frame):
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
+                                 font=self.myFont,
                                  padx=2,
                                  command=self.finish)
         self.myOKButton.grid(row=len(self.prinSectionNames)+1,
@@ -17288,13 +17347,20 @@ class AssignFrame(Frame):
                          titleWidth + titleBuffer)
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=totalWidth)
+        try:
+            self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
+        except (TclError):
+            self.myFont = tkinter.font.Font(family="Arial",
+                                            size=9,
+                                            name="AssignFrame Display Font")
         # myPromptLabel goes across the full first row
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=totalWidth,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+                                   font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -17315,6 +17381,7 @@ class AssignFrame(Frame):
                                          justify=LEFT,
                                          text=self.myItems[i],
                                          width=self.myItemWidth,
+                                         font=self.myFont,
                                          relief=GROOVE)
             self.myItemLabels[i].grid(row=thisRow,
                                       column=1,
@@ -17331,6 +17398,7 @@ class AssignFrame(Frame):
                                                         anchor=CENTER,
                                                         justify=CENTER,
                                                         text=self.myCategories[j],
+                                                        font=self.myFont,
                                                         variable=self.myAssignments[i],
                                                         value=j,
                                                         indicatoron=0,
@@ -17343,7 +17411,8 @@ class AssignFrame(Frame):
             self.myCountLabel = Label(self,
                                       anchor=SE,
                                       justify=RIGHT,
-                                      text="")
+                                      text="",
+                                      font=self.myFont)
             self.myCountLabel.grid(row=len(self.myItems)+3,
                                    column=1,
                                    rowspan=1,
@@ -17353,6 +17422,7 @@ class AssignFrame(Frame):
                                      anchor=CENTER,
                                      justify=CENTER,
                                      text="OK",
+                                     font=self.myFont,
                                      command=self.finish)
             self.myOKButton.grid(row=len(self.myItems)+3,
                                  column=2,
@@ -17400,7 +17470,7 @@ class AssignFrame(Frame):
             choice = self.myAssignments[i].get()
             if choice in range(len(self.myCategories)):
                 if choice != self.myDefault:
-                    print(notePrefix + str(self.myItems[i]).split()[0] + " assigned to " + \
+                    print(notePrefix + str(self.myItems[i]).split()[0] + "... assigned to " + \
                           str(self.myCategories[choice]))
                 self.myAnswer[i] = self.myAnswerKey[choice]
             else:
@@ -17437,15 +17507,15 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim(step=2)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##firstHero = factory.getKnockout(step=3)
+##disp_frame = HeroFrame(root, hero=firstHero)
+##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+dispFrame = HeroFrame(root)
+dispFrame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 ##w=40
 ##pf="123  "

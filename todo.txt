@@ -200,25 +200,6 @@ Light orange colors:
 
 Standard orange:
 #FFA500
-
-Have HeroFrame's currentFont propagate to creation step windows
- Tell the following to set all their labels, entries, buttons, OptionMenus to the font named in HeroFrame.__init__...
-  SelectFrame
-  EntryFrame
-  ExpandFrame
-  SwapFrame
-  AssignFrame
-
-Let the user copy a label's text to the clipboard by clicking on it
-.  HeroFrame
-.  ModeFrame
-.  FormFrame
-.  MinionFrame
-.  ExpandFrame (prompt & details)
-.  SelectFrame (prompt)
-.  EntryFrame (prompt)
-.  SwapFrame (prompt)
-.  AssignFrame (prompt & items)
   
 Make steps reversible...
  Make Status, Mode, Form into full classes
