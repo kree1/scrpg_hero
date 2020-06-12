@@ -467,6 +467,88 @@ class PQDie:
                 return ancestor
         return ancestor
 
+# Class representing a set of three status dice
+class Status:
+    def __init__(self,
+                 green=0,
+                 yellow=0,
+                 red=0,
+                 ref=-1,
+                 stepnum=0):
+        self.step = max([0, stepnum])
+        self.steps_modified = []
+        self.prev_version = None
+        self.green = -1
+        self.yellow = -1
+        self.red = -1
+        self.reference = -1
+        if ref in [-1, 0, 1]:
+            self.reference = ref
+        if self.reference in [0, 1]:
+            # ref is specified and it's 0 or 1? This is a reference Status- it points to another
+            #  one in the associated Hero. All die sizes should be filled in with ref.
+            self.green = self.reference
+            self.yellow = self.reference
+            self.red = self.reference
+        else:
+            if green == yellow and yellow == red and red == 0:
+                # All die sizes are 0, but no reference? This is a blank Status
+                self.green = green
+                self.yellow = yellow
+                self.red = red
+            else:
+                if green in legal_dice and yellow in legal_dice and red in legal_dice:
+                    # All die sizes are legal? This is a valid independent Status
+                    self.green = green
+                    self.yellow = yellow
+                    self.red = red
+    def array(self):
+        return [self.green, self.yellow, self.red]
+    def __str__(self):
+        return str(self.array())
+    def __eq__(self, other):
+        if isinstance(other, Status):
+            match = self.reference == other.reference and \
+                    self.green == other.green and \
+                    self.yellow == other.yellow and \
+                    self.red == other.red and \
+                    self.step == other.step and \
+                    self.steps_modified == other.steps_modified and \
+                    self.prev_version == other.prev_version
+            return match
+        else:
+            return False
+    def copy(self):
+        mirror = Status(green=self.green,
+                        yellow=self.yellow,
+                        red=self.red,
+                        ref=self.reference,
+                        stepnum=self.step)
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
+        return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Status's attributes during character creation
+        # Creates a copy of the Status with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Status as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+
 global r_destiny, r_energy, r_exorcism, r_fauna, r_flora, r_future, r_immortality, r_inner_demon
 global r_magic, r_sea, r_space, r_time_traveler, r_undead, rc_esoteric
 r_destiny = ["Destiny",
@@ -8071,8 +8153,7 @@ class Hero:
             elif ps_bonus == 3:
                 # Supernatural: Gain a d10 Power that ISN'T listed.
                 print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
-                power_triplets = [[1,a,b] for b in range(len(mixed_collection[1][a])) \
-                                  for a in range(len(mixed_collection[1]))]
+                power_triplets = AllCategories(t=1)
                 non_optional_powers = [triplet for triplet in power_triplets \
                                        if triplet not in optional_powers]
                 if track_inputs:
@@ -17507,15 +17588,15 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout(step=3)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getChaz(step=1)
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "

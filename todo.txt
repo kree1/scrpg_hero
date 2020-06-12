@@ -202,5 +202,11 @@ Standard orange:
 #FFA500
   
 Make steps reversible...
- Make Status, Mode, Form into full classes
- Implement copy, SetPrevious, RetrievePrior for Hero
+ Make more hero attributes into full classes, including rollback methods
+  Status
+  Mode
+  Form
+ Implement rollback methods for Hero
+  copy
+  SetPrevious
+  RetrievePrior
