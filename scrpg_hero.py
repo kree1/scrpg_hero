@@ -6396,7 +6396,7 @@ class Hero:
         elif self.UseGUI(inputs):
             # If we have a GUI and no prepared inputs, create an EntryWindow to get text from the
             #  user
-            print("Using EntryWindow")
+##            print("Using EntryWindow")
             answer = StringVar(self.myFrame, default)
             question = EntryWindow(self.myWindow,
                                    prompt=prompt,
@@ -16359,6 +16359,8 @@ class SelectFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self,
                                        self.myString,
                                        *self.myOptions)
@@ -16466,6 +16468,13 @@ class SelectFrame(Frame):
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index-1])
                 self.update()
+    def ClipboardCopy(self, event=None):
+        notePrefix = "### SelectFrame.ClipboardCopy: "
+        flatText = self.myRawPrompt
+        if flatText:
+            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def finish(self, *args):
         notePrefix = "### SelectFrame.finish: "
         if len(self.myOptions) > 0:
@@ -16545,6 +16554,8 @@ class EntryFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         # Create Entry widget
         self.myTextEntry = Entry(self,
                                  justify=LEFT,
@@ -16595,6 +16606,13 @@ class EntryFrame(Frame):
     def minuswidth(self, event=None):
         self.myWidth -= 5
         self.update()
+    def ClipboardCopy(self, event=None):
+        notePrefix = "### EntryFrame.ClipboardCopy: "
+        flatText = self.myRawPrompt
+        if flatText:
+            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
@@ -16713,6 +16731,8 @@ class ExpandFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
@@ -16803,6 +16823,8 @@ class ExpandFrame(Frame):
                               rowspan=1,
                               columnspan=1,
                               sticky=N+E+S+W)
+        self.myDispLabel.bind("<Double-1>",
+                              self.ClipboardCopy)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.bind("<Up>", self.prevoption)
@@ -16863,6 +16885,22 @@ class ExpandFrame(Frame):
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index-1])
                 self.expand()
+    def ClipboardCopy(self, event=None):
+        notePrefix = "### ExpandFrame.ClipboardCopy: "
+        label = event.widget
+        if label == self.myDispLabel:
+            if len(self.myDetails) > 0:
+                if self.myAnswer.get() in range(len(self.myDetails)):
+                    flatText = self.myDetails[self.myAnswer.get()]
+                    print(notePrefix + flatText)
+                    self.clipboard_clear()
+                    self.clipboard_append(flatText)
+        elif label == self.myPromptLabel:
+            if self.myRawPrompt:
+                flatText = self.myRawPrompt
+                print(notePrefix + flatText)
+                self.clipboard_clear()
+                self.clipboard_append(flatText)
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
@@ -16935,7 +16973,8 @@ class SwapFrame(Frame):
         self.myOptions = [str(x) for x in options]
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
-        self.myPrompt = split_text(str(prompt),
+        self.myRawPrompt = str(prompt)
+        self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
@@ -16949,6 +16988,8 @@ class SwapFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         self.myOptionMenus = [None for x in range(2)]
         for i in range(2):
             self.myAnswers[i].set(self.myOptions[i])
@@ -16993,6 +17034,13 @@ class SwapFrame(Frame):
             if self.myAnswers[1].get() != self.myOptions[0]:
                 index = self.myOptions.index(self.myAnswers[1].get())
                 self.myAnswers[1].set(self.myOptions[index-1])
+    def ClipboardCopy(self, event=None):
+        notePrefix = "### SwapFrame.ClipboardCopy: "
+        flatText = self.myRawPrompt
+        if flatText:
+            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def finish(self, *args):
         notePrefix = "### SwapFrame.finish: "
         if len(self.myOptions) > 0:
@@ -17202,7 +17250,7 @@ class AssignFrame(Frame):
         notePrefix = "### AssignFrame.__init__: "
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myPrompt = str(prompt)
+        self.myRawPrompt = str(prompt)
         self.myCategories = [str(x) for x in categories]
         self.myItems = [str(x) for x in items]
         self.myDestination = StringVar(self)
@@ -17238,20 +17286,22 @@ class AssignFrame(Frame):
         self.myAnswerKey = string.ascii_uppercase[0:len(self.myCategories)]
         totalWidth = max(self.myItemWidth + self.myColumnWidth*len(self.myCategories),
                          titleWidth + titleBuffer)
-        promptLines = split_text(self.myPrompt,
-                                 width=totalWidth)
+        self.myPrompt = split_text(self.myRawPrompt,
+                                   width=totalWidth)
         # myPromptLabel goes across the full first row
         self.myPromptLabel = Label(self,
                                    anchor=W,
                                    justify=LEFT,
-                                   text=promptLines,
+                                   text=self.myPrompt,
                                    width=totalWidth,
-                                   height=1+len([x for x in promptLines if x == "\n"]))
+                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=1+len(self.myCategories),
                                 sticky=N+E+S+W)
+        self.myPromptLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         # Each of myItems gets its own label...
         self.myItemLabels = [None for y in range(len(self.myItems))]
         #... and its own set of radio buttons, one for each category
@@ -17271,6 +17321,8 @@ class AssignFrame(Frame):
                                       rowspan=1,
                                       columnspan=1,
                                       sticky=N+E+S+W)
+            self.myItemLabels[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
             if self.myDefault in range(len(self.myCategories)):
                 self.myAssignments[i].set(self.myDefault)
             for j in range(len(self.myCategories)):
@@ -17327,6 +17379,19 @@ class AssignFrame(Frame):
             elif self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
                 cText += " (limit " + str(self.myFirstMax) + ")..."
             self.myCountLabel.config(text=cText)
+    def ClipboardCopy(self, event=None):
+        notePrefix = "### AssignFrame.ClipboardCopy: "
+        flatText = ""
+        label = event.widget
+        if label == self.myPromptLabel:
+            flatText = self.myRawPrompt
+        elif label in self.myItemLabels:
+            i = self.myItemLabels.index(label)
+            flatText = self.myItems[i]
+        if flatText:
+            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
     def finish(self, *args):
         notePrefix = "### AssignFrame.finish: "
         complete = True
@@ -17372,7 +17437,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKim(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
