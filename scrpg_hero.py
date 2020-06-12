@@ -8287,7 +8287,7 @@ class Hero:
             elif ps_bonus == 8:
                 # The Multiverse: Gain a d6 Power from ANY category.
                 print("Bonus: You get a d6 Power from ANY category.")
-                power_triplets = AllCategories()
+                power_triplets = AllCategories(t=1)
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
