@@ -15449,13 +15449,17 @@ class ModeFrame(Frame):
         self.powerGlue = E+W
         self.abilityGlue = N+S
         self.sectionWidths = [4, 1, 5, 2, 9]
+        # Number for converting width in characters to wraplength in pixels
+        self.wrapFactor = 10
         self.powerModifier = 1
-        self.powerWrap = math.floor(self.sectionWidths[0]*self.columnWidth*self.powerModifier)
+        self.powerWrap = math.floor(self.sectionWidths[0] * self.columnWidth * \
+                                    self.powerModifier * self.wrapFactor)
         self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sectionWidths[2:])*self.columnWidth*self.rulesModifier)
+        self.rulesWrap = math.floor(sum(self.sectionWidths[2:]) * self.columnWidth *
+                                    self.rulesModifier * self.wrapFactor)
         self.abilityModifier = 1
-        self.abilityWraps = [math.floor(x*self.columnWidth*self.abilityModifier) \
-                             for x in self.sectionWidths[2:]]
+        self.abilityWraps = [math.floor(x * self.columnWidth * self.abilityModifier * \
+                                        self.wrapFactor) for x in self.sectionWidths[2:]]
         self.headerHeight = 1
         self.powerHeight = 1
         self.bufferHeight = 1
@@ -15539,8 +15543,9 @@ class ModeFrame(Frame):
                 thisPowerDie = ""
                 thisPowerHeight = 1
                 if isinstance(thisPower, PQDie):
-                    thisPowerText = split_text(thisPower.flavorname,
-                                               width=self.powerWrap)
+##                    thisPowerText = split_text(thisPower.flavorname,
+##                                               width=self.powerWrap)
+                    thisPowerText = thisPower.flavorname
                     thisPowerDie = str(thisPower.diesize)
                     thisPowerHeight = max(self.powerHeight,
                                           1 + len([x for x in thisPowerText if x == "\n"]))
@@ -15554,6 +15559,7 @@ class ModeFrame(Frame):
                                                         text=thisPowerValues[k],
                                                         width=self.sectionWidths[k] * \
                                                         self.columnWidth,
+                                                        wraplength=self.powerWrap,
                                                         height=thisPowerHeight,
                                                         font=self.dispFont)
                     self.myPowerValues[i][j][k].grid(row=topRow+leftHeight,
@@ -15571,9 +15577,10 @@ class ModeFrame(Frame):
                               " columns")
                 leftHeight += thisPowerHeight
             # Display mode rules across columns 6-21 starting at the second row
-            thisRulesSections = [split_text(x,
-                                            width=self.rulesWrap) \
-                                 for x in self.myModeRules[i].split("\n")]
+##            thisRulesSections = [split_text(x,
+##                                            width=self.rulesWrap) \
+##                                 for x in self.myModeRules[i].split("\n")]
+            thisRulesSections = [x for x in self.myModeRules[i].split("\n")]
             thisRulesText = "\n".join(thisRulesSections)
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
             self.myRuleValues[i] = Label(self,
@@ -15583,6 +15590,7 @@ class ModeFrame(Frame):
                                          text=thisRulesText,
                                          width=sum(self.sectionWidths[2:])*self.columnWidth,
                                          height=thisRulesHeight*self.rowHeight,
+                                         wraplength=self.rulesWrap,
                                          font=self.dispFont)
             self.myRuleValues[i].grid(row=topRow+rightHeight,
                                       column=firstCol+sum(self.sectionWidths[0:2]),
@@ -15623,9 +15631,9 @@ class ModeFrame(Frame):
                 thisAbilityType = self.myModeAbilities[i].type
                 thisAbilityText = self.myModeAbilities[i].dispText()
             thisAbilitySections = [thisAbilityName, thisAbilityType, thisAbilityText]
-            thisAbilitySections = [split_text(thisAbilitySections[i],
-                                              width=self.abilityWraps[i]) \
-                                   for i in range(len(thisAbilitySections))]
+##            thisAbilitySections = [split_text(thisAbilitySections[i],
+##                                              width=self.abilityWraps[i]) \
+##                                   for i in range(len(thisAbilitySections))]
             thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
                                          for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
@@ -15637,6 +15645,7 @@ class ModeFrame(Frame):
                                                    text=thisAbilitySections[j],
                                                    width=self.sectionWidths[j+2]*self.columnWidth,
                                                    height=thisAbilityHeight*self.rowHeight,
+                                                   wraplength=self.abilityWraps[j],
                                                    font=self.dispFont)
                 self.myAbilityValues[i][j].grid(row=topRow+rightHeight,
                                                 column=firstCol+sum(self.sectionWidths[0:j+2]),
@@ -17588,7 +17597,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getChaz(step=1)
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
