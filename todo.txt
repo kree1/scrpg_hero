@@ -241,18 +241,20 @@ Make steps reversible...
 .		Hero.ModeDetails, 8722:8730
 .		Hero.AddHealth, 11912:11914
 	Hero.other_forms
-		Hero.FormDetails, 8847:8848
-		Hero.FormDetails, 8852:8861
-		Hero.FormDetails, 8864:8866
-		Hero.AddArchetype, 10069:10082
-		Hero.AddPersonality, 10775:10780
-		Hero.AddRetcon, 11644:11672
-		Hero.AddRetcon, 11725:11728
-		Hero.AddRetcon, 11748:11751
-		Hero.AddRetcon, 11770:11777
-		Hero.AddHealth, 11916:11918
-		FormFrame.__init__, 16208
-		FormFrame.SetHero, 16359:16364
+.		Hero.FormDetails, 8852:8861
+.		Hero.FormDetails, 8864:8866
+.		Hero.ChooseForm, 9138
+.		Hero.ChooseForm, 9162
+.		Hero.AddArchetype, 10069:10082
+.		Hero.AddArchetype, 10318
+.		Hero.AddPersonality, 10775:10780
+.		Hero.AddRetcon, 11644:11672
+.		Hero.AddRetcon, 11725:11728
+.		Hero.AddRetcon, 11748:11751
+.		Hero.AddRetcon, 11770:11777
+,		Hero.AddHealth, 11916:11918
+.		FormFrame.__init__, 16208
+.		FormFrame.SetHero, 16359:16364
   Mode
   Form
  Implement rollback methods for Hero
