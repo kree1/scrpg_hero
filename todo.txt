@@ -200,29 +200,60 @@ Light orange colors:
 
 Standard orange:
 #FFA500
+
+Figure out wraplength
   
 Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
   Status
    Where does this need to be used?
-?   x[1] for x in pn_collection
-?	PersonalityDetails, 6311
-	Hero.__init__, 6334
-	Hero.__init__, 6349
-	Hero.AddMode, 8639
-	Hero.ModeDetails, 8722
-	Hero.FormDetails, 8847:8866
-	Hero.AddArchetype, 10065:10085
-	Hero.AddPersonality, 10770:10785
-	Hero.AddRetcon, 11619:11778
-	Hero.AddHealth, 11909:11937
-	Hero.StepDetails, 12265:12362
-	Hero.StepDetails, 12421:12464
-	Hero.details, 12606:12613
-	HeroFrame.SetHero, 14671
-	HeroFrame.UpdateAll, 14761
-	FormFrame.__init__, 16208
-	FormFrame.SetHero, 16359:16364
+    Personality entries?
+		x[1] for x in pn_collection
+		PersonalityDetails, 6311
+		Hero.AddPersonality, 10770:10771
+	Hero.status_dice
+.		Hero.__init__, 6334
+.		Hero.ModeDetails, 8722
+.		Hero.AddPersonality, 10770
+.		Hero.AddPersonality, 10785:10786
+.		Hero.AddRetcon, 11628:11630
+.		Hero.AddRetcon, 11677
+.		Hero.AddRetcon, 11719
+.		Hero.AddRetcon, 11732:11735
+.		Hero.AddRetcon, 11755:11759
+.		Hero.AddHealth, 11909
+.		Hero.StepDetails, 12265
+.		Hero.StepDetails, 12336:12362
+.		Hero.StepDetails, 12421
+.		Hero.StepDetails, 12456:12464
+.		Hero.details, 12606:12613
+.		HeroFrame.SetHero, 14671
+	Hero.dv_status
+.		Hero.__init__, 6349
+.		Hero.FormDetails, 8852:8861
+.		Hero.AddPersonality, 10771
+.		Hero.AddRetcon, 11637:11639
+.		Hero.AddRetcon, 11740:11744
+.		Hero.AddRetcon, 11763:11767
+	Hero.other_modes
+.		Hero.AddMode, 8639
+.		Hero.ModeDetails, 8722:8730
+.		Hero.AddHealth, 11912:11914
+	Hero.other_forms
+.		Hero.FormDetails, 8852:8861
+.		Hero.FormDetails, 8864:8866
+.		Hero.ChooseForm, 9138
+.		Hero.ChooseForm, 9162
+.		Hero.AddArchetype, 10069:10082
+.		Hero.AddArchetype, 10318
+.		Hero.AddPersonality, 10775:10780
+.		Hero.AddRetcon, 11644:11672
+.		Hero.AddRetcon, 11725:11728
+.		Hero.AddRetcon, 11748:11751
+.		Hero.AddRetcon, 11770:11777
+,		Hero.AddHealth, 11916:11918
+.		FormFrame.__init__, 16208
+.		FormFrame.SetHero, 16359:16364
   Mode
   Form
  Implement rollback methods for Hero
