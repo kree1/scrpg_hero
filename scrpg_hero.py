@@ -6349,9 +6349,7 @@ class Hero:
         self.power_dice = []
         self.quality_dice = []
         self.health_zones = [0, 0, 0]
-        self.status_dice = [0, 0, 0]
-        self.status_step = 0
-        self.status_steps_modified = []
+        self.status_dice = Status(ref=-1, stepnum=-1)
         self.background = 99
         self.ps_dice = []
         self.power_source = 99
@@ -8739,21 +8737,20 @@ class Hero:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
-            if mode[4].reference == 1 or \
-               mode[4].reference == 0 and self.dv_personality not in range(len(pn_collection)) or \
-               mode[4].array() == self.status_dice:
-                modeString += "\n" + split_text("[Standard Status]",
-                                                width=width,
-                                                prefix=prefix)
-            elif mode[4].reference == 0 and self.dv_personality in range(len(pn_collection)):
-                modeString += "\n" + split_text("Status:",
+            if mode[4].reference == 0 and self.dv_personality in range(len(pn_collection)):
+                modeString += "\n" + split_text(self.dv_tags[0] + " Status:",
                                                 width=width,
                                                 prefix=prefix)
                 for i in range(3):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
-                                                    str(self.dv_status[i]),
+                                                    str(self.dv_status.array()[i]),
                                                     width=width,
                                                     prefix=prefix+indent)
+            elif mode[4].reference in range(len(self.dv_tags)) or \
+               mode[4].array() == self.status_dice.array():
+                modeString += "\n" + split_text("[Standard Status]",
+                                                width=width,
+                                                prefix=prefix)
             else:
                 modeString += "\n" + split_text("Status:",
                                                 width=width,
@@ -10287,7 +10284,8 @@ class Hero:
                                          0,
                                          cf_power_dice,
                                          cf_quality_dice,
-                                         [0,0,0],
+                                         Status(ref=0,
+                                                stepnum=this_step),
                                          [],
                                          0,
                                          this_step]
@@ -10299,7 +10297,8 @@ class Hero:
                                        0,
                                        hr_power_dice,
                                        hr_quality_dice,
-                                       [1,1,1],
+                                       Status(ref=1,
+                                              stepnum=this_step),
                                        [],
                                        1,
                                        this_step]
@@ -10800,13 +10799,17 @@ class Hero:
             # Then fill in their status dice and Out Ability.
             out_options = []
             if has_multiple:
-                self.status_dice = [d for d in your_pn[1]]
+                self.status_dice = Status(green=your_pn[1][0],
+                                          yellow=your_pn[1][1],
+                                          red=your_pn[1][2],
+                                          ref=-1,
+                                          stepnum=this_step)
                 self.dv_status = Status(green=your_dv_pn[1][0],
                                         yellow=your_dv_pn[1][1],
                                         red=your_dv_pn[1][2],
                                         ref=-1,
                                         stepnum=this_step)
-                printlong("You get " + str(self.status_dice) + " as Status dice in " + \
+                printlong("You get " + str(self.status_dice.array()) + " as Status dice in " + \
                           self.dv_tags[1] + " Form(s), and " + str(self.dv_status.array()) + " in " + \
                           self.dv_tags[0] + " Form(s).", 100)
                 for i in range(len(self.other_forms)):
@@ -10820,10 +10823,13 @@ class Hero:
                 if out_options[0] == out_options[1]:
                     del out_options[1]
             else:
-                self.status_dice = [d for d in your_pn[1]]
-                print("You get " + str(self.status_dice) + " as Status dice.")
+                self.status_dice = Status(green=your_pn[1][0],
+                                          yellow=your_pn[1][1],
+                                          red=your_pn[1][2],
+                                          ref=-1,
+                                          stepnum=this_step)
+                print("You get " + str(self.status_dice.array()) + " as Status dice.")
                 out_options = [your_pn[2]]
-            self.status_step = this_step
             if out_index in range(len(out_options)):
                 # User already chose which Out Ability to use, probably in ConstructedPersonality()
                 #  or GuidedPersonality()
@@ -11663,9 +11669,10 @@ class Hero:
                 red_upgrade_forms = []
                 base_form = "Base Form"
                 alt_pn_form = self.dv_tags[0] + " Form"
-                if self.status_dice[2] < max(legal_dice):
+                if self.status_dice.array()[2] in legal_dice and \
+                   self.status_dice.array()[2] < max(legal_dice):
                     # The Red die in the base form is small enough that it can be upgraded
-                    red_upgrade_sizes.append(self.status_dice[2])
+                    red_upgrade_sizes.append(self.status_dice.array()[2])
                     # Include it in the list of form indices as 99
                     red_upgrade_forms.append(99)
                 if self.archetype_modifier == 1:
@@ -11673,7 +11680,7 @@ class Hero:
                     #  they switch between
                     base_form = self.dv_tags[1] + " Form"
                     if self.dv_status.array()[2] in legal_dice and \
-                       self.dv_status[2] < max(legal_dice):
+                       self.dv_status.array()[2] < max(legal_dice):
                         # The Red die in the alternate form is small enough that it can be upgraded
                         red_upgrade_sizes.append(self.dv_status.array()[2])
                         # Include it in the list of form indices as 100
@@ -11713,7 +11720,7 @@ class Hero:
                 if len(red_upgrade_sizes) == 0:
                     # None of the hero's Red dice are small enough that they can be upgraded.
                     print("Error! Can't upgrade " + self.hero_name + "'s Red status die (d" + \
-                          str(self.status_dice[2]) + ").")
+                          str(self.status_dice.array()[2]) + ").")
                 elif len(red_upgrade_sizes) > 1:
                     # More than one of the hero's Red dice are small enough that they can be
                     #  upgraded.
@@ -11762,11 +11769,10 @@ class Hero:
                                 print("Upgraded " + self.hero_name + "'s " + current_form[0] + \
                                       " Red status die to d" + str(current_form[4].red) + ".")
                             elif fm_index == 99:
-                                self.status_dice[2] += 2
-                                if this_step not in self.status_steps_modified:
-                                    self.status_steps_modified.append(this_step)
+                                self.status_dice.SetPrevious(stepnum=this_step)
+                                self.status_dice.red += 2
                                 print("Upgraded " + self.hero_name + "'s " + base_form + \
-                                      " Red status die to d" + str(self.status_dice[2]) + ".")
+                                      " Red status die to d" + str(self.status_dice.red) + ".")
                             elif fm_index == 100:
                                 self.dv_status.SetPrevious(stepnum=this_step)
                                 self.dv_status.red += 2
@@ -11775,11 +11781,10 @@ class Hero:
                         self.used_retcon = True
                     elif red_upgrade_forms[entry_index] == 99:
                         # User chose to upgrade the base Red status die
-                        self.status_dice[2] += 2
-                        if this_step not in self.status_steps_modified:
-                            self.status_steps_modified.append(this_step)
+                        self.status_dice.SetPrevious(stepnum=this_step)
+                        self.status_dice.red += 2
                         print("Upgraded " + self.hero_name + "'s " + base_form + \
-                              " Red status die to d" + str(self.status_dice[2]) + ".")
+                              " Red status die to d" + str(self.status_dice.red) + ".")
                         self.used_retcon = True
                     elif red_upgrade_forms[entry_index] == 100:
                         # User chose to upgrade the Red status die from their Divided personality
@@ -11797,11 +11802,10 @@ class Hero:
                         self.used_retcon = True
                 elif red_upgrade_forms[0] == 99:
                     # Only one Red die size can be upgraded, and it's from the base form.
-                    self.status_dice[2] += 2
-                    if this_step not in self.status_steps_modified:
-                        self.status_steps_modified.append(this_step)
+                    self.status_dice.SetPrevious(stepnum=this_step)
+                    self.status_dice.red += 2
                     print("Upgraded " + self.hero_name + "'s Red status die to d" + \
-                          str(self.status_dice[2]) + ".")
+                          str(self.status_dice.red) + ".")
                     self.used_retcon = True
                 elif red_upgrade_forms[0] == 100:
                     # Only one Red die size can be upgraded, and it's from the Divided personality.
@@ -11951,20 +11955,21 @@ class Hero:
                 pq_part = pq_options[entry_index].diesize
             print("OK! " + pq_report)
             # ... Red status die size ...
-            red_options = [self.status_dice[2]]
+            red_options = [self.status_dice.red]
             red_sources = ["base form"]
             if self.dv_personality in range(len(pn_collection)) and \
-               self.status_dice[2] != self.dv_status[2]:
-                red_options = [self.dv_status[2], self.status_dice[2]]
+               self.status_dice.red != self.dv_status.red:
+                red_options = [self.dv_status.red, self.status_dice.red]
                 red_sources = [str(x) + " Form" for x in self.dv_tags]
             for md in self.other_modes:
                 if md[4].reference not in range(len(dv_defaults)) and \
-                   md[4].array()[2] not in red_options:
-                    red_options.append(md[4].array()[2])
+                   md[4].red not in red_options:
+                    red_options.append(md[4].red)
                     red_sources.append(md[0])
             for fm in self.other_forms:
-                if fm[4].array()[2] not in [0,1] + red_options:
-                    red_options.append(fm[4].array()[2])
+                if fm[4].red not in range(len(dv_defaults)) and \
+                   fm[4].red not in red_options:
+                    red_options.append(fm[4].red)
                     red_sources.append(fm[0])
             red_part = 0
             if len(red_options) == 1:
@@ -12312,7 +12317,9 @@ class Hero:
                              len(step_abilities),
                              len(step_forms),
                              len(step_modes)])
-            if stepnum in [self.status_step, self.health_step] or \
+            if stepnum == self.health_step or \
+               stepnum == self.status_dice.step or \
+               stepnum == self.dv_status.step or \
                (stepnum == self.mf_step and len(self.min_forms) > 0) or \
                (stepnum == 1 and self.background != 99) or \
                (stepnum == 2 and self.power_source != 99) or \
@@ -12383,33 +12390,32 @@ class Hero:
                         stepText += "\n" + split_text(str(d.RetrievePrior(stepnum+1)),
                                                       width=width,
                                                       prefix=secPrefix+indent)
-                if stepnum == self.status_step:
-                    if self.dv_personality in range(len(pn_collection)):
-                        stepText += "\n" + split_text("Status (" + self.dv_tags[0] + "):",
+                if self.dv_status.array() != self.status_dice.array() and \
+                   stepnum == self.dv_status.step:
+                    stepText += "\n" + split_text(self.dv_tags[0] + " Status:",
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    dPrime = self.dv_status.RetrievePrior(stepnum+1)
+                    for x in range(len(dPrime.array())):
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(dPrime.array()[x]),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
+                if stepnum == self.status_dice.step:
+                    if self.dv_status.array() != self.status_dice.array():
+                        stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
                                                       width=width,
                                                       prefix=secPrefix)
-                        for x in range(len(self.dv_status)):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(self.dv_status[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
-                        stepText += "\n" + split_text("Status (" + self.dv_tags[1] + "):",
-                                                      width=width,
-                                                      prefix=secPrefix)
-                        for x in range(len(self.dv_status)):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(self.status_dice[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
                     else:
                         stepText += "\n" + split_text("Status:",
                                                       width=width,
                                                       prefix=secPrefix)
-                        for x in range(len(self.status_dice)):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(self.status_dice[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                    sPrime = self.status_dice.RetrievePrior(stepnum+1)
+                    for x in range(len(sPrime.array())):
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(sPrime.array()[x]),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
                 if stepnum == self.health_step:
                     stepText += "\n" + split_text("Health:",
                                                   width=width,
@@ -12468,7 +12474,10 @@ class Hero:
             any_modified = max([len(modified_powers),
                                 len(modified_qualities),
                                 len(modified_abilities)])
-            if stepnum in self.status_steps_modified:
+            if stepnum in self.status_dice.steps_modified:
+                any_modified = 1
+            if self.dv_personality in range(len(pn_collection)) and \
+               stepnum in self.dv_status.steps_modified:
                 any_modified = 1
             if any_modified > 0:
                 if len(stepText) > 0:
@@ -12503,13 +12512,30 @@ class Hero:
                                                        green=False,
                                                        indented=indented,
                                                        breaks=1)
-                if stepnum in self.status_steps_modified:
-                    stepText += "\n" + split_text("Status:",
+                if self.dv_status.array() != self.status_dice.array() and \
+                   stepnum in self.dv_status.steps_modified:
+                    stepText += "\n" + split_text(self.dv_tags[0] + " Status:",
                                                   width=width,
                                                   prefix=secPrefix)
-                    for x in range(len(self.status_dice)):
+                    dPrime = self.dv_status.RetrievePrior(stepnum+1)
+                    for x in range(len(dPrime.array())):
                         stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                      str(self.status_dice[x]),
+                                                      str(dPrime.array()[x]),
+                                                      width=width,
+                                                      prefix=secPrefix+indent)
+                if stepnum in self.status_dice.steps_modified:
+                    if self.dv_status.array() != self.status_dice.array():
+                        stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
+                                                      width=width,
+                                                      prefix=secPrefix)
+                    else:
+                        stepText += "\n" + split_text("Status:",
+                                                      width=width,
+                                                      prefix=secPrefix)
+                    sPrime = self.status_dice.RetrievePrior(stepnum+1)
+                    for x in range(len(sPrime.array())):
+                        stepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                      str(sPrime.array()[x]),
                                                       width=width,
                                                       prefix=secPrefix+indent)
                 for z in range(len(status_zones)):
@@ -12595,20 +12621,15 @@ class Hero:
         if hanging:
             prefix += "    "
         bg_text = ps_text = arc_text = pn_text = "[none]"
-##        print(notePrefix + "self.background = " + str(self.background))
         if self.background in range(len(bg_collection)):
             bg_text = bg_collection[self.background][0]
-##        print(notePrefix + "self.power_source = " + str(self.power_source))
         if self.power_source in range(len(ps_collection)):
             ps_text = ps_collection[self.power_source][0]
-##        print(notePrefix + "self.archetype = " + str(self.archetype))
         if self.archetype in range(len(arc_collection)):
             arc_text = arc_collection[self.archetype][0]
-##            print(notePrefix + "self.archetype_modifier = " + str(self.archetype_modifier))
             if self.archetype_modifier > 0 and \
                self.archetype_modifier in range(len(arc_modifiers)):
                 arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
-##        print(notePrefix + "self.personality = " + str(self.personality))
         if self.personality in range(len(pn_collection)):
             pn_text = pn_collection[self.personality][0]
             if self.dv_personality in range(len(pn_collection)):
@@ -12666,16 +12687,18 @@ class Hero:
             heroString += "\n" + split_text(self.dv_tags[1] + " Status:",
                                             width=width,
                                             prefix=prefix)
-            for i in range(len(self.status_dice)):
-                heroString += "\n" + split_text(status_zones[i] + ": " + str(self.status_dice[i]),
+            for i in range(len(self.status_dice.array())):
+                heroString += "\n" + split_text(status_zones[i] + ": " + \
+                                                str(self.status_dice.array()[i]),
                                                 width=width,
                                                 prefix=prefix+indent)
-        elif self.status_dice != [0,0,0]:
+        elif self.status_dice.array() != [0,0,0]:
             heroString += "\n" + split_text("Status:",
                                             width=width,
                                             prefix=prefix)
-            for i in range(len(self.status_dice)):
-                heroString += "\n" + split_text(status_zones[i] + ": " + str(self.status_dice[i]),
+            for i in range(len(self.status_dice.array())):
+                heroString += "\n" + split_text(status_zones[i] + ": " + \
+                                                str(self.status_dice.array()[i]),
                                                 width=width,
                                                 prefix=prefix+indent)
         if self.health_zones != [0,0,0]:
@@ -14735,7 +14758,7 @@ class HeroFrame(Frame):
                       str(hero.quality_dice[0]) + " through " + \
                       str(hero.quality_dice[len(self.myHeroQualities)-1]) + ")")
                 self.myHeroQualities = [x for x in hero.quality_dice[0:len(self.myHeroQualities)]]
-            self.myHeroStatus = hero.status_dice
+            self.myHeroStatus = hero.status_dice.array()
             self.myHeroHealth = hero.health_zones
             # Add as many Principles as will fit, or as few as exist, to myHeroPrinciples, leaving
             #  the rest None
@@ -16429,9 +16452,12 @@ class FormFrame(Frame):
                    self.myHero.dv_personality in range(len(pn_collection)):
                     status_sizes = [x for x in self.myHero.dv_status.array()]
                 elif this_status.reference in range(len(dv_defaults)):
-                    status_sizes = [x for x in self.myHero.status_dice]
+                    status_sizes = [x for x in self.myHero.status_dice.array()]
                 else:
                     status_sizes = this_status.array()
+                for j in range(len(status_sizes)):
+                    if status_sizes[j] == 0:
+                        status_sizes[j] = ""
                 self.myFormInfo[i][4] = status_sizes
 
 class SelectWindow(SubWindow):
@@ -17659,7 +17685,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori(step=3)
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

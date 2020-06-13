@@ -207,28 +207,27 @@ Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
   Status
    Where does this need to be used?
-    Personality entries
+    Personality entries?
 		x[1] for x in pn_collection
 		PersonalityDetails, 6311
 		Hero.AddPersonality, 10770:10771
 	Hero.status_dice
-		Hero.__init__, 6334
-		Hero.AddMode, 8639
-		Hero.ModeDetails, 8722
-		Hero.AddPersonality, 10770
-		Hero.AddPersonality, 10785:10786
-		Hero.AddRetcon, 11628:11630
-		Hero.AddRetcon, 11677
-		Hero.AddRetcon, 11719
-		Hero.AddRetcon, 11732:11735
-		Hero.AddRetcon, 11755:11759
-		Hero.AddHealth, 11909
-		Hero.StepDetails, 12265
-		Hero.StepDetails, 12336:12362
-		Hero.StepDetails, 12421
-		Hero.StepDetails, 12456:12464
-		Hero.details, 12606:12613
-		HeroFrame.SetHero, 14671
+.		Hero.__init__, 6334
+.		Hero.ModeDetails, 8722
+.		Hero.AddPersonality, 10770
+.		Hero.AddPersonality, 10785:10786
+.		Hero.AddRetcon, 11628:11630
+.		Hero.AddRetcon, 11677
+.		Hero.AddRetcon, 11719
+.		Hero.AddRetcon, 11732:11735
+.		Hero.AddRetcon, 11755:11759
+.		Hero.AddHealth, 11909
+.		Hero.StepDetails, 12265
+.		Hero.StepDetails, 12336:12362
+.		Hero.StepDetails, 12421
+.		Hero.StepDetails, 12456:12464
+.		Hero.details, 12606:12613
+.		HeroFrame.SetHero, 14671
 	Hero.dv_status
 .		Hero.__init__, 6349
 .		Hero.FormDetails, 8852:8861
