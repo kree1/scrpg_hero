@@ -11765,6 +11765,7 @@ class Hero:
                         self.status_steps_modified.append(this_step)
                     print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                           " Red status die to d" + str(self.status_dice[2]) + ".")
+                    self.used_retcon = True
                 else:
                     # Only one Red die size can be upgraded, and it's from an alternate form.
                     edit_form = self.other_forms[red_upgrade_forms[0]]
@@ -11908,6 +11909,10 @@ class Hero:
             # ... Red status die size ...
             red_options = [self.status_dice[2]]
             red_sources = ["base form"]
+            if self.dv_personality in range(len(pn_collection)) and \
+               self.status_dice[2] != self.dv_status[2]:
+                red_options = [self.dv_status[2], self.status_dice[2]]
+                red_sources = [str(x) + " Form" for x in self.dv_tags]
             for md in self.other_modes:
                 if md[4][2] not in [0] + red_options:
                     red_options.append(md[4][2])
@@ -17588,7 +17593,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getChaz(step=1)
+##firstHero = factory.getLori(step=3)
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
