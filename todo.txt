@@ -237,9 +237,9 @@ Make steps reversible...
 		Hero.AddRetcon, 11740:11744
 		Hero.AddRetcon, 11763:11767
 	Hero.other_modes
-		Hero.AddMode, 8639
-		Hero.ModeDetails, 8722:8730
-		Hero.AddHealth, 11912:11914
+.		Hero.AddMode, 8639
+.		Hero.ModeDetails, 8722:8730
+.		Hero.AddHealth, 11912:11914
 	Hero.other_forms
 		Hero.FormDetails, 8847:8848
 		Hero.FormDetails, 8852:8861

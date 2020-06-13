@@ -8632,11 +8632,13 @@ class Hero:
                                       title="Mode Creation: " + t_name)
             mode_name = decision[0]
             inputs = decision[1]
+        # Status dice in a Mode match the base status
+        mode_status = Status(ref=1, stepnum=this_step)
         new_mode = [mode_name,
                     zone,
                     mode_power_dice,
                     self.quality_dice,
-                    self.status_dice,
+                    mode_status,
                     m_ability,
                     t_prohibited_actions,
                     this_step]
@@ -8719,15 +8721,30 @@ class Hero:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
-            if mode[4] in [[0,0,0], self.status_dice]:
+            if mode[4].reference == 1 or \
+               mode[4].reference == 0 and self.dv_personality not in range(len(pn_collection)) or \
+               mode[4].array() == self.status_dice:
                 modeString += "\n" + split_text("[Standard Status]",
                                                 width=width,
                                                 prefix=prefix)
-            else:
+            elif mode[4].reference == 0 and self.dv_personality in range(len(pn_collection)):
+                modeString += "\n" + split_text("Status:",
+                                                width=width,
+                                                prefix=prefix)
                 for i in range(3):
-                    modeString += "\n" + split_text(status_zones[i] + ": " + str(mode[4][i]),
+                    modeString += "\n" + split_text(status_zones[i] + ": " + \
+                                                    str(self.dv_status[i]),
                                                     width=width,
-                                                    prefix=prefix)
+                                                    prefix=prefix+indent)
+            else:
+                modeString += "\n" + split_text("Status:",
+                                                width=width,
+                                                prefix=prefix)
+                for i in range(3):
+                    modeString += "\n" + split_text(status_zones[i] + ": " + \
+                                                    str(mode[4].array()[i]),
+                                                    width=width,
+                                                    prefix=prefix+indent)
             if len(mode[6]) > 0:
                 prohibited_text = mode[6][0]
                 for i in range(1, len(mode[6])-1):
@@ -11909,8 +11926,9 @@ class Hero:
             red_options = [self.status_dice[2]]
             red_sources = ["base form"]
             for md in self.other_modes:
-                if md[4][2] not in [0] + red_options:
-                    red_options.append(md[4][2])
+                if md[4].reference not in range(len(dv_defaults)) and \
+                   md[4].array()[2] not in red_options:
+                    red_options.append(md[4].array()[2])
                     red_sources.append(md[0])
             for fm in self.other_forms:
                 if fm[4][2] not in [0,1] + red_options:
@@ -17588,7 +17606,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getChaz(step=1)
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
