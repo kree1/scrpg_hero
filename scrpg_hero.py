@@ -8617,7 +8617,7 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
                                             prompt=die_prompt,
                                             inputs=inputs,
-                                            title="Create Mode: " + t_name,
+                                            title="Mode Creation: " + t_name,
                                             width=45,
                                             buffer=10)
                 entry_index = decision[0]
@@ -8661,7 +8661,7 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in remaining_dice],
                                             prompt=die_prompt,
                                             inputs=inputs,
-                                            title="Create Mode: " + t_name,
+                                            title="Mode Creation: " + t_name,
                                             width=45,
                                             buffer=10)
                 entry_index = decision[0]
@@ -8980,7 +8980,7 @@ class Hero:
                    stepnum=0,
                    inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
-        # stepnum: the number of the step of hero creation (1-7) at which this Mode is being added
+        # stepnum: the number of the step of hero creation (1-7) at which this Form is being added
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # No return value.
         notePrefix = "### ChooseForm: "
@@ -9542,8 +9542,7 @@ class Hero:
                     print(self.hero_name + " has " + str(len(self.power_dice)) + \
                           " of the 4 Power dice they'll need as a Modular hero. Choose a d6 " + \
                           "Power from any category to fill in the list:")
-                    power_triplets = [[1,a,b] for b in range(len(mixed_collection[1][a])) \
-                                      for a in range(len(mixed_collection[1]))]
+                    power_triplets = AllCategories(t=1)
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
