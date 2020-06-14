@@ -5647,6 +5647,72 @@ pn_special = ["",
               "May use any Power or Quality for Health"]
 pn_width = 100
 
+# Class representing one of a hero's alternate Modes
+class Mode:
+    def __init__(self,
+                 zone=-1,
+                 pqs=[],
+                 status=None,
+                 abilities=[],
+                 prohibited=[],
+                 stepnum=0):
+        if zone in range(len(status_zones)):
+            self.zone = zone
+        else:
+            self.zone = -1
+        self.step = max([0, stepnum])
+        self.power_dice = []
+        self.quality_dice = []
+        for p in pqs:
+            if isinstance(p, PQDie):
+                if p.is_power:
+                    self.power_dice.append(p)
+                else:
+                    self.quality_dice.append(p)
+        self.prohibited_actions = [x for x in prohibited]
+        if isinstance(status, Status):
+            self.status_dice = status
+        else:
+            self.status_dice = Status(ref=1,
+                                      stepnum=self.step)
+        self.abilities = []
+        for a in abilities:
+            if isinstance(a, Ability):
+                self.abilities.append(a)
+        self.steps_modified = []
+        self.prev_version = None
+    def copy(self):
+        mirror = Mode(zone=self.zone,
+                      pqs=[x.copy() for x in self.power_dice + self.quality_dice],
+                      status=self.status_dice.copy(),
+                      abilities=[a.copy() for a in self.abilities],
+                      prohibited=[s for s in self.prohibited_actions],
+                      stepnum=self.step)
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
+        return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Mode's attributes during character creation
+        # Creates a copy of the Mode with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Mode as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+
 def DisplayBackground(index,
                       width=100,
                       prefix="",
