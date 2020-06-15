@@ -209,15 +209,15 @@ Make steps reversible...
    Where does this need to be used?
 .	Hero.FormDetails, 9035:9117 (read Form attributes and add them to formString)
 .	Hero.ChooseForm, 9140 (read Form ability to prevent duplicates)
-.	Hero.ChooseForm, 9363:9370 (initialize new Form)
-,	Hero.ChooseForm, 9387:9388 (set divided index)
-	Hero.AddArchetype, 10307:10314 (initialize civilian Form with Divided Psyche)
-	Hero.AddArchetype, 10320:10327 (initialize heroic Form with Divided Psyche)
+.	Hero.ChooseForm, 9363:9370 (initialize new Form-Changer Form)
+.	Hero.ChooseForm, 9387:9388 (set divided index for Form-Changer Form)
+.	Hero.AddArchetype, 10307:10314 (initialize civilian Form with Divided Psyche)
+.	Hero.AddArchetype, 10320:10327 (initialize heroic Form with Divided Psyche)
 .	Hero.AddArchetype, 10495:10503 (initialize civilian Form with Split Form)
 .	Hero.AddArchetype, 10508:10516 (initialize heroic Form with Split Form)
-	Hero.AddArchetype, 10523:10537 (set divided index for Form-Changer Forms)
-	Hero.AddArchetype, 10545:10550 (amend power/quality dice to match divided index with Divided Psyche)
-	Hero.AddPersonality, 10987:10995 (check for/add Roleplaying Quality to Forms with Divided Psyche)
+.	Hero.AddArchetype, 10523:10537 (set divided index for Form-Changer Forms)
+.	Hero.AddArchetype, 10545:10550 (amend power/quality dice to match divided index with Divided Psyche)
+.	Hero.AddPersonality, 10987:10995 (check for/add Roleplaying Quality to Forms with Divided Psyche)
 .	Hero.AddPersonality, 11001:11005 (check for/add Roleplaying Quality to Forms without Divided Psyche)
 .	Hero.AddPersonality, 11032:11033 (check divided index and set Form Status to point to the correct base Status when using 2 Personalities)
 .	Hero.AddPersonality, 11089:11091 (check Form power/quality dice for dice that can be upgraded by Impulsive)
@@ -234,12 +234,10 @@ Make steps reversible...
 .	Hero.AddHealth, 12201:12204 (add any independent Red die sizes from this Form to the list of options)
 .	Hero.StepDetails, 12573 (get the list of Forms added in this step)
 .	Hero.StepDetails, 12713:12717 (print the Details of each Form added in this step)
-,	Hero.StepDetails, 12729:12832 (get/print the hero attributes modified in this step)
+.	Hero.StepDetails, 12729:12832 (get/print the hero attributes modified in this step)
 .	Hero.details, 13024:13032 (check if each Form has an ability or not)
-	FormFrame.SetHero, 16735:16755 (read Form attributes into self.myFormInfo)
+.	FormFrame.SetHero, 16735:16755 (read Form attributes into self.myFormInfo)
  Implement rollback methods for Hero
   copy
   SetPrevious
   RetrievePrior
-  
-StepDetails doesn't use Form indices correctly: step_forms is a list of Forms that were added this step, but when printing, it just prints the first len(step_forms) entries in other_forms
