@@ -207,7 +207,7 @@ Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
   Mode
    Methods
-    str
+.    str
    Where does this need to be used?
 .	Hero.AddMode, 8721:8729 (initialization of created Mode)
 .	Hero.ModeDetails, 8779:8847 (read & display Mode details)
@@ -218,12 +218,10 @@ Make steps reversible...
 .	Hero.AddHealth, 11995:11998 (choose a Power/Quality for Health: check this Mode's power/quality lists for dice that could be valid choices)
 .	Hero.AddHealth, 12031:12035 (choose a Red status die for Health: check this Mode's Status for dice that could be valid choices)
 .	Hero.StepDetails, 12380 (get the list of Modes added in the specified step)
-,	Hero.StepDetails, 12533:12618 (get the list of hero attributes modified in the specified step and print them)
+.	Hero.StepDetails, 12533:12618 (get the list of hero attributes modified in the specified step and print them)
 .	ModeFrame.SetHero, 15903:15930 (read Mode info from myHero)
   Form
  Implement rollback methods for Hero
   copy
   SetPrevious
   RetrievePrior
-  
-StepDetails isn't using mode indexes correctly- it makes a list of the modes created this step, but instead of displaying the ones on the list, displays self.other_modes[0:len(step_modes)]
