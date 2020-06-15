@@ -9182,6 +9182,8 @@ class Hero:
         form_ability_template = form_options[entry_index]
         form_name = form_ability_template.name
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
+        title = "Form Creation: " + form_ability_template.name
+        dispWidth = 100
         form_power_dice = []
         form_ability_template.display(prefix="    ")
         for d in self.power_dice:
@@ -9208,7 +9210,7 @@ class Hero:
                      form_ability_template.name + "?"
             decision = self.ChooseIndex(step_text,
                                         prompt=prompt,
-                                        title="Create Form: " + form_ability_template.name,
+                                        title=title,
                                         inputs=inputs,
                                         width=50,
                                         buffer=15)
@@ -9218,11 +9220,9 @@ class Hero:
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
-                    dispWidth = 100
                     answer0 = IntVar()
                     answer1 = IntVar()
                     prompt = "Choose 2 Power dice to swap:"
-                    title = "Create Form: " + form_ability_template.name
                     question = SwapWindow(self.myWindow,
                                           prompt,
                                           [str(x) for x in form_power_dice],
@@ -9236,6 +9236,8 @@ class Hero:
                     entry_choice = ' '
                     decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                                 "Choose the first Power die to swap:",
+                                                title=title,
+                                                width=dispWidth,
                                                 inputs=inputs)
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
@@ -9246,16 +9248,18 @@ class Hero:
                     decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                                 "OK! Choose a die to swap with " + \
                                                 str(form_power_dice[swap_indices[0]]) + ":",
+                                                title=title,
+                                                width=dispWidth,
                                                 inputs=inputs)
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [form_power_dice[i] for i in swap_indices]
                 if swap_dice[0].diesize != swap_dice[1].diesize:
+                    for d in swap_dice:
+                        d.SetPrevious(this_step)
                     d_temp = swap_dice[0].diesize
                     swap_dice[0].diesize = swap_dice[1].diesize
                     swap_dice[1].diesize = d_temp
-                    for i in range(2):
-                        swap_dice[i].SetPrevious(this_step)
                     print("OK! " + swap_dice[0].flavorname + " is now d" + \
                           str(swap_dice[0].diesize) + " and " + swap_dice[1].flavorname + \
                           " is now d" + str(swap_dice[1].diesize) + ".")
@@ -9269,7 +9273,7 @@ class Hero:
                 decision = self.ChooseIndex([str(x) for x in form_power_dice],
                                             prompt="Choose a Power die to switch out...",
                                             inputs=inputs,
-                                            title="Create Form: " + form_ability_template.name,
+                                            title=title,
                                             width=40,
                                             buffer=10)
                 die_index = decision[0]
@@ -9281,7 +9285,7 @@ class Hero:
                                             prompt="Choose a Power to replace " + \
                                             str(changed_die) + ":",
                                             inputs=inputs,
-                                            title="Create Form: " + form_ability_template.name,
+                                            title=title,
                                             width=40,
                                             buffer=10)
                 entry_index = decision[0]
@@ -9308,7 +9312,7 @@ class Hero:
                                             prompt="Choose a Power die to increase by one size" + \
                                             " in this Form:",
                                             inputs=inputs,
-                                            title="Create Form: " + form_ability_template.name,
+                                            title=title,
                                             width=50,
                                             buffer=15)
                 entry_index = decision[0]
@@ -9344,7 +9348,7 @@ class Hero:
         entry_options = ["Yes", "No"]
         decision = self.ChooseIndex(entry_options,
                                     prompt="Do you want to give " + form_name + " a new name?",
-                                    title="Form Creation: " + form_name,
+                                    title=title,
                                     inputs=inputs)
         entry_choice = decision[0]
         inputs = decision[1]
@@ -9352,7 +9356,7 @@ class Hero:
             decision = self.EnterText("Enter the new name for this Form:",
                                       inputs=inputs,
                                       default=form_name,
-                                      title="Form Creation: " + form_ability_template.name)
+                                      title=title)
             form_name = decision[0]
             inputs = decision[1]
         form_status = Status(ref=1, stepnum=this_step)
@@ -9374,12 +9378,12 @@ class Hero:
             decision = self.ChooseIndex([self.dv_tags[0], self.dv_tags[1], "I'll decide later"],
                                         prompt=prompt,
                                         inputs=inputs,
-                                        title="Create Form: " + form_ability_template.name,
+                                        title=title,
                                         width=50,
                                         buffer=20)
             entry_index = decision[0]
             inputs = decision[1]
-            if entry_index < 2:
+            if entry_index in range(len(self.dv_tags)):
                 new_form[6] = entry_index
                 new_form[4].reference = entry_index
         self.other_forms.append(new_form)
@@ -12796,7 +12800,6 @@ class Hero:
                                                             codename=False,
                                                             width=width,
                                                             prefix=secPrefix+indent)
-                    
         else:
             stepText += split_text("Error! " + str(stepnum) + \
                                    " is not a valid step of hero creation.",
