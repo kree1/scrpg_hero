@@ -205,38 +205,7 @@ Figure out wraplength
   
 Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
-  Form
-   Where does this need to be used?
-.	Hero.FormDetails, 9035:9117 (read Form attributes and add them to formString)
-.	Hero.ChooseForm, 9140 (read Form ability to prevent duplicates)
-.	Hero.ChooseForm, 9363:9370 (initialize new Form-Changer Form)
-.	Hero.ChooseForm, 9387:9388 (set divided index for Form-Changer Form)
-.	Hero.AddArchetype, 10307:10314 (initialize civilian Form with Divided Psyche)
-.	Hero.AddArchetype, 10320:10327 (initialize heroic Form with Divided Psyche)
-.	Hero.AddArchetype, 10495:10503 (initialize civilian Form with Split Form)
-.	Hero.AddArchetype, 10508:10516 (initialize heroic Form with Split Form)
-.	Hero.AddArchetype, 10523:10537 (set divided index for Form-Changer Forms)
-.	Hero.AddArchetype, 10545:10550 (amend power/quality dice to match divided index with Divided Psyche)
-.	Hero.AddPersonality, 10987:10995 (check for/add Roleplaying Quality to Forms with Divided Psyche)
-.	Hero.AddPersonality, 11001:11005 (check for/add Roleplaying Quality to Forms without Divided Psyche)
-.	Hero.AddPersonality, 11032:11033 (check divided index and set Form Status to point to the correct base Status when using 2 Personalities)
-.	Hero.AddPersonality, 11089:11091 (check Form power/quality dice for dice that can be upgraded by Impulsive)
-.	Hero.AddPersonality, 11125:11132 (check Form power dice for dice that match the one being upgraded by Impulsive and upgrade them)
-.	Hero.AddPersonality, 11160:11167 (check Form quality dice for dice that match the one being upgraded by Impulsive and upgrade them)
-.	Hero.AddRetcon, 11759 (add Form Abilities to list of options to edit)
-.	Hero.AddRetcon, 11839:11840 (check Form Abilities to see if they're the one being edited, and select Form powers/qualities as editing options if so)
-.	Hero.AddRetcon, 11918:11944 (check Form Red dice to see if they're independent and can be upgraded)
-.	Hero.AddRetcon, 11968:11969 (get the name of the Form that matches this Red die option)
-.	Hero.AddRetcon, 11994:11996 (upgrade the Red die of each Form that has an independent Red die)
-.	Hero.AddRetcon, 12025:12027 (upgrade the Red die of one user-selected Form that has an independent Red die)
-.	Hero.AddRetcon, 12046:12052 (upgrade the Red die of one chosen-by-default Form that has an independent Red die)
-.	Hero.AddHealth, 12163:12164 (add any valid Health Powers/Qualities from this Form's list to the list of options)
-.	Hero.AddHealth, 12201:12204 (add any independent Red die sizes from this Form to the list of options)
-.	Hero.StepDetails, 12573 (get the list of Forms added in this step)
-.	Hero.StepDetails, 12713:12717 (print the Details of each Form added in this step)
-.	Hero.StepDetails, 12729:12832 (get/print the hero attributes modified in this step)
-.	Hero.details, 13024:13032 (check if each Form has an ability or not)
-.	FormFrame.SetHero, 16735:16755 (read Form attributes into self.myFormInfo)
+  Health?
  Implement rollback methods for Hero
   copy
   SetPrevious
