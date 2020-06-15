@@ -5738,6 +5738,106 @@ class Mode:
                 return ancestor
         return ancestor
 
+# Class representing one of a hero's alternate Forms
+class Form:
+    def __init__(self,
+                 name,
+                 zone=-1,
+                 pqs=[],
+                 status=None,
+                 abilities=[],
+                 divided=-1,
+                 stepnum=0):
+        self.name = str(name)
+        if zone in range(len(status_zones)):
+            self.zone = zone
+        else:
+            self.zone = -1
+        self.step = max([0, stepnum])
+        self.power_dice = []
+        self.quality_dice = []
+        for d in pqs:
+            if isinstance(d, PQDie):
+                if d.ispower:
+                    self.power_dice.append(d)
+                else:
+                    self.quality_dice.append(d)
+        self.CheckReference()
+        self.dv_index = -1
+        if divided in range(len(dv_defaults)):
+            self.dv_index = divided
+        if isinstance(status, Status):
+            self.status_dice = status
+        else:
+            self.status_dice = Status(ref=1,
+                                      stepnum=self.step)
+        self.abilities = []
+        for a in abilities:
+            if isinstance(a, Ability):
+                self.abilities.append(a)
+        self.steps_modified = []
+        self.prev_version = None
+    def CheckReference(self):
+        # If a Form uses the hero's base list for Powers, its power list should contain a die
+        #  marked "[Standard Powers]"; the same is true for Qualities
+        # CheckReference() verifies these conditions and saves the results to self.std_powers and
+        #  self.std_qualities
+        self.std_powers = False
+        for p in self.power_dice:
+            if p.flavorname == "[Standard Powers]":
+                self.std_powers = True
+        self.std_qualities = False
+        for q in self.quality_dice:
+            if q.flavorname == "[Standard Qualities]":
+                self.std_qualities = True
+    def __str__(self):
+        string = self.name
+        if self.zone in range(len(status_zones)) or self.dv_index in range(len(dv_defaults)):
+            string += " ("
+        if self.zone in range(len(status_zones)):
+            string += status_zones[self.zone] + " Form"
+        else:
+            string += "Unassigned Form"
+        if self.zone in range(len(status_zones)) and self.dv_index in range(len(dv_defaults)):
+            string += ", "
+        if self.dv_index in range(len(dv_defaults)):
+            string += dv_defaults[self.dv_index]
+        if self.zone in range(len(status_zones)) or self.dv_index in range(len(dv_defaults)):
+            string += ")"
+        return string
+    def copy(self):
+        mirror = Mode(name=self.name,
+                      zone=self.zone,
+                      pqs=[x.copy() for x in self.power_dice + self.quality_dice],
+                      status=self.status_dice.copy(),
+                      abilities=[a.copy() for a in self.abilities],
+                      divided=self.dv_index,
+                      stepnum=self.step)
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
+        return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Form's attributes during character creation
+        # Creates a copy of the Form with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  die was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Form as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+
 def DisplayBackground(index,
                       width=100,
                       prefix="",

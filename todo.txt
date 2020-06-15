@@ -205,23 +205,41 @@ Figure out wraplength
   
 Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
-  Mode
-   Methods
-.    str
-   Where does this need to be used?
-.	Hero.AddMode, 8721:8729 (initialization of created Mode)
-.	Hero.ModeDetails, 8779:8847 (read & display Mode details)
-.	Hero.AddPersonality, 10863 (add Roleplaying Quality to each Mode)
-.	Hero.AddPersonality, 10990:10993 (Impulsive: upgrade the selected Power in each Mode where it exists)
-.	Hero.AddRetcon, 11614 (edit an Ability: add this Mode's Ability to the list of options)
-.	Hero.AddRetcon, 11675:11679 (edit an Ability: check if the Ability comes from this Mode, and get this Mode's power/quality options if so)
-.	Hero.AddHealth, 11995:11998 (choose a Power/Quality for Health: check this Mode's power/quality lists for dice that could be valid choices)
-.	Hero.AddHealth, 12031:12035 (choose a Red status die for Health: check this Mode's Status for dice that could be valid choices)
-.	Hero.StepDetails, 12380 (get the list of Modes added in the specified step)
-.	Hero.StepDetails, 12533:12618 (get the list of hero attributes modified in the specified step and print them)
-.	ModeFrame.SetHero, 15903:15930 (read Mode info from myHero)
   Form
+   Where does this need to be used?
+	Hero.FormDetails, 9035:9117 (read Form attributes and add them to formString)
+	Hero.ChooseForm, 9140 (read Form ability to prevent duplicates)
+	Hero.ChooseForm, 9363:9370 (initialize new Form)
+	Hero.ChooseForm, 9387:9388 (set divided index)
+	Hero.AddArchetype, 10307:10314 (initialize civilian Form with Divided Psyche)
+	Hero.AddArchetype, 10320:10327 (initialize heroic Form with Divided Psyche)
+	Hero.AddArchetype, 10495:10503 (initialize civilian Form with Split Form)
+	Hero.AddArchetype, 10508:10516 (initialize heroic Form with Split Form)
+	Hero.AddArchetype, 10523:10537 (set divided index)
+	Hero.AddArchetype, 10545:10550 (amend power/quality dice to match divided index with Divided Psyche)
+	Hero.AddPersonality, 10987:10995 (check for/add Roleplaying Quality to Forms with Divided Psyche)
+	Hero.AddPersonality, 11001:11005 (check for/add Roleplaying Quality to Forms without Divided Psyche)
+	Hero.AddPersonality, 11032:11033 (check divided index and set Form Status to point to the correct base Status when using 2 Personalities)
+	Hero.AddPersonality, 11089:11091 (check Form power/quality dice for dice that can be upgraded by Impulsive)
+	Hero.AddPersonality, 11125:11132 (check Form power dice for dice that match the one being upgraded by Impulsive and upgrade them)
+	Hero.AddPersonality, 11160:11167 (check Form quality dice for dice that match the one being upgraded by Impulsive and upgrade them)
+	Hero.AddRetcon, 11759 (add Form Abilities to list of options to edit)
+	Hero.AddRetcon, 11839:11840 (check Form Abilities to see if they're the one being edited, and select Form powers/qualities as editing options if so)
+	Hero.AddRetcon, 11918:11944 (check Form Red dice to see if they're independent and can be upgraded)
+	Hero.AddRetcon, 11968:11969 (get the name of the Form that matches this Red die option)
+	Hero.AddRetcon, 11994:11996 (upgrade the Red die of each Form that has an independent Red die)
+	Hero.AddRetcon, 12025:12027 (upgrade the Red die of one user-selected Form that has an independent Red die)
+	Hero.AddRetcon, 12046:12052 (upgrade the Red die of one chosen-by-default Form that has an independent Red die)
+	Hero.AddHealth, 12163:12164 (add any valid Health Powers/Qualities from this Form's list to the list of options)
+	Hero.AddHealth, 12201:12204 (add any independent Red die sizes from this Form to the list of options)
+	Hero.StepDetails, 12543 (get the list of Forms added in this step)
+	Hero.StepDetails, 12683:12687 (print the Details of each Form added in this step)
+	Hero.StepDetails, 12699:12802 (get/print the hero attributes modified in this step)
+	Hero.details, 12994:13002 (check if each Form has an ability or not)
+	FormFrame.SetHero, 16705:16725 (read Form attributes into self.myFormInfo)
  Implement rollback methods for Hero
   copy
   SetPrevious
   RetrievePrior
+  
+StepDetails doesn't use Form indices correctly: step_forms is a list of Forms that were added this step, but when printing, it just prints the first len(step_forms) entries in other_forms
