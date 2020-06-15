@@ -206,20 +206,24 @@ Figure out wraplength
 Make steps reversible...
  Make more hero attributes into full classes, including rollback methods
   Mode
+   Methods
+    str
    Where does this need to be used?
-	Hero.AddMode, 8719:8727 (initialization of created Mode)
-	Hero.ModeDetails, 8777:8845 (read & display Mode details)
-	Hero.AddPersonality, 10861 (add Roleplaying Quality to each Mode)
-	Hero.AddPersonality, 10988:10991 (Impulsive: upgrade the selected Power in each Mode where it exists)
-	Hero.AddRetcon, 11612 (edit an Ability: add this Mode's Ability to the list of options)
-	Hero.AddRetcon, 11673:11677 (edit an Ability: check if the Ability comes from this Mode, and get this Mode's power/quality options if so)
-	Hero.AddHealth, 11993:11996 (choose a Power/Quality for Health: check this Mode's power/quality lists for dice that could be valid choices)
-	Hero.AddHealth, 12029:12033 (choose a Red status die for Health: check this Mode's Status for dice that could be valid choices)
-	Hero.StepDetails, 12378 (get the list of Modes added in the specified step)
-	Hero.StepDetails, 12531:12616 (get the list of hero attributes modified in the specified step and print them)
-	ModeFrame.SetHero, 15901:15928 (read Mode info from myHero)
+.	Hero.AddMode, 8721:8729 (initialization of created Mode)
+.	Hero.ModeDetails, 8779:8847 (read & display Mode details)
+.	Hero.AddPersonality, 10863 (add Roleplaying Quality to each Mode)
+.	Hero.AddPersonality, 10990:10993 (Impulsive: upgrade the selected Power in each Mode where it exists)
+.	Hero.AddRetcon, 11614 (edit an Ability: add this Mode's Ability to the list of options)
+.	Hero.AddRetcon, 11675:11679 (edit an Ability: check if the Ability comes from this Mode, and get this Mode's power/quality options if so)
+.	Hero.AddHealth, 11995:11998 (choose a Power/Quality for Health: check this Mode's power/quality lists for dice that could be valid choices)
+.	Hero.AddHealth, 12031:12035 (choose a Red status die for Health: check this Mode's Status for dice that could be valid choices)
+.	Hero.StepDetails, 12380 (get the list of Modes added in the specified step)
+,	Hero.StepDetails, 12533:12618 (get the list of hero attributes modified in the specified step and print them)
+.	ModeFrame.SetHero, 15903:15930 (read Mode info from myHero)
   Form
  Implement rollback methods for Hero
   copy
   SetPrevious
   RetrievePrior
+  
+StepDetails isn't using mode indexes correctly- it makes a list of the modes created this step, but instead of displaying the ones on the list, displays self.other_modes[0:len(step_modes)]

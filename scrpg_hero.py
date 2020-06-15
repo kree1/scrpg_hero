@@ -1954,6 +1954,7 @@ class Ability:
                          self.text,
                          self.zone,
                          f_name=self.flavorname,
+                         die_names=self.flavordice,
                          pq_reqs=self.required_pqs,
                          pq_opts=self.pq_options,
                          pq_ids=self.insert_pqs,
@@ -5650,12 +5651,14 @@ pn_width = 100
 # Class representing one of a hero's alternate Modes
 class Mode:
     def __init__(self,
+                 name,
                  zone=-1,
                  pqs=[],
                  status=None,
                  abilities=[],
                  prohibited=[],
                  stepnum=0):
+        self.name = str(name)
         if zone in range(len(status_zones)):
             self.zone = zone
         else:
@@ -5665,7 +5668,7 @@ class Mode:
         self.quality_dice = []
         for p in pqs:
             if isinstance(p, PQDie):
-                if p.is_power:
+                if p.ispower:
                     self.power_dice.append(p)
                 else:
                     self.quality_dice.append(p)
@@ -5682,7 +5685,8 @@ class Mode:
         self.steps_modified = []
         self.prev_version = None
     def copy(self):
-        mirror = Mode(zone=self.zone,
+        mirror = Mode(name=self.name,
+                      zone=self.zone,
                       pqs=[x.copy() for x in self.power_dice + self.quality_dice],
                       status=self.status_dice.copy(),
                       abilities=[a.copy() for a in self.abilities],
@@ -8716,14 +8720,13 @@ class Hero:
             inputs = decision[1]
         # Status dice in a Mode match the base status
         mode_status = Status(ref=1, stepnum=this_step)
-        new_mode = [mode_name,
-                    zone,
-                    mode_power_dice,
-                    self.quality_dice,
-                    mode_status,
-                    m_ability,
-                    t_prohibited_actions,
-                    this_step]
+        new_mode = Mode(mode_name,
+                        zone=zone,
+                        pqs=mode_power_dice+self.quality_dice,
+                        status=mode_status,
+                        abilities=[m_ability],
+                        prohibited=t_prohibited_actions,
+                        stepnum=this_step)
         self.other_modes.append(new_mode)
         print("All set! " + mode_name + " added to " + self.hero_name + "'s Mode Sheet in " + \
               status_zones[zone] + ".")
@@ -8753,8 +8756,7 @@ class Hero:
                     indented=True,
                     hanging=True):
         # Returns a string containing the attributes of the hero's Mode specified by index.
-        # codename: should the hero's codename be displayed with this form?
-        # inputs: a list of text inputs to use automatically instead of prompting the user
+        # codename: should the hero's codename be displayed with this Mode?
         notePrefix = "### Hero.ModeDetails: "
         if indented:
             indent = "    "
@@ -8774,12 +8776,17 @@ class Hero:
                                          width=width,
                                          prefix=prefix) + "\n"
                 prefix += indent
-            modeString += split_text(mode[0] + " (" + status_zones[mode[1]] + " Mode)",
-                                     width=width,
-                                     prefix=prefix)
+            if mode.zone in range(len(status_zones)):
+                modeString += split_text(mode.name + " (" + status_zones[mode.zone] + " Mode)",
+                                         width=width,
+                                         prefix=prefix)
+            else:
+                modeString += split_text(mode.name,
+                                         width=width,
+                                         prefix=prefix)
             if hanging:
                 prefix += "    "
-            if mode[2] == self.power_dice:
+            if mode.power_dice == self.power_dice:
                 modeString += "\n" + split_text("[Standard Powers]",
                                                 width=width,
                                                 prefix=prefix)
@@ -8787,11 +8794,11 @@ class Hero:
                 modeString += "\n" + split_text("Powers:",
                                                 width=width,
                                                 prefix=prefix)
-                for d in mode[2]:
+                for d in mode.power_dice:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
-            if mode[3] == self.quality_dice:
+            if mode.quality_dice == self.quality_dice:
                 modeString += "\n" + split_text("[Standard Qualities]",
                                                 width=width,
                                                 prefix=prefix)
@@ -8799,11 +8806,11 @@ class Hero:
                 modeString += "\n" + split_text("Qualities:",
                                                 width=width,
                                                 prefix=prefix)
-                for d in mode[3]:
+                for d in mode.quality_dice:
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
-            if mode[4].reference == 0 and self.dv_personality in range(len(pn_collection)):
+            if mode.status_dice.reference == 0 and self.dv_personality in range(len(pn_collection)):
                 modeString += "\n" + split_text(self.dv_tags[0] + " Status:",
                                                 width=width,
                                                 prefix=prefix)
@@ -8812,8 +8819,8 @@ class Hero:
                                                     str(self.dv_status.array()[i]),
                                                     width=width,
                                                     prefix=prefix+indent)
-            elif mode[4].reference in range(len(self.dv_tags)) or \
-               mode[4].array() == self.status_dice.array():
+            elif mode.status_dice.reference in range(len(self.dv_tags)) or \
+               mode.status_dice.array() == self.status_dice.array():
                 modeString += "\n" + split_text("[Standard Status]",
                                                 width=width,
                                                 prefix=prefix)
@@ -8823,26 +8830,33 @@ class Hero:
                                                 prefix=prefix)
                 for i in range(3):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
-                                                    str(mode[4].array()[i]),
+                                                    str(mode.status_dice.array()[i]),
                                                     width=width,
                                                     prefix=prefix+indent)
-            if len(mode[6]) > 0:
-                prohibited_text = mode[6][0]
-                for i in range(1, len(mode[6])-1):
-                    prohibited_text += ", " + mode[6][i]
-                if len(mode[6]) > 2:
+            if len(mode.prohibited_actions) > 0:
+                prohibited_text = mode.prohibited_actions[0]
+                for i in range(1, len(mode.prohibited_actions)-1):
+                    prohibited_text += ", " + mode.prohibited_actions[i]
+                if len(mode.prohibited_actions) > 2:
                     prohibited_text += ","
-                if len(mode[6]) > 1:
-                    prohibited_text += " or " + mode[6][len(mode[6])-1]
+                if len(mode.prohibited_actions) > 1:
+                    prohibited_text += " or " + \
+                                       mode.prohibited_actions[len(mode.prohibited_actions)-1]
                 modeString += "\n" + split_text("You cannot " + prohibited_text + " in this Mode.",
                                                 width=width,
                                                 prefix=prefix)
-            modeString += "\n" + split_text("You gain access to this Ability:",
-                                            width=width,
-                                            prefix=prefix)
-            modeString += "\n" + mode[5].details(width=width,
-                                                 prefix=prefix+indent,
-                                                 indented=indented)
+            if len(mode.abilities) == 1:
+                modeString += "\n" + split_text("You gain access to this Ability:",
+                                                width=width,
+                                                prefix=prefix)
+            elif len(mode.abilities) > 1:
+                modeString += "\n" + split_text("You gain access to these Abilities:",
+                                                width=width,
+                                                prefix=prefix)
+            for a in mode.abilities:
+                modeString += "\n" + a.details(width=width,
+                                               prefix=prefix+indent,
+                                               indented=indented)
         return modeString
     def DisplayForm(self,
                     index,
@@ -10849,6 +10863,7 @@ class Hero:
             else:
 ##                print(notePrefix + "Divided Psyche not found")
                 # All Form(s) and Mode(s) get this Quality
+                # This doesn't count as editing them, since they refer back to the base sheet for it
                 for fm in self.other_forms:
                     if rpq_die not in fm[3]:
 ##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
@@ -10856,11 +10871,11 @@ class Hero:
 ##                    else:
 ##                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
                 for md in self.other_modes:
-                    if rpq_die not in md[3]:
-##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md[0])
-                        md[3].append(rpq_die)
+                    if rpq_die not in md.quality_dice:
+##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md.name)
+                        md.quality_dice.append(rpq_die)
 ##                    else:
-##                        print(notePrefix + md[0] + " already has " + rpq_die.flavorname)
+##                        print(notePrefix + md.name + " already has " + rpq_die.flavorname)
             # Then fill in their status dice and Out Ability.
             out_options = []
             if has_multiple:
@@ -10985,12 +11000,13 @@ class Hero:
                         # Other Modes always have their own Power lists using a subset of the base
                         #  Powers, so check those too
                         for m in self.other_modes:
-                            for d in m[2]:
+                            for d in m.power_dice:
                                 if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
+                                    m.SetPrevious(this_step)
                                     d.SetPrevious(this_step)
                                     d.diesize += 2
                                     print("Upgraded " + d.flavorname + " to d" + \
-                                          str(d.diesize) + " in " + m[0] + ".")
+                                          str(d.diesize) + " in " + m.name + ".")
                     else:
                         # Upgrading a Quality
                         # Find all Quality dice matching this triplet that can be upgraded, and
@@ -11609,7 +11625,7 @@ class Hero:
                 for f in self.other_forms:
                     ability_options += [a for a in f[5]]
                 for m in self.other_modes:
-                    ability_options += [a for a in m[5]]
+                    ability_options += [a for a in m.abilities]
                 # If an Ability doesn't use a Power or Quality in its text, it's not a valid
                 #  choice here...
                 ability_options = [a for a in ability_options if "%p" in a.text]
@@ -11672,13 +11688,14 @@ class Hero:
                     found = False
                     for md in self.other_modes:
                         if not found:
-                            if edit_ability in md[5]:
-                                pq_options = md[3] + md[4]
+                            if edit_ability in md.abilities:
+                                pq_options = md.power_dice + md.quality_dice
+                                md.SetPrevious(this_step)
                                 found = True
                     for fm in self.other_forms:
                         if not found:
                             if edit_ability in fm[5]:
-                                pq_options = md[3] + md[4]
+                                pq_options = fm[3] + fm[4]
                                 found = True
                 # Remove the option that corresponds to the Power/Quality this ability already uses
                 replaced_pq = None
@@ -11702,6 +11719,8 @@ class Hero:
                 new_pq = pq_options[entry_index]
                 edit_ability.SetPrevious(this_step)
                 edit_ability.insert_pqs[edit_index] = new_pq.triplet()
+                if new_pq.name != new_pq.flavorname:
+                    edit_ability.flavordice[edit_index] = new_pq.flavorname
                 print("OK! Replaced " + str(replaced_pq) + " in " + str(edit_ability) + \
                       " with " + str(new_pq) + ".")
                 edit_ability.display()
@@ -11991,8 +12010,10 @@ class Hero:
             # ... die size of an eligible Power or Quality...
             pq_options = self.power_dice + self.quality_dice
             for md in self.other_modes:
-                pq_options += [d for d in md[2] if str(d) not in [str(x) for x in pq_options]]
-                pq_options += [d for d in md[3] if str(d) not in [str(x) for x in pq_options]]
+                pq_options += [d for d in md.power_dice if str(d) not in \
+                               [str(x) for x in pq_options]]
+                pq_options += [d for d in md.quality_dice if str(d) not in \
+                               [str(x) for x in pq_options]]
             for fm in self.other_forms:
                 pq_options += [d for d in fm[2] if str(d) not in [str(x) for x in pq_options]]
                 pq_options += [d for d in fm[3] if str(d) not in [str(x) for x in pq_options]]
@@ -12027,10 +12048,10 @@ class Hero:
                 red_options = [self.dv_status.red, self.status_dice.red]
                 red_sources = [str(x) + " Form" for x in self.dv_tags]
             for md in self.other_modes:
-                if md[4].reference not in range(len(dv_defaults)) and \
-                   md[4].red not in red_options:
-                    red_options.append(md[4].red)
-                    red_sources.append(md[0])
+                if md.status_dice.reference not in range(len(dv_defaults)) and \
+                   md.status_dice.red not in red_options:
+                    red_options.append(md.status_dice.red)
+                    red_sources.append(md.name)
             for fm in self.other_forms:
                 if fm[4].red not in range(len(dv_defaults)) and \
                    fm[4].red not in red_options:
@@ -12375,7 +12396,7 @@ class Hero:
             step_principles = [pri for pri in self.principles if pri.step == stepnum]
             step_abilities = [a for a in self.abilities if a.step == stepnum]
             step_forms = [fm for fm in self.other_forms if fm[7] == stepnum]
-            step_modes = [md for md in self.other_modes if md[7] == stepnum]
+            step_modes = [md for md in self.other_modes if md.step == stepnum]
             any_added = max([len(step_powers),
                              len(step_qualities),
                              len(step_principles),
@@ -12536,9 +12557,18 @@ class Hero:
                                    r not in step_principles]
             modified_abilities = [a for a in self.abilities if stepnum in a.steps_modified and \
                                   a not in step_abilities]
+            modified_modes = [md for md in self.other_modes if stepnum in md.steps_modified and \
+                              md not in step_modes]
+            for fm in self.other_forms:
+                for a in fm[5]:
+                    if stepnum in a.steps_modified and \
+                       a not in step_abilities and \
+                       fm not in step_forms:
+                        modified_abilities.append(a)
             any_modified = max([len(modified_powers),
                                 len(modified_qualities),
-                                len(modified_abilities)])
+                                len(modified_abilities),
+                                len(modified_modes)])
             if stepnum in self.status_dice.steps_modified:
                 any_modified = 1
             if self.dv_personality in range(len(pn_collection)) and \
@@ -12614,6 +12644,16 @@ class Hero:
                             stepText += "\n" + aPrime.details(width=width,
                                                               prefix=secPrefix+indent*2,
                                                               indented=indented)
+                if len(modified_modes) > 0:
+                    stepText += "\n" + split_text("Modes:",
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    for x in range(len(modified_modes)):
+                        stepText += "\n" + self.ModeDetails(x,
+                                                            codename=False,
+                                                            width=width,
+                                                            prefix=secPrefix+indent)
+                    
         else:
             stepText += split_text("Error! " + str(stepnum) + \
                                    " is not a valid step of hero creation.",
@@ -15896,30 +15936,39 @@ class ModeFrame(Frame):
             self.myModePowers = [[None for j in range(4)] for i in range(self.myModeCount)]
             self.myModeRules = ["" for i in range(self.myModeCount)]
             self.myModeAbilities = [None for i in range(self.myModeCount)]
+            defaultZones = [0,1,1,2]
             for i in range(self.myModeCount):
                 thisMode = hero.other_modes[i]
-                self.myModeNames[i] = str(thisMode[0])
-                self.myModeZones[i] = thisMode[1]
-                if len(thisMode[2]) <= len(self.myModePowers[i]):
-                    self.myModePowers[i][0:len(thisMode[2])] = [x for x in thisMode[2]]
+                self.myModeNames[i] = str(thisMode.name)
+                if thisMode.zone in range(3):
+                    self.myModeZones[i] = thisMode.zone
+                else:
+                    self.myModeZones[i] = defaultZones[i]
+                if len(thisMode.power_dice) <= len(self.myModePowers[i]):
+                    self.myModePowers[i][0:len(thisMode.power_dice)] = [x for x in \
+                                                                        thisMode.power_dice]
                 else:
                     print(notePrefix + "Error! Too many " + self.myModeNames[i] + " Powers: " + \
-                          str(len(thisMode[2])) + " > " + str(len(self.myModePowers[i])))
+                          str(len(thisMode.power_dice)) + " > " + str(len(self.myModePowers[i])))
                     print(notePrefix + "Displaying the first " + str(len(self.myModePowers[i])) + \
-                          " Powers (" + str(thisMode[2][0]) + " through " + \
-                          str(thisMode[2][len(self.myModePowers[i])-1]) + ")")
-                    self.myModePowers[i] = [x for x in thisMode[2][0:len(self.myModePowers[i])]]
-                if isinstance(thisMode[5], Ability):
-                    self.myModeAbilities[i] = thisMode[5]
+                          " Powers (" + str(thisMode.power_dice[0]) + " through " + \
+                          str(thisMode.power_dice[len(self.myModePowers[i])-1]) + ")")
+                    self.myModePowers[i] = [x for x in \
+                                            thisMode.power_dice[0:len(self.myModePowers[i])]]
+                if len(thisMode.abilities) > 0:
+                    if isinstance(thisMode.abilities[0], Ability):
+                        self.myModeAbilities[i] = thisMode.abilities[0]
                 rulesText = ""
-                if len(thisMode[6]) > 0:
-                    rulesText = "You cannot " + thisMode[6][0]
-                    for j in range(1, len(thisMode[6])-1):
-                        rulesText += ", " + thisMode[6][j]
-                    if len(thisMode[6]) > 2:
+                if len(thisMode.prohibited_actions) > 0:
+                    rulesText = "You cannot " + thisMode.prohibited_actions[0]
+                    for j in range(1, len(thisMode.prohibited_actions)-1):
+                        rulesText += ", " + thisMode.prohibited_actions[j]
+                    if len(thisMode.prohibited_actions) > 2:
                         rulesText += ","
-                    if len(thisMode[6]) > 1:
-                        rulesText += " or " + thisMode[6][len(thisMode[6])-1]
+                    if len(thisMode.prohibited_actions) > 1:
+                        rulesText += " or " + \
+                                     thisMode.prohibited_actions[len(thisMode.prohibited_actions) \
+                                                                 - 1]
                     rulesText += " in this Mode."
                     if isinstance(self.myModeAbilities[i], Ability):
                         rulesText += "\n"
@@ -17750,15 +17799,15 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getLori(step=3)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getJo(step=5)
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=40
 ##pf="123  "
