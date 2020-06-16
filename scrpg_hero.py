@@ -18298,7 +18298,7 @@ factory = SampleMaker()
 
 root = Tk()
 root.geometry("+0+0")
-root.title("SCRPG Hero Creator")
+root.title("SCRPG Hero Editor")
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
