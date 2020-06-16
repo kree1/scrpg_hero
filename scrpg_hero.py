@@ -6592,6 +6592,7 @@ class Hero:
         mirror.other_modes = [x.copy() for x in self.other_modes]
         mirror.other_forms = [x.copy() for x in self.other_forms]
         mirror.health_pqs = [x for x in self.health_pqs]
+        mirror.health_step = self.health_step
         mirror.steps_modified = [x for x in self.steps_modified]
         if self.prev_version:
             mirror.prev_version = self.prev_version.copy()
@@ -7527,6 +7528,7 @@ class Hero:
         else:
             # This hero doesn't have a Background yet, so we can add this one.
             print("OK! You've chosen the " + your_bg[0] + " Background!")
+            self.SetPrevious(this_step)
             self.background = bg_index
             print("You get " + str(your_bg[2]) + " to assign to Qualities.")
             if len(q_requirements) > 0:
@@ -8304,8 +8306,9 @@ class Hero:
             return ps_collection[self.power_source][9]
         else:
             # This hero doesn't have a Power Source, so we can add this one.
-            self.power_source = ps_index
             print("OK! You've chosen the " + your_ps[0] + " Power Source!")
+            self.SetPrevious(this_step)
+            self.power_source = ps_index
             print("You have " + str(pdice) + " to assign to Powers.")
             if len(required_powers) > 0:
                 # Use ChoosePQ to assign one of pdice to one of required_powers
@@ -9553,6 +9556,7 @@ class Hero:
             else:
                 arc_title = your_arc[0]
             print("OK! You've chosen the " + arc_title + " Archetype.")
+            self.SetPrevious(this_step)
             self.archetype = arc_index
             self.archetype_modifier = mod_index
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
@@ -11047,7 +11051,6 @@ class Hero:
             input()
         elif pn_index in range(len(pn_collection)):
             # This hero doesn't have a Personality, and we can add this one.
-            self.personality = pn_index
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
             # has_multiple is only true if the hero has the Divided modifier AND dv_index is a
@@ -11063,6 +11066,8 @@ class Hero:
                           " Personality.", 100)
             else:
                 print("OK! You've chosen the " + your_pn[0] + " Personality.")
+            self.SetPrevious(this_step)
+            self.personality = pn_index
             # Start by giving the hero their Roleplaying Quality at d8.
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -11732,6 +11737,8 @@ class Hero:
             # Send that set of Red Abilities and the corresponding restrictions on which
             #  Powers/Qualities to use to ChooseAbility to let them pick an Ability to finish and
             #  add.
+            if this_step not in self.steps_modified:
+                self.SetPrevious(this_step)
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
@@ -11761,6 +11768,7 @@ class Hero:
                   " Retcon.")
             input()
         else:
+            self.SetPrevious(this_step)
             step_options = ["Swap 2 Power dice",
                             "Swap 2 Quality dice",
                             "Change the Power/Quality used in an Ability",
@@ -12279,6 +12287,7 @@ class Hero:
             input()
         else:
             # The hero doesn't have defined Health yet, so we can continue.
+            self.SetPrevious(this_step)
             self.health_step = this_step
             # Add up the following:
             # 8...
@@ -12916,7 +12925,7 @@ class Hero:
                                                       width=width,
                                                       prefix=secPrefix+indent)
                 if stepnum in self.status_dice.steps_modified:
-                    if self.dv_status.array() != self.status_dice.array():
+                    if self.dv_personality in range(len(pn_collection)):
                         stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
                                                       width=width,
                                                       prefix=secPrefix)
@@ -13013,13 +13022,15 @@ class Hero:
     def display(self,
                 width=100,
                 prefix="",
-                indented=True):
+                indented=True,
+                hanging=False):
         # Prints a full list of the hero's mechanical attributes: codename, name, Principles,
         #  Powers, Qualities, Status, Health ranges, Abilities, etc.
         # No return value.
         print(self.details(width=width,
                            prefix=prefix,
-                           indented=indented))
+                           indented=indented,
+                           hanging=hanging))
     def details(self,
                 width=100,
                 prefix="",
@@ -18227,27 +18238,24 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getLori()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
-
-# Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
+firstHero = factory.getKim()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
 
-##w=40
-##pf="123  "
+# Using a not-yet-constructed hero
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
+
+##w=100
+##pf=""
 ##ind=True
-##hg=True
+##hg=False
 ##
 ##for s in range(1,len(step_names)):
-##    firstHero.DisplayStep(s,
-##                          width=w,
-##                          prefix=pf,
-##                          indented=ind,
-##                          hanging=hg)
+##    print()
+##    print("Step " + str(s) + ": " + step_names[s])
 ##    snapshot = firstHero.RetrievePrior(s+1)
 ##    snapshot.display(width=w,
 ##                     prefix=pf,
