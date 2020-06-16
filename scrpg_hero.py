@@ -16009,13 +16009,13 @@ class HeroFrame(Frame):
                 # User selected a step to redo from
                 print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
                       ") selected")
-##                saveFirst = messagebox.askyesno(title="Save Changes?",
-##                                                message="Your hero's existing data from the " + \
-##                                                step_names[firstRedo] + " step and later will " + \
-##                                                "be lost. Do you want to save this hero to a " + \
-##                                                "TXT file first?")
-##                if saveFirst:
-##                    self.SaveTxt()
+                saveFirst = messagebox.askyesno(title="Save Changes?",
+                                                message="Your hero's existing data from the " + \
+                                                step_names[firstRedo] + " step and later will " + \
+                                                "be lost. Do you want to save this hero to a " + \
+                                                "TXT file first?")
+                if saveFirst:
+                    self.SaveTxt()
                 self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
             elif firstRedo == lastStep:
                 # User selected not to redo
