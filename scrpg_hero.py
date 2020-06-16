@@ -14851,21 +14851,21 @@ class HeroFrame(Frame):
                               columnspan=self.buttonWidth)
         self.textButtons.append(self.printButton)
         prevButtonRows += 1
-        self.stepsButton = Button(self.buttonFrame,
-                                  background=self.buttonColors[0],
-                                  activebackground=self.buttonColors[1],
-                                  text="Display Steps",
-                                  width=self.columnWidth*self.buttonWidth,
-                                  height=self.rowHeight*self.buttonHeight,
-                                  font=self.currentFont,
-                                  command=self.DisplayHeroSteps,
-                                  padx=self.buttonPadX,
-                                  pady=self.buttonPadY)
-        self.stepsButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+        self.processButton = Button(self.buttonFrame,
+                                    background=self.buttonColors[0],
+                                    activebackground=self.buttonColors[1],
+                                    text="Display Steps",
+                                    width=self.columnWidth*self.buttonWidth,
+                                    height=self.rowHeight*self.buttonHeight,
+                                    font=self.currentFont,
+                                    command=self.DisplayHeroSteps,
+                                    padx=self.buttonPadX,
+                                    pady=self.buttonPadY)
+        self.processButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth)
-        self.textButtons.append(self.stepsButton)
+        self.textButtons.append(self.processButton)
         prevButtonRows += 1
         self.saveButton = Button(self.buttonFrame,
                                  background=self.buttonColors[0],
@@ -15077,29 +15077,7 @@ class HeroFrame(Frame):
 ##                             rowspan=self.buttonHeight,
 ##                             columnspan=self.buttonWidth)
 ##        prevButtonRows += 1
-        # Hide all creation step buttons by default
-        for i in range(1,len(self.stepButtons)):
-            self.stepButtons[i].grid_remove()
-##            print(notePrefix + "stepButtons[" + str(i) + "] (" + step_names[i] + ") hidden")
-        if isinstance(self.myHero, Hero):
-            # Display ONLY the button for the first hero creation step that ISN'T complete for this
-            #  hero
-            rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
-            self.completeSteps = [isinstance(self.myHero, Hero),
-                                  self.myHero.background in range(len(bg_collection)),
-                                  self.myHero.power_source in range(len(ps_collection)),
-                                  self.myHero.archetype in range(len(arc_collection)),
-                                  self.myHero.personality in range(len(pn_collection)),
-                                  len(rs_abilities) > 1,
-                                  self.myHero.used_retcon,
-                                  self.myHero.health_zones != [0,0,0]]
-            self.firstIncomplete = 99
-            if False in self.completeSteps:
-                self.firstIncomplete = self.completeSteps.index(False)
-            if self.firstIncomplete in range(1,len(self.stepButtons)):
-                self.stepButtons[self.firstIncomplete].grid()
-##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
-##                      step_names[i] + ") shown")
+        self.ShowSingleStep()
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
@@ -15523,6 +15501,9 @@ class HeroFrame(Frame):
                 self.auxButtons[i].grid()
             else:
                 self.auxButtons[i].grid_remove()
+        self.ShowSingleStep()
+    def ShowSingleStep(self):
+        notePrefix = "HeroFrame.ShowSingleStep: "
         # Hide all creation step buttons by default
         for i in range(1,len(self.stepButtons)):
             self.stepButtons[i].grid_remove()
@@ -15547,7 +15528,7 @@ class HeroFrame(Frame):
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
     def LaunchModeWindow(self):
-        notePrefix = "HeroFrame: LaunchModeWindow: "
+        notePrefix = "HeroFrame.LaunchModeWindow: "
 ##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
 ##              str(len(self.myHero.other_modes)) + " other Modes)")
         # If the hero has other Modes, create a new Toplevel window with a ModeFrame featuring
@@ -15561,7 +15542,7 @@ class HeroFrame(Frame):
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Modes.")
     def LaunchFormWindow(self):
-        notePrefix = "HeroFrame: LaunchFormWindow: "
+        notePrefix = "HeroFrame.LaunchFormWindow: "
 ##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
 ##              str(len(self.myHero.other_forms)) + " other Forms)")
         # If the hero has other Forms, create a new Toplevel window with a FormFrame featuring
@@ -15575,7 +15556,7 @@ class HeroFrame(Frame):
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no other Forms.")
     def LaunchMinionWindow(self):
-        notePrefix = "HeroFrame: LaunchMinionWindow: "
+        notePrefix = "HeroFrame.LaunchMinionWindow: "
 ##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
 ##              str(len(self.myHero.min_forms)) + " minion forms)")
         # If the hero has Minion Forms, create a new Toplevel window with a MinionFrame featuring
@@ -15590,7 +15571,7 @@ class HeroFrame(Frame):
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
     def AddHeroBackground(self, inputs=[]):
         # Walk the user through adding a Background to their hero.
-        notePrefix = "### HeroFrame: AddHeroBackground: "
+        notePrefix = "### HeroFrame.AddHeroBackground: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -15637,7 +15618,7 @@ class HeroFrame(Frame):
             self.UpdateAll(self.myHero)
     def AddHeroPowerSource(self, inputs=[]):
         # Walk the user through adding a Power Source to their hero.
-        notePrefix = "### HeroFrame: AddHeroPowerSource: "
+        notePrefix = "### HeroFrame.AddHeroPowerSource: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -15683,7 +15664,7 @@ class HeroFrame(Frame):
             self.UpdateAll(self.myHero)
     def AddHeroArchetype(self, inputs=[]):
         # Walk the user through adding an Archetype to their hero.
-        notePrefix = "### HeroFrame: AddHeroArchetype: "
+        notePrefix = "### HeroFrame.AddHeroArchetype: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -15733,7 +15714,7 @@ class HeroFrame(Frame):
             self.UpdateAll(self.myHero)
     def AddHeroPersonality(self, inputs=[]):
         # Walks the user through adding a Personality (or Personalities) to their hero.
-        notePrefix = "### HeroFrame: AddHeroPersonality: "
+        notePrefix = "### HeroFrame.AddHeroPersonality: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -15814,7 +15795,7 @@ class HeroFrame(Frame):
         self.UpdateAll(self.myHero)
     def AddHeroRedAbilities(self, inputs=[]):
         # Add 2 Red Abilities
-        notePrefix = "### HeroFrame: AddHeroRedAbilities: "
+        notePrefix = "### HeroFrame.AddHeroRedAbilities: "
         indent = "    "
         print("5. Red Abilities")
         rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
@@ -15835,7 +15816,7 @@ class HeroFrame(Frame):
         self.UpdateAll(self.myHero)
     def AddHeroRetcon(self, inputs=[]):
         # Take a Retcon
-        notePrefix = "### HeroFrame: AddHeroRetcon: "
+        notePrefix = "### HeroFrame.AddHeroRetcon: "
         indent = "    "
         print("6. Retcon")
         if self.myHero.used_retcon:
@@ -15854,7 +15835,7 @@ class HeroFrame(Frame):
         self.UpdateAll(self.myHero)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
         # Determine Max Health
-        notePrefix = "### HeroFrame: AddHeroRetcon: "
+        notePrefix = "### HeroFrame.AddHeroHealth: "
         indent = "    "
         print("7. Health")
         if self.myHero.health_zones != [0,0,0]:
@@ -15875,7 +15856,7 @@ class HeroFrame(Frame):
         self.UpdateAll(self.myHero)
     def EditNames(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
-        notePrefix = "### HeroFrame: EditNames: "
+        notePrefix = "### HeroFrame.EditNames: "
         indent = "    "
         if not isinstance(self.myHero, Hero):
             self.SetHero(Hero())
@@ -18238,7 +18219,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getKim(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
