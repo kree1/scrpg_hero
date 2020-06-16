@@ -5721,7 +5721,7 @@ class Mode:
         # Used in preparation for editing the Mode's attributes during character creation
         # Creates a copy of the Mode with its current attributes and saves it in
         #  self.prev_version, then adds the specified step number to the list of steps when this
-        #  die was modified.
+        #  Mode was modified.
         self.prev_version = self.copy()
         self.steps_modified.append(stepnum)
     def RetrievePrior(self, stepnum):
@@ -5821,7 +5821,7 @@ class Form:
         # Used in preparation for editing the Form's attributes during character creation
         # Creates a copy of the Form with its current attributes and saves it in
         #  self.prev_version, then adds the specified step number to the list of steps when this
-        #  die was modified.
+        #  Form was modified.
         self.prev_version = self.copy()
         self.steps_modified.append(stepnum)
     def RetrievePrior(self, stepnum):
@@ -6563,6 +6563,8 @@ class Hero:
         self.health_step = 0
         self.myFrame = None
         self.myWindow = None
+        self.steps_modified = []
+        self.prev_version = None
     def copy(self):
         mirror = Hero(codename=self.hero_name,
                       civ_name=self.alias,
@@ -6590,7 +6592,30 @@ class Hero:
         mirror.other_modes = [x.copy() for x in self.other_modes]
         mirror.other_forms = [x.copy() for x in self.other_forms]
         mirror.health_pqs = [x for x in self.health_pqs]
+        mirror.steps_modified = [x for x in self.steps_modified]
+        if self.prev_version:
+            mirror.prev_version = self.prev_version.copy()
         return mirror
+    def SetPrevious(self, stepnum):
+        # Used in preparation for editing the Hero's attributes during character creation
+        # Creates a copy of the Hero with its current attributes and saves it in
+        #  self.prev_version, then adds the specified step number to the list of steps when this
+        #  Hero was modified.
+        self.prev_version = self.copy()
+        self.steps_modified.append(stepnum)
+    def RetrievePrior(self, stepnum):
+        # Returns a copy of the Hero as it existed prior to the specified step of character
+        #  creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
     def SetFrame(self, frame):
         if isinstance(frame, HeroFrame):
             self.myFrame = frame
@@ -18218,14 +18243,13 @@ root.mainloop()
 ##hg=True
 ##
 ##for s in range(1,len(step_names)):
-##    print()
 ##    firstHero.DisplayStep(s,
 ##                          width=w,
 ##                          prefix=pf,
 ##                          indented=ind,
 ##                          hanging=hg)
-##    print(firstHero.StepDetails(s,
-##                                width=w,
-##                                prefix=pf,
-##                                indented=ind,
-##                                hanging=hg))
+##    snapshot = firstHero.RetrievePrior(s+1)
+##    snapshot.display(width=w,
+##                     prefix=pf,
+##                     indented=ind,
+##                     hanging=hg)
