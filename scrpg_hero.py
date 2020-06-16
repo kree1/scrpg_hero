@@ -14900,11 +14900,13 @@ class HeroFrame(Frame):
         self.resetButton = Button(self.buttonFrame,
                                   background=self.buttonColors[2],
                                   activebackground=self.buttonColors[3],
-                                  text="Reset Hero",
+                                  anchor=self.stepAnchor,
+                                  justify=self.stepReason,
+                                  text="Reset Hero...",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
                                   font=self.currentFont,
-                                  command=lambda arg1=True : self.Empty(buttonPressed=arg1),
+                                  command=self.RevertHero,
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
         self.resetButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
@@ -15527,6 +15529,20 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
+    def SetFirstIncomplete(self):
+        self.firstIncomplete = 99
+        if isinstance(self.myHero, Hero):
+            rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
+            self.completeSteps = [isinstance(self.myHero, Hero),
+                                  self.myHero.background in range(len(bg_collection)),
+                                  self.myHero.power_source in range(len(ps_collection)),
+                                  self.myHero.archetype in range(len(arc_collection)),
+                                  self.myHero.personality in range(len(pn_collection)),
+                                  len(rs_abilities) > 1,
+                                  self.myHero.used_retcon,
+                                  self.myHero.health_zones != [0,0,0]]
+            if False in self.completeSteps:
+                self.firstIncomplete = self.completeSteps.index(False)
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame.LaunchModeWindow: "
 ##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -15938,6 +15954,50 @@ class HeroFrame(Frame):
         heroFile = open(fname, mode='w')
         heroFile.write(writeText)
         heroFile.close()
+    def RevertHero(self):
+        notePrefix = "### HeroFrame.RevertHero: "
+        self.SetFirstIncomplete()
+        # firstIncomplete == 99: myHero isn't a Hero object, no action needed
+        # firstIncomplete == 0: myHero hasn't finished any creation steps, no action needed
+        if self.firstIncomplete in range(1, len(step_names)) or \
+           False not in self.completeSteps:
+            # myHero has finished at least 1 creation step
+            # Prompt the user to ask where to restart from
+            lastStep = self.firstIncomplete
+            if False not in self.completeSteps:
+                lastStep = len(step_names)
+            stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
+            stepOptions = ["0: clear all hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
+            revertPrompt = "Choose a step of hero creation to redo from:"
+            stepChoice = IntVar(self, 1)
+            question = SelectWindow(self,
+                                    revertPrompt,
+                                    stepOptions,
+                                    var=stepChoice,
+                                    title="Revert Hero",
+                                    width=40,
+                                    buffer=5)
+            firstRedo = stepChoice.get()
+            if firstRedo in range(1, lastStep):
+                # User selected a step to redo from
+                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
+                      ") selected")
+##                saveFirst = messagebox.askyesno(title="Save Changes?",
+##                                                message="Your hero's existing data from the " + \
+##                                                step_names[firstRedo] + " step and later will " + \
+##                                                "be lost. Do you want to save this hero to a " + \
+##                                                "TXT file first?")
+##                if saveFirst:
+##                    self.SaveTxt()
+                self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
+            elif firstRedo == lastStep:
+                # User selected not to redo
+                print(notePrefix + stepOptions[firstRedo] + " selected")
+            elif firstRedo == 0:
+                # User selected to revert to a blank hero
+                print(notePrefix + stepOptions[firstRedo] + " selected")
+                self.Empty(buttonPressed=True)
+            # ...
 
 class SubWindow(Toplevel):
     # A class for subordinate windows
@@ -18219,7 +18279,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim(step=3)
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
