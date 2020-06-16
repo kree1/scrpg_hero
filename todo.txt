@@ -208,7 +208,7 @@ Make steps reversible...
   Health?
  Implement rollback methods for Hero
 .  copy
-  SetPrevious
-  RetrievePrior
+.  SetPrevious
+.  RetrievePrior
   
 Let EditNames rename dice, Abilities, & Forms/Modes

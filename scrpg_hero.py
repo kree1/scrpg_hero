@@ -13842,7 +13842,7 @@ def Create_Spark(step=len(step_names)):
                            inputs=[["c",["a"]],
                                    ["j"],
                                    ["D","b","a","Thread the Needle"],
-                                   ["C","a","a","Enough for Everyone"],
+                                   ["C","a","Enough for Everyone"],
                                    ["B","d","a","Complete Circuit"],
                                    ["A","a","No Fear"],
                                    ["B","a","a","Lightning","b",
@@ -14761,7 +14761,7 @@ class HeroFrame(Frame):
         # Set up buttons in rows 3-52 of columns 33-*
         buttonFrameColumn = 33
         buttonFrameRow = 3
-        self.buttonWidth = 3
+        self.buttonWidth = 4
         self.buttonHeight = 2
         self.buttonPadX = 2
         self.buttonPadY = 0
@@ -14841,8 +14841,7 @@ class HeroFrame(Frame):
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
                                   font=self.currentFont,
-                                  command=lambda arg1=100 : \
-                                  print(self.myHero.details(width=arg1)),
+                                  command=self.DisplayHeroText,
                                   padx=self.buttonPadX,
                                   pady=self.buttonPadY)
         self.printButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
@@ -15529,6 +15528,23 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
+            # Now that resetButton's function has changed, we only need to see it under certain
+            #  circumstances...
+            if True in self.completeSteps[1:]:
+##                print(notePrefix + "completeSteps[" + str(self.completeSteps[1:].index(True)+1) + \
+##                      "] = True, showing ResetButton")
+                self.resetButton.config(state=NORMAL)
+                for b in self.textButtons:
+                    b.config(state=NORMAL)
+            else:
+##                print(notePrefix + "True not found in completeSteps[1:], hiding ResetButton")
+                self.resetButton.config(state=DISABLED)
+                for b in self.textButtons:
+                    b.config(state=DISABLED)
+        else:
+            self.resetButton.config(state=DISABLED)
+            for b in self.textButtons:
+                b.config(state=DISABLED)
     def SetFirstIncomplete(self):
         self.firstIncomplete = 99
         if isinstance(self.myHero, Hero):
@@ -15585,6 +15601,12 @@ class HeroFrame(Frame):
         else:
             # Otherwise, create a simple dialog window that informs the user there's been a problem
             messagebox.showerror("Error", self.myHeroNames[0] + " has no minion forms.")
+    def DisplayHeroText(self):
+        notePrefix = "### HeroFrame.DisplayHeroText: "
+        if isinstance(self.myHero, Hero):
+            self.myHero.display(width=100)
+        else:
+            print(notePrefix + "Your hero needs at least a name first!")
     def AddHeroBackground(self, inputs=[]):
         # Walk the user through adding a Background to their hero.
         notePrefix = "### HeroFrame.AddHeroBackground: "
@@ -15912,48 +15934,53 @@ class HeroFrame(Frame):
         #  etc.) that the hero gained in each step of hero creation.
         if isinstance(self.myHero, Hero):
             self.myHero.DisplaySteps(width=100)
+        else:
+            print("You need to complete at least 1 step first!")
     def SaveTxt(self, inputs=[]):
         # Lets the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
         indent = "    "
-        # Ask the user what they want to save
-        options = ["Hero details (Powers, Qualities, Abilities, Principles, etc.)",
-                   "Hero creation process (what you did at each step)",
-                   "Both"]
-        answer = IntVar()
-        question = SelectWindow(self.myParent,
-                                "What information about this hero would you like to save?",
-                                options,
-                                var=answer,
-                                title="Save Hero")
-        includeSections = answer.get()
-        writeText = ""
-        if includeSections == 0:
-            writeText = self.myHero.details(width=-1)
-        elif includeSections == 1:
-            writeText = self.myHero.AllStepDetails(width=-1)
+        if isinstance(self.myHero, Hero):
+            # Ask the user what they want to save
+            options = ["Hero details (Powers, Qualities, Abilities, Principles, etc.)",
+                       "Hero creation process (what you did at each step)",
+                       "Both"]
+            answer = IntVar()
+            question = SelectWindow(self.myParent,
+                                    "What information about this hero would you like to save?",
+                                    options,
+                                    var=answer,
+                                    title="Save Hero")
+            includeSections = answer.get()
+            writeText = ""
+            if includeSections == 0:
+                writeText = self.myHero.details(width=-1)
+            elif includeSections == 1:
+                writeText = self.myHero.AllStepDetails(width=-1)
+            else:
+                writeText = self.myHero.details(width=-1) + "\n\n" + \
+                            self.myHero.AllStepDetails(width=-1)
+            # Then ask where they want to save it
+            prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
+                     "name a .txt file that already exists " + \
+                     "in this folder. It WILL be overwritten."
+            textVar = StringVar(self, self.myHero.hero_name)
+            question = EntryWindow(self.myParent,
+                                   prompt,
+                                   textVar,
+                                   title="Save Hero")
+            fname = textVar.get()
+            # Remove illegal filename characters, plus .
+            for char in '\\/:*?><|.':
+                fname = fname.replace(char, '')
+            # Add file extension, unless the user included it
+            if not fname.endswith(".txt"):
+                fname += ".txt"
+            heroFile = open(fname, mode='w')
+            heroFile.write(writeText)
+            heroFile.close()
         else:
-            writeText = self.myHero.details(width=-1) + "\n\n" + \
-                        self.myHero.AllStepDetails(width=-1)
-        # Then ask where they want to save it
-        prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
-                 "name a .txt file that already exists " + \
-                 "in this folder. It WILL be overwritten."
-        textVar = StringVar(self, self.myHero.hero_name)
-        question = EntryWindow(self.myParent,
-                               prompt,
-                               textVar,
-                               title="Save Hero")
-        fname = textVar.get()
-        # Remove illegal filename characters, plus .
-        for char in '\\/:*?><|.':
-            fname = fname.replace(char, '')
-        # Add file extension, unless the user included it
-        if not fname.endswith(".txt"):
-            fname += ".txt"
-        heroFile = open(fname, mode='w')
-        heroFile.write(writeText)
-        heroFile.close()
+            messagebox.showerror("Error", "You haven't created a hero yet!")
     def RevertHero(self):
         notePrefix = "### HeroFrame.RevertHero: "
         self.SetFirstIncomplete()
