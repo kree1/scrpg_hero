@@ -6563,6 +6563,34 @@ class Hero:
         self.health_step = 0
         self.myFrame = None
         self.myWindow = None
+    def copy(self):
+        mirror = Hero(codename=self.hero_name,
+                      civ_name=self.alias,
+                      pro_index=self.pronoun_set)
+        mirror.power_dice = [x.copy() for x in self.power_dice]
+        mirror.quality_dice = [x.copy() for x in self.quality_dice]
+        mirror.health_zones = [x for x in self.health_zones]
+        mirror.status_dice = self.status_dice.copy()
+        mirror.background = self.background
+        mirror.ps_dice = [x for x in self.ps_dice]
+        mirror.power_source = self.power_source
+        mirror.arc_dice = [x for x in self.arc_dice]
+        mirror.arc_bonus_quality = self.arc_bonus_quality
+        mirror.archetype = self.archetype
+        mirror.archetype_modifier = self.archetype_modifier
+        mirror.dv_tags = [x for x in self.dv_tags]
+        mirror.min_forms = [x for x in self.min_forms]
+        mirror.mf_step = self.mf_step
+        mirror.personality = self.personality
+        mirror.dv_personality = self.dv_personality
+        mirror.dv_status = self.dv_status.copy()
+        mirror.used_retcon = self.used_retcon
+        mirror.principles = [x.copy() for x in self.principles]
+        mirror.abilities = [x.copy() for x in self.abilities]
+        mirror.other_modes = [x.copy() for x in self.other_modes]
+        mirror.other_forms = [x.copy() for x in self.other_forms]
+        mirror.health_pqs = [x for x in self.health_pqs]
+        return mirror
     def SetFrame(self, frame):
         if isinstance(frame, HeroFrame):
             self.myFrame = frame
@@ -10160,7 +10188,6 @@ class Hero:
                                 self.min_forms += [min_indices[i] \
                                                    for i in range(len(min_indices)) \
                                                    if answers[i] == string.ascii_uppercase[0]]
-                                # ...
                             else:
                                 # Use the text shell to choose the next minion form
                                 entry_options = string.ascii_uppercase[0:len(min_indices)]
@@ -10412,8 +10439,10 @@ class Hero:
                                 constantIndices = [answer0.get(), answer1.get()]
                                 # Move corresponding power dice from unassigned to constant, in
                                 #  descending order so the indices don't change
-                                constant_powers.append(unassigned_powers.pop(max(constantIndices)))
-                                constant_powers.append(unassigned_powers.pop(min(constantIndices)))
+                                bigIndex = max(constantIndices)
+                                smallIndex = min(constantIndices)
+                                constant_powers.append(unassigned_powers.pop(bigIndex))
+                                constant_powers.append(unassigned_powers.pop(smallIndex))
                             else:
                                 # Select one constant Power at a time
                                 entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
@@ -10452,8 +10481,10 @@ class Hero:
                                 constantIndices = [answer0.get(), answer1.get()]
                                 # Move corresponding quality dice from unassigned to constant, in
                                 #  descending order so the indices don't change
-                                constant_qualities.append(unassigned_qualities.pop(max(constantIndices)))
-                                constant_qualities.append(unassigned_qualities.pop(min(constantIndices)))
+                                bigIndex = max(constantIndices)
+                                smallIndex = min(constantIndices)
+                                constant_qualities.append(unassigned_qualities.pop(bigIndex))
+                                constant_qualities.append(unassigned_qualities.pop(smallIndex))
                             else:
                                 # Select one constant Quality at a time
                                 entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
@@ -10662,8 +10693,8 @@ class Hero:
                 roll_report = "Rolled " + str(die_results[0]) + ", " + str(die_results[1]) + \
                               ", and " + str(die_results[2]) + "."
                 # The player can choose between any single result or the sum of any pair of results.
-                # Since there are exactly three dice, each sum of two dice can be represented as the
-                #  sum of all three minus the value of the third.
+                # Since there are exactly three dice, each sum of two dice can be represented as
+                #  the sum of all three minus the value of the third.
                 arc_options = [x for x in die_results] + [sum(die_results) - y for y in die_results]
                 arc_options.sort()
                 for i in range(len(arc_options)-1):
@@ -10996,7 +11027,8 @@ class Hero:
             #  indicate whether this hero is one of them.
             # has_multiple is only true if the hero has the Divided modifier AND dv_index is a
             #  valid Personality index AND pn_index and dv_index don't match
-            has_multiple = (self.archetype_modifier == 1 and dv_index in range(len(pn_collection)) \
+            has_multiple = (self.archetype_modifier == 1 \
+                            and dv_index in range(len(pn_collection)) \
                             and dv_index != pn_index)
             if has_multiple:
                 self.dv_personality = dv_index
@@ -13154,7 +13186,10 @@ def Create_Shikari(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         shikari.AddBackground(bg,
-                              inputs=[[["i",["a"]],["b"]],["K","a","d","What new threat is as prepared for this harsh environment as you are?","f"]])
+                              inputs=[[["i",["a"]],["b"]],
+                                      ["K","a","d",
+                                       "What new threat is as prepared for this harsh " + \
+                                       "environment as you are?","f"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 2:
@@ -13166,7 +13201,10 @@ def Create_Shikari(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         shikari.AddPowerSource(ps,
-                               inputs=[[["o",["a"]],["h",["a"]],["c",[["a","Warskin"]]]],["A","b","a","Advance Tracking"],["A","a","a","Know the Way"],["A","a","a","Warrior's Instinct"]])
+                               inputs=[[["o",["a"]],["h",["a"]],["c",[["a","Warskin"]]]],
+                                       ["A","b","a","Advance Tracking"],
+                                       ["A","a","a","Know the Way"],
+                                       ["A","a","a","Warrior's Instinct"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13179,7 +13217,11 @@ def Create_Shikari(step=len(step_names)):
             print(notePrefix + tracker_open)
         shikari.AddArchetype(arc[0],
                              arc[1],
-                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],["D","a","Watch Your Sprocking Head"],["A","f","a","Coming Through!"],["A","d","a","Follow Me!"],["J","b"]])
+                             inputs=[["a",["b"]],["b",["a"]],[["a","w"]],
+                                     ["D","a","Watch Your Sprocking Head"],
+                                     ["A","f","a","Coming Through!"],
+                                     ["A","d","a","Follow Me!"],
+                                     ["J","b"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 4:
@@ -13247,7 +13289,12 @@ def Create_Ultra_Boy(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         jo.AddPowerSource(ps,
-                          inputs=[[["a"],["a",[["a","Legion Flight Ring"]]],["e"]],["C","b","a","Yoink!"],["A","b","a","That Tickles"],["C","a","a","Zap!"]])
+                          inputs=[[["a"],
+                                   ["a",[["a","Legion Flight Ring"]]],
+                                   ["e"]],
+                                  ["C","b","a","Yoink!"],
+                                  ["A","b","a","That Tickles"],
+                                  ["C","a","a","Zap!"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13266,11 +13313,14 @@ def Create_Ultra_Boy(step=len(step_names)):
                                 ["a","Now I'm Mad"],
                                 "b",
                                 "A",
-                                ["a","b","c","a",["c","a","Who Let You Play With These?"],"a","Ultra Speed"],
+                                ["a","b","c","a",
+                                 ["c","a","Who Let You Play With These?"],"a","Ultra Speed"],
                                 "D",
-                                ["b","c","a","b",["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
+                                ["b","c","a","b",
+                                 ["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
                                 "D",
-                                ["d","a","a","a",["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
+                                ["d","a","a","a",
+                                 ["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
                                 "B",
                                 ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
                                 ["D","b"]])
@@ -13341,7 +13391,12 @@ def Create_Chameleon(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         cham.AddPowerSource(ps,
-                            inputs=[[["a","p",["a"]],["a","a",["b", ["a","Legion Flight Ring"]]],["a","b"]],["C","c","a","Slippery"],["A","a","a","Excellent Listener"],"b"])
+                            inputs=[[["a","p",["a"]],
+                                     ["a","a",["b",["a","Legion Flight Ring"]]],
+                                     ["a","b"]],
+                                    ["C","c","a","Slippery"],
+                                    ["A","a","a","Excellent Listener"],
+                                    "b"])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13360,9 +13415,12 @@ def Create_Chameleon(step=len(step_names)):
                                   ["a","b"],
                                   ["a","Improvise"],
                                   ["B", "a", "a", "Distracting Strike"],
-                                  ["C","a","a","b","a","b","e","b","e","b","c",["e","a","Natural Weaponry"],"a","Beast Form"],
-                                  ["D","a","b","e","b","e","q","c",["a","a","Critical Discovery"],"a","Stealth Form"],
-                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",["d","a","Who Do You Think I Am!?"],"a","Imitation Form"],
+                                  ["C","a","a","b","a","b","e","b","e","b","c",
+                                   ["e","a","Natural Weaponry"],"a","Beast Form"],
+                                  ["D","a","b","e","b","e","q","c",
+                                   ["a","a","Critical Discovery"],"a","Stealth Form"],
+                                  ["G","a","a","d","a","b","e","b","e","l","c","a","c",
+                                   ["d","a","Who Do You Think I Am!?"],"a","Imitation Form"],
                                   ["K","b"]])
         if track_inputs:
             print(notePrefix + tracker_close)
@@ -13430,7 +13488,10 @@ def Create_Future_Girl(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         lori.AddPowerSource(ps,
-                            inputs=[[["A","D",["A",["A","HERO Dial"]]],["A","E",["A"]],["A","B"]],["B","C","A","Natural Heroism"],["B","B","A","Synthetic Power"],["A","A","A","One-Hour Superpower"]])
+                            inputs=[[["A","D",["A",["A","HERO Dial"]]],["A","E",["A"]],["A","B"]],
+                                    ["B","C","A","Natural Heroism"],
+                                    ["B","B","A","Synthetic Power"],
+                                    ["A","A","A","One-Hour Superpower"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13449,9 +13510,12 @@ def Create_Future_Girl(step=len(step_names)):
                                   ["A","Redial"],
                                   ["A","Dial ICE"],
                                   ["B","A","Collect Call"],
-                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",["b","A","Where Was I?"],"a","Mobile Hero","B"],
-                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",["b","A","Wrap It Up"],"a","Capture Hero","C"],
-                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",["e","A","Lights Out"],"a","Powerhouse Hero","B"],
+                                  ["A","a","c","d","a","a","b","b","b","b","b","e","i","c",
+                                   ["b","A","Where Was I?"],"a","Mobile Hero","B"],
+                                  ["D","a","a","c","a","c","b","b","b","o","b","e","q","c",
+                                   ["b","A","Wrap It Up"],"a","Capture Hero","C"],
+                                  ["B","a","a","b","a","c","d","b","e","c","b","c","c","c","e","c",
+                                   ["e","A","Lights Out"],"a","Powerhouse Hero","B"],
                                   "B",
                                   "B",
                                   ["A","Dial H for Hero"],
@@ -13526,7 +13590,11 @@ def Create_Knockout(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         knockout.AddPowerSource(ps,
-                                inputs=[[["a","b",["b",["a","Doctor's Tools"]]],["a","a",["a",["a","Aston Martin"]]],["b","l"]],["B","c","a","Field Treatment"],["B","b","a","Watch the Paint!"]])
+                                inputs=[[["a","b",["b",["a","Doctor's Tools"]]],
+                                         ["a","a",["a",["a","Aston Martin"]]],
+                                         ["b","l"]],
+                                        ["B","c","a","Field Treatment"],
+                                        ["B","b","a","Watch the Paint!"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13626,7 +13694,10 @@ def Create_Architect(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         kim.AddPowerSource(ps,
-                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],["A","a","a","Environmental Planning"],["B","a","a","Aerial Survey"],["c"]])
+                           inputs=[[["a","a",["a"]],["a","a",["a"]],["a","y"]],
+                                   ["A","a","a","Environmental Planning"],
+                                   ["B","a","a","Aerial Survey"],
+                                   ["c"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13639,7 +13710,16 @@ def Create_Architect(step=len(step_names)):
             print(notePrefix + tracker_open)
         kim.AddArchetype(arc[0],
                          arc[1],
-                         inputs=[["Q",["a"]],[["b","a"],["a","x"]],["d","a","Concept Art"],["a","a","Detailing"],["C","d","a","Revision"],"C","a","a","a","a","a","a","a","a","a","a",["F","a","E","Overcome by applying your knowledge of the workings and limitations of your powers. Use your Max die. You and each of your allies gain a hero point.","F"]])
+                         inputs=[["Q",["a"]],
+                                 [["b","a"],["a","x"]],
+                                 ["d","a","Concept Art"],
+                                 ["a","a","Detailing"],
+                                 ["C","d","a","Revision"],
+                                 "C","a","a","a","a","a","a","a","a","a","a",
+                                 ["F","a","E",
+                                  "Overcome by applying your knowledge of the workings and " + \
+                                  "limitations of your powers. Use your Max die. You and each " + \
+                                  "of your allies gain a hero point.","F"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 4:
@@ -13707,7 +13787,10 @@ def Create_Spark(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         spark.AddPowerSource(ps,
-                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],["A","a","b","a","Charge!"],["A","b","a","Made You Look"],["B","a","a","Electric Atmosphere"]])
+                             inputs=[[["b","g",["a"]],["a","r",["a"]],["a","a"]],
+                                     ["A","a","b","a","Charge!"],
+                                     ["A","b","a","Made You Look"],
+                                     ["B","a","a","Electric Atmosphere"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13720,7 +13803,18 @@ def Create_Spark(step=len(step_names)):
             print(notePrefix + tracker_open)
         spark.AddArchetype(arc[0],
                            arc[1],
-                           inputs=[["c",["a"]],["j"],["D","b","a","Thread the Needle"],["C","a","a","Enough for Everyone"],["B","d","a","Complete Circuit"],["A","a","No Fear"],["B","a","a","Lightning","b","You have an affinity for electricity. You can interact with the lightning with ease.","e","Overcome a challenge involving Electricity. Use your Max die. You and each of your allies gain a hero point.","f"]])
+                           inputs=[["c",["a"]],
+                                   ["j"],
+                                   ["D","b","a","Thread the Needle"],
+                                   ["C","a","a","Enough for Everyone"],
+                                   ["B","d","a","Complete Circuit"],
+                                   ["A","a","No Fear"],
+                                   ["B","a","a","Lightning","b",
+                                    "You have an affinity for electricity. You can interact " + \
+                                    "with the lightning with ease.",
+                                    "e",
+                                    "Overcome a challenge involving Electricity. Use your Max " + \
+                                    "die. You and each of your allies gain a hero point.","f"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 4:
@@ -13787,7 +13881,10 @@ def Create_Curveball(step=len(step_names)):
             print(notePrefix + tracker_close)
         if track_inputs:
             print(notePrefix + tracker_open)
-        curveball.AddPowerSource(ps, inputs=[[["q",["a"]],["b"],["e"]],["A","c","a","Motion Sensor"],["A","b","a","Tactical Relocation"],["A","a","a","Vantage Point"]])
+        curveball.AddPowerSource(ps, inputs=[[["q",["a"]],["b"],["e"]],
+                                             ["A","c","a","Motion Sensor"],
+                                             ["A","b","a","Tactical Relocation"],
+                                             ["A","a","a","Vantage Point"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 3:
@@ -13798,7 +13895,14 @@ def Create_Curveball(step=len(step_names)):
             print(notePrefix + tracker_close)
         if track_inputs:
             print(notePrefix + tracker_open)
-        curveball.AddArchetype(arc[0], arc[1], inputs=["a","a",["e"],[["a","w"],["b","b"]],["A","b","a","Going My Way"],["d","D","a","a","Scattershot"],["A","a","a","Cover Fire"],["F","b"]])
+        curveball.AddArchetype(arc[0], arc[1], inputs=["a",
+                                                       "a",
+                                                       ["e"],
+                                                       [["a","w"],["b","b"]],
+                                                       ["A","b","a","Going My Way"],
+                                                       ["d","D","a","a","Scattershot"],
+                                                       ["A","a","a","Cover Fire"],
+                                                       ["F","b"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 4:
@@ -15158,10 +15262,11 @@ class HeroFrame(Frame):
                 # Find all valid Abilities that have zone z and aren't Principles
                 givenZoneAbilities = [a for a in hero.abilities \
                                       if a.zone == z and not a.name.startswith("Principle of ")]
-                # Put as many as will fit, or as few as exist, into self.myZoneAbilities[z], leaving
-                #  the rest None
+                # Put as many as will fit, or as few as exist, into self.myZoneAbilities[z],
+                #  leaving the rest None
                 if len(givenZoneAbilities) <= len(self.myZoneAbilities[z]):
-                    self.myZoneAbilities[z][0:len(givenZoneAbilities)] = [x for x in givenZoneAbilities]
+                    self.myZoneAbilities[z][0:len(givenZoneAbilities)] = [x for x in \
+                                                                          givenZoneAbilities]
                 else:
                     print("Error! Too many " + status_zones[z] + " Abilities: " + \
                           str(len(givenZoneAbilities)) + " > " + str(len(self.myZoneAbilities[z])))

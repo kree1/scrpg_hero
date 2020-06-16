@@ -210,3 +210,5 @@ Make steps reversible...
   copy
   SetPrevious
   RetrievePrior
+  
+Make FormFrame check whether any Forms have Abilities and resize if none do; Knockout's FormFrame shouldn't be as wide as Cham's or Lori's
