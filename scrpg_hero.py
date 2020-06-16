@@ -16654,6 +16654,10 @@ class FormFrame(Frame):
 ##        print(notePrefix + "width: " + str(self.width))
 ##        print(notePrefix + "columnWidth: " + str(self.columnWidth))
         self.SetHero(hero)
+        self.hasAbilities = (max([len(fm[5]) for fm in self.myFormInfo]) > 0)
+        if not self.hasAbilities:
+            self.numCols = 12
+            self.width = self.columnWidth * self.numCols
         self.numRows = 11 * self.myFormCount - 1
         self.rowHeight = 1
         self.height = max(1,self.numRows*self.rowHeight)
@@ -16742,7 +16746,7 @@ class FormFrame(Frame):
 ##            print(notePrefix + thisName + " centerHeight: " + str(centerHeight))
 ##            print(notePrefix + thisName + " rightHeight: " + str(rightHeight))
             # Display the form name (and divided tag if applicable) across the top row
-            if self.isDivided:
+            if self.isDivided and self.myDividedTags[thisForm[6]] != thisName.replace(" Form",""):
                 thisName += " (" + self.myDividedTags[thisForm[6]] + ")"
 ##            print(notePrefix + "displaying " + thisName + " for form #" + str(i))
             self.myFormNames[i] = Label(self,
@@ -18198,7 +18202,7 @@ root.title("SCRPG Hero Creator")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getJo()
+##firstHero = factory.getLori()
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
 ##root.mainloop()
