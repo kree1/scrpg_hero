@@ -14806,7 +14806,8 @@ class HeroFrame(Frame):
         self.auxBuffer.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
                             column=firstBFCol,
                             rowspan=self.buttonHeight*self.auxBufferHeight,
-                            columnspan=self.buttonWidth*self.auxBufferWidth)
+                            columnspan=self.buttonWidth*self.auxBufferWidth,
+                            sticky=N+E+S+W)
         for i in range(len(self.auxButtons)):
             self.auxButtons[i] = Button(self.buttonFrame,
                                         background=self.auxColors[0],
@@ -14821,7 +14822,8 @@ class HeroFrame(Frame):
             self.auxButtons[i].grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
                                     column=firstBFCol,
                                     rowspan=self.buttonHeight,
-                                    columnspan=self.buttonWidth)
+                                    columnspan=self.buttonWidth,
+                                    sticky=N+E+S+W)
             # If this button isn't relevant to this hero, hide it
             if self.myAuxCounts[i] == 0:
                 self.auxButtons[i].grid_remove()
@@ -14847,7 +14849,8 @@ class HeroFrame(Frame):
         self.printButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                               column=firstBFCol,
                               rowspan=self.buttonHeight,
-                              columnspan=self.buttonWidth)
+                              columnspan=self.buttonWidth,
+                              sticky=N+E+S+W)
         self.textButtons.append(self.printButton)
         prevButtonRows += 1
         self.processButton = Button(self.buttonFrame,
@@ -14861,9 +14864,10 @@ class HeroFrame(Frame):
                                     padx=self.buttonPadX,
                                     pady=self.buttonPadY)
         self.processButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                              column=firstBFCol,
-                              rowspan=self.buttonHeight,
-                              columnspan=self.buttonWidth)
+                                column=firstBFCol,
+                                rowspan=self.buttonHeight,
+                                columnspan=self.buttonWidth,
+                                sticky=N+E+S+W)
         self.textButtons.append(self.processButton)
         prevButtonRows += 1
         self.saveButton = Button(self.buttonFrame,
@@ -14879,7 +14883,8 @@ class HeroFrame(Frame):
         self.saveButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
         self.textButtons.append(self.saveButton)
         prevButtonRows += 1
         # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
@@ -14911,7 +14916,8 @@ class HeroFrame(Frame):
         self.resetButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                               column=secondBFCol,
                               rowspan=self.buttonHeight,
-                              columnspan=self.buttonWidth)
+                              columnspan=self.buttonWidth,
+                              sticky=N+E+S+W)
         prevButtonRows += 1
         self.stepButtons[0] = Button(self.buttonFrame,
                                      background=self.buttonColors[2],
@@ -14928,7 +14934,8 @@ class HeroFrame(Frame):
         self.stepButtons[0].grid(row=editRow+self.buttonHeight*prevButtonRows,
                                  column=secondBFCol,
                                  rowspan=self.buttonHeight,
-                                 columnspan=self.buttonWidth)
+                                 columnspan=self.buttonWidth,
+                                 sticky=N+E+S+W)
         prevButtonRows += 1
         # stepButtons 1-7 all display in the same place- for now, we'll only be seeing one of them
         #  at a time
@@ -14948,7 +14955,8 @@ class HeroFrame(Frame):
             self.stepButtons[i].grid(row=editRow+self.buttonHeight*prevButtonRows,
                                      column=secondBFCol,
                                      rowspan=self.buttonHeight,
-                                     columnspan=self.buttonWidth)
+                                     columnspan=self.buttonWidth,
+                                     sticky=N+E+S+W)
         prevButtonRows += 1
         # Buttons for switching to another hero (for demonstration purposes) go in the following
         #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
@@ -14964,7 +14972,8 @@ class HeroFrame(Frame):
         self.demoBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
                              rowspan=self.buttonHeight*self.demoBufferHeight,
-                             columnspan=self.buttonWidth*self.auxBufferWidth)
+                             columnspan=self.buttonWidth*self.auxBufferWidth,
+                             sticky=N+E+S+W)
         prevButtonRows += self.demoBufferHeight - 1
         self.demoColors = ["plum1", "plum2"]
         self.demoButtons = []
@@ -14981,7 +14990,8 @@ class HeroFrame(Frame):
         self.backButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
         self.demoButtons.append(self.backButton)
         self.forwardButton = Button(self.buttonFrame,
                                     background=self.demoColors[0],
@@ -14996,7 +15006,8 @@ class HeroFrame(Frame):
         self.forwardButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                                 column=secondBFCol,
                                 rowspan=self.buttonHeight,
-                                columnspan=self.buttonWidth)
+                                columnspan=self.buttonWidth,
+                                sticky=N+E+S+W)
         self.demoButtons.append(self.forwardButton)
         prevButtonRows += 1
         # If necessary, additional buttons go below these
@@ -15014,9 +15025,10 @@ class HeroFrame(Frame):
         self.fontButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                              column=firstBFCol,
                              rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth)
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
         self.demoButtons.append(self.fontButton)
-        self.miniButtonWidth = 1
+        self.miniButtonWidth = 2
         buttonCol2B = secondBFCol + self.miniButtonWidth
         self.fPlusButton = Button(self.buttonFrame,
                                   background=self.demoColors[0],
@@ -15031,7 +15043,8 @@ class HeroFrame(Frame):
         self.fPlusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                               column=secondBFCol,
                               rowspan=self.buttonHeight,
-                              columnspan=self.miniButtonWidth)
+                              columnspan=self.miniButtonWidth,
+                              sticky=N+E+S+W)
         self.demoButtons.append(self.fPlusButton)
         self.fMinusButton = Button(self.buttonFrame,
                                    background=self.demoColors[0],
@@ -15046,7 +15059,8 @@ class HeroFrame(Frame):
         self.fMinusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
                                column=buttonCol2B,
                                rowspan=self.buttonHeight,
-                               columnspan=self.miniButtonWidth)
+                               columnspan=self.miniButtonWidth,
+                               sticky=N+E+S+W)
         self.demoButtons.append(self.fMinusButton)
         prevButtonRows += 1
         # Button for updating relief option (for design purposes)
@@ -15062,7 +15076,8 @@ class HeroFrame(Frame):
 ##        self.reliefButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
 ##                               column=firstBFCol,
 ##                               rowspan=self.buttonHeight,
-##                               columnspan=self.buttonWidth)
+##                               columnspan=self.buttonWidth,
+##                               sticky=N+E+S+W)
 ##        # Button for modifying wrap length in ability Text labels (for design purposes)
 ##        self.wrapButton = Button(self.buttonFrame,
 ##                                 background=self.demoColors[0],
@@ -15076,7 +15091,8 @@ class HeroFrame(Frame):
 ##        self.wrapButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
 ##                             column=secondBFCol,
 ##                             rowspan=self.buttonHeight,
-##                             columnspan=self.buttonWidth)
+##                             columnspan=self.buttonWidth,
+##                             sticky=N+E+S+W)
 ##        prevButtonRows += 1
         self.ShowSingleStep()
         self.sampleIndex = -1
