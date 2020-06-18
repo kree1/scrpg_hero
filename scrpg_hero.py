@@ -10338,6 +10338,29 @@ class Hero:
                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                if self.archetype == 15:
+                    # This hero is a Form-Changer. Any of their Forms that don't currently have a
+                    #  Civilian or Heroic tag need to have one assigned BEFORE they can choose a
+                    #  build option.
+                    unassigned_forms = [f for f in self.other_forms \
+                                        if f.dv_index not in range(len(self.dv_tags))]
+                    for f in unassigned_forms:
+                        entry_options = string.ascii_uppercase[0:len(self.dv_tags)]
+                        decision = self.ChooseIndex(self.dv_tags,
+                                                    prompt=self.hero_name + " is a Divided " + \
+                                                    "hero. Is " + f.name + " a " + \
+                                                    self.dv_tags[0] + " or " + self.dv_tags[1] + \
+                                                    " form for them?",
+                                                    inputs=inputs,
+                                                    width=50,
+                                                    buffer=20)
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        f.SetPrevious(this_step)
+                        f.dv_index = entry_index
+                        f.status_dice = Status(ref=entry_index, stepnum=this_step)
+                        print("OK! " + f.name + " is now marked as a " + \
+                              self.dv_tags[f.dv_index] + " Form.")
                 # Then, choose a build option and create your heroic & civilian forms
                 build_options = [a_divided_psyche, a_split_form]
                 bo_prompt = "Choose one as the nature of your divided self:"
@@ -10431,6 +10454,18 @@ class Hero:
                     self.other_forms.append(heroic_form)
                     print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
+                    if self.archetype == 15:
+                        # The hero's Forms from Form-Changer are now all tagged as either Civilian
+                        #  or Heroic.
+                        for i in range(len(self.other_forms)):
+                            form_editing = self.other_forms[i]
+                            form_editing.SetPrevious(this_step)
+                            if form_editing.dv_index == 0:
+                                # This form is Civilian. Remove its Power list.
+                                form_editing.power_dice = []
+                            else:
+                                # This form is Heroic. Remove its Quality list.
+                                form_editing.quality_dice = []
                 elif dv_nature == a_split_form:
                     # Split Form isn't really an Ability, just a set of instructions to follow
                     #  during this step and the next one
@@ -10620,40 +10655,6 @@ class Hero:
                         self.other_forms.append(heroic_form)
                         print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                               "'s Form Sheet in Green.")
-                if self.archetype == 15:
-                    # This hero is a Form-Changer. Any of their Forms that don't currently have a
-                    #  Civilian or Heroic tag need to have one assigned.
-                    unassigned_forms = [f for f in self.other_forms \
-                                        if f.dv_index not in range(len(self.dv_tags))]
-                    for f in unassigned_forms:
-                        entry_options = string.ascii_uppercase[0:len(self.dv_tags)]
-                        decision = self.ChooseIndex(self.dv_tags,
-                                                    prompt=self.hero_name + " is a Divided " + \
-                                                    "hero. Is " + f.name + " a " + \
-                                                    self.dv_tags[0] + " or " + self.dv_tags[1] + \
-                                                    " form for them?",
-                                                    inputs=inputs,
-                                                    width=50,
-                                                    buffer=20)
-                        entry_index = decision[0]
-                        inputs = decision[1]
-                        f.SetPrevious(this_step)
-                        f.dv_index = entry_index
-                        f.status_dice = Status(ref=entry_index, stepnum=this_step)
-                        print("OK! " + f.name + " is now marked as a " + \
-                              self.dv_tags[f.dv_index] + " Form.")
-                    if dv_nature == a_divided_psyche:
-                        # The hero's Forms from Form-Changer are now all tagged as either Civilian
-                        #  or Heroic.
-                        for i in range(len(self.other_forms)):
-                            form_editing = self.other_forms[i]
-                            form_editing.SetPrevious(this_step)
-                            if form_editing.dv_index == 0:
-                                # This form is Civilian. Remove its Power list.
-                                form_editing.power_dice = []
-                            else:
-                                # This form is Heroic. Remove its Quality list.
-                                form_editing.quality_dice = []
                 # Finally, choose a Principle from the Divided archetype
                 r_category = arc_divided[18]
                 if track_inputs:
@@ -13555,9 +13556,9 @@ def Create_Future_Girl(step=len(step_names)):
                                   "B",
                                   "B",
                                   ["A","Dial H for Hero"],
+                                  "B",
                                   "A",
                                   ["A","Unlisted Numbers"],
-                                  "B",
                                   ["H","b"]])
         if track_inputs:
             print(notePrefix + tracker_close)
@@ -18322,15 +18323,15 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKim()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getLori()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 ##w=100
 ##pf=""
