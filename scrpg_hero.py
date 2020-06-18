@@ -10338,6 +10338,9 @@ class Hero:
                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                # Then, choose a build option and create your heroic & civilian forms
+                build_options = [a_divided_psyche, a_split_form]
+                bo_prompt = "Choose one as the nature of your divided self:"
                 if self.archetype == 15:
                     # This hero is a Form-Changer. Any of their Forms that don't currently have a
                     #  Civilian or Heroic tag need to have one assigned BEFORE they can choose a
@@ -10361,49 +10364,117 @@ class Hero:
                         f.status_dice = Status(ref=entry_index, stepnum=this_step)
                         print("OK! " + f.name + " is now marked as a " + \
                               self.dv_tags[f.dv_index] + " Form.")
-                # Then, choose a build option and create your heroic & civilian forms
-                build_options = [a_divided_psyche, a_split_form]
-                bo_prompt = "Choose one as the nature of your divided self:"
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [build_options[i].name for i in range(len(build_options))]
-                    details = [build_options[i].details(width=-1,
-                                                        indented=False) \
-                               for i in range(len(build_options))]
-                    question = ExpandWindow(self.myWindow,
-                                            bo_prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype: Divided - Divided Nature",
-                                            lwidth=30,
-                                            rwidth=100)
-                    dv_nature = build_options[answer.get()]
-                else:
-                    # Use the shell to prompt the user
-                    entry_options = string.ascii_uppercase[0:len(build_options)]
-                    entry_choice = ' '
-                    print(bo_prompt)
-                    for i in range(len(build_options)):
-                        print("    " + entry_options[i] + ": " + build_options[i].name)
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a divided nature expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
+                    # Now that all Form-Changer Forms have a Divided tag, we can determine whether
+                    #  Split Form is legal
+                    # Unless specific conditions are met, only Divided Psyche is legal for this
+                    #  hero
+                    build_options = [a_divided_psyche]
+                    # First condition: all Forms, including the base sheet, MUST share at least 2
+                    #  Powers
+                    # (Since Power die sizes may be different in different Forms, we can't use
+                    #  full PQDie objects to assign them- we need their identifying category and
+                    #  index, plus flavorname in case the hero has something like 2 different
+                    #  Signature Weapons)
+                    common_power_ids = [[p.triplet(), p.flavorname] for p in self.power_dice]
+                    for fm in self.other_forms:
+                        form_power_ids = [[p.triplet(), p.flavorname] for p in fm.power_dice]
+                        common_power_ids = [pair for pair in common_power_ids \
+                                            if pair in form_power_ids]
+                    if len(common_power_ids) >= 2:
+                        # Next condition depends on whether all Form-Changer Forms share a Divided
+                        #  tag
+                        dv_counts = [0 for t in self.dv_tags]
+                        for fm in self.other_forms:
+                            dv_counts[fm.dv_index] += 1
+                        if dv_counts[0] == 0:
+                            # All Form-Changer Forms are Heroic
+                            # Split Form is OK, with the following specifications:
+                            build_options = [a_divided_psyche, a_split_form]
+                            # Constant Powers must be chosen from the Power IDs common to all
+                            #  Forms
+                            constant_power_options = common_power_ids
+                            # Other Powers that appear in Form-Changer Forms are Heroic Powers
+                            # Other Powers that appear on the base sheet are assigned by the user
+                        elif dv_counts[1] == 0:
+                            # All Form-Changer Forms are Civilian
+                            # Split Form is OK, with the following specifications:
+                            build_options = [a_divided_psyche, a_split_form]
+                            # Constant Powers must be chosen from the Power IDs common to all
+                            #  Forms
+                            constant_power_options = common_power_ids
+                            # Other Powers that appear in Form-Changer Forms are Civilian Powers
+                            # Other Powers that appear on the base sheet are assigned by the user
                         else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            expand_index = entry_options.find(entry_choice.upper())
-                            build_options[expand_index].display(prefix="    ",
-                                                                width=100)
-                    dv_nature = build_options[entry_options.find(entry_choice)]
+                            # Some Form-Changer Forms are Civilian and some are Heroic
+                            # Next condition: all Civilian Forms and all Heroic Forms must share
+                            #  EXACTLY 2 Power IDs
+                            heroic_form_ids = []
+                            civilian_form_ids = []
+                            for fm in self.other_forms:
+                                form_power_ids = [[p.triplet(), p.flavorname] \
+                                                  for p in fm.power_dice]
+                                if fm.dv_index == 0:
+                                    heroic_form_ids.extend([pair for pair in form_power_ids \
+                                                       if pair not in heroic_form_ids])
+                                else:
+                                    civilian_form_ids.extend([pair for pair in form_power_ids \
+                                                         if pair not in civilian_form_ids])
+                            common_ids = [pair for pair in heroic_form_ids \
+                                          if pair in civilian_form_ids]
+                            if len(common_ids) == 2:
+                                # Split Form is OK, with the following specifications:
+                                build_options = [a_divided_psyche, a_split_form]
+                                # The 2 Constant Powers are the ones in common_ids
+                                constant_power_options = common_ids
+                                # Other Powers that appear in Heroic Forms are Heroic Powers
+                                # Other Powers that appear in Civilian Forms are Civilian Powers
+                                # Other Powers that appear on the base sheet are assigned by the
+                                #  user
+                if len(build_options) > 1:
+                    # If both options are valid...
+                    if self.UseGUI(inputs):
+                        # Create an ExpandWindow to prompt the user
+                        answer = IntVar()
+                        options = [build_options[i].name for i in range(len(build_options))]
+                        details = [build_options[i].details(width=-1,
+                                                            indented=False) \
+                                   for i in range(len(build_options))]
+                        question = ExpandWindow(self.myWindow,
+                                                bo_prompt,
+                                                options,
+                                                details,
+                                                var=answer,
+                                                title="Archetype: Divided - Divided Nature",
+                                                lwidth=30,
+                                                rwidth=100)
+                        dv_nature = build_options[answer.get()]
+                    else:
+                        # Use the shell to prompt the user
+                        entry_options = string.ascii_uppercase[0:len(build_options)]
+                        entry_choice = ' '
+                        print(bo_prompt)
+                        for i in range(len(build_options)):
+                            print("    " + entry_options[i] + ": " + build_options[i].name)
+                        while entry_choice not in entry_options:
+                            print("Enter a lowercase letter to see a divided nature expanded, " + \
+                                  "or an uppercase letter to select it.")
+                            if len(inputs) > 0:
+                                print("> " + inputs[0])
+                                entry_choice = inputs.pop(0)[0]
+                            else:
+                                line_prompt = ""
+                                if track_inputs:
+                                    line_prompt += "> "
+                                entry_choice = input(line_prompt)[0]
+                            if entry_choice.upper() in entry_options and \
+                               entry_choice not in entry_options:
+                                expand_index = entry_options.find(entry_choice.upper())
+                                build_options[expand_index].display(prefix="    ",
+                                                                    width=100)
+                        dv_nature = build_options[entry_options.find(entry_choice)]
+                else:
+                    # Otherwise, automatically take the only one that works
+                    dv_nature = build_options[0]
                 if dv_nature == a_divided_psyche:
                     # Add the Divided Psyche Green Ability
                     if track_inputs:
@@ -10419,14 +10490,14 @@ class Hero:
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     # Create a Civilian Form with standard Qualities & Status but no Powers
-                    cf_name = self.dv_tags[0] + " Form"
+                    cv_name = self.dv_tags[0] + " Form"
                     quality_key = PQDie(0,
                                         4,
                                         0,
                                         4,
                                         flavorname="[Standard Qualities]",
                                         stepnum=this_step)
-                    civilian_form = Form(cf_name,
+                    civilian_form = Form(cv_name,
                                          zone=0,
                                          pqs=[quality_key],
                                          status=Status(ref=0,
@@ -10455,8 +10526,8 @@ class Hero:
                     print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
                     if self.archetype == 15:
-                        # The hero's Forms from Form-Changer are now all tagged as either Civilian
-                        #  or Heroic.
+                        # The hero's alternate Forms from Form-Changer also have to follow the
+                        #  Divided Psyche rules...
                         for i in range(len(self.other_forms)):
                             form_editing = self.other_forms[i]
                             form_editing.SetPrevious(this_step)
@@ -10470,18 +10541,172 @@ class Hero:
                     # Split Form isn't really an Ability, just a set of instructions to follow
                     #  during this step and the next one
                     if self.archetype == 15:
-                        print("I honestly have no idea how this works")
-                        # Form-Changer lets you lose and gain Powers when you switch Forms. How
-                        #  are you supposed to assign those Powers to either Civilian or Heroic?
+                        # This hero is a Form-Changer, and doesn't necessarily use the same Power
+                        #  die sizes in all their Forms. Instead of assigning specific Power dice
+                        #  to Heroic or Civilian, we need to assign dice based on what Power they
+                        #  represent- their category and index, plus their custom name, in case
+                        #  the hero has 2 different Signature Weapons or something along those
+                        #  lines.
+                        constant_power_ids = []
+                        # When Split Form was determined to be possible for this hero, the list of
+                        #  constant_power_options (IDs for Powers that are available in all Forms
+                        #  and on the base sheet) was defined.
+                        if len(constant_power_options) == 2:
+                            # These 2 Powers are available in both Divided aspects.
+                            constant_power_ids = constant_power_options
+                            print(constant_power_ids[0][1] + " and " + constant_power_ids[1][1] + \
+                                  " are the only Powers on all of " + self.hero_name + \
+                                  "'s Power lists. Those will be " + \
+                                  pronouns[self.pronoun_set][2] + " constant Powers.")
+                        else:
+                            # Pick 2 of these to be available in both Divided aspects.
+                            while len(constant_power_ids) < 2:
+                                if len(constant_power_ids) == 0 and self.UseGUI(inputs):
+                                    # Use a SwapWindow to select both constant Powers at once
+                                    dispWidth = 100
+                                    answer0 = IntVar()
+                                    answer1 = IntVar()
+                                    prompt = "Choose 2 Powers for " + self.hero_name + \
+                                             " to have access to in both " + self.dv_tags[0] + \
+                                             " and " + self.dv_tags[1] + " Forms:"
+                                    title = "Archetype Selection: Divided:Form-Changer"
+                                    question = SwapWindow(self.myWindow,
+                                                          prompt,
+                                                          [x[1] for x in constant_power_options],
+                                                          answer0,
+                                                          answer1,
+                                                          title=title,
+                                                          width=dispWidth)
+                                    constantIndices = [answer0.get(), answer1.get()]
+                                    # Move corresponding power IDs from unassigned to constant, in
+                                    #  descending order so the indices don't change
+                                    bigIndex = max(constantIndices)
+                                    smallIndex = min(constantIndices)
+                                    constant_power_ids.append(unassigned_power_ids.pop(bigIndex))
+                                    constant_power_ids.append(unassigned_power_ids.pop(smallIndex))
+                                else:
+                                    # Select one constant Power at a time
+                                    decision = self.ChooseIndex([x[1] for x in unassigned_power_ids],
+                                                                prompt="Choose a Power for " + \
+                                                                self.hero_name + " to have " + \
+                                                                "access to in both " + \
+                                                                self.dv_tags[0] + " and " + \
+                                                                self.dv_tags[1] + " Forms:",
+                                                                inputs=inputs,
+                                                                title="Archetype Selection: " + \
+                                                                "Divided",
+                                                                width=50,
+                                                                buffer=15)
+                                    entry_index = decision[0]
+                                    inputs = decision[1]
+                                    print("OK! Marking " + unassigned_power_ids[entry_index][1] + \
+                                          " as a constant Power.")
+                                    constant_power_ids.append(unassigned_power_ids.pop(entry_index))
+                        # Add all other Power IDs that appear in Civilian or Heroic forms to the
+                        #  corresponding list: non-constant Powers from Civilian Forms become
+                        #  Civilian Powers, and non-constant Powers from Heroic Forms become Heroic
+                        #  Powers
+                        civilian_power_ids = []
+                        heroic_power_ids = []
+                        base_power_ids = [[p.triplet(), p.flavorname] for p in self.power_dice]
+                        unassigned_power_ids = [pair for pair in base_power_ids \
+                                                if pair not in constant_power_ids]
+                        for fm in self.other_forms:
+                            form_power_ids = [[p.triplet(), p.flavorname] for p in fm.power_dice]
+                            unassigned_form_ids = [pair for pair in form_power_ids \
+                                                   if pair not in constant_power_ids \
+                                                   and pair not in civilian_power_ids \
+                                                   and pair not in heroic_power_ids]
+                            if fm.dv_index == 0:
+                                civilian_power_ids.extend(unassigned_form_ids)
+                            elif fm.dv_index == 1:
+                                heroic_power_ids.extend(unassigned_form_ids)
+                            else:
+                                print(notePrefix + "Whoops! Looks like " + form.name + \
+                                      " didn't get a Divided tag...")
+                                unassigned_power_ids.extend(unassigned_form_ids)
+                        auto_civilian_names = [pair[1] for pair in civilian_power_ids]
+                        if len(auto_civilian_names) > 0:
+                            civilian_text = auto_civilian_names[0]
+                            for j in range(1, len(auto_civilian_names)-1):
+                                civilian_text += ", " + auto_civilian_names[j]
+                            if len(auto_civilian_names) > 2:
+                                civilian_text += ","
+                            if len(auto_civilian_names) > 1:
+                                civilian_text += " and " + \
+                                                 auto_civilian_names[len(auto_civilian_names) - 1]
+                            print(civilian_text + " are on " + self.hero_name + "'s Power " + \
+                                  "list(s) in Civilian form(s). These will be Civilian Powers.")
+                        auto_heroic_names = [pair[1] for pair in heroic_power_ids]
+                        if len(auto_heroic_names) > 0:
+                            heroic_text = auto_heroic_names[0]
+                            for j in range(1, len(auto_heroic_names)-1):
+                                heroic_text += ", " + auto_heroic_names[j]
+                            if len(auto_heroic_names) > 2:
+                                heroic_text += ","
+                            if len(auto_heroic_names) > 1:
+                                heroic_text += " and " + \
+                                               auto_heroic_names[len(auto_heroic_names) - 1]
+                            print(heroic_text + " are on " + self.hero_name + "'s Power " + \
+                                  "list(s) in Heroic form(s). These will be Heroic Powers.")
+                        # The only Powers left to assign should be ones that appear on the base
+                        #  Power list but not in any alternate Forms. Assign each of them to
+                        #  either Civilian or Heroic.
+                        while len(unassigned_power_ids) > 0:
+                            if self.UseGUI(inputs):
+                                # Use an AssignWindow to assign the remaining Power IDs
+                                result = StringVar(self.myFrame)
+                                questions = AssignWindow(self.myWindow,
+                                                         "Assign " + self.hero_name + \
+                                                         "'s remaining Powers to one of " + \
+                                                         pronouns[self.pronoun_set][2] + \
+                                                         " Divided Forms...",
+                                                         self.dv_tags,
+                                                         [x[1] for x in unassigned_power_ids],
+                                                         result,
+                                                         title="Archetype Selection: Divided")
+                                answer = result.get()
+                                for i in range(len(unassigned_power_ids)):
+                                    if answer[i] == string.ascii_uppercase[0]:
+                                        civilian_power_ids.append(unassigned_power_ids[i])
+                                    elif answer[i] == string.ascii_uppercase[1]:
+                                        heroic_power_ids.append(unassigned_power_ids[i])
+                                unassigned_power_ids = [pair for pair in unassigned_power_ids \
+                                                        if pair not in civilian_power_ids \
+                                                        and pair not in heroic_power_ids]
+                            else:
+                                # Use ChooseIndex to assign the next ID
+                                assigning_id = unassigned_power_ids.pop(0)
+                                decision = self.ChooseIndex(self.dv_tags,
+                                                            prompt="Which of " + self.hero_name + \
+                                                            "'s Divided Forms should have " + \
+                                                            "access to " + assigning_id[1] + \
+                                                            "?",
+                                                            inputs=inputs,
+                                                            width=50,
+                                                            buffer=10)
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                print("OK! Marking " + assigning_id[1] + " as a " + \
+                                      self.dv_tags[entry_index] + " Power.")
+                                if entry_index == 0:
+                                    civilian_power_ids.append(assigning_id)
+                                else:
+                                    heroic_power_ids.append(assigning_id)
+                        # Now we can compile the list of Power dice that each base form gets.
+                        hr_power_dice = [d for d in self.power_dice \
+                                         if [d.triplet(), d.flavorname] in \
+                                         heroic_power_ids + constant_power_ids]
+                        cv_power_dice = [d for d in self.power_dice \
+                                         if [d.triplet(), d.flavorname] in \
+                                         civilian_power_ids + constant_power_ids]
                     else:
+                        # This hero isn't a Form-Changer, so we don't need any of this "Power ID"
+                        #  stuff- their Powers are just PQDie objects
                         constant_powers = []
                         civilian_powers = []
                         heroic_powers = []
                         unassigned_powers = [d for d in self.power_dice]
-                        constant_qualities = []
-                        civilian_qualities = []
-                        heroic_qualities = []
-                        unassigned_qualities = [d for d in self.quality_dice]
                         # Pick 2 Powers to be available in both forms.
                         while len(constant_powers) < 2:
                             if len(constant_powers) == 0 and self.UseGUI(inputs):
@@ -10509,7 +10734,6 @@ class Hero:
                                 constant_powers.append(unassigned_powers.pop(smallIndex))
                             else:
                                 # Select one constant Power at a time
-                                entry_options = string.ascii_uppercase[0:len(unassigned_powers)]
                                 decision = self.ChooseIndex([str(x) for x in unassigned_powers],
                                                             prompt="Choose a Power for " + \
                                                             self.hero_name + " to have access " + \
@@ -10524,50 +10748,8 @@ class Hero:
                                 print("OK! Marking " + str(unassigned_powers[entry_index]) + \
                                       " as a constant Power.")
                                 constant_powers.append(unassigned_powers.pop(entry_index))
-                        # Pick 2 Qualities to be available in both forms.
-                        while len(constant_qualities) < 2:
-                            if len(constant_qualities) == 0 and self.UseGUI(inputs):
-                                # Use a SwapWindow to select both constant Qualities at once
-                                dispWidth = 100
-                                answer0 = IntVar()
-                                answer1 = IntVar()
-                                prompt = "Choose 2 Qualities for " + self.hero_name + \
-                                         " to have access to in both " + self.dv_tags[0] + \
-                                         " and " + self.dv_tags[1] + " Forms:"
-                                title = "Archetype Selection: Divided"
-                                question = SwapWindow(self.myWindow,
-                                                      prompt,
-                                                      [str(x) for x in unassigned_qualities],
-                                                      answer0,
-                                                      answer1,
-                                                      title=title,
-                                                      width=dispWidth)
-                                constantIndices = [answer0.get(), answer1.get()]
-                                # Move corresponding quality dice from unassigned to constant, in
-                                #  descending order so the indices don't change
-                                bigIndex = max(constantIndices)
-                                smallIndex = min(constantIndices)
-                                constant_qualities.append(unassigned_qualities.pop(bigIndex))
-                                constant_qualities.append(unassigned_qualities.pop(smallIndex))
-                            else:
-                                # Select one constant Quality at a time
-                                entry_options = string.ascii_uppercase[0:len(unassigned_qualities)]
-                                decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
-                                                            prompt="Choose a Quality for " + \
-                                                            self.hero_name + " to have access " + \
-                                                            "to in both " + self.dv_tags[0] + \
-                                                            " and " + self.dv_tags[1] + " Forms:",
-                                                            inputs=inputs,
-                                                            width=50,
-                                                            buffer=15)
-                                entry_index = decision[0]
-                                inputs = decision[1]
-                                print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
-                                      " as a constant Quality.")
-                                constant_qualities.append(unassigned_qualities.pop(entry_index))
-                        # Assign each remaining Power and Quality to either Civilian or Heroic.
-                        unassigned_dice = unassigned_powers + unassigned_qualities
-                        while len(unassigned_dice) > 0:
+                        # Assign each remaining Power to either Civilian or Heroic.
+                        while len(unassigned_powers) > 0:
                             if self.UseGUI(inputs):
                                 # Use an AssignWindow to assign the remaining dice
                                 result = StringVar(self.myFrame)
@@ -10578,29 +10760,20 @@ class Hero:
                                                          pronouns[self.pronoun_set][2] + \
                                                          " Divided Forms...",
                                                          self.dv_tags,
-                                                         [str(x) for x in unassigned_dice],
+                                                         [str(x) for x in unassigned_powers],
                                                          result,
                                                          title="Archetype Selection: Divided")
                                 answer = result.get()
-                                for i in range(len(unassigned_dice)):
+                                for i in range(len(unassigned_powers)):
                                     if answer[i] == string.ascii_uppercase[0]:
-                                        if unassigned_dice[i].ispower:
-                                            civilian_powers.append(unassigned_dice[i])
-                                        else:
-                                            civilian_qualities.append(unassigned_dice[i])
-                                    else:
-                                        if unassigned_dice[i].ispower:
-                                            heroic_powers.append(unassigned_dice[i])
-                                        else:
-                                            heroic_qualities.append(unassigned_dice[i])
-                                unassigned_dice = [x for x in unassigned_dice \
-                                                   if x not in civilian_powers + \
-                                                   civilian_qualities + heroic_powers + \
-                                                   heroic_qualities]
+                                        civilian_powers.append(unassigned_powers[i])
+                                    elif answer[i] == string.ascii_uppercase[1]:
+                                        heroic_powers.append(unassigned_powers[i])
+                                unassigned_powers = [x for x in unassigned_powers \
+                                                   if x not in civilian_powers + heroic_powers]
                             else:
                                 # Use ChooseIndex to assign the next die
-                                assigning_die = unassigned_dice.pop(0)
-                                entry_options = "AB"
+                                assigning_die = unassigned_powers.pop(0)
                                 decision = self.ChooseIndex(self.dv_tags,
                                                             prompt="Which of " + self.hero_name + \
                                                             "'s Divided Forms should have " + \
@@ -10615,46 +10788,139 @@ class Hero:
                                       self.dv_tags[entry_index] + " " + \
                                       categories_singular[assigning_die.ispower] + ".")
                                 if entry_index == 0:
-                                    if assigning_die.ispower:
-                                        civilian_powers.append(assigning_die)
-                                    else:
-                                        civilian_qualities.append(assigning_die)
+                                    civilian_powers.append(assigning_die)
                                 else:
-                                    if assigning_die.ispower:
-                                        heroic_powers.append(assigning_die)
-                                    else:
-                                        heroic_qualities.append(assigning_die)
-                        # We're leaving self.power_dice and self.quality_dice as complete lists.
-                        # The Heroic form gets the Heroic dice plus the Constant ones:
-                        hr_power_dice = [d for d in constant_powers + heroic_powers]
-                        hr_quality_dice = [d for d in constant_qualities + heroic_qualities]
-                        # The Civilian form gets the Civilian dice plus the Constant ones.
-                        cf_power_dice = [d for d in constant_powers + civilian_powers]
-                        cf_quality_dice = [d for d in constant_qualities + civilian_qualities]
-                        # >> Split up the Abilities? <<
-                        # ...
-                        cf_name = self.dv_tags[0] + " Form"
-                        civilian_form = Form(cf_name,
-                                             zone=0,
-                                             pqs=cf_power_dice+cf_quality_dice,
-                                             status=Status(ref=0,
-                                                           stepnum=this_step),
-                                             divided=0,
-                                             stepnum=this_step)
-                        self.other_forms.append(civilian_form)
-                        print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
-                              "'s Form Sheet in Green.")
-                        hr_name = self.dv_tags[1] + " Form"
-                        heroic_form = Form(hr_name,
-                                           zone=0,
-                                           pqs=hr_power_dice+hr_quality_dice,
-                                           status=Status(ref=1,
-                                                         stepnum=this_step),
-                                           divided=1,
-                                           stepnum=this_step)
-                        self.other_forms.append(heroic_form)
-                        print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
-                              "'s Form Sheet in Green.")
+                                    heroic_powers.append(assigning_die)
+                        # Now we can compile the list of Power dice that each base form gets.
+                        hr_power_dice = [d for d in heroic_powers + constant_powers]
+                        cv_power_dice = [d for d in civilian_powers + constant_powers]
+                    # Phew! That takes care of Power assignment.
+                    # Form-Changer can't alter a hero's Qualities, so they get assigned as
+                    #  PQDie objects no matter what.
+                    constant_qualities = []
+                    civilian_qualities = []
+                    heroic_qualities = []
+                    unassigned_qualities = [d for d in self.quality_dice]
+                    # Pick 2 Qualities to be available in both forms.
+                    while len(constant_qualities) < 2:
+                        if len(constant_qualities) == 0 and self.UseGUI(inputs):
+                            # Use a SwapWindow to select both constant Qualities at once
+                            dispWidth = 100
+                            answer0 = IntVar()
+                            answer1 = IntVar()
+                            prompt = "Choose 2 Qualities for " + self.hero_name + \
+                                     " to have access to in both " + self.dv_tags[0] + \
+                                     " and " + self.dv_tags[1] + " Forms:"
+                            title = "Archetype Selection: Divided"
+                            question = SwapWindow(self.myWindow,
+                                                  prompt,
+                                                  [str(x) for x in unassigned_qualities],
+                                                  answer0,
+                                                  answer1,
+                                                  title=title,
+                                                  width=dispWidth)
+                            constantIndices = [answer0.get(), answer1.get()]
+                            # Move corresponding quality dice from unassigned to constant, in
+                            #  descending order so the indices don't change
+                            bigIndex = max(constantIndices)
+                            smallIndex = min(constantIndices)
+                            constant_qualities.append(unassigned_qualities.pop(bigIndex))
+                            constant_qualities.append(unassigned_qualities.pop(smallIndex))
+                        else:
+                            # Select one constant Quality at a time
+                            decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
+                                                        prompt="Choose a Quality for " + \
+                                                        self.hero_name + " to have access " + \
+                                                        "to in both " + self.dv_tags[0] + \
+                                                        " and " + self.dv_tags[1] + " Forms:",
+                                                        inputs=inputs,
+                                                        width=50,
+                                                        buffer=15)
+                            entry_index = decision[0]
+                            inputs = decision[1]
+                            print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
+                                  " as a constant Quality.")
+                            constant_qualities.append(unassigned_qualities.pop(entry_index))
+                    # Assign each remaining Quality to either Civilian or Heroic.
+                    while len(unassigned_qualities) > 0:
+                        if self.UseGUI(inputs):
+                            # Use an AssignWindow to assign the remaining dice
+                            result = StringVar(self.myFrame)
+                            questions = AssignWindow(self.myWindow,
+                                                     "Assign " + self.hero_name + \
+                                                     "'s remaining Powers & Qualities to " + \
+                                                     "one of " + \
+                                                     pronouns[self.pronoun_set][2] + \
+                                                     " Divided Forms...",
+                                                     self.dv_tags,
+                                                     [str(x) for x in unassigned_qualities],
+                                                     result,
+                                                     title="Archetype Selection: Divided")
+                            answer = result.get()
+                            for i in range(len(unassigned_qualities)):
+                                if answer[i] == string.ascii_uppercase[0]:
+                                    civilian_qualities.append(unassigned_qualities[i])
+                                elif answer[i] == string.ascii_uppercase[1]:
+                                    heroic_qualities.append(unassigned_qualities[i])
+                            unassigned_qualities = [x for x in unassigned_qualities \
+                                               if x not in civilian_qualities + \
+                                               heroic_qualities]
+                        else:
+                            # Use ChooseIndex to assign the next die
+                            assigning_die = unassigned_qualities.pop(0)
+                            decision = self.ChooseIndex(self.dv_tags,
+                                                        prompt="Which of " + self.hero_name + \
+                                                        "'s Divided Forms should have " + \
+                                                        "access to " + str(assigning_die) + \
+                                                        "?",
+                                                        inputs=inputs,
+                                                        width=50,
+                                                        buffer=10)
+                            entry_index = decision[0]
+                            inputs = decision[1]
+                            print("OK! Marking " + str(assigning_die) + " as a " + \
+                                  self.dv_tags[entry_index] + " " + \
+                                  categories_singular[assigning_die.ispower] + ".")
+                            if entry_index == 0:
+                                civilian_qualities.append(assigning_die)
+                            else:
+                                heroic_qualities.append(assigning_die)
+                    # Now we can compile the list of Quality dice that each form gets.
+                    hr_quality_dice = [d for d in constant_qualities + heroic_qualities]
+                    cv_quality_dice = [d for d in constant_qualities + civilian_qualities]
+                    if self.archetype == 15:
+                        # The hero is a Form-Changer, and their alternate Forms currently have
+                        #  Quality lists that just refer back to the base sheet. Edit them to match
+                        #  their respective Divided tags instead.
+                        for fm in self.other_forms:
+                            if fm.dv_index == 0:
+                                fm.quality_dice = cv_quality_dice
+                            elif fm.dv_index == 1:
+                                fm.quality_dice = hr_quality_dice
+                    # >> Split up the Abilities? <<
+                    # ...
+                    cv_name = self.dv_tags[0] + " Form"
+                    civilian_form = Form(cv_name,
+                                         zone=0,
+                                         pqs=cv_power_dice+cv_quality_dice,
+                                         status=Status(ref=0,
+                                                       stepnum=this_step),
+                                         divided=0,
+                                         stepnum=this_step)
+                    self.other_forms.append(civilian_form)
+                    print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
+                          "'s Form Sheet in Green.")
+                    hr_name = self.dv_tags[1] + " Form"
+                    heroic_form = Form(hr_name,
+                                       zone=0,
+                                       pqs=hr_power_dice+hr_quality_dice,
+                                       status=Status(ref=1,
+                                                     stepnum=this_step),
+                                       divided=1,
+                                       stepnum=this_step)
+                    self.other_forms.append(heroic_form)
+                    print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
+                          "'s Form Sheet in Green.")
                 # Finally, choose a Principle from the Divided archetype
                 r_category = arc_divided[18]
                 if track_inputs:
@@ -18323,7 +18589,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori()
+firstHero = factory.getLori(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

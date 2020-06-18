@@ -187,22 +187,21 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
    Does Muerto have a "base form"? He doesn't use the Form-Changer Ability that requires one
  Can we VERIFY whether a hero has done this, and only show Split Form as an option if they have?
   If every Form-Changer Form already has a Divided tag, then yes
+   Assume Split Form is not OK
    If all Form-Changer Forms and the base sheet share at least 2 Powers...
     If all Form-Changer Forms share a Divided tag...
 	 Split Form is OK. If the user chooses it...
 	  choose the constant Powers from among those common to all Forms
 	  the tag that's on the Forms gets the other Powers that are on the Forms
-	  the user assigns any other Powers that are on the base sheet
+	  the user assigns any unassigned Powers that are on the base sheet
 	Otherwise...
 	 Make a list of Powers used in both dv_tags[0] and dv_tags[1] Forms
 	 If the list's length is exactly 2...
 	  Split Form is OK. If the user chooses it...
 	   the Powers on the common list are the constant Powers
 	   each tag that's on >=1 Form gets the other Powers on that Form
-	   the user assigns any other Powers that are on the base sheet
-   If all Form-Changer Forms share a Divided tag and at least 2 Powers, then Split Form is OK- choose the constant Powers from among the shared ones, the rest of the Forms' Powers go in that tag, the other tag gets whatever's left from the base sheet
-   Otherwise, make a list of power triplets/flavornames used in both dv_tags[0] and dv_tags[1] forms; if the list's length is exactly 2, Split Form is OK and those are the constant Powers
-   If neither of these, require Divided Psyche
+	   the user assigns any unassigned Powers that are on the base sheet
+	
 
 Light orange colors:
 #FFC76C
