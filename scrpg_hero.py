@@ -15245,7 +15245,7 @@ class HeroFrame(Frame):
                                      activebackground=self.buttonColors[3],
                                      anchor=self.stepAnchor,
                                      justify=self.stepReason,
-                                     text="0. Edit Names",
+                                     text="Edit Names...",
                                      width=self.columnWidth*self.buttonWidth,
                                      height=self.rowHeight*self.buttonHeight,
                                      font=self.currentFont,
@@ -15517,13 +15517,12 @@ class HeroFrame(Frame):
         clearDisplay = False
         if self.myHero and buttonPressed:
             clearDisplay = True
-            if self.myHero.hero_name not in factory.codenames:
-                saveFirst = messagebox.askyesno(title="Save Changes?",
-                                                message="This will clear all data for your " + \
-                                                "current hero. Do you want to save this hero " + \
-                                                "to a TXT file first?")
-                if saveFirst:
-                    self.SaveTxt()
+            saveFirst = messagebox.askyesno(title="Save Changes?",
+                                            message="This will clear all data for your " + \
+                                            "current hero. Do you want to save this hero " + \
+                                            "to a TXT file first?")
+            if saveFirst:
+                self.SaveTxt()
         self.myHero = None
         self.myHeroNames = ["", ""]
         self.myHeroChars = ["" for i in range(4)]
@@ -15849,6 +15848,7 @@ class HeroFrame(Frame):
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
+            self.stepButtons[0].config(text="Edit Names...")
             rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
             self.completeSteps = [isinstance(self.myHero, Hero),
                                   self.myHero.background in range(len(bg_collection)),
@@ -15865,20 +15865,21 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
-            # Now that resetButton's function has changed, we only need to see it under certain
-            #  circumstances...
+            # Now that resetButton's function has changed, it only needs to be available under
+            #  certain circumstances...
             if True in self.completeSteps[1:]:
 ##                print(notePrefix + "completeSteps[" + str(self.completeSteps[1:].index(True)+1) + \
-##                      "] = True, showing ResetButton")
+##                      "] = True, activating ResetButton")
                 self.resetButton.config(state=NORMAL)
                 for b in self.textButtons:
                     b.config(state=NORMAL)
             else:
-##                print(notePrefix + "True not found in completeSteps[1:], hiding ResetButton")
+##                print(notePrefix + "True not found in completeSteps[1:], disabling ResetButton")
                 self.resetButton.config(state=DISABLED)
                 for b in self.textButtons:
                     b.config(state=DISABLED)
         else:
+            self.stepButtons[0].config(text="0. Add Names")
             self.resetButton.config(state=DISABLED)
             for b in self.textButtons:
                 b.config(state=DISABLED)
@@ -16266,6 +16267,67 @@ class HeroFrame(Frame):
                                 buffer=6)
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero)
+        # Check if there are any Abilities that can be renamed
+        # (Principle Abilities are named after the corresponding Principle, and Out Abilities don't
+        #  get names)
+        ability_options = [a for a in self.myHero.abilities \
+                           if a.zone != 3 and not a.name.startswith("Principle of ")]
+        for fm in self.myHero.other_forms:
+            ability_options.extend([a for a in fm.abilities \
+                                    if a.zone != 3 and not a.name.startswith("Principle of ")])
+        for md in self.myHero.other_modes:
+            ability_options.extend([a for a in md.abilities \
+                                    if a.zone != 3 and not a.name.startswith("Principle of ")])
+        # If so, ask if the user wants to rename them
+        if len(ability_options) > 0:
+            and_abilities = messagebox.askyesno(title="Hero Creation",
+                                                message="Do you want to rename any of " + \
+                                                self.myHero.hero_name + "'s Abilities?")
+            if and_abilities:
+                self.RenameAbilities()
+    def RenameAbilities(self):
+        # Let the user edit the names of the hero's Green, Yellow, & Red Abilities
+        notePrefix = "### HeroFrame.RenameAbilities: "
+        if isinstance(self.myHero, Hero):
+            ability_options = [a for a in self.myHero.abilities \
+                               if a.zone != 3 and not a.name.startswith("Principle of ")]
+            for fm in self.myHero.other_forms:
+                ability_options.extend([a for a in fm.abilities \
+                                        if a.zone != 3 and not a.name.startswith("Principle of ")])
+            for md in self.myHero.other_modes:
+                ability_options.extend([a for a in md.abilities \
+                                        if a.zone != 3 and not a.name.startswith("Principle of ")])
+            ability_choice = IntVar(self)
+            while len(ability_options) > ability_choice.get():
+                prompt = "Choose one of " + self.myHero.hero_name + "'s Abilities to rename:"
+                text_options = [str(a) for a in ability_options]
+                text_options.append("None")
+                details = [a.details(width=-1,
+                                     indented=True) for a in ability_options]
+                details.append("Exits this dialog with no further changes")
+                ability_choice.set(len(ability_options))
+                question = ExpandWindow(self.myParent,
+                                        prompt,
+                                        text_options,
+                                        details,
+                                        var=ability_choice,
+                                        title="Edit Hero",
+                                        lwidth=30,
+                                        lbuffer=5,
+                                        rwidth=100)
+                ability_index = ability_choice.get()
+                if ability_index in range(len(ability_options)):
+                    edit_ability = ability_options[ability_index]
+                    new_name = StringVar(self, edit_ability.flavorname)
+                    rename_prompt = edit_ability.details(width=-1,
+                                                         indented=True)
+                    rename_prompt += "\n\nEnter a new name for this Ability:"
+                    entry = EntryWindow(self.myParent,
+                                        rename_prompt,
+                                        var=new_name,
+                                        title="Edit Hero")
+                    edit_ability.flavorname = new_name.get()
+                    self.UpdateAll(self.myHero)
     def DisplayHeroSteps(self, inputs=[]):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
@@ -18643,15 +18705,15 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getJo()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Testing display/details methods...
 
