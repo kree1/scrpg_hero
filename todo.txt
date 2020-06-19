@@ -183,25 +183,21 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
    That's technically feasible for anyone doing this- if you knew you were going with Split Form, you would just be required to change exactly (X-2) of your Powers to other Powers every time you created a Form for Form-Changer that wasn't getting the same Divided tag as their base form. It wouldn't even have to be the same set of replacement powers every time, just as long as the overlap between one side of Divided and the other was exactly 2.
     *BUT* the instructions for Divided say to do everything except Principles for your other archetype first, and only then make your Divided choices.
     To make Muerto, they had to select Split Form first, then use that information in the steps for his other Archetype. You *CAN'T* guarantee that Split Form will be feasible if you follow the instructions as written.
-  Also notable: the base sheet's Power list is split between Ghost and Electronics like any other Split Form hero, it doesn't get used for ANYTHING in its entirety
+  Also notable: the base sheet's Power list is split between Ghost and Electronics; like any other Divided hero, Muerto doesn't have access to the full list of P/Q dice on his sheet in ANY form
    Does Muerto have a "base form"? He doesn't use the Form-Changer Ability that requires one
- Can we VERIFY whether a hero has done this, and only show Split Form as an option if they have?
-  If every Form-Changer Form already has a Divided tag, then yes
-   Assume Split Form is not OK
-   If all Form-Changer Forms and the base sheet share at least 2 Powers...
-    If all Form-Changer Forms share a Divided tag...
-	 Split Form is OK. If the user chooses it...
-	  choose the constant Powers from among those common to all Forms
-	  the tag that's on the Forms gets the other Powers that are on the Forms
-	  the user assigns any unassigned Powers that are on the base sheet
-	Otherwise...
-	 Make a list of Powers used in both dv_tags[0] and dv_tags[1] Forms
-	 If the list's length is exactly 2...
-	  Split Form is OK. If the user chooses it...
-	   the Powers on the common list are the constant Powers
-	   each tag that's on >=1 Form gets the other Powers on that Form
-	   the user assigns any unassigned Powers that are on the base sheet
-	
+   His transition Abilities are weird...
+    Calavera Wisps
+	 Take a basic action using Intangibility. Then, switch to your Ghost form on your auxiliary sheet.
+	  This is Change Forms (page 90), which lets the hero switch to any available form. Why is it restricted for Muerto?
+	   I guess it makes sense to have one ability that only switches to Ghost, since Possess Object only switches to Electronics...
+	Haunt Electronics
+	 Overcome using Technology. On a success, enter an Electronics form on your auxiliary sheet. Then, take a basic action using your Min die.
+	  This is Possess Object (page 94), which lets the hero merge with an item, so it makes sense for switching to Electronics forms but not Ghost ones.
+	  (If Muerto wasn't a Form-Changer and only had one possessed-item form, how would he change back?)
+	Polterheist
+	 Attack using Intangibility and use your Max die. Then change to any available form.
+	  This is Surprise Shift (page 90), which lets the hero change to any available form.
+ Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
 
 Light orange colors:
 #FFC76C
