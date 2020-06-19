@@ -16239,6 +16239,7 @@ class HeroFrame(Frame):
         character_section = "Codename, civilian name, & pronouns"
         rename_options.append(character_section)
         ability_section = "Abilities"
+        mode_section = "Modes"
         if isinstance(self.myHero, Hero):
             ability_options = [a for a in self.myHero.abilities \
                                if a.zone != 3 and not a.name.startswith("Principle of ")]
@@ -16252,6 +16253,10 @@ class HeroFrame(Frame):
             #  Principle, their Ability/ies can be renamed
             if len(ability_options) > 0:
                 rename_options.append(ability_section)
+            mode_options = [i for i in range(len(self.myHero.other_modes)) \
+                            if isinstance(self.myHero.other_modes[i], Mode)]
+            if len(mode_options) > 0:
+                rename_options.append(mode_section)
             # ...
         # Once the list is complete, figure out which option to use
         rename_selection = ""
@@ -16274,6 +16279,8 @@ class HeroFrame(Frame):
             self.RenameHero()
         elif rename_selection == ability_section:
             self.RenameAbilities()
+        elif rename_selection == mode_section:
+            self.RenameModes()
     def RenameHero(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
         notePrefix = "### HeroFrame.RenameHero: "
@@ -16359,8 +16366,54 @@ class HeroFrame(Frame):
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
+                    changed = (new_name.get() != edit_ability.flavorname)
                     edit_ability.flavorname = new_name.get()
-                    self.UpdateAll(self.myHero)
+                    if changed:
+                        self.UpdateAll(self.myHero)
+    def RenameModes(self):
+        # Let the user edit the names of the hero's alternate Modes
+        notePrefix = "### HeroFrame.RenameModes: "
+        if isinstance(self.myHero, Hero):
+            mode_options = [i for i in range(len(self.myHero.other_modes)) \
+                            if isinstance(self.myHero.other_modes[i], Mode)]
+            mode_choice = IntVar(self, 1)
+            while len(mode_options) > 0 and mode_choice.get() != 0:
+                prompt = "Choose one of " + self.myHero.hero_name + "'s Modes to rename:"
+                text_options = ["None"] + [self.myHero.other_modes[i].name for i in mode_options]
+                details = ["Exit this dialog with no further changes"] + \
+                          [self.myHero.ModeDetails(i,
+                                                   codename=False,
+                                                   width=-1,
+                                                   hanging=False) for i in mode_options]
+                mode_choice.set(0)
+                question = ExpandWindow(self.myParent,
+                                        prompt,
+                                        text_options,
+                                        details,
+                                        var=mode_choice,
+                                        title="Edit Hero",
+                                        lwidth=30,
+                                        lbuffer=5,
+                                        rwidth=100)
+                selection = mode_choice.get()
+                if selection in range(1, len(text_options)):
+                    # User selected a Mode to edit
+                    edit_index = mode_options[selection-1]
+                    edit_mode = self.myHero.other_modes[edit_index]
+                    new_name = StringVar(self, value=edit_mode.name)
+                    rename_prompt = self.myHero.ModeDetails(edit_index,
+                                                            codename=False,
+                                                            width=-1,
+                                                            hanging=False)
+                    rename_prompt += "\n\nEnter a new name for this Mode:"
+                    entry = EntryWindow(self.myParent,
+                                        rename_prompt,
+                                        var=new_name,
+                                        title="Edit Hero")
+                    changed = (new_name.get() != edit_mode.name)
+                    edit_mode.name = new_name.get()
+                    if changed:
+                        self.UpdateAll(self.myHero)
     def DisplayHeroSteps(self, inputs=[]):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
