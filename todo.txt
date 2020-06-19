@@ -215,7 +215,8 @@ Complete steps of hero creation are now reversible
  Can we make this more granular?
   
 Let EditNames rename...
-	dice
-	Abilities
+.	Abilities
+	Principles
 	Forms
 	Modes
+	dice

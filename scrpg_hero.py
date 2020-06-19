@@ -15212,7 +15212,7 @@ class HeroFrame(Frame):
         #  self.buttonColors[2:4]
         secondBFCol = firstBFCol + self.buttonWidth
         prevButtonRows = 0
-        self.stepCommands = [self.EditNames,
+        self.stepCommands = [self.RenameHero,
                              self.AddHeroBackground,
                              self.AddHeroPowerSource,
                              self.AddHeroArchetype,
@@ -15249,7 +15249,7 @@ class HeroFrame(Frame):
                                      width=self.columnWidth*self.buttonWidth,
                                      height=self.rowHeight*self.buttonHeight,
                                      font=self.currentFont,
-                                     command=self.EditNames,
+                                     command=self.RenameAny,
                                      padx=self.buttonPadX,
                                      pady=self.buttonPadY)
         self.stepButtons[0].grid(row=editRow+self.buttonHeight*prevButtonRows,
@@ -16230,9 +16230,53 @@ class HeroFrame(Frame):
                 print(notePrefix + tracker_close)
         print("Done!")
         self.UpdateAll(self.myHero)
-    def EditNames(self, inputs=[]):
+    def RenameAny(self):
+        # Let the user choose from among a list of hero attributes to rename
+        notePrefix = "### HeroFrame.RenameAny: "
+        # Make a list of attributes that can be renamed
+        rename_options = []
+        # The character can always be renamed
+        character_section = "Codename, civilian name, & pronouns"
+        rename_options.append(character_section)
+        ability_section = "Abilities"
+        if isinstance(self.myHero, Hero):
+            ability_options = [a for a in self.myHero.abilities \
+                               if a.zone != 3 and not a.name.startswith("Principle of ")]
+            for fm in self.myHero.other_forms:
+                ability_options.extend([a for a in fm.abilities \
+                                        if a.zone != 3 and not a.name.startswith("Principle of ")])
+            for md in self.myHero.other_modes:
+                ability_options.extend([a for a in md.abilities \
+                                        if a.zone != 3 and not a.name.startswith("Principle of ")])
+            # If the hero has at least one Ability that's Green, Yellow, or Red and not from a
+            #  Principle, their Ability/ies can be renamed
+            if len(ability_options) > 0:
+                rename_options.append(ability_section)
+            # ...
+        # Once the list is complete, figure out which option to use
+        rename_selection = ""
+        if len(rename_options) == 1:
+            # There's only one option, so we don't need to prompt the user
+            rename_selection = rename_options[0]
+        elif len(rename_options) > 1:
+            # Multiple options? Better ask the user which one to follow up on
+            result = IntVar(self)
+            prompt = "What would you like to rename?"
+            title = "Edit Hero"
+            question = SelectWindow(self.myParent,
+                                    prompt,
+                                    rename_options,
+                                    var=result,
+                                    title=title)
+            rename_selection = rename_options[result.get()]
+        # Now we can follow up on the selected option
+        if rename_selection == character_section:
+            self.RenameHero()
+        elif rename_selection == ability_section:
+            self.RenameAbilities()
+    def RenameHero(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
-        notePrefix = "### HeroFrame.EditNames: "
+        notePrefix = "### HeroFrame.RenameHero: "
         indent = "    "
         if not isinstance(self.myHero, Hero):
             self.SetHero(Hero())
@@ -16243,8 +16287,10 @@ class HeroFrame(Frame):
                                prompt,
                                textVar,
                                title="Hero Creation")
+        changed = (self.myHero.hero_name != textVar.get())
         self.myHero.hero_name = textVar.get()
-        self.UpdateAll(self.myHero)
+        if changed:
+            self.UpdateAll(self.myHero)
         prompt = "Enter a civilian name for " + self.myHero.hero_name + ".\n(Feel free to use " + \
                  "a placeholder; you can change this at any time.)"
         textVar = StringVar(self, self.myHero.alias)
@@ -16252,8 +16298,10 @@ class HeroFrame(Frame):
                                prompt,
                                textVar,
                                title="Hero Creation")
+        changed = (self.myHero.alias != textVar.get())
         self.myHero.alias = textVar.get()
-        self.UpdateAll(self.myHero)
+        if changed:
+            self.UpdateAll(self.myHero)
         pronoun_options = [x[0] + "/" + x[1] for x in pronouns]
         pronoun_choice = IntVar(self, self.myHero.pronoun_set)
         prompt = "Which pronouns should be used for " + self.myHero.hero_name + "?\n(You can " + \
@@ -16265,26 +16313,10 @@ class HeroFrame(Frame):
                                 title="Hero Creation",
                                 width=40,
                                 buffer=6)
+        changed = (self.myHero.pronoun_set != pronoun_choice.get())
         self.myHero.pronoun_set = pronoun_choice.get()
-        self.UpdateAll(self.myHero)
-        # Check if there are any Abilities that can be renamed
-        # (Principle Abilities are named after the corresponding Principle, and Out Abilities don't
-        #  get names)
-        ability_options = [a for a in self.myHero.abilities \
-                           if a.zone != 3 and not a.name.startswith("Principle of ")]
-        for fm in self.myHero.other_forms:
-            ability_options.extend([a for a in fm.abilities \
-                                    if a.zone != 3 and not a.name.startswith("Principle of ")])
-        for md in self.myHero.other_modes:
-            ability_options.extend([a for a in md.abilities \
-                                    if a.zone != 3 and not a.name.startswith("Principle of ")])
-        # If so, ask if the user wants to rename them
-        if len(ability_options) > 0:
-            and_abilities = messagebox.askyesno(title="Hero Creation",
-                                                message="Do you want to rename any of " + \
-                                                self.myHero.hero_name + "'s Abilities?")
-            if and_abilities:
-                self.RenameAbilities()
+        if changed:
+            self.UpdateAll(self.myHero)
     def RenameAbilities(self):
         # Let the user edit the names of the hero's Green, Yellow, & Red Abilities
         notePrefix = "### HeroFrame.RenameAbilities: "
@@ -16297,15 +16329,15 @@ class HeroFrame(Frame):
             for md in self.myHero.other_modes:
                 ability_options.extend([a for a in md.abilities \
                                         if a.zone != 3 and not a.name.startswith("Principle of ")])
-            ability_choice = IntVar(self)
-            while len(ability_options) > ability_choice.get():
+            ability_choice = IntVar(self, 1)
+            while len(ability_options) > 0 and \
+                  ability_choice.get() != 0:
                 prompt = "Choose one of " + self.myHero.hero_name + "'s Abilities to rename:"
-                text_options = [str(a) for a in ability_options]
-                text_options.append("None")
-                details = [a.details(width=-1,
+                text_options = ["None"] + [str(a) for a in ability_options]
+                details = ["Exit this dialog with no further changes"] + \
+                          [a.details(width=-1,
                                      indented=True) for a in ability_options]
-                details.append("Exits this dialog with no further changes")
-                ability_choice.set(len(ability_options))
+                ability_choice.set(0)
                 question = ExpandWindow(self.myParent,
                                         prompt,
                                         text_options,
@@ -16315,9 +16347,10 @@ class HeroFrame(Frame):
                                         lwidth=30,
                                         lbuffer=5,
                                         rwidth=100)
-                ability_index = ability_choice.get()
-                if ability_index in range(len(ability_options)):
-                    edit_ability = ability_options[ability_index]
+                selection = ability_choice.get()
+                if selection in range(1, len(text_options)):
+                    # User selected an Ability to edit
+                    edit_ability = ability_options[selection-1]
                     new_name = StringVar(self, edit_ability.flavorname)
                     rename_prompt = edit_ability.details(width=-1,
                                                          indented=True)
