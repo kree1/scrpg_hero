@@ -16237,11 +16237,41 @@ class HeroFrame(Frame):
         rename_options = ["None"]
         # The character can always be renamed
         character_section = "Codename, civilian name, & pronouns"
-        rename_options.append(character_section)
+        pqdie_section = "Power/Quality dice"
         ability_section = "Abilities"
         form_section = "Forms"
         mode_section = "Modes"
+        rename_options.append(character_section)
         if isinstance(self.myHero, Hero):
+            # If the hero has at least 1 Power or Quality, their Powers/Qualities can be renamed
+            pqdie_ids = [[d.triplet(), d.flavorname, ""] for d in \
+                         self.myHero.power_dice + self.myHero.quality_dice]
+            for fm in self.myHero.other_forms:
+                if isinstance(fm, Form):
+                    fm.CheckReference()
+                    if not fm.std_powers:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, fm.name] \
+                                          for d in fm.power_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+                    if not fm.std_qualities:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, fm.name] \
+                                          for d in fm.quality_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+            for md in self.myHero.other_modes:
+                if isinstance(md, Mode):
+                    md.CheckReference()
+                    if not md.std_powers:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
+                                          for d in md.power_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+                    if not fm.std_qualities:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
+                                          for d in md.quality_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+            if len(pqdie_ids) > 0:
+                rename_options.append(pqdie_section)
+            # If the hero has at least one Ability that's Green, Yellow, or Red and not from a
+            #  Principle, their Ability/ies can be renamed
             ability_options = [a for a in self.myHero.abilities \
                                if a.zone != 3 and not a.name.startswith("Principle of ")]
             for fm in self.myHero.other_forms:
@@ -16250,14 +16280,14 @@ class HeroFrame(Frame):
             for md in self.myHero.other_modes:
                 ability_options.extend([a for a in md.abilities \
                                         if a.zone != 3 and not a.name.startswith("Principle of ")])
-            # If the hero has at least one Ability that's Green, Yellow, or Red and not from a
-            #  Principle, their Ability/ies can be renamed
             if len(ability_options) > 0:
                 rename_options.append(ability_section)
+            # If the hero has at least 1 other Form, their Forms can be renamed
             form_options = [i for i in range(len(self.myHero.other_forms)) \
                             if isinstance(self.myHero.other_forms[i], Form)]
             if len(form_options) > 0:
                 rename_options.append(form_section)
+            # If the hero has at least 1 other Mode, their Modes can be renamed
             mode_options = [i for i in range(len(self.myHero.other_modes)) \
                             if isinstance(self.myHero.other_modes[i], Mode)]
             if len(mode_options) > 0:
@@ -16282,6 +16312,8 @@ class HeroFrame(Frame):
         # Now we can follow up on the selected option
         if rename_selection == character_section:
             self.RenameHero()
+        elif rename_selection == pqdie_section:
+            self.RenamePQDice()
         elif rename_selection == ability_section:
             self.RenameAbilities()
         elif rename_selection == form_section:
@@ -16417,7 +16449,19 @@ class HeroFrame(Frame):
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
-                    edit_mode.name = new_name.get()
+                    # Make sure this name isn't already being used for a different Mode
+                    other_names = [self.myHero.other_modes[i].name for i in \
+                                   [i for i in mode_options if i != edit_index]]
+                    other_names.extend([self.myHero.other_modes[i].name.replace(" Mode","") \
+                                        for i in [i for i in mode_options if i != edit_index]])
+                    if new_name.get() in other_names:
+                        error_text = new_name.get() + " is the name of one of " + \
+                                     self.myHero.hero_name + "'s other Modes. You'll have to " + \
+                                     "rename that Mode before you can use its name for this one."
+                        messagebox.showerror(title="Edit Hero",
+                                             message=error_text)
+                    else:
+                        edit_mode.name = new_name.get()
     def RenameForms(self):
         # Let the user edit the names of the hero's alternate Forms
         notePrefix = "### HeroFrame.RenameForms: "
@@ -16481,19 +16525,155 @@ class HeroFrame(Frame):
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
-                    if rename_tag:
-                        # We're going to use the entry as a Divided tag as well as a name for this
-                        #  specific Form.
-                        new_tag = new_name.get()
-                        # The tag version shouldn't have "Form" at the end, but the Form version
-                        #  should. If the user entered it with "Form", chop it off for the tag;
-                        #  if they didn't, glue it on for the Form.
-                        if new_name.get().endswith(" Form"):
-                            new_tag = new_name.get()[0:len(new_name.get)-5]
-                        else:
-                            new_name.set(new_name.get() + " Form")
-                        self.myHero.dv_tags[is_divided] = new_tag
-                    edit_form.name = new_name.get()
+                    # Make sure this name isn't already being used for a different Form
+                    other_names = [self.myHero.other_forms[i].name for i in \
+                                   [i for i in form_options if i != edit_index]]
+                    other_names.extend([self.myHero.other_forms[i].name.replace(" Form","") \
+                                        for i in [i for i in form_options if i != edit_index]])
+                    if new_name.get() in other_names:
+                        error_text = new_name.get() + " is the name of one of " + \
+                                     self.myHero.hero_name + "'s other Forms. You'll have to " + \
+                                     "rename that Form before you can use its name for this one."
+                        messagebox.showerror(title="Edit Hero",
+                                             message=error_text)
+                    else:
+                        if rename_tag:
+                            # We're going to use the entry as a Divided tag as well as a name for
+                            #  this specific Form.
+                            new_tag = new_name.get()
+                            # The tag version shouldn't have "Form" at the end, but the Form
+                            #  version should. If the user entered it with "Form", chop it off for
+                            #  the tag; if they didn't, glue it on for the Form.
+                            if new_name.get().endswith(" Form"):
+                                new_tag = new_name.get()[0:len(new_name.get)-5]
+                            else:
+                                new_name.set(new_name.get() + " Form")
+                            self.myHero.dv_tags[is_divided] = new_tag
+                        edit_form.name = new_name.get()
+    def RenamePQDice(self):
+        # Let the user edit the names of the hero's Power/Quality dice
+        notePrefix = "### HeroFrame.RenamePQDice: "
+        if isinstance(self.myHero, Hero):
+            pqdie_ids = [[d.triplet(), d.flavorname, ""] for d in \
+                         self.myHero.power_dice + self.myHero.quality_dice]
+            for fm in self.myHero.other_forms:
+                if isinstance(fm, Form):
+                    fm.CheckReference()
+                    if not fm.std_powers:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, fm.name] \
+                                          for d in fm.power_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+                    if not fm.std_qualities:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, fm.name] \
+                                          for d in fm.quality_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+            # Alternate Modes SHOULDN'T have any unique Powers or Qualities under the current
+            #  rules, but it pays to be safe
+            for md in self.myHero.other_modes:
+                if isinstance(md, Mode):
+                    md.CheckReference()
+                    if not md.std_powers:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
+                                          for d in md.power_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+                    if not fm.std_qualities:
+                        pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
+                                          for d in md.quality_dice if \
+                                          [d.triplet(), d.flavorname, ""] not in pqdie_ids])
+            option_category = DieCategory([x[0] for x in pqdie_ids])
+            pqdie_choice = IntVar(self, 1)
+            while len(pqdie_ids) > 0 and pqdie_choice.get() != 0:
+                prompt = "Choose one of " + self.myHero.hero_name + "'s " + \
+                         categories_plural[option_category] + " to rename:"
+                # ...
+                text_options = ["None"]
+                for i in range(len(pqdie_ids)):
+                    note_txt = pqdie_ids[i][1]
+                    if len(pqdie_ids[i][2]) > 0:
+                        note_txt += " (" + pqdie_ids[i][2] + ")"
+                    text_options.append(note_txt)
+                pqdie_choice.set(0)
+                question = SelectWindow(self.myParent,
+                                        prompt,
+                                        text_options,
+                                        var=pqdie_choice,
+                                        title="Edit Hero",
+                                        width=30,
+                                        buffer=5)
+                selection = pqdie_choice.get()
+                if selection in range(1, len(text_options)):
+                    # User selected a power/quality to edit
+                    edit_id = pqdie_ids[selection-1]
+                    new_name = StringVar(self, value=edit_id[1])
+                    edit_category = DieCategory([edit_id[0]])
+                    rename_prompt = "Enter a new name for " + self.myHero.hero_name + "'s " + \
+                                    edit_id[1] + " " + categories_singular[edit_category] + ":"
+                    entry = EntryWindow(self.myParent,
+                                        rename_prompt,
+                                        var=new_name,
+                                        title="Edit Hero")
+                    # Make sure the new name isn't the name of a different existing Power/Quality
+                    official_names = [MixedPQs([x for x in AllCategories(t=0) if x != edit_id[0]]),
+                                      MixedPQs([x for x in AllCategories(t=1) if x != edit_id[0]])]
+                    other_names = [pqdie_ids[i][1] for i in \
+                                   [i for i in range(len(pqdie_ids)) if i != edit_id]]
+                    if new_name.get() in official_names[0] + official_names[1]:
+                        if new_name.get() in official_names[0]:
+                            official_category = 0
+                        elif new_name.get() in official_names[1]:
+                            official_category = 1
+                        error_text = new_name.get() + " is already the name of a different " + \
+                                     categories_singular[official_category] + \
+                                     ". If you want to add that " + \
+                                     categories_singular[official_category] + \
+                                     ", you'll have to get it during character creation."
+                        messagebox.showerror(title="Edit Hero",
+                                             message=error_text)
+                    elif new_name.get() in other_names:
+                        error_text = new_name.get() + " is the name of one of " + \
+                                     self.myHero.hero_name + "'s other " + categories_plural[2] + \
+                                     ". You'll have to rename that " + categories_singular[2] + \
+                                     " before you can use its name for this one."
+                        messagebox.showerror(title="Edit Hero",
+                                             message=error_text)
+                    else:
+                        # Go through the hero's Power/Quality lists and update ALL their dice that
+                        #  match this ID
+                        changed = False
+                        for d in self.myHero.power_dice + self.myHero.quality_dice:
+                            if d.triplet() == edit_id[0] and d.flavorname == edit_id[1]:
+                                if d.flavorname != new_name.get():
+                                    changed = True
+                                d.flavorname = new_name.get()
+                        for fm in self.myHero.other_forms:
+                            fm.CheckReference()
+                            if not fm.std_qualities:
+                                for d in fm.power_dice + fm.quality_dice:
+                                    if d.triplet() == edit_id[0] and d.flavorname == edit_id[1]:
+                                        d.flavorname = new_name.get()
+                        for md in self.myHero.other_modes:
+                            md.CheckReference()
+                            if not md.std_qualities:
+                                for d in md.power_dice + md.quality_dice:
+                                    if d.triplet() == edit_id[0] and d.flavorname == edit_id[1]:
+                                        d.flavorname = new_name.get()
+                        # Go through this hero's Ability lists and see if they refer to this ID; if
+                        #  so, update the relevant flavornames
+                        ability_options = [a for a in self.myHero.abilities]
+                        for fm in self.myHero.other_forms:
+                            ability_options.extend([a for a in fm.abilities])
+                        for md in self.myHero.other_modes:
+                            ability_options.extend([a for a in md.abilities])
+                        for ab in ability_options:
+                            for i in range(len(ab.insert_pqs)):
+                                if ab.insert_pqs[i] == edit_id[0] and \
+                                   ab.flavordice[i] in ["", edit_id[1]]:
+                                    ab.flavordice[i] = new_name.get()
+                                    changed = True
+                        # ...
+                        # If something on the base sheet was renamed, update appearance
+                        if changed:
+                            self.UpdateAll(self.myHero)
     def DisplayHeroSteps(self, inputs=[]):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.

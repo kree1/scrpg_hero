@@ -219,4 +219,4 @@ Let EditNames rename...
 	Principles?
 .	Forms
 .	Modes
-	dice
+.	dice
