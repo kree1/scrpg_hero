@@ -217,6 +217,6 @@ Complete steps of hero creation are now reversible
 Let EditNames rename...
 .	Abilities
 	Principles?
-	Forms
+.	Forms
 .	Modes
 	dice

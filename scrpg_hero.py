@@ -16234,11 +16234,12 @@ class HeroFrame(Frame):
         # Let the user choose from among a list of hero attributes to rename
         notePrefix = "### HeroFrame.RenameAny: "
         # Make a list of attributes that can be renamed
-        rename_options = []
+        rename_options = ["None"]
         # The character can always be renamed
         character_section = "Codename, civilian name, & pronouns"
         rename_options.append(character_section)
         ability_section = "Abilities"
+        form_section = "Forms"
         mode_section = "Modes"
         if isinstance(self.myHero, Hero):
             ability_options = [a for a in self.myHero.abilities \
@@ -16253,6 +16254,10 @@ class HeroFrame(Frame):
             #  Principle, their Ability/ies can be renamed
             if len(ability_options) > 0:
                 rename_options.append(ability_section)
+            form_options = [i for i in range(len(self.myHero.other_forms)) \
+                            if isinstance(self.myHero.other_forms[i], Form)]
+            if len(form_options) > 0:
+                rename_options.append(form_section)
             mode_options = [i for i in range(len(self.myHero.other_modes)) \
                             if isinstance(self.myHero.other_modes[i], Mode)]
             if len(mode_options) > 0:
@@ -16279,6 +16284,8 @@ class HeroFrame(Frame):
             self.RenameHero()
         elif rename_selection == ability_section:
             self.RenameAbilities()
+        elif rename_selection == form_section:
+            self.RenameForms()
         elif rename_selection == mode_section:
             self.RenameModes()
     def RenameHero(self, inputs=[]):
@@ -16410,10 +16417,83 @@ class HeroFrame(Frame):
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
-                    changed = (new_name.get() != edit_mode.name)
                     edit_mode.name = new_name.get()
-                    if changed:
-                        self.UpdateAll(self.myHero)
+    def RenameForms(self):
+        # Let the user edit the names of the hero's alternate Forms
+        notePrefix = "### HeroFrame.RenameForms: "
+        if isinstance(self.myHero, Hero):
+            form_options = [i for i in range(len(self.myHero.other_forms)) \
+                            if isinstance(self.myHero.other_forms[i], Form)]
+            form_choice = IntVar(self, 1)
+            while len(form_options) > 0 and form_choice.get() != 0:
+                prompt = "Choose one of " + self.myHero.hero_name + "'s Forms to rename:"
+                text_options = ["None"] + [self.myHero.other_forms[i].name for i in form_options]
+                details = ["Exit this dialog with no further changes"] + \
+                          [self.myHero.FormDetails(i,
+                                                   codename=False,
+                                                   width=-1,
+                                                   hanging=False) for i in form_options]
+                form_choice.set(0)
+                question = ExpandWindow(self.myParent,
+                                        prompt,
+                                        text_options,
+                                        details,
+                                        var=form_choice,
+                                        title="Edit Hero",
+                                        lwidth=30,
+                                        lbuffer=5,
+                                        rwidth=100)
+                selection = form_choice.get()
+                if selection in range(1, len(text_options)):
+                    # User selected a Form to edit
+                    edit_index = form_options[selection-1]
+                    edit_form = self.myHero.other_forms[edit_index]
+                    # Hang on. Is this a Divided-based Form? If so, renaming it will mean changing
+                    #  the hero's Divided tags
+                    is_divided = -1
+                    rename_tag = False
+                    if self.myHero.archetype_modifier == 1 and \
+                       len(edit_form.abilities) == 0:
+                        # This is a Divided Form
+                        is_divided = edit_form.dv_index
+                    if is_divided in range(len(dv_defaults)) and len(self.myHero.other_forms) > 2:
+                        # This is a Divided Form, but this Hero has non-Divided Forms as well.
+                        rename_tag = messagebox.askyesno(title="Edit Form",
+                                                         message="Do you want to use this " + \
+                                                         "name for all of " + \
+                                                         self.myHero.hero_name + "'s " + \
+                                                         self.myHero.dv_tags[is_divided] + \
+                                                         " Forms?")
+                    elif is_divided in range(len(dv_defaults)):
+                        rename_tag = True
+                    new_name = StringVar(self, value=edit_form.name)
+                    if rename_tag:
+                        rename_prompt = "Enter a new name for " + self.myHero.hero_name + "'s " + \
+                                        self.myHero.dv_tags[is_divided] + " Forms:"
+                        new_name.set(self.myHero.dv_tags[is_divided])
+                    else:
+                        rename_prompt = self.myHero.FormDetails(edit_index,
+                                                                codename=False,
+                                                                width=-1,
+                                                                hanging=False)
+                        rename_prompt += "\n\nEnter a new name for this Form:"
+                    entry = EntryWindow(self.myParent,
+                                        rename_prompt,
+                                        var=new_name,
+                                        title="Edit Hero")
+                    if rename_tag:
+                        # We're going to use the entry as a Divided tag as well as a name for this
+                        #  specific Form.
+                        new_tag = new_name.get()
+                        # The tag version shouldn't have "Form" at the end, but the Form version
+                        #  should. If the user entered it with "Form", chop it off for the tag;
+                        #  if they didn't, glue it on for the Form.
+                        if new_name.get().endswith(" Form"):
+                            new_tag = new_name.get()[0:len(new_name.get)-5]
+                        else:
+                            new_name.set(new_name.get() + " Form")
+                        self.myHero.dv_tags[is_divided] = new_tag
+                    edit_form.name = new_name.get()
     def DisplayHeroSteps(self, inputs=[]):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
@@ -18791,7 +18871,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
