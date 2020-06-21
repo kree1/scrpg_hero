@@ -14729,7 +14729,7 @@ class HeroFrame(Frame):
         self.numRows = 52
         self.width = width
         self.height = height
-        self.columnWidth = max(1, math.floor(self.width/self.numCols))
+        self.columnWidth = max(1, math.floor(self.width * 10/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
 ##        print(notePrefix + "width=" + str(self.width))
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
@@ -14747,18 +14747,16 @@ class HeroFrame(Frame):
         groupWidth = 8
         groupHeight = 2
         for i in range(len(self.nameTitles)):
-            self.nameTitles[i] = Label(self,
+            self.nameTitles[i] = Message(self,
                                        background="orange",
                                        text=self.nameTitleText[i],
                                        anchor=W, relief=titleRelief,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight,
                                        font=self.currentFont)
-            self.nameValues[i] = Label(self,
+            self.nameValues[i] = Message(self,
                                        background="white",
                                        anchor=W,
                                        width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight,
                                        font=self.currentFont)
             self.nameTitles[i].grid(row=firstRow,
                                     column=firstCol+i*2*groupWidth,
@@ -14782,20 +14780,18 @@ class HeroFrame(Frame):
         charRelief = GROOVE
         glue = N+E+S+W
         for i in range(len(self.charTitles)):
-            self.charTitles[i] = Label(self,
+            self.charTitles[i] = Message(self,
                                        background="orange",
                                        text=self.charTitleText[i],
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*groupHeight,
                                        font=self.currentFont)
-            self.charValues[i] = Label(self,
+            self.charValues[i] = Message(self,
                                        background="white",
                                        anchor=W,
                                        relief=charRelief,
                                        width=self.columnWidth*valueWidth,
-                                       height=self.rowHeight*groupHeight,
                                        font=self.currentFont)
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
@@ -14829,14 +14825,13 @@ class HeroFrame(Frame):
             groupCol = firstCol + (i%2)*sectionWidths[0] + math.floor(i/2)*sum(sectionWidths)
             target = sectionTargets[i%2]
             reason = sectionReasons[i%2]
-            self.pqTitles[i] = Label(self,
+            self.pqTitles[i] = Message(self,
                                      background="orange",
                                      text=self.pqTitleText[i],
                                      anchor=target,
                                      justify=reason,
                                      relief=titleRelief,
                                      width=self.columnWidth*groupWidth,
-                                     height=self.rowHeight*groupHeight,
                                      font=self.currentFont)
             self.pqTitles[i].grid(row=firstRow,
                                   column=groupCol,
@@ -14844,13 +14839,12 @@ class HeroFrame(Frame):
                                   columnspan=groupWidth,
                                   sticky=E+W)
             for j in range(len(pqDiceValues)):
-                self.pqValues[j][i] = Label(self,
+                self.pqValues[j][i] = Message(self,
                                             background="white",
                                             anchor=target,
                                             justify=reason,
                                             relief=pqRelief,
                                             width=self.columnWidth*groupWidth,
-                                            height=self.rowHeight*groupHeight,
                                             font=self.currentFont)
                 self.pqValues[j][i].grid(row=firstRow+(j+1)*groupHeight,
                                          column=groupCol,
@@ -14864,11 +14858,10 @@ class HeroFrame(Frame):
         titleHeight = 2
         statusRelief = SUNKEN
         statusBG = "gray80"
-        self.statusTitle = Label(self,
+        self.statusTitle = Message(self,
                                  background=statusBG,
                                  text="Status Dice",
                                  width=self.columnWidth*groupWidth,
-                                 height=self.rowHeight*titleHeight,
                                  font=self.currentFont)
         self.statusTitle.grid(row=titleRow,
                               column=firstCol,
@@ -14879,11 +14872,10 @@ class HeroFrame(Frame):
         firstRow = titleRow + titleHeight + 1
         groupHeight = 5
         for i in range(len(self.statusValues)):
-            self.statusValues[i] = Label(self,
+            self.statusValues[i] = Message(self,
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight,
                                          font=self.currentFont)
             self.statusValues[i].grid(row=firstRow+i*groupHeight,
                                       column=firstCol,
@@ -14895,12 +14887,11 @@ class HeroFrame(Frame):
         titleCol = 15
         titleWidth = 2
         titleHeight = 2
-        self.healthTitle = Label(self,
+        self.healthTitle = Message(self,
                                  background=statusBG,
                                  text="Health Range",
                                  anchor=CENTER,
                                  width=self.columnWidth*titleWidth,
-                                 height=self.rowHeight*titleHeight,
                                  font=self.currentFont)
         self.healthTitle.grid(row=titleRow,
                               column=titleCol,
@@ -14914,11 +14905,10 @@ class HeroFrame(Frame):
         groupHeight = 3
         groupVSpace = 5
         for i in range(len(self.healthValues)):
-            self.healthValues[i] = Label(self,
+            self.healthValues[i] = Message(self,
                                          background=self.zoneColors[i],
                                          relief=statusRelief,
                                          width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight,
                                          font=self.currentFont)
             self.healthValues[i].grid(row=firstRow+i*groupVSpace,
                                       column=firstCol,
@@ -14945,13 +14935,12 @@ class HeroFrame(Frame):
         self.principleWrap = sectionWrap
         for i in range(len(self.myHeroPrinciples)):
             groupCol = firstCol+i*groupWidth
-            self.prinTitles[i] = Label(self,
+            self.prinTitles[i] = Message(self,
                                        background="orange",
                                        text="Principle of ",
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*mainTitleHeight,
                                        font=self.currentFont)
             self.prinTitles[i].grid(row=firstRow,
                                     column=groupCol,
@@ -14961,22 +14950,20 @@ class HeroFrame(Frame):
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = firstRow + mainTitleHeight + j*(titleHeight + sectionHeight)
                 sectionRow = titleRow + titleHeight
-                self.prinSectionTitles[i][j] = Label(self,
+                self.prinSectionTitles[i][j] = Message(self,
                                                      background="white",
                                                      text=self.prinSectionNames[j],
                                                      relief=sectionRelief,
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*titleHeight,
                                                      font=self.currentFont)
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
                                                   rowspan=titleHeight,
                                                   columnspan=groupWidth,
                                                   sticky=N+E+S+W)
-                self.prinSectionValues[i][j] = Label(self,
+                self.prinSectionValues[i][j] = Message(self,
                                                      background="white",
                                                      width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*sectionHeight,
                                                      font=self.currentFont)
                 self.prinSectionValues[i][j].grid(row=sectionRow,
                                                   column=groupCol,
@@ -14999,13 +14986,12 @@ class HeroFrame(Frame):
         titleHeight = 1
         abilityRelief = GROOVE
         for i in range(len(self.abilityTitleText)):
-            self.abilityTitles[i] = Label(self,
+            self.abilityTitles[i] = Message(self,
                                           background="orange",
                                           text=self.abilityTitleText[i],
                                           anchor=sectionAnchors[i],
                                           relief=titleRelief,
                                           width=self.columnWidth*sectionWidths[i],
-                                          height=self.rowHeight*titleHeight,
                                           font=self.currentFont)
 ##            print(notePrefix + str(self.abilityTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow) + " and spans " + str(titleHeight) + " rows")
@@ -15027,13 +15013,12 @@ class HeroFrame(Frame):
         for i in range(len(self.myPrinAbilities)):
             rowsNeeded = 1
             for j in range(len(self.abilityTitleText)):
-                self.prinAbilityValues[i][j] = Label(self,
+                self.prinAbilityValues[i][j] = Message(self,
                                                      background=self.zoneColors[0],
                                                      anchor=sectionAnchors[j],
                                                      justify=sectionReasons[j],
                                                      relief=abilityRelief,
                                                      width=self.columnWidth*sectionWidths[j],
-                                                     height=self.rowHeight*rowsNeeded,
                                                      font=self.currentFont)
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
@@ -15050,13 +15035,12 @@ class HeroFrame(Frame):
             for a in range(len(self.myZoneAbilities[z])):
                 rowsNeeded = 1
                 for s in range(len(self.zoneAbilityValues[z][a])):
-                    self.zoneAbilityValues[z][a][s] = Label(self,
+                    self.zoneAbilityValues[z][a][s] = Message(self,
                                                             background=self.zoneColors[z],
                                                             anchor=sectionAnchors[s],
                                                             justify=sectionReasons[s],
                                                             relief=abilityRelief,
                                                             width=self.columnWidth*sectionWidths[s],
-                                                            height=self.rowHeight*rowsNeeded,
                                                             font=self.currentFont)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
@@ -15065,12 +15049,11 @@ class HeroFrame(Frame):
                                                          sticky=N+S+E+W)
                 thisRow += rowsNeeded
         rowsNeeded = 1
-        self.outAbilityValue = Label(self,
+        self.outAbilityValue = Message(self,
                                      background="gray50",
                                      anchor=W,
                                      justify=LEFT,
                                      width=self.columnWidth*sum(sectionWidths),
-                                     height=rowsNeeded,
                                      font=self.currentFont)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
@@ -15719,8 +15702,7 @@ class HeroFrame(Frame):
 ##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
 ##                      str(self.rowHeight*sectionMaxHeights[j]))
                 self.prinSectionTitles[i][j].grid(row=titleRow)
-                self.prinSectionValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*sectionMaxHeights[j])
+                self.prinSectionValues[i][j].config(text=sectionValues[j])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
                                                   rowspan=sectionMaxHeights[j])
                 self.prinSectionValues[i][j].bind("<Double-1>",
@@ -15763,8 +15745,7 @@ class HeroFrame(Frame):
 ##            print(str(self.myPrinAbilities[i]) + " starts at row #" + str(thisRow) + \
 ##                  " and takes up " + str(rowsNeeded) + rword)
             for j in range(len(self.abilityTitleText)):
-                self.prinAbilityValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*rowsNeeded)
+                self.prinAbilityValues[i][j].config(text=sectionValues[j])
                 self.prinAbilityValues[i][j].grid(row=thisRow,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
@@ -15796,8 +15777,7 @@ class HeroFrame(Frame):
 ##                print(str(self.myZoneAbilities[z][a]) + " starts at row #" + str(thisRow) + \
 ##                      " and takes up " + str(rowsNeeded) + rword)
                 for s in range(len(self.zoneAbilityValues[z][a])):
-                    self.zoneAbilityValues[z][a][s].config(text=sectionValues[s],
-                                                           height=self.rowHeight*rowsNeeded)
+                    self.zoneAbilityValues[z][a][s].config(text=sectionValues[s])
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
                                                          rowspan=rowsNeeded,
@@ -15812,8 +15792,7 @@ class HeroFrame(Frame):
             outText = split_text(self.myOutAbility.dispText(),
                                  width=sum(self.abilityWraps))
             rowsNeeded = 1 + len([x for x in outText if x == "\n"])
-        self.outAbilityValue.config(text=outText,
-                                    height=rowsNeeded)
+        self.outAbilityValue.config(text=outText)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
                                   rowspan=rowsNeeded,
@@ -16898,7 +16877,7 @@ class ModeFrame(Frame):
             headerColor = modeBase + str(self.darkColorIndex)
             # Create the section heading labels (to be placed later)
             for j in range(len(self.sectionTitles)):
-                self.mySectionHeaders[i][j] = Label(self,
+                self.mySectionHeaders[i][j] = Message(self,
                                                     background=self.titleBG,
                                                     anchor=self.sectionTargets[j],
                                                     justify=self.sectionReasons[j],
@@ -16912,7 +16891,7 @@ class ModeFrame(Frame):
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
                           " columns")
             # Display Mode Name across the full first row of the section
-            self.myModeHeaders[i] = Label(self,
+            self.myModeHeaders[i] = Message(self,
                                           background=headerColor,
                                           anchor=W,
                                           justify=LEFT,
@@ -16961,7 +16940,7 @@ class ModeFrame(Frame):
                                           1 + len([x for x in thisPowerText if x == "\n"]))
                 thisPowerValues = [thisPowerText, thisPowerDie]
                 for k in range(len(self.myPowerValues[i][j])):
-                    self.myPowerValues[i][j][k] = Label(self,
+                    self.myPowerValues[i][j][k] = Message(self,
                                                         background=modeColor,
                                                         anchor=self.sectionTargets[k],
                                                         justify=self.sectionReasons[k],
@@ -16991,7 +16970,7 @@ class ModeFrame(Frame):
                                  for x in self.myModeRules[i].split("\n")]
             thisRulesText = "\n".join(thisRulesSections)
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
-            self.myRuleValues[i] = Label(self,
+            self.myRuleValues[i] = Message(self,
                                          background=modeColor,
                                          anchor=W,
                                          justify=LEFT,
@@ -17044,7 +17023,7 @@ class ModeFrame(Frame):
             thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
                                          for y in thisAbilitySections])
             for j in range(len(self.myAbilityValues[i])):
-                self.myAbilityValues[i][j] = Label(self,
+                self.myAbilityValues[i][j] = Message(self,
                                                    background=modeColor,
                                                    anchor=self.sectionTargets[j+2],
                                                    justify=self.sectionReasons[j+2],
@@ -17086,7 +17065,7 @@ class ModeFrame(Frame):
                 cBufferHeight = leftHeight - rightHeight
                 cBufferGlue = self.abilityGlue
             if leftHeight != rightHeight:
-                self.myColumnBuffers[i] = Label(self,
+                self.myColumnBuffers[i] = Message(self,
                                                 background=modeColor,
                                                 text=" ",
                                                 width=cBufferWidth*self.columnWidth,
@@ -17101,7 +17080,7 @@ class ModeFrame(Frame):
                     print(notePrefix + self.myModeNames[i] + " column buffer starts at row " + \
                           str(cBufferRow) + ", column " + str(cBufferCol) + " and takes up " + \
                           str(cBufferHeight) + " rows and " + str(cBufferWidth) + " columns")
-            # If there's another Mode after this one, display an empty Label across the next empty
+            # If there's another Mode after this one, display an empty Message across the next empty
             #  row, and update thisRow for the next pass
             if i < self.myModeCount-1:
                 if printing:
@@ -17110,7 +17089,7 @@ class ModeFrame(Frame):
                 bufferRow = topRow + max(leftHeight, rightHeight)
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " bufferRow=" + str(bufferRow))
-                self.myBuffers[i] = Label(self,
+                self.myBuffers[i] = Message(self,
                                           text=" ",
                                           width=sum(self.sectionWidths)*self.columnWidth,
                                           height=self.bufferHeight*self.rowHeight,
@@ -17289,7 +17268,7 @@ class MinionFrame(Frame):
         self.titleGlue = E+S+W
         self.tableGlue = E+S+W
         # Display minion size rules in columns 1-16 of rows 1-2
-        self.myMinionSizeRules = Label(self,
+        self.myMinionSizeRules = Message(self,
                                        background=self.rulesBG,
                                        anchor=W,
                                        justify=LEFT,
@@ -17307,7 +17286,7 @@ class MinionFrame(Frame):
         self.myMinionSizeRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Sizes title in columns 1-4 of row 3
-        self.myMinionSizeTitle = Label(self,
+        self.myMinionSizeTitle = Message(self,
                                        background=self.titleBG,
                                        anchor=W,
                                        justify=LEFT,
@@ -17325,7 +17304,7 @@ class MinionFrame(Frame):
         # Display minion size column headers in row 4
         self.myMinionSizeHeaders = [None for i in self.sizeHeaders]
         for i in range(len(self.myMinionSizeHeaders)):
-            thisHeader = Label(self,
+            thisHeader = Message(self,
                                background=self.headerBG,
                                anchor=W,
                                justify=LEFT,
@@ -17346,7 +17325,7 @@ class MinionFrame(Frame):
                                     for j in range(len(self.sizeText))]
         for c in range(len(self.myMinionSizeEntries)):
             for r in range(len(self.myMinionSizeEntries[c])):
-                thisEntry = Label(self,
+                thisEntry = Message(self,
                                   background=self.tableBG,
                                   anchor=W,
                                   justify=LEFT,
@@ -17367,7 +17346,7 @@ class MinionFrame(Frame):
         # Insert buffer between rows 9 and 12
         # ...
         # Display minion form rules in columns 1-16 of row 12
-        self.myMinionFormRules = Label(self,
+        self.myMinionFormRules = Message(self,
                                        background=self.rulesBG,
                                        anchor=W,
                                        justify=LEFT,
@@ -17385,7 +17364,7 @@ class MinionFrame(Frame):
         self.myMinionFormRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Forms title in columns 1-4 of row 13
-        self.myMinionFormTitle = Label(self,
+        self.myMinionFormTitle = Message(self,
                                        background=self.titleBG,
                                        anchor=W,
                                        justify=LEFT,
@@ -17403,7 +17382,7 @@ class MinionFrame(Frame):
         # Display minion form column headers in row 14
         self.myMinionFormHeaders = [None for i in self.formHeaders]
         for i in range(len(self.myMinionFormHeaders)):
-            thisHeader = Label(self,
+            thisHeader = Message(self,
                                background=self.headerBG,
                                anchor=W,
                                justify=LEFT,
@@ -17423,7 +17402,7 @@ class MinionFrame(Frame):
         self.myMinionFormEntries = [[None,None,None] for i in range(self.myMinionCount)]
         for r in range(self.myMinionCount):
             for c in range(len(self.myMinionInfo[r])):
-                thisEntry = Label(self,
+                thisEntry = Message(self,
                                   background=self.tableBG,
                                   anchor=W,
                                   justify=LEFT,
@@ -17598,7 +17577,7 @@ class FormFrame(Frame):
             if self.isDivided and self.myDividedTags[thisForm[6]] != thisName.replace(" Form",""):
                 thisName += " (" + self.myDividedTags[thisForm[6]] + ")"
 ##            print(notePrefix + "displaying " + thisName + " for form #" + str(i))
-            self.myFormNames[i] = Label(self,
+            self.myFormNames[i] = Message(self,
                                         background=thisBG,
                                         anchor=W,
                                         justify=LEFT,
@@ -17615,7 +17594,7 @@ class FormFrame(Frame):
                                      self.ClipboardCopy)
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
             for j in range(5):
-                self.myHeaders[i][j] = Label(self,
+                self.myHeaders[i][j] = Message(self,
                                              background=self.titleBG,
                                              anchor=self.targets[j],
                                              justify=self.reasons[j],
@@ -17631,7 +17610,7 @@ class FormFrame(Frame):
                                           sticky=self.diceGlue)
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
-                self.myStatusDice[i][j] = Label(self,
+                self.myStatusDice[i][j] = Message(self,
                                                 background=self.zoneColors[j] + \
                                                 str(self.darkColorIndex),
                                                 anchor=self.targets[4],
@@ -17678,7 +17657,7 @@ class FormFrame(Frame):
 ##                print(notePrefix + thisName + " " + self.headerText[j] + " justify: " + \
 ##                      str(self.reasons[j]))
                 for k in range(len(columnText)):
-                    self.myPQDice[i][j][k] = Label(self,
+                    self.myPQDice[i][j][k] = Message(self,
                                                    background=self.diceBG,
                                                    anchor=self.targets[j],
                                                    justify=self.reasons[j],
@@ -17698,7 +17677,7 @@ class FormFrame(Frame):
             if len(thisForm[5]) > 0:
                 # Display Ability headers across columns 13-28 of the fourth row
                 for j in range(5, len(self.headerText)):
-                    self.myHeaders[i][j] = Label(self,
+                    self.myHeaders[i][j] = Message(self,
                                                  background=self.titleBG,
                                                  anchor=self.targets[j],
                                                  justify=self.reasons[j],
@@ -17734,7 +17713,7 @@ class FormFrame(Frame):
                                        split_text(thisAbility.dispText(),
                                                   width=self.abilityWraps[2])]
                     for k in range(3):
-                        self.myAbilities[i][j][k] = Label(self,
+                        self.myAbilities[i][j][k] = Message(self,
                                                           background=thisBG,
                                                           anchor=self.targets[5+k],
                                                           justify=self.reasons[5+k],
@@ -17898,19 +17877,19 @@ class SelectFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SelectFrame Display Font")
-        self.myPromptLabel = Label(self,
+        self.myPromptMessage = Message(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    font=self.myFont,
                                    width=self.myWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myPromptLabel.grid(row=1,
+        self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.bind("<Double-1>",
+        self.myPromptMessage.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self,
                                        self.myString,
@@ -17995,7 +17974,7 @@ class SelectFrame(Frame):
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
-        self.myPromptLabel.config(text=self.myPrompt,
+        self.myPromptMessage.config(text=self.myPrompt,
                                   width=self.myWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
         if edited:
@@ -18107,18 +18086,18 @@ class EntryFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="EntryFrame Display Font")
-        self.myPromptLabel = Label(self,
+        self.myPromptMessage = Message(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
-        self.myPromptLabel.grid(row=1,
+        self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.bind("<Double-1>",
+        self.myPromptMessage.bind("<Double-1>",
                                 self.ClipboardCopy)
         # Create Entry widget
         self.myTextEntry = Entry(self,
@@ -18155,7 +18134,7 @@ class EntryFrame(Frame):
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
-        self.myPromptLabel.config(text=self.myPrompt,
+        self.myPromptMessage.config(text=self.myPrompt,
                                   width=self.myWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
         print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
@@ -18292,19 +18271,19 @@ class ExpandFrame(Frame):
                               rowspan=1,
                               columnspan=1,
                               sticky=N+E+S+W)
-        self.myPromptLabel = Label(self.myLeftFrame,
+        self.myPromptMessage = Message(self.myLeftFrame,
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=self.myPromptWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
-        self.myPromptLabel.grid(row=1,
+        self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.bind("<Double-1>",
+        self.myPromptMessage.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
@@ -18330,11 +18309,11 @@ class ExpandFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=E+W)
-        self.myBufferLabel = Label(self.myLeftFrame,
+        self.myBufferMessage = Message(self.myLeftFrame,
                                    anchor=W,
                                    text="",
                                    font=self.myFont)
-        self.myBufferLabel.grid(row=4,
+        self.myBufferMessage.grid(row=4,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
@@ -18390,7 +18369,7 @@ class ExpandFrame(Frame):
         detailsHeight = max([1 + len([x for x in split_text(y,
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
-        self.myDispLabel = Label(self,
+        self.myDispMessage = Message(self,
                                  anchor=NW,
                                  justify=LEFT,
                                  text="",
@@ -18398,13 +18377,13 @@ class ExpandFrame(Frame):
                                  width=self.myDispWidth,
                                  relief=GROOVE)
         if detailsHeight < 40:
-            self.myDispLabel.config(height=detailsHeight)
-        self.myDispLabel.grid(row=1,
+            self.myDispMessage.config(height=detailsHeight)
+        self.myDispMessage.grid(row=1,
                               column=2,
                               rowspan=1,
                               columnspan=1,
                               sticky=N+E+S+W)
-        self.myDispLabel.bind("<Double-1>",
+        self.myDispMessage.bind("<Double-1>",
                               self.ClipboardCopy)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
@@ -18420,7 +18399,7 @@ class ExpandFrame(Frame):
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myPromptWrap)
         self.myLeftFrame.config(width=self.myPromptWidth)
-        self.myPromptLabel.config(text=self.myPrompt,
+        self.myPromptMessage.config(text=self.myPrompt,
                                   width=self.myPromptWidth,
                                   height=1+len([x for x in self.myPrompt if x == "\n"]))
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
@@ -18429,13 +18408,13 @@ class ExpandFrame(Frame):
         if index in range(len(self.myDetails)):
             dispText = split_text(self.myDetails[index],
                                   width=self.myDispWrap)
-        self.myDispLabel.config(text=dispText,
+        self.myDispMessage.config(text=dispText,
                                 width=self.myDispWidth)
         detailsHeight = max([1 + len([x for x in split_text(y,
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
         if detailsHeight < 40:
-            self.myDispLabel.config(height=detailsHeight)
+            self.myDispMessage.config(height=detailsHeight)
         if edited:
             print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
                   ", myDispBuffer = " + str(self.myDispBuffer))
@@ -18469,14 +18448,14 @@ class ExpandFrame(Frame):
     def ClipboardCopy(self, event=None):
         notePrefix = "### ExpandFrame.ClipboardCopy: "
         label = event.widget
-        if label == self.myDispLabel:
+        if label == self.myDispMessage:
             if len(self.myDetails) > 0:
                 if self.myAnswer.get() in range(len(self.myDetails)):
                     flatText = self.myDetails[self.myAnswer.get()]
                     print(notePrefix + flatText)
                     self.clipboard_clear()
                     self.clipboard_append(flatText)
-        elif label == self.myPromptLabel:
+        elif label == self.myPromptMessage:
             if self.myRawPrompt:
                 flatText = self.myRawPrompt
                 print(notePrefix + flatText)
@@ -18565,18 +18544,18 @@ class SwapFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SwapFrame Display Font")
-        self.myPromptLabel = Label(self,
+        self.myPromptMessage = Message(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
-        self.myPromptLabel.grid(row=1,
+        self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.bind("<Double-1>",
+        self.myPromptMessage.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenus = [None for x in range(2)]
         for i in range(2):
@@ -18731,17 +18710,17 @@ class PrincipleFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="PrincipleFrame Display Font")
-        self.mySectionLabels = [None for i in range(len(self.prinSectionNames))]
+        self.mySectionMessages = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
-            self.mySectionLabels[i] = Label(self,
+            self.mySectionMessages[i] = Message(self,
                                             anchor=E,
                                             justify=RIGHT,
                                             background="white",
                                             text=self.prinSectionNames[i],
                                             font=self.myFont,
                                             padx=2)
-            self.mySectionLabels[i].grid(row=i+1,
+            self.mySectionMessages[i].grid(row=i+1,
                                          column=1,
                                          sticky=N+E+S+W)
             self.mySectionEntries[i] = Entry(self,
@@ -18770,10 +18749,10 @@ class PrincipleFrame(Frame):
         complete = True
         for i in range(len(self.prinSectionNames)):
             if self.prinSectionVars[i].get() == "":
-                self.mySectionLabels[i].config(background="red")
+                self.mySectionMessages[i].config(background="red")
                 complete = False
             else:
-                self.mySectionLabels[i].config(background="white")
+                self.mySectionMessages[i].config(background="white")
         if complete:
             category = self.myPrinciple.category
             index = self.myPrinciple.index
@@ -18897,42 +18876,42 @@ class AssignFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="AssignFrame Display Font")
-        # myPromptLabel goes across the full first row
-        self.myPromptLabel = Label(self,
+        # myPromptMessage goes across the full first row
+        self.myPromptMessage = Message(self,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=totalWidth,
                                    height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
-        self.myPromptLabel.grid(row=1,
+        self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=1+len(self.myCategories),
                                 sticky=N+E+S+W)
-        self.myPromptLabel.bind("<Double-1>",
+        self.myPromptMessage.bind("<Double-1>",
                                 self.ClipboardCopy)
         # Each of myItems gets its own label...
-        self.myItemLabels = [None for y in range(len(self.myItems))]
+        self.myItemMessages = [None for y in range(len(self.myItems))]
         #... and its own set of radio buttons, one for each category
         self.myRadioButtons = [[None for x in range(len(self.myCategories))] \
                                for y in range(len(self.myItems))]
         # These take up the next len(self.myItems) rows beneath the prompt
         for i in range(len(self.myItems)):
             thisRow = i + 2
-            self.myItemLabels[i] = Label(self,
+            self.myItemMessages[i] = Message(self,
                                          anchor=W,
                                          justify=LEFT,
                                          text=self.myItems[i],
                                          width=self.myItemWidth,
                                          font=self.myFont,
                                          relief=GROOVE)
-            self.myItemLabels[i].grid(row=thisRow,
+            self.myItemMessages[i].grid(row=thisRow,
                                       column=1,
                                       rowspan=1,
                                       columnspan=1,
                                       sticky=N+E+S+W)
-            self.myItemLabels[i].bind("<Double-1>",
+            self.myItemMessages[i].bind("<Double-1>",
                                       self.ClipboardCopy)
             if self.myDefault in range(len(self.myCategories)):
                 self.myAssignments[i].set(self.myDefault)
@@ -18952,12 +18931,12 @@ class AssignFrame(Frame):
                                                rowspan=1,
                                                columnspan=1,
                                                sticky=N+E+S+W)
-            self.myCountLabel = Label(self,
+            self.myCountMessage = Message(self,
                                       anchor=SE,
                                       justify=RIGHT,
                                       text="",
                                       font=self.myFont)
-            self.myCountLabel.grid(row=len(self.myItems)+3,
+            self.myCountMessage.grid(row=len(self.myItems)+3,
                                    column=1,
                                    rowspan=1,
                                    columnspan=1,
@@ -18992,15 +18971,15 @@ class AssignFrame(Frame):
                 cText += ", " + str(remainder) + " to go..."
             elif self.myFirstMax in range(len(self.myItems)+1) and firstCount > self.myFirstMax:
                 cText += " (limit " + str(self.myFirstMax) + ")..."
-            self.myCountLabel.config(text=cText)
+            self.myCountMessage.config(text=cText)
     def ClipboardCopy(self, event=None):
         notePrefix = "### AssignFrame.ClipboardCopy: "
         flatText = ""
         label = event.widget
-        if label == self.myPromptLabel:
+        if label == self.myPromptMessage:
             flatText = self.myRawPrompt
-        elif label in self.myItemLabels:
-            i = self.myItemLabels.index(label)
+        elif label in self.myItemMessages:
+            i = self.myItemMessages.index(label)
             flatText = self.myItems[i]
         if flatText:
             print(notePrefix + flatText)
@@ -19051,15 +19030,15 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.mainloop()
+firstHero = factory.getKnockout()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
+root.mainloop()
 
 # Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
-root.mainloop()
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.mainloop()
 
 # Testing display/details methods...
 
