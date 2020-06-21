@@ -199,15 +199,12 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 	  This is Surprise Shift (page 90), which lets the hero change to any available form.
  Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
 
-Light orange colors:
-#FFC76C
-#FFBB4D
-#FFB845
-
-Standard orange:
-#FFA500
-
-Figure out wraplength
+>>> REARRANGE HeroFrame <<<
+	Why aren't Name widgets fitting to specified width?
+	Knockout's "Deep Space Knowledge" splits itself into multiple lines, but Curveball's "Rules of Engagement" doesn't
+	Rebuild the following using subframes...
+		ModeFrame
+		FormFrame
 
 Figure out titleWidth
   
