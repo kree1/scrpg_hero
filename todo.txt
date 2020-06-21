@@ -88,15 +88,10 @@ Symbol 7', 'MS Reference Sans Serif', 'MS Reference Specialty', 'Tw Cen MT Conde
 'LowRider BB', 'Lato', 'Lato Light', 'Lato Semibold', 'RedStateBlueState BB', 'Roboto'
 
 'Terminal', 'Modern', 'Roman', 'Script', 'Courier', 'Arial', 'Calibri', 'Times New Roman', 
-
-Terminal, Courier: not good looks
-Script, Modern, Roman: even worse
-
+ Terminal, Courier: not good looks
+ Script, Modern, Roman: even worse
 'Arial', 'Calibri', 'Times New Roman', 
-
-Best options seem to be Arial.9 & Calibri.10
-
-actual(option="size") returns an int
+ Best options seem to be Arial.9 & Calibri.10
  
 Finding proper display sizes...
  BackgroundDetails
@@ -123,7 +118,7 @@ Assign rwidth values to existing ExpandWindow calls
 	Hero.GuidedBackground, 7024 (choose a die result or reroll)
 	Hero.ConstructedBackground, 7096 (choose a background from the list)
 	Hero.ChooseAbility, 7330 (choose a section of the ability list)
-	Hero.ChooseAbility, 7369 (choose an ability from the list)
+.	Hero.ChooseAbility, 7369 (choose an ability from the list)
 	Hero.GuidedPowerSource, 7956 (choose a die result or reroll)
 	Hero.ConstructedPowerSource, 8034 (choose a power source from the list)
 	Hero.ChooseForm, 8481 (choose a form from the list)
@@ -140,7 +135,7 @@ Assign rwidth values to existing ExpandWindow calls
 	Hero.ConstructedPersonality, 10436 (choose one of your two personalities from the list)
 	Hero.ConstructedPersonality, 10500 (choose your single personality from the list)
 	Hero.AddRedAbility, 10642 (choose a category of red ability)
-	Hero.AddRetcon, 10843 (choose an ability to edit)
+.	Hero.AddRetcon, 10843 (choose an ability to edit)
 	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
 Assign width/buffer values to existing EnterText calls
@@ -188,10 +183,21 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
    That's technically feasible for anyone doing this- if you knew you were going with Split Form, you would just be required to change exactly (X-2) of your Powers to other Powers every time you created a Form for Form-Changer that wasn't getting the same Divided tag as their base form. It wouldn't even have to be the same set of replacement powers every time, just as long as the overlap between one side of Divided and the other was exactly 2.
     *BUT* the instructions for Divided say to do everything except Principles for your other archetype first, and only then make your Divided choices.
     To make Muerto, they had to select Split Form first, then use that information in the steps for his other Archetype. You *CAN'T* guarantee that Split Form will be feasible if you follow the instructions as written.
-
-Ability text wrap in HeroFrame is too big, Command Power overruns the box
-
-? Put some buffer space vertically between button columns in HeroFrame ?
+  Also notable: the base sheet's Power list is split between Ghost and Electronics; like any other Divided hero, Muerto doesn't have access to the full list of P/Q dice on his sheet in ANY form
+   Does Muerto have a "base form"? He doesn't use the Form-Changer Ability that requires one
+   His transition Abilities are weird...
+    Calavera Wisps
+	 Take a basic action using Intangibility. Then, switch to your Ghost form on your auxiliary sheet.
+	  This is Change Forms (page 90), which lets the hero switch to any available form. Why is it restricted for Muerto?
+	   I guess it makes sense to have one ability that only switches to Ghost, since Possess Object only switches to Electronics...
+	Haunt Electronics
+	 Overcome using Technology. On a success, enter an Electronics form on your auxiliary sheet. Then, take a basic action using your Min die.
+	  This is Possess Object (page 94), which lets the hero merge with an item, so it makes sense for switching to Electronics forms but not Ghost ones.
+	  (If Muerto wasn't a Form-Changer and only had one possessed-item form, how would he change back?)
+	Polterheist
+	 Attack using Intangibility and use your Max die. Then change to any available form.
+	  This is Surprise Shift (page 90), which lets the hero change to any available form.
+ Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
 
 Light orange colors:
 #FFC76C
@@ -200,32 +206,17 @@ Light orange colors:
 
 Standard orange:
 #FFA500
+
+Figure out wraplength
+
+Figure out titleWidth
   
-Make steps reversible...
- Make more hero attributes into full classes, including rollback methods
-  Status
-   Where does this need to be used?
-?   x[1] for x in pn_collection
-?	PersonalityDetails, 6311
-	Hero.__init__, 6334
-	Hero.__init__, 6349
-	Hero.AddMode, 8639
-	Hero.ModeDetails, 8722
-	Hero.FormDetails, 8847:8866
-	Hero.AddArchetype, 10065:10085
-	Hero.AddPersonality, 10770:10785
-	Hero.AddRetcon, 11619:11778
-	Hero.AddHealth, 11909:11937
-	Hero.StepDetails, 12265:12362
-	Hero.StepDetails, 12421:12464
-	Hero.details, 12606:12613
-	HeroFrame.SetHero, 14671
-	HeroFrame.UpdateAll, 14761
-	FormFrame.__init__, 16208
-	FormFrame.SetHero, 16359:16364
-  Mode
-  Form
- Implement rollback methods for Hero
-  copy
-  SetPrevious
-  RetrievePrior
+Complete steps of hero creation are now reversible
+ Can we make this more granular?
+  
+Let EditNames rename...
+.	Abilities
+	Principles?
+.	Forms
+.	Modes
+.	dice
