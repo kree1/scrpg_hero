@@ -118,7 +118,7 @@ Assign rwidth values to existing ExpandWindow calls
 	Hero.GuidedBackground, 7024 (choose a die result or reroll)
 	Hero.ConstructedBackground, 7096 (choose a background from the list)
 	Hero.ChooseAbility, 7330 (choose a section of the ability list)
-	Hero.ChooseAbility, 7369 (choose an ability from the list)
+.	Hero.ChooseAbility, 7369 (choose an ability from the list)
 	Hero.GuidedPowerSource, 7956 (choose a die result or reroll)
 	Hero.ConstructedPowerSource, 8034 (choose a power source from the list)
 	Hero.ChooseForm, 8481 (choose a form from the list)
@@ -135,7 +135,7 @@ Assign rwidth values to existing ExpandWindow calls
 	Hero.ConstructedPersonality, 10436 (choose one of your two personalities from the list)
 	Hero.ConstructedPersonality, 10500 (choose your single personality from the list)
 	Hero.AddRedAbility, 10642 (choose a category of red ability)
-	Hero.AddRetcon, 10843 (choose an ability to edit)
+.	Hero.AddRetcon, 10843 (choose an ability to edit)
 	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
 Assign width/buffer values to existing EnterText calls

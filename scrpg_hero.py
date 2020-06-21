@@ -12224,7 +12224,7 @@ class Hero:
                                             "Power/Quality",
                                             lwidth=30,
                                             lbuffer=5,
-                                            rwidth=100)
+                                            rwidth=a_width)
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:len(ability_options)]
