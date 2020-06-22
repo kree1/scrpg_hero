@@ -14807,15 +14807,15 @@ class HeroFrame(Frame):
                                          relief=charRelief,
                                          width=self.columnWidth*valueWidth,
                                          font=self.currentFont)
-            if i in range(len(self.nameTitles)):
-                nameConfig = self.nameTitles[i].config()
-                charConfig = self.charTitles[i].config()
-                for key in nameConfig:
-                    print(notePrefix  + str(key) + ": " + str(self.nameTitles[i].cget(key)) + \
-                          " for " + self.nameTitleText[i] + " Message")
-                    if key in charConfig:
-                        print(notePrefix + str(key) + ": " + str(self.charTitles[i].cget(key)) + \
-                              " for " + self.charTitleText[i] + " Message")
+##            if i in range(len(self.nameTitles)):
+##                nameConfig = self.nameTitles[i].config()
+##                charConfig = self.charTitles[i].config()
+##                for key in nameConfig:
+##                    print(notePrefix  + str(key) + ": " + str(self.nameTitles[i].cget(key)) + \
+##                          " for " + self.nameTitleText[i] + " Message")
+##                    if key in charConfig:
+##                        print(notePrefix + str(key) + ": " + str(self.charTitles[i].cget(key)) + \
+##                              " for " + self.charTitleText[i] + " Message")
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
 ##                  " rows")
@@ -16271,7 +16271,7 @@ class HeroFrame(Frame):
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.power_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
-                    if not fm.std_qualities:
+                    if not md.std_qualities:
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.quality_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
@@ -16869,15 +16869,16 @@ class ModeFrame(Frame):
         self.abilityRelief = GROOVE
         self.headerGlue = N+E+S+W
         self.rulesGlue = N+E+S+W
-        self.powerGlue = E+W
-        self.abilityGlue = N+S
+        self.powerGlue = N+E+S+W
+        self.abilityGlue = N+E+S+W
         self.sectionWidths = [4, 1, 5, 2, 9]
         self.powerModifier = 1
-        self.powerWrap = math.floor(self.sectionWidths[0]*self.columnWidth*self.powerModifier)
+        self.powerWrap = math.floor(self.sectionWidths[0] * self.columnWidth * self.powerModifier)
         self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sectionWidths[2:])*self.columnWidth*self.rulesModifier)
+        self.rulesWrap = math.floor(sum(self.sectionWidths[2:]) * \
+                                    self.columnWidth * self.rulesModifier)
         self.abilityModifier = 1
-        self.abilityWraps = [math.floor(x*self.columnWidth*self.abilityModifier) \
+        self.abilityWraps = [math.floor(x*self.columnWidth * self.abilityModifier) \
                              for x in self.sectionWidths[2:]]
         self.headerHeight = 1
         self.powerHeight = 1
@@ -16907,26 +16908,26 @@ class ModeFrame(Frame):
             # Create the section heading labels (to be placed later)
             for j in range(len(self.sectionTitles)):
                 self.mySectionHeaders[i][j] = Message(self,
-                                                    background=self.titleBG,
-                                                    anchor=self.sectionTargets[j],
-                                                    justify=self.sectionReasons[j],
-                                                    relief=self.titleRelief,
-                                                    text=self.sectionTitles[j],
-                                                    width=self.sectionWidths[j]*self.columnWidth,
-                                                    font=self.dispFont)
+                                                      background=self.titleBG,
+                                                      anchor=self.sectionTargets[j],
+                                                      justify=self.sectionReasons[j],
+                                                      relief=self.titleRelief,
+                                                      text=self.sectionTitles[j],
+                                                      width=self.sectionWidths[j]*self.columnWidth,
+                                                      font=self.dispFont)
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
                           " columns")
             # Display Mode Name across the full first row of the section
             self.myModeHeaders[i] = Message(self,
-                                          background=headerColor,
-                                          anchor=W,
-                                          justify=LEFT,
-                                          relief=self.headerRelief,
-                                          text=self.myModeNames[i],
-                                          width=sum(self.sectionWidths)*self.columnWidth,
-                                          font=self.dispFont)
+                                            background=headerColor,
+                                            anchor=W,
+                                            justify=LEFT,
+                                            relief=self.headerRelief,
+                                            text=self.myModeNames[i],
+                                            width=sum(self.sectionWidths)*self.columnWidth,
+                                            font=self.dispFont)
             self.myModeHeaders[i].grid(row=topRow,
                                        column=firstCol,
                                        rowspan=self.headerHeight,
@@ -16945,7 +16946,8 @@ class ModeFrame(Frame):
                 self.mySectionHeaders[i][j].grid(row=topRow+leftHeight,
                                                  column=firstCol+sum(self.sectionWidths[0:j]),
                                                  rowspan=self.powerHeight,
-                                                 columnspan=self.sectionWidths[j])
+                                                 columnspan=self.sectionWidths[j],
+                                                 sticky=self.powerGlue)
                 if printing:
                     print(notePrefix + self.mySectionHeaders[i][j]["text"] + \
                           " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -16990,12 +16992,9 @@ class ModeFrame(Frame):
                               str(thisPowerHeight) + " rows and " + str(self.sectionWidths[k]) + \
                               " columns")
                 leftHeight += thisPowerHeight
-            # Display mode rules across columns 6-21 starting at the second row
-            thisRulesSections = [split_text(x,
-                                            width=self.rulesWrap) \
-                                 for x in self.myModeRules[i].split("\n")]
-            thisRulesText = "\n".join(thisRulesSections)
-            thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
+            # Display mode rules across columns 6-21 in rows 2-3
+            thisRulesText = self.myModeRules[i]
+            thisRulesHeight = 2
             self.myRuleValues[i] = Message(self,
                                          background=modeColor,
                                          anchor=W,
@@ -17017,8 +17016,7 @@ class ModeFrame(Frame):
                       str(thisRulesHeight) + " rows and " + str(sum(self.sectionWidths[2:])) + \
                       " columns")
             rightHeight += thisRulesHeight
-            # Place Ability section headers across columns 6-21 in the row after the end of the
-            #  mode rules
+            # Place Ability section headers across columns 6-21 in row 4
             for j in range(2,5):
                 self.mySectionHeaders[i][j].grid(row=topRow+rightHeight,
                                                  column=firstCol+sum(self.sectionWidths[0:j]),
@@ -17032,8 +17030,7 @@ class ModeFrame(Frame):
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
                           " columns")
             rightHeight += self.headerHeight
-            # Display Ability sections across columns 6-21 starting 2 rows after the end of the
-            #  mode rules
+            # Display Ability sections across columns 6-21 starting in row 5
             thisAbilityName = ""
             thisAbilityType = ""
             thisAbilityText = ""
@@ -17045,8 +17042,7 @@ class ModeFrame(Frame):
             thisAbilitySections = [split_text(thisAbilitySections[i],
                                               width=self.abilityWraps[i]) \
                                    for i in range(len(thisAbilitySections))]
-            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
-                                         for y in thisAbilitySections])
+            thisAbilityHeight = 3
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Message(self,
                                                    background=modeColor,
@@ -17521,7 +17517,7 @@ class FormFrame(Frame):
         self.abilityRelief = GROOVE
         self.rulesGlue = N+E+S+W
         self.diceGlue = N+E+S+W
-        self.titleGlue = E+S+W
+        self.titleGlue = N+E+S+W
         self.abilityGlue = N+E+S+W
         self.upperWidths = [4, 1, 4, 1, 2, 16]
         self.lowerWidths = [4, 1, 4, 1, 2, 5, 2, 9]
@@ -17594,12 +17590,12 @@ class FormFrame(Frame):
                 thisName += " (" + self.myDividedTags[thisForm[6]] + ")"
 ##            print(notePrefix + "displaying " + thisName + " for form #" + str(i))
             self.myFormNames[i] = Message(self,
-                                        background=thisBG,
-                                        anchor=W,
-                                        justify=LEFT,
-                                        text=thisName,
-                                        width=self.numCols*self.columnWidth,
-                                        font=self.dispFont)
+                                          background=thisBG,
+                                          anchor=W,
+                                          justify=LEFT,
+                                          text=thisName,
+                                          width=self.numCols*self.columnWidth,
+                                          font=self.dispFont)
             self.myFormNames[i].grid(row=firstRow,
                                      column=1,
                                      rowspan=1,
@@ -17610,13 +17606,13 @@ class FormFrame(Frame):
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
             for j in range(5):
                 self.myHeaders[i][j] = Message(self,
-                                             background=self.titleBG,
-                                             anchor=self.targets[j],
-                                             justify=self.reasons[j],
-                                             relief=self.titleRelief,
-                                             text=self.headerText[j],
-                                             width=self.upperWidths[j]*self.columnWidth,
-                                             font=self.dispFont)
+                                               background=self.titleBG,
+                                               anchor=self.targets[j],
+                                               justify=self.reasons[j],
+                                               relief=self.titleRelief,
+                                               text=self.headerText[j],
+                                               width=self.upperWidths[j]*self.columnWidth,
+                                               font=self.dispFont)
                 self.myHeaders[i][j].grid(row=firstRow+1,
                                           column=1+sum(self.upperWidths[0:j]),
                                           rowspan=1,
@@ -17625,14 +17621,14 @@ class FormFrame(Frame):
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Message(self,
-                                                background=self.zoneColors[j] + \
-                                                str(self.darkColorIndex),
-                                                anchor=self.targets[4],
-                                                justify=self.reasons[4],
-                                                relief=self.statusRelief,
-                                                text=str(thisForm[4][j]),
-                                                width=self.upperWidths[4]*self.columnWidth,
-                                                font=self.dispFont)
+                                                  background=self.zoneColors[j] + \
+                                                  str(self.darkColorIndex),
+                                                  anchor=self.targets[4],
+                                                  justify=self.reasons[4],
+                                                  relief=self.statusRelief,
+                                                  text=str(thisForm[4][j]),
+                                                  width=self.upperWidths[4]*self.columnWidth,
+                                                  font=self.dispFont)
                 self.myStatusDice[i][j].grid(row=firstRow+2+j,
                                              column=1+sum(self.upperWidths[0:4]),
                                              rowspan=1,
@@ -17671,13 +17667,13 @@ class FormFrame(Frame):
 ##                      str(self.reasons[j]))
                 for k in range(len(columnText)):
                     self.myPQDice[i][j][k] = Message(self,
-                                                   background=self.diceBG,
-                                                   anchor=self.targets[j],
-                                                   justify=self.reasons[j],
-                                                   relief=self.diceRelief,
-                                                   text=columnText[k],
-                                                   width=self.upperWidths[j]*self.columnWidth,
-                                                   font=self.dispFont)
+                                                     background=self.diceBG,
+                                                     anchor=self.targets[j],
+                                                     justify=self.reasons[j],
+                                                     relief=self.diceRelief,
+                                                     text=columnText[k],
+                                                     width=self.upperWidths[j]*self.columnWidth,
+                                                     font=self.dispFont)
                     self.myPQDice[i][j][k].grid(row=firstRow+2+sum(pqHeights[0:k]),
                                                 column=1+sum(self.upperWidths[0:j]),
                                                 rowspan=pqHeights[k],
@@ -17690,13 +17686,13 @@ class FormFrame(Frame):
                 # Display Ability headers across columns 13-28 of the fourth row
                 for j in range(5, len(self.headerText)):
                     self.myHeaders[i][j] = Message(self,
-                                                 background=self.titleBG,
-                                                 anchor=self.targets[j],
-                                                 justify=self.reasons[j],
-                                                 relief=self.titleRelief,
-                                                 text=self.headerText[j],
-                                                 width=self.lowerWidths[j]*self.columnWidth,
-                                                 font=self.dispFont)
+                                                   background=self.titleBG,
+                                                   anchor=self.targets[j],
+                                                   justify=self.reasons[j],
+                                                   relief=self.titleRelief,
+                                                   text=self.headerText[j],
+                                                   width=self.lowerWidths[j]*self.columnWidth,
+                                                   font=self.dispFont)
                     self.myHeaders[i][j].grid(row=firstRow+3,
                                               column=1+sum(self.lowerWidths[0:j]),
                                               rowspan=1,
@@ -17725,13 +17721,13 @@ class FormFrame(Frame):
                                                   width=self.abilityWraps[2])]
                     for k in range(3):
                         self.myAbilities[i][j][k] = Message(self,
-                                                          background=thisBG,
-                                                          anchor=self.targets[5+k],
-                                                          justify=self.reasons[5+k],
-                                                          relief=self.abilityRelief,
-                                                          text=thisAbilityText[k],
-                                                          width=self.lowerWidths[5+k],
-                                                          font=self.dispFont)
+                                                            background=thisBG,
+                                                            anchor=self.targets[5+k],
+                                                            justify=self.reasons[5+k],
+                                                            relief=self.abilityRelief,
+                                                            text=thisAbilityText[k],
+                                                            width=self.lowerWidths[5+k],
+                                                            font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
                                                        column=1+sum(self.lowerWidths[0:5+k]),
                                                        rowspan=abilityHeight,
@@ -17888,11 +17884,11 @@ class SelectFrame(Frame):
                                             size=9,
                                             name="SelectFrame Display Font")
         self.myPromptMessage = Message(self,
-                                   anchor=W,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   font=self.myFont,
-                                   width=self.myWidth)
+                                       anchor=W,
+                                       justify=LEFT,
+                                       text=self.myPrompt,
+                                       font=self.myFont,
+                                       width=self.myWidth)
         self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -17984,7 +17980,7 @@ class SelectFrame(Frame):
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
         self.myPromptMessage.config(text=self.myPrompt,
-                                  width=self.myWidth)
+                                    width=self.myWidth)
         if edited:
             print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
                   ", myBuffer = " + str(self.myBuffer))
@@ -18095,10 +18091,10 @@ class EntryFrame(Frame):
                                             size=9,
                                             name="EntryFrame Display Font")
         self.myPromptMessage = Message(self,
-                                   anchor=W,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   font=self.myFont)
+                                       anchor=W,
+                                       justify=LEFT,
+                                       text=self.myPrompt,
+                                       font=self.myFont)
         self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -18278,18 +18274,18 @@ class ExpandFrame(Frame):
                               columnspan=1,
                               sticky=N+E+S+W)
         self.myPromptMessage = Message(self.myLeftFrame,
-                                   anchor=NW,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   width=self.myPromptWidth,
-                                   font=self.myFont)
+                                       anchor=NW,
+                                       justify=LEFT,
+                                       text=self.myPrompt,
+                                       width=self.myPromptWidth,
+                                       font=self.myFont)
         self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
         self.myPromptMessage.bind("<Double-1>",
-                                self.ClipboardCopy)
+                                  self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
@@ -18314,11 +18310,11 @@ class ExpandFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=E+W)
-        self.myBufferMessage = Message(self.myLeftFrame,
+        self.myBufferLabel = Label(self.myLeftFrame,
                                    anchor=W,
                                    text="",
                                    font=self.myFont)
-        self.myBufferMessage.grid(row=4,
+        self.myBufferLabel.grid(row=4,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
@@ -18375,19 +18371,19 @@ class ExpandFrame(Frame):
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
         self.myDispMessage = Message(self,
-                                 anchor=NW,
-                                 justify=LEFT,
-                                 text="",
-                                 font=self.myFont,
-                                 width=self.myDispWidth,
-                                 relief=GROOVE)
+                                     anchor=NW,
+                                     justify=LEFT,
+                                     text="",
+                                     font=self.myFont,
+                                     width=self.myDispWidth,
+                                     relief=GROOVE)
         self.myDispMessage.grid(row=1,
-                              column=2,
-                              rowspan=1,
-                              columnspan=1,
-                              sticky=N+E+S+W)
+                                column=2,
+                                rowspan=1,
+                                columnspan=1,
+                                sticky=N+E+S+W)
         self.myDispMessage.bind("<Double-1>",
-                              self.ClipboardCopy)
+                                self.ClipboardCopy)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.bind("<Up>", self.prevoption)
@@ -18403,7 +18399,7 @@ class ExpandFrame(Frame):
                                    width=self.myPromptWrap)
         self.myLeftFrame.config(width=self.myPromptWidth)
         self.myPromptMessage.config(text=self.myPrompt,
-                                  width=self.myPromptWidth)
+                                    width=self.myPromptWidth)
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
@@ -18545,17 +18541,17 @@ class SwapFrame(Frame):
                                             size=9,
                                             name="SwapFrame Display Font")
         self.myPromptMessage = Message(self,
-                                   anchor=W,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   font=self.myFont)
+                                       anchor=W,
+                                       justify=LEFT,
+                                       text=self.myPrompt,
+                                       font=self.myFont)
         self.myPromptMessage.grid(row=1,
-                                column=1,
-                                rowspan=1,
-                                columnspan=3,
-                                sticky=N+E+S+W)
+                                  column=1,
+                                  rowspan=1,
+                                  columnspan=3,
+                                  sticky=N+E+S+W)
         self.myPromptMessage.bind("<Double-1>",
-                                self.ClipboardCopy)
+                                  self.ClipboardCopy)
         self.myOptionMenus = [None for x in range(2)]
         for i in range(2):
             self.myAnswers[i].set(self.myOptions[i])
@@ -18713,12 +18709,12 @@ class PrincipleFrame(Frame):
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
             self.mySectionMessages[i] = Message(self,
-                                            anchor=E,
-                                            justify=RIGHT,
-                                            background="white",
-                                            text=self.prinSectionNames[i],
-                                            font=self.myFont,
-                                            padx=2)
+                                                anchor=E,
+                                                justify=RIGHT,
+                                                background="white",
+                                                text=self.prinSectionNames[i],
+                                                font=self.myFont,
+                                                padx=2)
             self.mySectionMessages[i].grid(row=i+1,
                                          column=1,
                                          sticky=N+E+S+W)
@@ -19028,7 +19024,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
