@@ -16264,7 +16264,7 @@ class HeroFrame(Frame):
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.power_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
-                    if not fm.std_qualities:
+                    if not md.std_qualities:
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.quality_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
