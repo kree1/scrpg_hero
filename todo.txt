@@ -215,16 +215,17 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 .		SwapFrame
 .		AssignFrame
 	Remove wrap/buffer/height variables that are only used in conjunction with split_text
-		HeroFrame
-		ModeFrame
-		MinionFrame
+.		HeroFrame
+.		ModeFrame
+.		MinionFrame
 		FormFrame
-		SelectFrame
+.		SelectFrame
 		EntryFrame
 		ExpandFrame
 		SwapFrame
 		PrincipleFrame
 		AssignFrame
+	Create Configure() bindings to resize the inside of a Frame when its window is resized?
 
 Figure out titleWidth
   

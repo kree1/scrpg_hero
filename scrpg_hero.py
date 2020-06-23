@@ -14958,11 +14958,9 @@ class HeroFrame(Frame):
         titleWidth = 6
         titleHeight = 1
         mainTitleHeight = 2
-        sectionHeight = 2
+        sectionHeight = 1
         sectionRelief = GROOVE
         sectionReason = CENTER
-        sectionWrap = math.floor(self.columnWidth*groupWidth*1.25)
-        self.principleWrap = sectionWrap
         for i in range(len(self.myHeroPrinciples)):
             groupCol = firstCol+i*groupWidth
             self.prinTitles[i] = Message(self.leftFrame,
@@ -15049,8 +15047,6 @@ class HeroFrame(Frame):
         # Principle Abilities start after Green Abilities
         greenRows = 0
         abilityMultiplier = 1.25
-        self.abilityWraps = [math.floor(a*abilityMultiplier*self.columnWidth) \
-                             for a in sectionWidths]
         greenRows = len(self.myZoneAbilities[0])
 ##        print("Total rows in Green Abilities: " + str(greenRows))
         prinRow = firstRow + titleHeight + greenRows
@@ -15073,13 +15069,11 @@ class HeroFrame(Frame):
                                                   sticky=N+S+E+W)
             thisRow += rowsNeeded
             prinHeight += rowsNeeded
-        firstRows = [5, 26, 38]
         thisRow = firstRow + titleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
                 thisRow = prinRow + prinHeight
             for a in range(len(self.myZoneAbilities[z])):
-                rowsNeeded = 1
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s] = Message(self.rightFrame,
                                                               background=self.zoneColors[z],
@@ -15091,10 +15085,10 @@ class HeroFrame(Frame):
                                                               font=self.currentFont)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
                                                          column=firstCol+sum(sectionWidths[:s]),
-                                                         rowspan=rowsNeeded,
+                                                         rowspan=1,
                                                          columnspan=sectionWidths[s],
                                                          sticky=N+S+E+W)
-                thisRow += rowsNeeded
+                thisRow += 1
         rowsNeeded = 1
         self.outAbilityValue = Message(self.rightFrame,
                                      background="gray50",
@@ -15713,7 +15707,6 @@ class HeroFrame(Frame):
         titleHeight = 1
         greenRows = len(self.myZoneAbilities[0])
         prinRow = firstRow + titleHeight + greenRows
-        thisRow = prinRow
         prinHeight = 0
         for i in range(len(self.myPrinAbilities)):
             sectionValues = ["" for a in range(len(self.abilityTitleText))]
@@ -15724,23 +15717,20 @@ class HeroFrame(Frame):
                                  self.myPrinAbilities[i].dispText()]
             for j in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[i][j].config(text=sectionValues[j])
-                self.prinAbilityValues[i][j].grid(row=thisRow,
+                self.prinAbilityValues[i][j].grid(row=prinRow+i,
                                                   column=firstCol+sum(sectionWidths[:j]),
                                                   rowspan=rowsNeeded,
                                                   columnspan=sectionWidths[j],
                                                   sticky=N+S+E+W)
                 self.prinAbilityValues[i][j].bind("<Double-1>",
                                                   self.ClipboardCopy)
-            thisRow += rowsNeeded
-            prinHeight += rowsNeeded
-        firstRows = [5, 26, 38]
+        prinHeight = len(self.myPrinAbilities)
         thisRow = firstRow + titleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
                 thisRow = prinRow + prinHeight
             for a in range(len(self.myZoneAbilities[z])):
                 sectionValues = ["" for x in range(len(self.abilityTitleText))]
-                rowsNeeded = 1
                 if isinstance(self.myZoneAbilities[z][a], Ability):
                     sectionValues = [self.myZoneAbilities[z][a].flavorname,
                                      self.myZoneAbilities[z][a].type,
@@ -15754,7 +15744,7 @@ class HeroFrame(Frame):
                                                          sticky=N+S+E+W)
                     self.zoneAbilityValues[z][a][s].bind("<Double-1>",
                                                          self.ClipboardCopy)
-                thisRow += rowsNeeded
+                thisRow += 1
         outText = ""
         rowsNeeded = 1
         if isinstance(self.myOutAbility, Ability):
@@ -16241,9 +16231,9 @@ class HeroFrame(Frame):
             # ...
         # Once the list is complete, figure out which option to use
         rename_selection = ""
-        if len(rename_options) == 1:
-            # There's only one option, so we don't need to prompt the user
-            rename_selection = rename_options[0]
+        if len(rename_options) == 2:
+            # There's only one option aside from "None", so we don't need to prompt the user
+            rename_selection = rename_options[1]
         elif len(rename_options) > 1:
             # Multiple options? Better ask the user which one to follow up on
             result = IntVar(self)
@@ -16811,11 +16801,6 @@ class ModeFrame(Frame):
         self.powerGlue = N+E+S+W
         self.abilityGlue = N+E+S+W
         self.sectionWidths = [4, 1, 5, 2, 9]
-        self.powerModifier = 1
-        self.powerWrap = math.floor(self.sectionWidths[0] * self.columnWidth * self.powerModifier)
-        self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sectionWidths[2:]) * \
-                                    self.columnWidth * self.rulesModifier)
         self.abilityModifier = 1
         self.abilityWraps = [math.floor(x*self.columnWidth * self.abilityModifier) \
                              for x in self.sectionWidths[2:]]
@@ -17029,10 +17014,12 @@ class ModeFrame(Frame):
                 cBufferHeight = leftHeight - rightHeight
                 cBufferGlue = self.abilityGlue
             if leftHeight != rightHeight:
-                self.myColumnBuffers[i] = Message(self,
+                self.myColumnBuffers[i] = Label(self,
                                                 background=modeColor,
                                                 text=" ",
-                                                width=cBufferWidth*self.columnWidth,
+                                                width=int(cBufferWidth * \
+                                                          self.columnWidth / self.widthFactor),
+                                                height=cBufferHeight*self.rowHeight,
                                                 font=self.dispFont)
                 self.myColumnBuffers[i].grid(row=cBufferRow,
                                              column=cBufferCol,
@@ -17052,9 +17039,10 @@ class ModeFrame(Frame):
                 bufferRow = topRow + max(leftHeight, rightHeight)
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " bufferRow=" + str(bufferRow))
-                self.myBuffers[i] = Message(self,
+                self.myBuffers[i] = Label(self,
                                           text=" ",
-                                          width=sum(self.sectionWidths)*self.columnWidth,
+                                          width=int(sum(self.sectionWidths) * \
+                                                    self.columnWidth / self.widthFactor),
                                           font=self.dispFont)
                 self.myBuffers[i].grid(row=bufferRow,
                                        column=firstCol,
@@ -17210,14 +17198,6 @@ class MinionFrame(Frame):
         self.formWidths = [2, 2, 12]
         self.formRules = "When creating a minion, you may discard a bonus on you or a willing " + \
                          "ally to give your minion one of the following upgrades:"
-        self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sizeWidths)*self.columnWidth*self.rulesModifier)
-        self.titleModifier = 1
-        self.titleWrap = math.floor(sum(self.formWidths[0:1])*self.columnWidth*self.titleModifier)
-        self.sizeModifier = 1
-        self.sizeWraps = [math.floor(w*self.columnWidth*self.sizeModifier) for w in self.sizeWidths]
-        self.formModifier = 1
-        self.formWraps = [math.floor(w*self.columnWidth*self.formModifier) for w in self.formWidths]
         self.titleBG = "orange"
         self.rulesBG = "khaki"
         self.headerBG = "cyan"
@@ -17791,7 +17771,6 @@ class SelectWindow(SubWindow):
                                          self.myOptions,
                                          self.myVariable,
                                          width=width,
-                                         buffer=buffer,
                                          titleWidth=len(str(title)))
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
@@ -17819,7 +17798,6 @@ class SelectFrame(Frame):
                  destination,
                  printing=False,
                  width=40,
-                 buffer=5,
                  titleWidth=-1):
         Frame.__init__(self, parent)
         notePrefix = "### SelectFrame.__init__: "
@@ -17828,10 +17806,6 @@ class SelectFrame(Frame):
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.widthFactor = 6
-##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
-        self.myBuffer = buffer
-        self.myWrap = self.myWidth + self.myBuffer
-##        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
         self.myPrompt = str(prompt)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
@@ -17885,30 +17859,6 @@ class SelectFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
-        self.myBPlusButton = Button(self,
-                                    anchor=CENTER,
-                                    justify=CENTER,
-                                    text="+B",
-                                    font=self.myFont,
-                                    padx=1,
-                                    command=self.plusbuffer)
-        self.myBMinusButton = Button(self,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="-B",
-                                     font=self.myFont,
-                                     padx=1,
-                                     command=self.minusbuffer)
-##        self.myBPlusButton.grid(row=5,
-##                                column=1,
-##                                rowspan=1,
-##                                columnspan=1,
-##                                sticky=N+E+S+W)
-##        self.myBMinusButton.grid(row=5,
-##                                 column=2,
-##                                 rowspan=1,
-##                                 columnspan=1,
-##                                 sticky=N+E+S+W)
         self.myWPlusButton = Button(self,
                                     anchor=CENTER,
                                     justify=CENTER,
@@ -17942,18 +17892,10 @@ class SelectFrame(Frame):
                edited=False):
         # Make sure myWidth never gets narrower than the widest option
         self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
-        self.myWrap = self.myWidth + self.myBuffer
         self.myBrace.config(width=self.myWidth*self.widthFactor)
         self.myPromptMessage.config(width=self.myWidth*self.widthFactor)
         if edited:
-            print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
-                  ", myBuffer = " + str(self.myBuffer))
-    def plusbuffer(self, event=None):
-        self.myBuffer += 5
-        self.update(edited=True)
-    def minusbuffer(self, event=None):
-        self.myBuffer -= 5
-        self.update(edited=True)
+            print("### SelectFrame.update: myWidth = " + str(self.myWidth))
     def pluswidth(self, event=None):
         self.myWidth += 5
         self.update(edited=True)
@@ -19036,7 +18978,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
