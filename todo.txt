@@ -200,20 +200,6 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
  Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
 
 >>> REARRANGE HeroFrame <<<
-	Stop using rowspan based on split_text
-.		HeroFrame
-.		ModeFrame
-?		FormFrame needs Ability rows to line up with Power/Quality rows... for now
-	Stop using split_text for Message contents
-.		HeroFrame
-.		ModeFrame
-.		MinionFrame
-.		FormFrame
-.		SelectFrame
-.		EntryFrame
-.		ExpandFrame
-.		SwapFrame
-.		AssignFrame
 	Remove wrap/buffer/height variables that are only used in conjunction with split_text
 .		HeroFrame
 .		ModeFrame

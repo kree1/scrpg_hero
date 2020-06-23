@@ -10771,7 +10771,7 @@ class Hero:
                                 result = StringVar(self.myFrame)
                                 questions = AssignWindow(self.myWindow,
                                                          "Assign " + self.hero_name + \
-                                                         "'s remaining Powers & Qualities to " + \
+                                                         "'s remaining Powers to " + \
                                                          "one of " + \
                                                          pronouns[self.pronoun_set][2] + \
                                                          " Divided Forms...",
@@ -10862,7 +10862,7 @@ class Hero:
                             result = StringVar(self.myFrame)
                             questions = AssignWindow(self.myWindow,
                                                      "Assign " + self.hero_name + \
-                                                     "'s remaining Powers & Qualities to " + \
+                                                     "'s remaining Qualities to " + \
                                                      "one of " + \
                                                      pronouns[self.pronoun_set][2] + \
                                                      " Divided Forms...",
@@ -16730,9 +16730,6 @@ class ModeFrame(Frame):
         self.powerGlue = N+E+S+W
         self.abilityGlue = N+E+S+W
         self.sectionWidths = [4, 1, 5, 2, 9]
-        self.abilityModifier = 1
-        self.abilityWraps = [math.floor(x*self.columnWidth * self.abilityModifier) \
-                             for x in self.sectionWidths[2:]]
         self.headerHeight = 1
         self.powerHeight = 1
         self.bufferHeight = 1
@@ -17378,14 +17375,6 @@ class FormFrame(Frame):
         self.reasons = [LEFT, CENTER, LEFT, CENTER, CENTER, RIGHT, CENTER, LEFT]
         self.targets = [W, CENTER, W, CENTER, CENTER, E, CENTER, W]
         self.headerText = ["Powers", "Die", "Qualities", "Die", "Status", "Name", "Type", "Text"]
-        self.nameModifier = 1
-        self.nameWrap = math.floor(sum(self.upperWidths)*self.columnWidth*self.nameModifier)
-        self.pqModifier = 1
-        self.pqWrap = math.floor(self.upperWidths[0]*self.columnWidth*self.pqModifier)
-        self.abilityModifiers = [1,1,1]
-        self.abilityWraps = [math.floor(self.lowerWidths[x+5] * self.columnWidth * \
-                                        self.abilityModifiers[x]) \
-                             for x in range(len(self.abilityModifiers))]
         # Form name labels are organized by form
         self.myFormNames = [None for x in range(self.myFormCount)]
         # Header labels are organized by form, then by category (in headerText)
@@ -17421,28 +17410,18 @@ class FormFrame(Frame):
             # leftHeight starts with 1 for form name plus 1 for Power headers
             leftHeight = 2
             # If this form has Powers, leftHeight adds the height of each Power
-            for p in thisForm[2]:
-                leftHeight += 1 + len([x for x in split_text(p.flavorname,
-                                                             width=self.pqWrap) if x == "\n"])
+            leftHeight += len(thisForm[2])
             # centerHeight starts with 1 for form name plus 1 for Quality headers
             centerHeight = 2
             # If this form has Qualities, centerHeight adds the height of each Quality
-            for q in thisForm[3]:
-                centerHeight += 1 + len([x for x in split_text(q.flavorname,
-                                                               width=self.pqWrap) if x == "\n"])
+            centerHeight += len(thisForm[3])
             # rightHeight starts with 1 for form name plus 2 for description
             rightHeight = 3
             # If this form has Abilities, rightHeight adds 1 for Ability headers...
             if len(thisForm[5]) > 0:
                 rightHeight += 1
             # ... plus the height of each Ability
-            for a in thisForm[5]:
-                rightHeight += 1 + max(len([x for x in split_text(a.flavorname,
-                                                                  width=self.abilityWraps[0]) \
-                                            if x == "\n"]),
-                                       len([x for x in split_text(a.dispText(),
-                                                                  width=self.abilityWraps[2]) \
-                                            if x == "\n"]))
+            rightHeight += len(thisForm[5])
             # rightHeight always needs to have room for form name, status header, and 3 status dice
             rightHeight = max(rightHeight, 5)
 ##            print(notePrefix + thisName + " leftHeight: " + str(leftHeight))
@@ -17501,18 +17480,6 @@ class FormFrame(Frame):
                                              self.ClipboardCopy)
             # Display Power and Quality dice across columns 1-10 of the third through
             #  [2+max(len(powers),len(qualities))]th rows
-            pqHeights = [1 for x in range(8)]
-            for r in range(len(pqHeights)):
-                for c in range(2,4):
-                    if r < len(thisForm[c]):
-                        if isinstance(thisForm[c][r], PQDie):
-                            pqHeights[r] = max(pqHeights[r],
-                                               1 + len([x for x in \
-                                                        split_text(thisForm[c][r].flavorname,
-                                                                   width=self.pqWrap) \
-                                                        if x == "\n"]))
-##                    print(notePrefix + thisName + " row " + str(r) + ", column " + str(c) + \
-##                          " height: " + str(pqHeights[r]))
             for j in range(4):
                 columnText = ["" for k in range(max(len(thisForm[2]),len(thisForm[3])))]
                 diceIndex = 2
@@ -17522,8 +17489,6 @@ class FormFrame(Frame):
                 for d in range(len(columnDice)):
                     if isinstance(columnDice[d], PQDie):
                         if j%2 == 0:
-##                            columnText[d] = split_text(columnDice[d].flavorname,
-##                                                       width=self.pqWrap)
                             columnText[d] = columnDice[d].flavorname
                         else:
                             columnText[d] = str(columnDice[d].diesize)
@@ -17538,16 +17503,16 @@ class FormFrame(Frame):
                                                      text=columnText[k],
                                                      width=self.upperWidths[j]*self.columnWidth,
                                                      font=self.dispFont)
-                    self.myPQDice[i][j][k].grid(row=firstRow+2+sum(pqHeights[0:k]),
+                    self.myPQDice[i][j][k].grid(row=firstRow+2+k,
                                                 column=1+sum(self.upperWidths[0:j]),
-                                                rowspan=pqHeights[k],
+                                                rowspan=1,
                                                 columnspan=self.upperWidths[j],
                                                 sticky=self.diceGlue)
                     self.myPQDice[i][j][k].bind("<Double-1>",
                                                 self.ClipboardCopy)
             # If thisForm has associated Abilities...
             if len(thisForm[5]) > 0:
-                # Display Ability headers across columns 13-28 of the fourth row
+                # Display Ability headers across columns 13-28 of the fifth row
                 for j in range(5, len(self.headerText)):
                     self.myHeaders[i][j] = Message(self,
                                                    background=self.titleBG,
@@ -17557,32 +17522,24 @@ class FormFrame(Frame):
                                                    text=self.headerText[j],
                                                    width=self.lowerWidths[j]*self.columnWidth,
                                                    font=self.dispFont)
-                    self.myHeaders[i][j].grid(row=firstRow+3,
+                    self.myHeaders[i][j].grid(row=firstRow+4,
                                               column=1+sum(self.lowerWidths[0:j]),
                                               rowspan=1,
                                               columnspan=self.lowerWidths[j],
                                               sticky=self.titleGlue)
-                thisRow = firstRow + 4
+                thisRow = firstRow + 5
                 # For each Ability associated with this form...
                 for j in range(len(thisForm[5])):
                     thisAbility = thisForm[5][j]
-                    # Get the max height of the text boxes for this Ability. That will be the
-                    #  rowspan of these labels.
-                    abilityHeight = 1 + max(len([x for x in \
-                                                 split_text(thisAbility.flavorname,
-                                                            width=self.abilityWraps[0]) \
-                                                 if x == "\n"]),
-                                            len([x for x in \
-                                                 split_text(thisAbility.dispText(),
-                                                            width=self.abilityWraps[2]) \
-                                                 if x == "\n"]))
-                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
-                          str(abilityHeight))
-##                    thisAbilityText = [split_text(thisAbility.flavorname,
-##                                                  width=self.abilityWraps[0]),
-##                                       thisAbility.type,
-##                                       split_text(thisAbility.dispText(),
-##                                                  width=self.abilityWraps[2])]
+                    # The ability headers are level with the third row of Powers/Qualities. Get the
+                    #  number of additional Power/Quality lines after that. That number will be the
+                    #  rowspan of these widgets.
+                    abilityHeight = 1
+                    lastPQRow = max(len(thisForm[2]),len(thisForm[3]))
+                    if lastPQRow > 3:
+                        abilityHeight = lastPQRow - 3
+##                    print(notePrefix + thisName + " " + thisAbility.flavorname + \
+##                          " abilityHeight: " + str(abilityHeight))
                     thisAbilityText = [thisAbility.flavorname,
                                        thisAbility.type,
                                        thisAbility.dispText()]
@@ -18833,7 +18790,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getLori()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
