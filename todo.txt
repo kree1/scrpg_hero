@@ -202,9 +202,19 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 >>> REARRANGE HeroFrame <<<
 	Stop using rowspan based on split_text
 .		HeroFrame
-		ModeFrame
-		FormFrame
+.		ModeFrame
+?		FormFrame needs Ability rows to line up with Power/Quality rows... for now
 	Stop using split_text for Message contents
+.		HeroFrame
+.		ModeFrame
+.		MinionFrame
+.		FormFrame
+.		SelectFrame
+.		EntryFrame
+.		ExpandFrame
+.		SwapFrame
+.		AssignFrame
+	Remove wrap/buffer/height variables that are only used in conjunction with split_text
 		HeroFrame
 		ModeFrame
 		MinionFrame

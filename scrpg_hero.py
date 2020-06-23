@@ -17241,14 +17241,13 @@ class MinionFrame(Frame):
                                   column=i+1)
         # Display minion size rules in columns 1-16 of rows 1-2
         self.myMinionSizeRules = Message(self,
-                                       background=self.rulesBG,
-                                       anchor=W,
-                                       justify=LEFT,
-                                       relief=self.rulesRelief,
-                                       text=split_text(self.sizeRules,
-                                                       width=self.rulesWrap),
-                                       width=sum(self.sizeWidths)*self.columnWidth,
-                                       font=self.dispFont)
+                                         background=self.rulesBG,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         relief=self.rulesRelief,
+                                         text=self.sizeRules,
+                                         width=sum(self.sizeWidths)*self.columnWidth,
+                                         font=self.dispFont)
         self.myMinionSizeRules.grid(row=1,
                                     column=1,
                                     rowspan=2,
@@ -17258,14 +17257,13 @@ class MinionFrame(Frame):
                                     self.ClipboardCopy)
         # Display Minion Sizes title in columns 1-4 of row 3
         self.myMinionSizeTitle = Message(self,
-                                       background=self.titleBG,
-                                       anchor=W,
-                                       justify=LEFT,
-                                       relief=self.titleRelief,
-                                       text=split_text("Minion Sizes",
-                                                       width=self.titleWrap),
-                                       width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       font=self.dispFont)
+                                         background=self.titleBG,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         relief=self.titleRelief,
+                                         text="Minion Sizes",
+                                         width=sum(self.formWidths[0:2])*self.columnWidth,
+                                         font=self.dispFont)
         self.myMinionSizeTitle.grid(row=3,
                                     column=1,
                                     rowspan=1,
@@ -17275,14 +17273,13 @@ class MinionFrame(Frame):
         self.myMinionSizeHeaders = [None for i in self.sizeHeaders]
         for i in range(len(self.myMinionSizeHeaders)):
             thisHeader = Message(self,
-                               background=self.headerBG,
-                               anchor=W,
-                               justify=LEFT,
-                               relief=self.headerRelief,
-                               text=split_text(self.sizeHeaders[i],
-                                               width=self.sizeWraps[i]),
-                               width=self.sizeWidths[i]*self.columnWidth,
-                               font=self.dispFont)
+                                 background=self.headerBG,
+                                 anchor=W,
+                                 justify=LEFT,
+                                 relief=self.headerRelief,
+                                 text=self.sizeHeaders[i],
+                                 width=self.sizeWidths[i]*self.columnWidth,
+                                 font=self.dispFont)
             self.myMinionSizeHeaders[i] = thisHeader
             self.myMinionSizeHeaders[i].grid(row=4,
                                              column=1+sum(self.sizeWidths[0:i]),
@@ -17295,14 +17292,13 @@ class MinionFrame(Frame):
         for c in range(len(self.myMinionSizeEntries)):
             for r in range(len(self.myMinionSizeEntries[c])):
                 thisEntry = Message(self,
-                                  background=self.tableBG,
-                                  anchor=W,
-                                  justify=LEFT,
-                                  relief=self.tableRelief,
-                                  text=split_text(self.sizeText[c][r],
-                                                  width=self.sizeWraps[c]),
-                                  width=self.sizeWidths[c]*self.columnWidth,
-                                  font=self.dispFont)
+                                    background=self.tableBG,
+                                    anchor=W,
+                                    justify=LEFT,
+                                    relief=self.tableRelief,
+                                    text=self.sizeText[c][r],
+                                    width=self.sizeWidths[c]*self.columnWidth,
+                                    font=self.dispFont)
                 self.myMinionSizeEntries[c][r] = thisEntry
                 self.myMinionSizeEntries[c][r].grid(row=5+r,
                                                     column=1+sum(self.sizeWidths[0:c]),
@@ -17315,14 +17311,13 @@ class MinionFrame(Frame):
         # ...
         # Display minion form rules in columns 1-16 of row 12
         self.myMinionFormRules = Message(self,
-                                       background=self.rulesBG,
-                                       anchor=W,
-                                       justify=LEFT,
-                                       relief=self.rulesRelief,
-                                       text=split_text(self.formRules,
-                                                       width=self.rulesWrap),
-                                       width=sum(self.formWidths)*self.columnWidth,
-                                       font=self.dispFont)
+                                         background=self.rulesBG,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         relief=self.rulesRelief,
+                                         text=self.formRules,
+                                         width=sum(self.formWidths)*self.columnWidth,
+                                         font=self.dispFont)
         self.myMinionFormRules.grid(row=12,
                                     column=1,
                                     rowspan=1,
@@ -17332,14 +17327,13 @@ class MinionFrame(Frame):
                                     self.ClipboardCopy)
         # Display Minion Forms title in columns 1-4 of row 13
         self.myMinionFormTitle = Message(self,
-                                       background=self.titleBG,
-                                       anchor=W,
-                                       justify=LEFT,
-                                       relief=self.titleRelief,
-                                       text=split_text("Minion Forms",
-                                                       width=self.titleWrap),
-                                       width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       font=self.dispFont)
+                                         background=self.titleBG,
+                                         anchor=W,
+                                         justify=LEFT,
+                                         relief=self.titleRelief,
+                                         text="Minion Forms",
+                                         width=sum(self.formWidths[0:2])*self.columnWidth,
+                                         font=self.dispFont)
         self.myMinionFormTitle.grid(row=13,
                                     column=1,
                                     rowspan=1,
@@ -17349,14 +17343,13 @@ class MinionFrame(Frame):
         self.myMinionFormHeaders = [None for i in self.formHeaders]
         for i in range(len(self.myMinionFormHeaders)):
             thisHeader = Message(self,
-                               background=self.headerBG,
-                               anchor=W,
-                               justify=LEFT,
-                               relief=self.headerRelief,
-                               text=split_text(self.formHeaders[i],
-                                               width=self.formWraps[i]),
-                               width=self.formWidths[i]*self.columnWidth,
-                               font=self.dispFont)
+                                 background=self.headerBG,
+                                 anchor=W,
+                                 justify=LEFT,
+                                 relief=self.headerRelief,
+                                 text=self.formHeaders[i],
+                                 width=self.formWidths[i]*self.columnWidth,
+                                 font=self.dispFont)
             self.myMinionFormHeaders[i] = thisHeader
             self.myMinionFormHeaders[i].grid(row=14,
                                              column=1+sum(self.formWidths[0:i]),
@@ -17368,14 +17361,13 @@ class MinionFrame(Frame):
         for r in range(self.myMinionCount):
             for c in range(len(self.myMinionInfo[r])):
                 thisEntry = Message(self,
-                                  background=self.tableBG,
-                                  anchor=W,
-                                  justify=LEFT,
-                                  relief=self.tableRelief,
-                                  text=split_text(self.myMinionInfo[r][c],
-                                                  width=self.formWraps[c]),
-                                  width=self.formWidths[c]*self.columnWidth,
-                                  font=self.dispFont)
+                                    background=self.tableBG,
+                                    anchor=W,
+                                    justify=LEFT,
+                                    relief=self.tableRelief,
+                                    text=self.myMinionInfo[r][c],
+                                    width=self.formWidths[c]*self.columnWidth,
+                                    font=self.dispFont)
                 self.myMinionFormEntries[r][c] = thisEntry
                 self.myMinionFormEntries[r][c].grid(row=15+r,
                                                     column=1+sum(self.formWidths[0:c]),
@@ -17621,8 +17613,9 @@ class FormFrame(Frame):
                 for d in range(len(columnDice)):
                     if isinstance(columnDice[d], PQDie):
                         if j%2 == 0:
-                            columnText[d] = split_text(columnDice[d].flavorname,
-                                                       width=self.pqWrap)
+##                            columnText[d] = split_text(columnDice[d].flavorname,
+##                                                       width=self.pqWrap)
+                            columnText[d] = columnDice[d].flavorname
                         else:
                             columnText[d] = str(columnDice[d].diesize)
 ##                print(notePrefix + thisName + " " + self.headerText[j] + " justify: " + \
@@ -17676,11 +17669,14 @@ class FormFrame(Frame):
                                                  if x == "\n"]))
                     print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
                           str(abilityHeight))
-                    thisAbilityText = [split_text(thisAbility.flavorname,
-                                                  width=self.abilityWraps[0]),
+##                    thisAbilityText = [split_text(thisAbility.flavorname,
+##                                                  width=self.abilityWraps[0]),
+##                                       thisAbility.type,
+##                                       split_text(thisAbility.dispText(),
+##                                                  width=self.abilityWraps[2])]
+                    thisAbilityText = [thisAbility.flavorname,
                                        thisAbility.type,
-                                       split_text(thisAbility.dispText(),
-                                                  width=self.abilityWraps[2])]
+                                       thisAbility.dispText()]
                     for k in range(3):
                         self.myAbilities[i][j][k] = Message(self,
                                                             background=thisBG,
@@ -17836,9 +17832,7 @@ class SelectFrame(Frame):
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
 ##        print(notePrefix + "myWidth = " + str(self.myWidth) + ", myBuffer = " + str(self.myBuffer))
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
+        self.myPrompt = str(prompt)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
         try:
@@ -17950,10 +17944,7 @@ class SelectFrame(Frame):
         self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
         self.myBrace.config(width=self.myWidth*self.widthFactor)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
-        self.myPromptMessage.config(text=self.myPrompt,
-                                    width=self.myWidth*self.widthFactor)
+        self.myPromptMessage.config(width=self.myWidth*self.widthFactor)
         if edited:
             print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
                   ", myBuffer = " + str(self.myBuffer))
@@ -18053,9 +18044,7 @@ class EntryFrame(Frame):
         self.widthFactor = 6
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
+        self.myPrompt = str(prompt)
         self.myText = StringVar(self, destination.get())
         self.myDestination = destination
         try:
@@ -18117,11 +18106,8 @@ class EntryFrame(Frame):
     def update(self, event=None):
         self.myWidth = max(self.myWidth, self.myTitleWidth)
         self.myWrap = self.myWidth + self.myBuffer
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
-        self.myBrace.config(width=self.widthFactor)
-        self.myPromptMessage.config(text=self.myPrompt,
-                                    width=self.myWidth*self.widthFactor)
+        self.myBrace.config(width=self.myWidth*self.widthFactor)
+        self.myPromptMessage.config(width=self.myWidth*self.widthFactor)
         print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
               str(self.myBuffer))
     def plusbuffer(self, event=None):
@@ -18232,9 +18218,10 @@ class ExpandFrame(Frame):
         if isinstance(lbuffer, int) and lbuffer >= 0:
             self.myPromptBuffer = lbuffer
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myPromptWrap)
+##        self.myRawPrompt = str(prompt)
+##        self.myPrompt = split_text(self.myRawPrompt,
+##                                   width=self.myPromptWrap)
+        self.myPrompt = str(prompt)
         self.myDispWidth = rwidth
         # If rbuffer isn't specified, use this formula
         self.myDispBuffer = max(0, math.floor(0.43 * self.myDispWidth - 20))
@@ -18358,9 +18345,6 @@ class ExpandFrame(Frame):
 ##                                 rowspan=1,
 ##                                 columnspan=1,
 ##                                 sticky=N+E+S+W)
-        detailsHeight = max([1 + len([x for x in split_text(y,
-                                                            width=self.myDispWrap) \
-                                      if x == "\n"]) for y in self.myDetails])
         # To guarantee width of Message widget, hide Canvas widget with specified width underneath
         self.myRightBrace = Canvas(self,
                                    width=self.myDispWidth*self.widthFactor,
@@ -18392,8 +18376,8 @@ class ExpandFrame(Frame):
         # Make sure myPromptWidth never gets narrower than the widest option
         self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myPromptWrap)
+##        self.myPrompt = split_text(self.myRawPrompt,
+##                                   width=self.myPromptWrap)
         self.myLeftFrame.config(width=self.myPromptWidth*self.widthFactor)
         self.myPromptMessage.config(text=self.myPrompt,
                                     width=self.myPromptWidth*self.widthFactor)
@@ -18401,13 +18385,11 @@ class ExpandFrame(Frame):
         index = self.myOptions.index(self.myString.get())
         dispText = ""
         if index in range(len(self.myDetails)):
-            dispText = split_text(self.myDetails[index],
-                                  width=self.myDispWrap)
+##            dispText = split_text(self.myDetails[index],
+##                                  width=self.myDispWrap)
+            dispText = self.myDetails[index]
         self.myDispMessage.config(text=dispText,
-                                width=self.myDispWidth*self.widthFactor)
-        detailsHeight = max([1 + len([x for x in split_text(y,
-                                                            width=self.myDispWrap) \
-                                      if x == "\n"]) for y in self.myDetails])
+                                  width=self.myDispWidth*self.widthFactor)
         if edited:
             print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
                   ", myDispBuffer = " + str(self.myDispBuffer))
@@ -18527,9 +18509,10 @@ class SwapFrame(Frame):
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
         self.widthFactor = 6
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWidth)
+##        self.myRawPrompt = str(prompt)
+##        self.myPrompt = split_text(self.myRawPrompt,
+##                                   width=self.myWidth)
+        self.myPrompt = str(prompt)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
         try:
@@ -18841,7 +18824,6 @@ class AssignFrame(Frame):
         notePrefix = "### AssignFrame.__init__: "
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myRawPrompt = str(prompt)
         self.myCategories = [str(x) for x in categories]
         self.myItems = [str(x) for x in items]
         self.myDestination = StringVar(self)
@@ -18878,8 +18860,10 @@ class AssignFrame(Frame):
         self.myAnswerKey = string.ascii_uppercase[0:len(self.myCategories)]
         totalWidth = max(self.myItemWidth + self.myColumnWidth*len(self.myCategories),
                          titleWidth + titleBuffer)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=totalWidth)
+##        self.myRawPrompt = str(prompt)
+##        self.myPrompt = split_text(self.myRawPrompt,
+##                                   width=totalWidth)
+        self.myPrompt = str(prompt)
         try:
             self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
         except (TclError):
@@ -19052,7 +19036,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getLori()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
