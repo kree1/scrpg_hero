@@ -200,11 +200,10 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
  Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
 
 >>> REARRANGE HeroFrame <<<
-	Wrapping problems with Power/Quality names...
-	 Knockout's "Deep Space Knowledge" splits itself into multiple lines
-	 Curveball's "Rules of Engagement" doesn't
-	 Ultra Boy's "Gangster Made Good" doesn't
-	 Ultra Boy's "Criminal Underworld Info" splits in the wrong place
+	Stop using rowspan based on split_text
+.		HeroFrame
+		ModeFrame
+		FormFrame
 	Stop using split_text for Message contents
 		HeroFrame
 		ModeFrame

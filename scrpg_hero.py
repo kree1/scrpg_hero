@@ -15426,21 +15426,6 @@ class HeroFrame(Frame):
 ##                               rowspan=self.buttonHeight,
 ##                               columnspan=self.buttonWidth,
 ##                               sticky=N+E+S+W)
-##        # Button for modifying wrap length in ability Text labels (for design purposes)
-##        self.wrapButton = Button(self.buttonFrame,
-##                                 background=self.demoColors[0],
-##                                 activebackground=self.demoColors[1],
-##                                 text=str(self.principleWrap),
-##                                 width=self.buttonWidth,
-##                                 height=self.rowHeight*self.buttonHeight,
-##                                 command=self.UpdateWrap,
-##                                 padx=self.buttonPadX,
-##                                 pady=self.buttonPadY)
-##        self.wrapButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-##                             column=secondBFCol,
-##                             rowspan=self.buttonHeight,
-##                             columnspan=self.buttonWidth,
-##                             sticky=N+E+S+W)
 ##        prevButtonRows += 1
         self.ShowSingleStep()
         self.sampleIndex = -1
@@ -15468,17 +15453,6 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j].config(relief=newRelief)
                 self.prinSectionValues[i][j].update_idletasks()
         self.reliefButton.config(text=str(newRelief))
-    def UpdateWrap(self):
-        self.principleWrap += 5
-        for i in range(len(self.prinSectionValues)):
-            for j in range(len(self.prinSectionValues[i])):
-                flatText = self.prinSectionValues[i][j]["text"].replace("\n", " ")
-                newSplit = split_text(flatText,
-                                      width=self.principleWrap)
-                self.prinSectionValues[i][j]["text"] = newSplit
-                self.prinSectionValues[i][j].update_idletasks()
-        self.wrapButton["text"] = str(self.principleWrap)
-        self.wrapButton.update_idletasks()
     def SwitchFont(self, increment=1):
         notePrefix = "### HeroFrame.SwitchFont: "
         self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
@@ -15680,12 +15654,10 @@ class HeroFrame(Frame):
                         for a in range(len(self.myHeroPowers))]
         for x in range(len(self.myHeroPowers)):
             if isinstance(self.myHeroPowers[x], PQDie):
-                pqDiceValues[x][0] = split_text(self.myHeroPowers[x].flavorname,
-                                                width=sectionWidths[0]*self.columnWidth)
+                pqDiceValues[x][0] = self.myHeroPowers[x].flavorname
                 pqDiceValues[x][1] = str(self.myHeroPowers[x].diesize)
             if isinstance(self.myHeroQualities[x], PQDie):
-                pqDiceValues[x][2] = split_text(self.myHeroQualities[x].flavorname,
-                                                width=sectionWidths[0]*self.columnWidth)
+                pqDiceValues[x][2] = self.myHeroQualities[x].flavorname
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
             for j in range(len(pqDiceValues)):
@@ -15711,20 +15683,6 @@ class HeroFrame(Frame):
             self.healthValues[i].config(text=self.RangeText(i))
             self.healthValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
-        # Get the maximum height of each Principle section across all Principles
-        prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
-        for i in range(len(self.myHeroPrinciples)):
-            thisSections = ["", "", ""]
-            if isinstance(self.myHeroPrinciples[i], Principle):
-                thisSections[0] = self.myHeroPrinciples[i].during_roleplaying
-                thisSections[1] = self.myHeroPrinciples[i].minor_twist
-                thisSections[2] = self.myHeroPrinciples[i].major_twist
-            wrapSections = [split_text(x, width=self.principleWrap) for x in thisSections]
-            thisSectionHeights = [1 + len([c for c in x if c == "\n"]) for x in wrapSections]
-            for j in range(len(prinSectionHeights)):
-                prinSectionHeights[j][i] = thisSectionHeights[j]
-        sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
-##        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
         firstRow = 29
         titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
@@ -15738,17 +15696,13 @@ class HeroFrame(Frame):
                 minor = self.myHeroPrinciples[i].minor_twist
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
-            sectionValues = [split_text(x, width=self.principleWrap) for x in sectionValues]
             self.prinTitles[i].config(text=title)
             for j in range(len(self.prinSectionTitles[i])):
-                titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
-##                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
-##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
-##                      str(self.rowHeight*sectionMaxHeights[j]))
+                titleRow = firstRow + j*titleHeight + j
                 self.prinSectionTitles[i][j].grid(row=titleRow)
                 self.prinSectionValues[i][j].config(text=sectionValues[j])
                 self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
-                                                  rowspan=sectionMaxHeights[j])
+                                                  rowspan=1)
                 self.prinSectionValues[i][j].bind("<Double-1>",
                                                   self.ClipboardCopy)
         for l in self.abilityTitles:
@@ -15757,18 +15711,7 @@ class HeroFrame(Frame):
         firstCol = 1
         sectionWidths = [4, 2, 10]
         titleHeight = 1
-        greenRows = 0
-        for a in self.myZoneAbilities[0]:
-            rowCount = 1
-            if isinstance(a, Ability):
-                textRows = split_text(a.dispText(),
-                                      width=self.abilityWraps[2])
-                nameRows = split_text(a.name,
-                                      width=self.abilityWraps[0])
-                rowCount = 1 + max(len([x for x in textRows if x == "\n"]),
-                                   len([y for y in nameRows if y == "\n"]))
-            greenRows += rowCount
-##        print("Total rows in Green Abilities: " + str(greenRows))
+        greenRows = len(self.myZoneAbilities[0])
         prinRow = firstRow + titleHeight + greenRows
         thisRow = prinRow
         prinHeight = 0
@@ -15779,15 +15722,6 @@ class HeroFrame(Frame):
                 sectionValues = [self.myPrinAbilities[i].flavorname,
                                  self.myPrinAbilities[i].type,
                                  self.myPrinAbilities[i].dispText()]
-                sectionValues = [split_text(sectionValues[j],
-                                            width=self.abilityWraps[j]) \
-                                 for j in range(len(sectionValues))]
-                rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
-            rword = " rows"
-            if rowsNeeded == 1:
-                rword = " row"
-##            print(str(self.myPrinAbilities[i]) + " starts at row #" + str(thisRow) + \
-##                  " and takes up " + str(rowsNeeded) + rword)
             for j in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[i][j].config(text=sectionValues[j])
                 self.prinAbilityValues[i][j].grid(row=thisRow,
@@ -15811,15 +15745,6 @@ class HeroFrame(Frame):
                     sectionValues = [self.myZoneAbilities[z][a].flavorname,
                                      self.myZoneAbilities[z][a].type,
                                      self.myZoneAbilities[z][a].dispText()]
-                    sectionValues = [split_text(sectionValues[j],
-                                                width=self.abilityWraps[j]) \
-                                     for j in range(len(sectionValues))]
-                    rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
-                rword = " rows"
-                if rowsNeeded == 1:
-                    rword = " row"
-##                print(str(self.myZoneAbilities[z][a]) + " starts at row #" + str(thisRow) + \
-##                      " and takes up " + str(rowsNeeded) + rword)
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s].config(text=sectionValues[s])
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
@@ -15833,9 +15758,7 @@ class HeroFrame(Frame):
         outText = ""
         rowsNeeded = 1
         if isinstance(self.myOutAbility, Ability):
-            outText = split_text(self.myOutAbility.dispText(),
-                                 width=sum(self.abilityWraps))
-            rowsNeeded = 1 + len([x for x in outText if x == "\n"])
+            outText = self.myOutAbility.dispText()
         self.outAbilityValue.config(text=outText)
         self.outAbilityValue.grid(row=thisRow,
                                   column=firstCol,
@@ -16987,8 +16910,7 @@ class ModeFrame(Frame):
                 thisPowerDie = ""
                 thisPowerHeight = 1
                 if isinstance(thisPower, PQDie):
-                    thisPowerText = split_text(thisPower.flavorname,
-                                               width=self.powerWrap)
+                    thisPowerText = thisPower.flavorname
                     thisPowerDie = str(thisPower.diesize)
                     thisPowerHeight = max(self.powerHeight,
                                           1 + len([x for x in thisPowerText if x == "\n"]))
@@ -17064,9 +16986,6 @@ class ModeFrame(Frame):
                 thisAbilityType = self.myModeAbilities[i].type
                 thisAbilityText = self.myModeAbilities[i].dispText()
             thisAbilitySections = [thisAbilityName, thisAbilityType, thisAbilityText]
-            thisAbilitySections = [split_text(thisAbilitySections[i],
-                                              width=self.abilityWraps[i]) \
-                                   for i in range(len(thisAbilitySections))]
             thisAbilityHeight = 3
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Message(self,
@@ -19133,7 +19052,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim(step=2)
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
