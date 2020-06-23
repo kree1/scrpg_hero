@@ -218,13 +218,10 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 .		HeroFrame
 .		ModeFrame
 .		MinionFrame
-		FormFrame
-.		SelectFrame
-		EntryFrame
-		ExpandFrame
-		SwapFrame
-		PrincipleFrame
-		AssignFrame
+?		FormFrame
+.		SelectFrame/SelectWindow/ChooseIndex
+.		EntryFrame/EntryWindow
+.		ExpandFrame/ExpandWindow
 	Create Configure() bindings to resize the inside of a Frame when its window is resized?
 
 Figure out titleWidth

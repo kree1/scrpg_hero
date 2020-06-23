@@ -6632,7 +6632,6 @@ class Hero:
                     repeat_message=invalid_message,
                     title="Hero Creation",
                     width=40,
-                    buffer=5,
                     inputs=[]):
         # Prints a prompt and a list of lettered options (print_options, indicated by A, B, C,
         #  etc.), then lets the user choose from among them
@@ -6664,8 +6663,7 @@ class Hero:
                                     options=print_options,
                                     var=answer,
                                     title=title,
-                                    width=width,
-                                    buffer=buffer)
+                                    width=width)
             return [answer.get(), inputs]
         else:
             # There's no GUI for this hero, or the user's inputs have been specified ahead of time?
@@ -6912,8 +6910,7 @@ class Hero:
         decision = self.ChooseIndex([str(d) for d in valid_dice],
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
-                                    width=45,
-                                    buffer=10)
+                                    width=45)
         entry_index = decision[0]
         inputs = decision[1]
         if track_inputs:
@@ -7040,7 +7037,6 @@ class Hero:
                                             var=answer,
                                             title=print_type + " Selection",
                                             lwidth=50,
-                                            lbuffer=15,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -7092,8 +7088,7 @@ class Hero:
                                         print_types + ":",
                                         inputs=inputs,
                                         title=print_type + " Selection",
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             triplet_choice = print_triplets[entry_index]
@@ -7180,7 +7175,6 @@ class Hero:
                                         var=answer,
                                         title="Principle Selection",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=dispWidth)
                 entry_index = answer.get()
             else:
@@ -7301,7 +7295,6 @@ class Hero:
                                         var=answer,
                                         title="Principle Selection",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=ri_width)
                 entry_index = answer.get()
             else:
@@ -7712,7 +7705,6 @@ class Hero:
                                     var=answer,
                                     title="Background Selection",
                                     lwidth=30,
-                                    lbuffer=5,
                                     rwidth=bg_width)
             entry_index = answer.get()
         else:
@@ -7943,7 +7935,6 @@ class Hero:
                                             var=answer,
                                             title="Ability Selection",
                                             lwidth=40,
-                                            lbuffer=15,
                                             rwidth=a_width)
                     entry_index = answer.get()
                 else:
@@ -7985,7 +7976,6 @@ class Hero:
                                         var=answer,
                                         title="Ability Selection",
                                         lwidth=40,
-                                        lbuffer=15,
                                         rwidth=a_width)
                 entry_index = answer.get()
             else:
@@ -8041,8 +8031,7 @@ class Hero:
                                         "\n\nChoose a damage category for this Ability:",
                                         title=display_str,
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             damage_entry = decision[0]
             inputs = decision[1]
             # Testing...
@@ -8072,8 +8061,7 @@ class Hero:
                                                 "Powers for this ability:",
                                                 title=display_str,
                                                 inputs=inputs,
-                                                width=50,
-                                                buffer=10)
+                                                width=50)
                     entry_index = decision[0]
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
@@ -8085,8 +8073,7 @@ class Hero:
                                             "\n\nChoose an energy or element for this Ability:",
                                             title=display_str,
                                             inputs=inputs,
-                                            width=50,
-                                            buffer=10)
+                                            width=50)
                 element_num = decision[0]
                 inputs = decision[1]
         # If the ability needs any basic actions, prompt the user for those
@@ -8101,8 +8088,7 @@ class Hero:
                                                 "\n\nChoose a basic action for this Ability:",
                                                 title=display_str,
                                                 inputs=inputs,
-                                                width=50,
-                                                buffer=10)
+                                                width=50)
                     entry_index = decision[0]
                     inputs = decision[1]
                     action_ids[i] = ability_template.action_options[i][entry_index]
@@ -8193,8 +8179,7 @@ class Hero:
                                                     prompt=prompt,
                                                     title=display_str,
                                                     inputs=inputs,
-                                                    width=50,
-                                                    buffer=15)
+                                                    width=50)
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
@@ -8463,8 +8448,7 @@ class Hero:
                                                 "upgrade to d8.",
                                                 title="Power Source: Alien",
                                                 inputs=inputs,
-                                                width=45,
-                                                buffer=10)
+                                                width=45)
                     entry_index = decision[0]
                     inputs = decision[1]
                     print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
@@ -8503,8 +8487,7 @@ class Hero:
                                                 prompt="Choose a Power to downgrade:",
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
-                                                width=40,
-                                                buffer=10)
+                                                width=40)
                     entry_index = decision[0]
                     inputs = decision[1]
                     downgraded_power = d8_plus_powers[entry_index]
@@ -8523,8 +8506,7 @@ class Hero:
                                                 prompt="Choose a Power to upgrade:",
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
-                                                width=40,
-                                                buffer=10)
+                                                width=40)
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgraded_power = d10_minus_powers[entry_index]
@@ -8722,7 +8704,6 @@ class Hero:
                                     var=answer,
                                     title="Power Source Selection",
                                     lwidth=35,
-                                    lbuffer=5,
                                     rwidth=ps_width)
             entry_index = answer.get()
         else:
@@ -8799,8 +8780,7 @@ class Hero:
                                             prompt=die_prompt,
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
-                                            width=45,
-                                            buffer=10)
+                                            width=45)
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -8843,8 +8823,7 @@ class Hero:
                                             prompt=die_prompt,
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
-                                            width=45,
-                                            buffer=10)
+                                            width=45)
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -9245,7 +9224,6 @@ class Hero:
                                     var=answer,
                                     title="Form Selection",
                                     lwidth=30,
-                                    lbuffer=5,
                                     rwidth=dispWidth)
             entry_index = answer.get()
         else:
@@ -9302,8 +9280,7 @@ class Hero:
                                         prompt=prompt,
                                         title=title,
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             step_choice = decision[0]
             inputs = decision[1]
             if step_text[step_choice] == "Yes, swap 2 Power dice":
@@ -9364,8 +9341,7 @@ class Hero:
                                             prompt="Choose a Power die to switch out...",
                                             inputs=inputs,
                                             title=title,
-                                            width=40,
-                                            buffer=10)
+                                            width=40)
                 die_index = decision[0]
                 inputs = decision[1]
                 changed_die = form_power_dice[die_index]
@@ -9376,8 +9352,7 @@ class Hero:
                                             str(changed_die) + ":",
                                             inputs=inputs,
                                             title=title,
-                                            width=40,
-                                            buffer=10)
+                                            width=40)
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Change changed_die's attributes to those of the newly selected Power
@@ -9403,8 +9378,7 @@ class Hero:
                                             " in this Form:",
                                             inputs=inputs,
                                             title=title,
-                                            width=50,
-                                            buffer=15)
+                                            width=50)
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index in range(len(power_indices)):
@@ -9470,8 +9444,7 @@ class Hero:
                                         prompt=prompt,
                                         inputs=inputs,
                                         title=title,
-                                        width=50,
-                                        buffer=20)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index in range(len(self.dv_tags)):
@@ -9632,8 +9605,7 @@ class Hero:
                                                         prompt="Choose a " + cat_text + \
                                                         " to change die size:",
                                                         inputs=inputs,
-                                                        width=40,
-                                                        buffer=10)
+                                                        width=40)
                             swap_index = decision[0]
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
@@ -9642,8 +9614,7 @@ class Hero:
                                                     prompt="Choose a new die size for " + \
                                                     str(primary_matches[swap_index]) + ":",
                                                     inputs=inputs,
-                                                    width=40,
-                                                    buffer=10)
+                                                    width=40)
                         a_die_index = decision[0]
                         inputs = decision[1]
                         primary_matches[swap_index].SetPrevious(this_step)
@@ -9852,7 +9823,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection: Modular",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -9912,7 +9882,6 @@ class Hero:
                                                 var=answer,
                                                 title="Archetype Selection: Modular",
                                                 lwidth=30,
-                                                lbuffer=5,
                                                 rwidth=rwidth)
                         entry_index = answer.get()
                     else:
@@ -9969,7 +9938,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection: Modular",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -10180,8 +10148,7 @@ class Hero:
                                                 "number of Minion Forms " + self.hero_name + \
                                                 " has access to:",
                                                 inputs=inputs,
-                                                width=50,
-                                                buffer=15)
+                                                width=50)
                     entry_index = decision[0]
                     inputs = decision[1]
                     max_forms = self.quality_dice[entry_index].diesize
@@ -10291,7 +10258,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype: Divided - Transition Selection",
                                             lwidth=35,
-                                            lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
                 else:
@@ -10355,8 +10321,7 @@ class Hero:
                                                     self.dv_tags[0] + " or " + self.dv_tags[1] + \
                                                     " form for them?",
                                                     inputs=inputs,
-                                                    width=50,
-                                                    buffer=20)
+                                                    width=50)
                         entry_index = decision[0]
                         inputs = decision[1]
                         f.SetPrevious(this_step)
@@ -10621,8 +10586,7 @@ class Hero:
                                                                 inputs=inputs,
                                                                 title="Archetype Selection: " + \
                                                                 "Divided",
-                                                                width=50,
-                                                                buffer=15)
+                                                                width=50)
                                     entry_index = decision[0]
                                     inputs = decision[1]
                                     print("OK! Marking " + \
@@ -10736,8 +10700,7 @@ class Hero:
                                                             "access to " + assigning_id[1] + \
                                                             "?",
                                                             inputs=inputs,
-                                                            width=50,
-                                                            buffer=10)
+                                                            width=50)
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + assigning_id[1] + " as a " + \
@@ -10795,8 +10758,7 @@ class Hero:
                                                             " and " + self.dv_tags[1] + " Forms:",
                                                             inputs=inputs,
                                                             title="Archetype Selection: Divided",
-                                                            width=50,
-                                                            buffer=15)
+                                                            width=50)
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(unassigned_powers[entry_index]) + \
@@ -10834,8 +10796,7 @@ class Hero:
                                                             "access to " + str(assigning_die) + \
                                                             "?",
                                                             inputs=inputs,
-                                                            width=50,
-                                                            buffer=10)
+                                                            width=50)
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -10888,8 +10849,7 @@ class Hero:
                                                         "to in both " + self.dv_tags[0] + \
                                                         " and " + self.dv_tags[1] + " Forms:",
                                                         inputs=inputs,
-                                                        width=50,
-                                                        buffer=15)
+                                                        width=50)
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
@@ -10928,8 +10888,7 @@ class Hero:
                                                         "access to " + str(assigning_die) + \
                                                         "?",
                                                         inputs=inputs,
-                                                        width=50,
-                                                        buffer=10)
+                                                        width=50)
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -11215,7 +11174,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection",
                                             lwidth=35,
-                                            lbuffer=5,
                                             rwidth=arc_width)
                     entry_index = answer.get()
                 else:
@@ -11315,7 +11273,6 @@ class Hero:
                                         var=answer,
                                         title="Archetype Selection",
                                         lwidth=35,
-                                        lbuffer=5,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -11541,8 +11498,7 @@ class Hero:
                     decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
                                                 prompt=impulsive_prompt,
                                                 inputs=inputs,
-                                                width=40,
-                                                buffer=10)
+                                                width=40)
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgrade_die = upgrade_pqs[entry_index]
@@ -11692,7 +11648,6 @@ class Hero:
                                             var=answer,
                                             title="Personality Selection",
                                             lwidth=20,
-                                            lbuffer=0,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -11794,7 +11749,6 @@ class Hero:
                                             var=answer,
                                             title="Personality Selection",
                                             lwidth=30,
-                                            lbuffer=10,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -11836,8 +11790,7 @@ class Hero:
                                              for i in range(len(personalities))],
                                             prompt="Choose which Out Ability to use:",
                                             inputs=inputs,
-                                            width=50,
-                                            buffer=15)
+                                            width=50)
                 out_choice = decision[0]
                 inputs = decision[1]
             personalities.append(out_choice)
@@ -11862,7 +11815,6 @@ class Hero:
                                         var=answer,
                                         title="Personality Selection",
                                         lwidth=35,
-                                        lbuffer=10,
                                         rwidth=pn_width)
                 entry_index = answer.get()
             else:
@@ -12009,7 +11961,6 @@ class Hero:
                                         var=answer,
                                         title="Red Ability Selection",
                                         lwidth=35,
-                                        lbuffer=15,
                                         rwidth=100)
                 entry_index = answer.get()
             else:
@@ -12225,7 +12176,6 @@ class Hero:
                                             title="Retcon: Change an Ability's related " + \
                                             "Power/Quality",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=a_width)
                     entry_index = answer.get()
                 else:
@@ -12259,8 +12209,7 @@ class Hero:
                                                 prompt="Which Power/Quality would you like to " + \
                                                 "replace?",
                                                 inputs=inputs,
-                                                width=40,
-                                                buffer=10)
+                                                width=40)
                     edit_index = decision[0]
                     inputs = decision[1]
                 # Find the correct list of powers and qualities to choose a replacement from
@@ -12311,8 +12260,7 @@ class Hero:
                                             prompt="Choose a Power or Quality to replace " + \
                                             str(replaced_pq) + " in " + str(edit_ability) + ":",
                                             inputs=inputs,
-                                            width=50,
-                                            buffer=15)
+                                            width=50)
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
@@ -12439,8 +12387,7 @@ class Hero:
                                                 prompt,
                                                 title="Retcon: Upgrade Red status die",
                                                 inputs=pass_inputs,
-                                                width=50,
-                                                buffer=15)
+                                                width=50)
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     entry_index = decision[0]
@@ -12533,7 +12480,6 @@ class Hero:
                                             var=answer,
                                             title="Retcon: Change a Principle",
                                             lwidth=25,
-                                            lbuffer=5,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -12647,8 +12593,7 @@ class Hero:
                                             prompt="Choose a Power or Quality to use for " + \
                                             self.hero_name + "'s max Health:",
                                             inputs=inputs,
-                                            width=50,
-                                            buffer=15)
+                                            width=50)
                 entry_index = decision[0]
                 inputs = decision[1]
                 pq_report = "Using " + str(pq_options[entry_index]) + " from " + self.hero_name + \
@@ -12683,8 +12628,7 @@ class Hero:
                                             prompt="Choose a Red status die to use for " + \
                                             self.hero_name + "'s max Health:",
                                             inputs=inputs,
-                                            width=50,
-                                            buffer=15)
+                                            width=50)
                 entry_index = decision[0]
                 inputs = decision[1]
                 red_report = "Using d" + str(red_options[entry_index]) + " from " + \
@@ -12700,8 +12644,7 @@ class Hero:
             decision = self.ChooseIndex(random_options,
                                         prompt=random_prompt,
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=25)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if random_options[entry_index] == "Roll 1d8":
@@ -12742,8 +12685,7 @@ class Hero:
                                         prompt="How would you like to choose a Background for " + \
                                         str(self.hero_name) + "?",
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12781,8 +12723,7 @@ class Hero:
                                         prompt="How would you like to choose a Power Source " + \
                                         "for " + self.hero_name + "?",
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12822,8 +12763,7 @@ class Hero:
                                         prompt="How would you like to choose an Archetype for " + \
                                         self.hero_name + "?",
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12871,8 +12811,7 @@ class Hero:
             decision = self.ChooseIndex(step_options,
                                         prompt=pn_prompt,
                                         inputs=inputs,
-                                        width=50,
-                                        buffer=15)
+                                        width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -15900,8 +15839,7 @@ class HeroFrame(Frame):
                                                prompt="How would you like to choose a " + \
                                                "Background for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
-                                               width=50,
-                                               buffer=15)
+                                               width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -15947,8 +15885,7 @@ class HeroFrame(Frame):
                                                prompt="How would you like to choose a Power " + \
                                                "Source for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
-                                               width=50,
-                                               buffer=15)
+                                               width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -15995,8 +15932,7 @@ class HeroFrame(Frame):
                                                prompt="How would you like to choose an " + \
                                                "Archetype for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
-                                               width=50,
-                                               buffer=15)
+                                               width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -16053,8 +15989,7 @@ class HeroFrame(Frame):
             decision = self.myHero.ChooseIndex(step_options,
                                                prompt=pn_prompt,
                                                inputs=inputs,
-                                               width=50,
-                                               buffer=15)
+                                               width=50)
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -16293,8 +16228,7 @@ class HeroFrame(Frame):
                                 pronoun_options,
                                 pronoun_choice,
                                 title="Hero Creation",
-                                width=40,
-                                buffer=6)
+                                width=40)
         changed = (self.myHero.pronoun_set != pronoun_choice.get())
         self.myHero.pronoun_set = pronoun_choice.get()
         if changed:
@@ -16327,7 +16261,6 @@ class HeroFrame(Frame):
                                         var=ability_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = ability_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16368,7 +16301,6 @@ class HeroFrame(Frame):
                                         var=mode_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = mode_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16421,7 +16353,6 @@ class HeroFrame(Frame):
                                         var=form_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = form_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16534,8 +16465,7 @@ class HeroFrame(Frame):
                                         text_options,
                                         var=pqdie_choice,
                                         title="Edit Hero",
-                                        width=30,
-                                        buffer=5)
+                                        width=30)
                 selection = pqdie_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a power/quality to edit
@@ -16683,8 +16613,7 @@ class HeroFrame(Frame):
                                     stepOptions,
                                     var=stepChoice,
                                     title="Revert Hero",
-                                    width=40,
-                                    buffer=5)
+                                    width=40)
             firstRedo = stepChoice.get()
             if firstRedo in range(1, lastStep):
                 # User selected a step to redo from
@@ -17757,8 +17686,7 @@ class SelectWindow(SubWindow):
                  options,
                  var=None,
                  title=None,
-                 width=40,
-                 buffer=5):
+                 width=40):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
@@ -17947,8 +17875,7 @@ class EntryWindow(SubWindow):
                  prompt,
                  var=None,
                  title="",
-                 width=60,
-                 buffer=15):
+                 width=60):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
         if isinstance(var, StringVar):
@@ -17959,7 +17886,6 @@ class EntryWindow(SubWindow):
                                        self.myPrompt,
                                        self.myVariable,
                                        width=width,
-                                       buffer=buffer,
                                        titleWidth=len(str(title)))
         self.activate(self.myEntryFrame)
     def body(self, master):
@@ -17977,15 +17903,12 @@ class EntryFrame(Frame):
                  destination,
                  printing=False,
                  width=60,
-                 buffer=15,
                  titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
         self.widthFactor = 6
-        self.myBuffer = buffer
-        self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = str(prompt)
         self.myText = StringVar(self, destination.get())
         self.myDestination = destination
@@ -18047,17 +17970,9 @@ class EntryFrame(Frame):
         self.initial_focus.focus_set()
     def update(self, event=None):
         self.myWidth = max(self.myWidth, self.myTitleWidth)
-        self.myWrap = self.myWidth + self.myBuffer
         self.myBrace.config(width=self.myWidth*self.widthFactor)
         self.myPromptMessage.config(width=self.myWidth*self.widthFactor)
-        print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
-              str(self.myBuffer))
-    def plusbuffer(self, event=None):
-        self.myBuffer += 5
-        self.update()
-    def minusbuffer(self, event=None):
-        self.myBuffer -= 5
-        self.update()
+        print("### EntryFrame.update: myWidth = " + str(self.myWidth))
     def pluswidth(self, event=None):
         self.myWidth += 5
         self.update()
@@ -18092,9 +18007,7 @@ class ExpandWindow(SubWindow):
                  var=None,
                  title=None,
                  lwidth=40,
-                 lbuffer=-1,
-                 rwidth=100,
-                 rbuffer=-1):
+                 rwidth=100):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
@@ -18109,9 +18022,7 @@ class ExpandWindow(SubWindow):
                                          self.myDetails,
                                          self.myVariable,
                                          lwidth=lwidth,
-                                         lbuffer=lbuffer,
-                                         rwidth=rwidth,
-                                         rbuffer=rbuffer)
+                                         rwidth=rwidth)
         self.activate(self.myExpandFrame)
     def body(self, master):
         self.container = master
@@ -18134,9 +18045,7 @@ class ExpandFrame(Frame):
                  expand_options,
                  destination,
                  lwidth=40,
-                 lbuffer=-1,
                  rwidth=100,
-                 rbuffer=-1,
                  printing=False):
         Frame.__init__(self, parent)
         notePrefix = "### ExpandFrame.__init__: "
@@ -18155,21 +18064,8 @@ class ExpandFrame(Frame):
 ##        print(notePrefix + "max len = " + str(max([len(x) for x in self.myOptions])))
         self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
 ##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
-        # If lbuffer isn't specified, use this formula
-        self.myPromptBuffer = max(0, math.floor(0.43 * self.myPromptWidth - 20))
-        if isinstance(lbuffer, int) and lbuffer >= 0:
-            self.myPromptBuffer = lbuffer
-        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-##        self.myRawPrompt = str(prompt)
-##        self.myPrompt = split_text(self.myRawPrompt,
-##                                   width=self.myPromptWrap)
         self.myPrompt = str(prompt)
         self.myDispWidth = rwidth
-        # If rbuffer isn't specified, use this formula
-        self.myDispBuffer = max(0, math.floor(0.43 * self.myDispWidth - 20))
-        if isinstance(rbuffer, int) and rbuffer >= 0:
-            self.myDispBuffer = rbuffer
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         self.widthFactor = 6
         try:
             self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
@@ -18239,30 +18135,6 @@ class ExpandFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myBPlusButton = Button(self.myLeftFrame,
-                                    anchor=CENTER,
-                                    justify=CENTER,
-                                    text="+B",
-                                    font=self.myFont,
-                                    padx=1,
-                                    command=self.plusbuffer)
-        self.myBMinusButton = Button(self.myLeftFrame,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="-B",
-                                     font=self.myFont,
-                                     padx=1,
-                                     command=self.minusbuffer)
-##        self.myBPlusButton.grid(row=5,
-##                                column=1,
-##                                rowspan=1,
-##                                columnspan=1,
-##                                sticky=N+E+S+W)
-##        self.myBMinusButton.grid(row=5,
-##                                 column=2,
-##                                 rowspan=1,
-##                                 columnspan=1,
-##                                 sticky=N+E+S+W)
         self.myWPlusButton = Button(self.myLeftFrame,
                                     anchor=CENTER,
                                     justify=CENTER,
@@ -18317,33 +18189,19 @@ class ExpandFrame(Frame):
                event=None):
         # Make sure myPromptWidth never gets narrower than the widest option
         self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
-        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-##        self.myPrompt = split_text(self.myRawPrompt,
-##                                   width=self.myPromptWrap)
         self.myLeftFrame.config(width=self.myPromptWidth*self.widthFactor)
         self.myPromptMessage.config(text=self.myPrompt,
                                     width=self.myPromptWidth*self.widthFactor)
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
         if index in range(len(self.myDetails)):
-##            dispText = split_text(self.myDetails[index],
-##                                  width=self.myDispWrap)
             dispText = self.myDetails[index]
         self.myDispMessage.config(text=dispText,
                                   width=self.myDispWidth*self.widthFactor)
         if edited:
-            print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
-                  ", myDispBuffer = " + str(self.myDispBuffer))
-            print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
-                  ", myPromptBuffer = " + str(self.myPromptBuffer))
+            print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth))
+            print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth))
         self.myAnswer.set(index)
-    def plusbuffer(self, event=None):
-        self.myDispBuffer += 5
-        self.expand(edited=True)
-    def minusbuffer(self, event=None):
-        self.myDispBuffer -= 5
-        self.expand(edited=True)
     def pluswidth(self, event=None):
         self.myDispWidth += 5
         self.expand(edited=True)
@@ -18451,9 +18309,6 @@ class SwapFrame(Frame):
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
         self.widthFactor = 6
-##        self.myRawPrompt = str(prompt)
-##        self.myPrompt = split_text(self.myRawPrompt,
-##                                   width=self.myWidth)
         self.myPrompt = str(prompt)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
