@@ -16645,10 +16645,16 @@ class SubWindow(Toplevel):
             self.title(title)
         self.parent = parent
         self.result = None
-    def activate(self, contents):
+    def activate(self,
+                 contents,
+                 xbuff=0,
+                 ybuff=0):
         self.contents = contents
         self.initial_focus = self.body(self.contents)
-        self.contents.grid(row=0, column=0, padx=5, pady=5)
+        self.contents.grid(row=0,
+                           column=0,
+                           padx=xbuff,
+                           pady=ybuff)
         self.grab_set()
         if not self.initial_focus:
             self.initial_focus = self
@@ -17070,11 +17076,17 @@ class MinionWindow(SubWindow):
         self.myMinionFrame = MinionFrame(self,
                                          hero=self.myHero,
                                          font=font)
+        self.bind("<Configure>", self.Resize)
         self.activate(self.myMinionFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0)
         return master
+    def Resize(self, event=None):
+        notePrefix = "### MinionWindow.Resize: "
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myMinionFrame.Resize(event)
 
 class MinionFrame(Frame):
     def __init__(self,
@@ -17082,7 +17094,7 @@ class MinionFrame(Frame):
                  hero=None,
                  width=160,
                  font=None,
-                 printing=False):
+                 printing=True):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "MinionFrame: __init__: "
@@ -17135,7 +17147,7 @@ class MinionFrame(Frame):
         self.headerGlue = E+S+W
         self.rulesGlue = N+E+S+W
         self.titleGlue = E+S+W
-        self.tableGlue = E+S+W
+        self.tableGlue = N+E+S+W
         # To guarantee width of Message widgets, hide Canvas widgets with specified width
         #  underneath
         self.myBraces = [None] * self.numCols
@@ -17213,7 +17225,7 @@ class MinionFrame(Frame):
                                                     sticky=self.tableGlue)
                 self.myMinionSizeEntries[c][r].bind("<Double-1>",
                                                     self.ClipboardCopy)
-        # Insert buffer between rows 9 and 12
+        # Insert buffer between rows 9 and 12?
         # ...
         # Display minion form rules in columns 1-16 of row 12
         self.myMinionFormRules = Message(self,
@@ -17282,6 +17294,12 @@ class MinionFrame(Frame):
                                                     sticky=self.tableGlue)
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
+        self.myParent.update_idletasks()
+        self.update_idletasks()
+        if printing:
+            print(notePrefix + "parent.winfo_width=" + str(self.myParent.winfo_width()))
+            print(notePrefix + "self.winfo_width=" + str(self.winfo_width()))
+            print(notePrefix + "complete")
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -17307,6 +17325,37 @@ class MinionFrame(Frame):
                 self.myMinionInfo[i] = [str(thisMinion[0]),
                                         "+" + str(thisMinion[2]),
                                         str(thisMinion[1])]
+    def Resize(self, event=None):
+        notePrefix = "### MinionFrame.Resize: "
+        if isinstance(event, Event):
+            if event.widget == self.myParent:
+                self.myParent.update_idletasks()
+##                print(notePrefix + "event width=" + str(event.width))
+##                print(notePrefix + "parent width=" + str(self.myParent.winfo_width()))
+                self.width = self.myParent.winfo_width() - 64
+                self.columnWidth = max(1,math.floor(self.width/self.numCols))
+                remainder = self.width - self.columnWidth * self.numCols
+##                print(notePrefix + "new columnWidth=" + str(self.columnWidth))
+                for i in range(len(self.myBraces)):
+                    self.myBraces[i].config(width=self.columnWidth)
+                if remainder > 0:
+                    self.myBraces[len(self.myBraces)-1].config(width=self.columnWidth+remainder)
+                self.myMinionSizeRules.config(width=sum(self.sizeWidths)*self.columnWidth)
+                self.myMinionSizeTitle.config(width=sum(self.formWidths[0:2])*self.columnWidth)
+                for i in range(len(self.myMinionSizeHeaders)):
+                    self.myMinionSizeHeaders[i].config(width=self.sizeWidths[i]*self.columnWidth)
+                for c in range(len(self.myMinionSizeEntries)):
+                    for r in range(len(self.myMinionSizeEntries[c])):
+                        self.myMinionSizeEntries[c][r].config(width=self.sizeWidths[c] * \
+                                                              self.columnWidth)
+                self.myMinionFormRules.config(width=sum(self.sizeWidths)*self.columnWidth)
+                self.myMinionFormTitle.config(width=sum(self.formWidths[0:2])*self.columnWidth)
+                for i in range(len(self.myMinionFormHeaders)):
+                    self.myMinionFormHeaders[i].config(width=self.formWidths[i]*self.columnWidth)
+                for r in range(self.myMinionCount):
+                    for c in range(len(self.myMinionInfo[r])):
+                        self.myMinionFormEntries[r][c].config(width=self.formWidths[c] * \
+                                                              self.columnWidth)
 
 class FormWindow(SubWindow):
     def __init__(self,
@@ -18790,7 +18839,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
