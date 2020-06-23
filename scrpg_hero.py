@@ -14740,8 +14740,9 @@ class HeroFrame(Frame):
         self.SetHero(hero)
         titleRelief = RAISED
         # Set up Hero Name and Alias labels spanning rows 1-2
+        self.topCols = 32
         self.topFrame = Frame(self,
-                              width=self.columnWidth*32)
+                              width=self.columnWidth*self.topCols)
         print(notePrefix + "topFrame width=" + str(self.topFrame.cget("width")))
         self.topFrame.grid(row=1,
                            column=1,
@@ -14753,6 +14754,16 @@ class HeroFrame(Frame):
         firstRow = 1
         firstCol = 1
         groupWidth = 8
+        glue = N+E+S+W
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.topBraces = [None] * self.topCols
+        for i in range(len(self.topBraces)):
+            self.topBraces[i] = Canvas(self.topFrame,
+                                       width=self.columnWidth,
+                                       height=0)
+            self.topBraces[i].grid(row=1,
+                                   column=i+1)
         for i in range(len(self.nameTitles)):
             self.nameTitles[i] = Message(self.topFrame,
                                          background="orange",
@@ -14767,22 +14778,29 @@ class HeroFrame(Frame):
                                          width=self.columnWidth*groupWidth,
                                          font=self.currentFont)
             self.nameTitles[i].grid(row=firstRow,
-                                    column=firstCol+i*2,
-                                    sticky=N+E+S+W)
-            print(notePrefix + str(self.nameTitles[i].grid_info()))
+                                    column=firstCol+i*2*groupWidth,
+                                    columnspan=groupWidth,
+                                    sticky=glue)
             self.nameValues[i].grid(row=firstRow,
-                                    column=firstCol+(i*2+1),
-                                    sticky=N+E+S+W)
-            print(notePrefix + self.nameTitleText[i] + " Message: width=" + \
-                  str(self.nameTitles[i].cget("width")))
-            print(notePrefix + self.nameTitleText[i] + " value Message: width=" + \
-                  str(self.nameValues[i].cget("width")))
+                                    column=firstCol+(i*2+1)*groupWidth,
+                                    columnspan=groupWidth,
+                                    sticky=glue)
         # Characteristic, Power/Quality, Status, Health, & Principle text go in the left half
         self.leftFrame = Frame(self,
                                width=self.columnWidth*16)
         self.leftFrame.grid(row=2,
                             column=1,
                             sticky=N+E+S+W)
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.leftCols = 16
+        self.leftBraces = [None] * self.leftCols
+        for i in range(len(self.leftBraces)):
+            self.leftBraces[i] = Canvas(self.leftFrame,
+                                        width=self.columnWidth,
+                                        height=0)
+            self.leftBraces[i].grid(row=1,
+                                    column=i+1)
         # Set up hero Characteristic labels in rows 1-4 of leftFrame
         self.charTitleText = ["Background:", "Power Source:", "Archetype:", "Personality:"]
         self.charTitles = [None for i in range(4)]
@@ -14792,7 +14810,6 @@ class HeroFrame(Frame):
         valueWidth = 5
         groupHeight = 2
         charRelief = GROOVE
-        glue = N+E+S+W
         for i in range(len(self.charTitles)):
             self.charTitles[i] = Message(self.leftFrame,
                                          background="orange",
@@ -14807,18 +14824,6 @@ class HeroFrame(Frame):
                                          relief=charRelief,
                                          width=self.columnWidth*valueWidth,
                                          font=self.currentFont)
-##            if i in range(len(self.nameTitles)):
-##                nameConfig = self.nameTitles[i].config()
-##                charConfig = self.charTitles[i].config()
-##                for key in nameConfig:
-##                    print(notePrefix  + str(key) + ": " + str(self.nameTitles[i].cget(key)) + \
-##                          " for " + self.nameTitleText[i] + " Message")
-##                    if key in charConfig:
-##                        print(notePrefix + str(key) + ": " + str(self.charTitles[i].cget(key)) + \
-##                              " for " + self.charTitleText[i] + " Message")
-##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
-##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
-##                  " rows")
             self.charTitles[i].grid(row=firstRow+math.floor(i/2)*groupHeight,
                                     column=firstCol+(i%2)*(titleWidth+valueWidth),
                                     rowspan=groupHeight,
@@ -15001,6 +15006,16 @@ class HeroFrame(Frame):
         self.rightFrame.grid(row=2,
                              column=2,
                              sticky=N+E+S+W)
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.rightCols = 16
+        self.rightBraces = [None] * self.rightCols
+        for i in range(len(self.rightBraces)):
+            self.rightBraces[i] = Canvas(self.rightFrame,
+                                         width=self.columnWidth,
+                                         height=0)
+            self.rightBraces[i].grid(row=1,
+                                     column=i+1)
         self.abilityTitles = [None for i in range(3)]
         self.abilityTitleText = ["Name", "Type", "Text"]
         self.prinAbilityValues = [[None for i in range(3)] for j in range(len(self.myPrinAbilities))]
@@ -16837,7 +16852,7 @@ class ModeFrame(Frame):
         self.myParent = parent
         notePrefix = "### ModeFrame: __init__: "
         self.numRows = 16
-        self.numCols = 26
+        self.numCols = 21
         self.width = width
         self.height = height
         self.widthFactor = 6
@@ -16890,6 +16905,15 @@ class ModeFrame(Frame):
         self.myAbilityValues = [[None, None, None] for i in range(self.myModeCount)]
         self.myBuffers = [None for i in range(self.myModeCount-1)]
         self.myColumnBuffers = [None for i in range(self.myModeCount)]
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.myBraces = [None] * self.numCols
+        for i in range(len(self.myBraces)):
+            self.myBraces[i] = Canvas(self,
+                                      width=self.columnWidth,
+                                      height=0)
+            self.myBraces[i].grid(row=1,
+                                  column=i+1)
         thisRow = 1
         firstCol = 1
         for i in range(self.myModeCount):
@@ -17550,6 +17574,15 @@ class FormFrame(Frame):
         self.myAbilities = [[[None for x in range(3)] \
                              for y in range(len(self.myFormInfo[z][5]))] \
                             for z in range(self.myFormCount)]
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.myBraces = [None] * self.numCols
+        for i in range(len(self.myBraces)):
+            self.myBraces[i] = Canvas(self,
+                                      width=self.columnWidth,
+                                      height=0)
+            self.myBraces[i].grid(row=1,
+                                  column=i+1)
         firstRow = 1
         for i in range(self.myFormCount):
             thisForm = self.myFormInfo[i]
@@ -17712,8 +17745,8 @@ class FormFrame(Frame):
                                                  split_text(thisAbility.dispText(),
                                                             width=self.abilityWraps[2]) \
                                                  if x == "\n"]))
-##                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
-##                          str(abilityHeight))
+                    print(notePrefix + thisName + " " + thisAbility.flavorname + " abilityHeight: " + \
+                          str(abilityHeight))
                     thisAbilityText = [split_text(thisAbility.flavorname,
                                                   width=self.abilityWraps[0]),
                                        thisAbility.type,
@@ -17726,7 +17759,8 @@ class FormFrame(Frame):
                                                             justify=self.reasons[5+k],
                                                             relief=self.abilityRelief,
                                                             text=thisAbilityText[k],
-                                                            width=self.lowerWidths[5+k],
+                                                            width=self.lowerWidths[5+k] * \
+                                                            self.columnWidth,
                                                             font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
                                                        column=1+sum(self.lowerWidths[0:5+k]),
@@ -19024,7 +19058,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()
