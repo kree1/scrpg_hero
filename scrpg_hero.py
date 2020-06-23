@@ -12110,8 +12110,8 @@ class Hero:
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
-                    dispWidth = 100
-                    title = "Retcon"
+                    dispWidth = 50
+                    title = "Retcon: " + step_choice
                     prompt = "Choose 2 different Power dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
@@ -12120,7 +12120,8 @@ class Hero:
                                           [str(x) for x in self.power_dice],
                                           answer0,
                                           answer1,
-                                          width=dispWidth)
+                                          width=dispWidth,
+                                          title=title)
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.power_dice],
@@ -12157,8 +12158,8 @@ class Hero:
                 swap_indices = [99, 99]
                 if self.UseGUI(inputs):
                     # Create a SwapWindow to prompt the user
-                    dispWidth = 100
-                    title = "Retcon"
+                    dispWidth = 50
+                    title = "Retcon: " + step_choice
                     prompt = "Choose 2 different Quality dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
@@ -12167,7 +12168,8 @@ class Hero:
                                           [str(x) for x in self.quality_dice],
                                           answer0,
                                           answer1,
-                                          width=dispWidth)
+                                          width=dispWidth,
+                                          title=title)
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
@@ -14732,10 +14734,10 @@ class HeroFrame(Frame):
         self.widthFactor = 6
         self.columnWidth = max(1, math.floor(self.width*self.widthFactor/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
-        print(notePrefix + "width=" + str(self.width))
-        print(notePrefix + "columnWidth=" + str(self.columnWidth))
-        print(notePrefix + "height=" + str(self.height))
-        print(notePrefix + "rowHeight=" + str(self.rowHeight))
+##        print(notePrefix + "width=" + str(self.width))
+##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
+##        print(notePrefix + "height=" + str(self.height))
+##        print(notePrefix + "rowHeight=" + str(self.rowHeight))
         self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
@@ -14743,7 +14745,6 @@ class HeroFrame(Frame):
         self.topCols = 32
         self.topFrame = Frame(self,
                               width=self.columnWidth*self.topCols)
-        print(notePrefix + "topFrame width=" + str(self.topFrame.cget("width")))
         self.topFrame.grid(row=1,
                            column=1,
                            columnspan=2,
@@ -17310,6 +17311,15 @@ class MinionFrame(Frame):
         self.rulesGlue = N+E+S+W
         self.titleGlue = E+S+W
         self.tableGlue = E+S+W
+        # To guarantee width of Message widgets, hide Canvas widgets with specified width
+        #  underneath
+        self.myBraces = [None] * self.numCols
+        for i in range(len(self.myBraces)):
+            self.myBraces[i] = Canvas(self,
+                                      width=self.columnWidth,
+                                      height=0)
+            self.myBraces[i].grid(row=1,
+                                  column=i+1)
         # Display minion size rules in columns 1-16 of rows 1-2
         self.myMinionSizeRules = Message(self,
                                        background=self.rulesBG,
@@ -17902,6 +17912,7 @@ class SelectFrame(Frame):
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
+        self.widthFactor = 6
 ##        self.myBuffer = math.floor(0.43 * self.myWidth - 20)
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
@@ -17917,12 +17928,20 @@ class SelectFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SelectFrame Display Font")
+        # To guarantee width of Message widget, hide Canvas widget with specified width
+        #  underneath
+        self.myBrace = Canvas(self,
+                              width=self.myWidth*self.widthFactor,
+                              height=0)
+        self.myBrace.grid(row=1,
+                          column=1,
+                          columnspan=3)
         self.myPromptMessage = Message(self,
                                        anchor=W,
                                        justify=LEFT,
                                        text=self.myPrompt,
                                        font=self.myFont,
-                                       width=self.myWidth)
+                                       width=self.myWidth*self.widthFactor)
         self.myPromptMessage.grid(row=1,
                                 column=1,
                                 rowspan=1,
@@ -18011,10 +18030,11 @@ class SelectFrame(Frame):
         # Make sure myWidth never gets narrower than the widest option
         self.myWidth = max(self.myWidth, self.myTitleWidth, max([len(x) for x in self.myOptions]))
         self.myWrap = self.myWidth + self.myBuffer
+        self.myBrace.config(width=self.myWidth*self.widthFactor)
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
         self.myPromptMessage.config(text=self.myPrompt,
-                                    width=self.myWidth)
+                                    width=self.myWidth*self.widthFactor)
         if edited:
             print("### SelectFrame.update: myWidth = " + str(self.myWidth) + \
                   ", myBuffer = " + str(self.myBuffer))
@@ -18111,6 +18131,7 @@ class EntryFrame(Frame):
         self.myParent = parent
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
+        self.widthFactor = 6
         self.myBuffer = buffer
         self.myWrap = self.myWidth + self.myBuffer
         self.myRawPrompt = str(prompt)
@@ -18124,18 +18145,26 @@ class EntryFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="EntryFrame Display Font")
+        # To guarantee width of Message widget, hide Canvas widget with specified width underneath
+        self.myBrace = Canvas(self,
+                              width=self.myWidth*self.widthFactor,
+                              height=0)
+        self.myBrace.grid(row=1,
+                          column=1,
+                          columnspan=3)
         self.myPromptMessage = Message(self,
                                        anchor=W,
                                        justify=LEFT,
                                        text=self.myPrompt,
-                                       font=self.myFont)
+                                       font=self.myFont,
+                                       width=self.myWidth*self.widthFactor)
         self.myPromptMessage.grid(row=1,
-                                column=1,
-                                rowspan=1,
-                                columnspan=3,
-                                sticky=N+E+S+W)
+                                  column=1,
+                                  rowspan=1,
+                                  columnspan=3,
+                                  sticky=N+E+S+W)
         self.myPromptMessage.bind("<Double-1>",
-                                self.ClipboardCopy)
+                                  self.ClipboardCopy)
         # Create Entry widget
         self.myTextEntry = Entry(self,
                                  justify=LEFT,
@@ -18171,8 +18200,9 @@ class EntryFrame(Frame):
         self.myWrap = self.myWidth + self.myBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWrap)
+        self.myBrace.config(width=self.widthFactor)
         self.myPromptMessage.config(text=self.myPrompt,
-                                  width=self.myWidth)
+                                    width=self.myWidth*self.widthFactor)
         print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
               str(self.myBuffer))
     def plusbuffer(self, event=None):
@@ -18292,6 +18322,7 @@ class ExpandFrame(Frame):
         if isinstance(rbuffer, int) and rbuffer >= 0:
             self.myDispBuffer = rbuffer
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
+        self.widthFactor = 6
         try:
             self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
         except (TclError):
@@ -18307,17 +18338,24 @@ class ExpandFrame(Frame):
                               rowspan=1,
                               columnspan=1,
                               sticky=N+E+S+W)
+        # To guarantee width of Message widget, hide Canvas widget with specified width underneath
+        self.myLeftBrace = Canvas(self.myLeftFrame,
+                                  width=self.myPromptWidth*self.widthFactor,
+                                  height=0)
+        self.myLeftBrace.grid(row=1,
+                              column=1,
+                              columnspan=3)
         self.myPromptMessage = Message(self.myLeftFrame,
                                        anchor=NW,
                                        justify=LEFT,
                                        text=self.myPrompt,
-                                       width=self.myPromptWidth,
+                                       width=self.myPromptWidth*self.widthFactor,
                                        font=self.myFont)
         self.myPromptMessage.grid(row=1,
-                                column=1,
-                                rowspan=1,
-                                columnspan=3,
-                                sticky=N+E+S+W)
+                                  column=1,
+                                  rowspan=1,
+                                  columnspan=3,
+                                  sticky=N+E+S+W)
         self.myPromptMessage.bind("<Double-1>",
                                   self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
@@ -18404,12 +18442,18 @@ class ExpandFrame(Frame):
         detailsHeight = max([1 + len([x for x in split_text(y,
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
+        # To guarantee width of Message widget, hide Canvas widget with specified width underneath
+        self.myRightBrace = Canvas(self,
+                                   width=self.myDispWidth*self.widthFactor,
+                                   height=0)
+        self.myRightBrace.grid(row=1,
+                               column=2)
         self.myDispMessage = Message(self,
                                      anchor=NW,
                                      justify=LEFT,
                                      text="",
                                      font=self.myFont,
-                                     width=self.myDispWidth,
+                                     width=self.myDispWidth*self.widthFactor,
                                      relief=GROOVE)
         self.myDispMessage.grid(row=1,
                                 column=2,
@@ -18431,9 +18475,9 @@ class ExpandFrame(Frame):
         self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myPromptWrap)
-        self.myLeftFrame.config(width=self.myPromptWidth)
+        self.myLeftFrame.config(width=self.myPromptWidth*self.widthFactor)
         self.myPromptMessage.config(text=self.myPrompt,
-                                    width=self.myPromptWidth)
+                                    width=self.myPromptWidth*self.widthFactor)
         self.myDispWrap = self.myDispWidth + self.myDispBuffer
         index = self.myOptions.index(self.myString.get())
         dispText = ""
@@ -18441,7 +18485,7 @@ class ExpandFrame(Frame):
             dispText = split_text(self.myDetails[index],
                                   width=self.myDispWrap)
         self.myDispMessage.config(text=dispText,
-                                width=self.myDispWidth)
+                                width=self.myDispWidth*self.widthFactor)
         detailsHeight = max([1 + len([x for x in split_text(y,
                                                             width=self.myDispWrap) \
                                       if x == "\n"]) for y in self.myDetails])
@@ -18555,7 +18599,7 @@ class SwapFrame(Frame):
                  prompt,
                  options,
                  destinations,
-                 width=100,
+                 width=50,
                  titleWidth=-1,
                  printing=False):
         Frame.__init__(self, parent)
@@ -18563,6 +18607,7 @@ class SwapFrame(Frame):
         self.myOptions = [str(x) for x in options]
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
+        self.widthFactor = 6
         self.myRawPrompt = str(prompt)
         self.myPrompt = split_text(self.myRawPrompt,
                                    width=self.myWidth)
@@ -18574,11 +18619,19 @@ class SwapFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SwapFrame Display Font")
+        # To guarantee width of Message widget, hide Canvas widget with specified width underneath
+        self.myBrace = Canvas(self,
+                              width=self.myWidth*self.widthFactor,
+                              height=0)
+        self.myBrace.grid(row=1,
+                          column=1,
+                          columnspan=3)
         self.myPromptMessage = Message(self,
                                        anchor=W,
                                        justify=LEFT,
                                        text=self.myPrompt,
-                                       font=self.myFont)
+                                       font=self.myFont,
+                                       width=self.myWidth*self.widthFactor)
         self.myPromptMessage.grid(row=1,
                                   column=1,
                                   rowspan=1,
@@ -18720,6 +18773,8 @@ class PrincipleFrame(Frame):
                                  "Minor Twist",
                                  "Major Twist",
                                  "Green Ability"]
+        self.widthFactor = 6
+        self.messageWidth = max([len(x) for x in self.prinSectionNames]) * self.widthFactor
         self.prinSectionVars = [titleVar,
                                 roleplayingVar,
                                 minorVar,
@@ -18741,6 +18796,11 @@ class PrincipleFrame(Frame):
                                             name="PrincipleFrame Display Font")
         self.mySectionMessages = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
+        self.mySectionBrace = Canvas(self,
+                                     width=self.messageWidth,
+                                     height=0)
+        self.mySectionBrace.grid(row=1,
+                                 column=1)
         for i in range(len(self.prinSectionNames)):
             self.mySectionMessages[i] = Message(self,
                                                 anchor=E,
@@ -18748,10 +18808,11 @@ class PrincipleFrame(Frame):
                                                 background="white",
                                                 text=self.prinSectionNames[i],
                                                 font=self.myFont,
-                                                padx=2)
+                                                padx=2,
+                                                width=self.messageWidth)
             self.mySectionMessages[i].grid(row=i+1,
-                                         column=1,
-                                         sticky=N+E+S+W)
+                                           column=1,
+                                           sticky=N+E+S+W)
             self.mySectionEntries[i] = Entry(self,
                                              justify=LEFT,
                                              textvariable=self.prinSectionVars[i],
@@ -18867,10 +18928,11 @@ class AssignFrame(Frame):
         self.myDestination = StringVar(self)
         if isinstance(destination, StringVar):
             self.myDestination = destination
+        self.widthFactor = 6
         self.myItemWidth = max(lwidth, max([max([len(y) for y in x.split("\n")]) \
-                                                for x in self.myItems]))
+                                                for x in self.myItems])) * self.widthFactor
 ##        print(notePrefix + "myItemWidth=" + str(self.myItemWidth))
-        self.myColumnWidth = rwidth
+        self.myColumnWidth = rwidth * self.widthFactor
         self.myFirstMin = -1
         self.myFirstMax = -1
         self.myDefault = -1
@@ -18905,20 +18967,32 @@ class AssignFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="AssignFrame Display Font")
+        # To guarantee width of Message widget, hide Canvas widget with specified width behind it
+        self.myPromptBrace = Canvas(self,
+                                    width=totalWidth,
+                                    height=0)
+        self.myPromptBrace.grid(row=1,
+                                column=1,
+                                columnspan=1+len(self.myCategories))
         # myPromptMessage goes across the full first row
         self.myPromptMessage = Message(self,
-                                   anchor=W,
-                                   justify=LEFT,
-                                   text=self.myPrompt,
-                                   width=totalWidth,
-                                   font=self.myFont)
+                                       anchor=W,
+                                       justify=LEFT,
+                                       text=self.myPrompt,
+                                       width=totalWidth,
+                                       font=self.myFont)
         self.myPromptMessage.grid(row=1,
-                                column=1,
-                                rowspan=1,
-                                columnspan=1+len(self.myCategories),
-                                sticky=N+E+S+W)
+                                  column=1,
+                                  rowspan=1,
+                                  columnspan=1+len(self.myCategories),
+                                  sticky=N+E+S+W)
         self.myPromptMessage.bind("<Double-1>",
-                                self.ClipboardCopy)
+                                  self.ClipboardCopy)
+        self.myItemBrace = Canvas(self,
+                                  width=self.myItemWidth,
+                                  height=0)
+        self.myItemBrace.grid(row=2,
+                              column=1)
         # Each of myItems gets its own label...
         self.myItemMessages = [None for y in range(len(self.myItems))]
         #... and its own set of radio buttons, one for each category
@@ -18928,19 +19002,19 @@ class AssignFrame(Frame):
         for i in range(len(self.myItems)):
             thisRow = i + 2
             self.myItemMessages[i] = Message(self,
-                                         anchor=W,
-                                         justify=LEFT,
-                                         text=self.myItems[i],
-                                         width=self.myItemWidth,
-                                         font=self.myFont,
-                                         relief=GROOVE)
+                                             anchor=W,
+                                             justify=LEFT,
+                                             text=self.myItems[i],
+                                             width=self.myItemWidth,
+                                             font=self.myFont,
+                                             relief=GROOVE)
             self.myItemMessages[i].grid(row=thisRow,
-                                      column=1,
-                                      rowspan=1,
-                                      columnspan=1,
-                                      sticky=N+E+S+W)
+                                        column=1,
+                                        rowspan=1,
+                                        columnspan=1,
+                                        sticky=N+E+S+W)
             self.myItemMessages[i].bind("<Double-1>",
-                                      self.ClipboardCopy)
+                                        self.ClipboardCopy)
             if self.myDefault in range(len(self.myCategories)):
                 self.myAssignments[i].set(self.myDefault)
             for j in range(len(self.myCategories)):
@@ -18959,29 +19033,30 @@ class AssignFrame(Frame):
                                                rowspan=1,
                                                columnspan=1,
                                                sticky=N+E+S+W)
-            self.myCountMessage = Message(self,
+        self.myCountMessage = Message(self,
                                       anchor=SE,
                                       justify=RIGHT,
                                       text="",
-                                      font=self.myFont)
-            self.myCountMessage.grid(row=len(self.myItems)+3,
-                                   column=1,
-                                   rowspan=1,
-                                   columnspan=1,
-                                   sticky=N+E+S+W)
-            self.myOKButton = Button(self,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="OK",
-                                     font=self.myFont,
-                                     command=self.finish)
-            self.myOKButton.grid(row=len(self.myItems)+3,
-                                 column=2,
+                                      font=self.myFont,
+                                      width=self.myItemWidth)
+        self.myCountMessage.grid(row=len(self.myItems)+3,
+                                 column=1,
                                  rowspan=1,
                                  columnspan=1,
                                  sticky=N+E+S+W)
-            self.bind("<Return>", self.finish)
-            self.update()
+        self.myOKButton = Button(self,
+                                 anchor=CENTER,
+                                 justify=CENTER,
+                                 text="OK",
+                                 font=self.myFont,
+                                 command=self.finish)
+        self.myOKButton.grid(row=len(self.myItems)+3,
+                             column=2,
+                             rowspan=1,
+                             columnspan=1,
+                             sticky=N+E+S+W)
+        self.bind("<Return>", self.finish)
+        self.update()
     def update(self, *args):
         notePrefix = "### AssignFrame.update: "
         firstCount = len([x for x in self.myAssignments if x.get()==0])
@@ -19058,7 +19133,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKim(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.mainloop()

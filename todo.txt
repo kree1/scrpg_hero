@@ -205,6 +205,17 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 	 Curveball's "Rules of Engagement" doesn't
 	 Ultra Boy's "Gangster Made Good" doesn't
 	 Ultra Boy's "Criminal Underworld Info" splits in the wrong place
+	Stop using split_text for Message contents
+		HeroFrame
+		ModeFrame
+		MinionFrame
+		FormFrame
+		SelectFrame
+		EntryFrame
+		ExpandFrame
+		SwapFrame
+		PrincipleFrame
+		AssignFrame
 
 Figure out titleWidth
   
