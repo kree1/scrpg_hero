@@ -17740,7 +17740,8 @@ class FormFrame(Frame):
                                                           justify=self.reasons[5+k],
                                                           relief=self.abilityRelief,
                                                           text=thisAbilityText[k],
-                                                          width=self.lowerWidths[5+k],
+                                                          width=self.lowerWidths[5+k] * \
+                                                          self.columnWidth,
                                                           height=abilityHeight,
                                                           font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
