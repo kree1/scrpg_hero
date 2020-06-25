@@ -16780,10 +16780,16 @@ class SubWindow(Toplevel):
             self.title(title)
         self.parent = parent
         self.result = None
-    def activate(self, contents):
+    def activate(self,
+                 contents,
+                 xbuff=5,
+                 ybuff=5):
         self.contents = contents
         self.initial_focus = self.body(self.contents)
-        self.contents.grid(row=0, column=0, padx=5, pady=5)
+        self.contents.grid(row=0,
+                           column=0,
+                           padx=xbuff,
+                           pady=ybuff)
         self.grab_set()
         if not self.initial_focus:
             self.initial_focus = self
@@ -17214,7 +17220,9 @@ class MinionWindow(SubWindow):
         self.myMinionFrame = MinionFrame(self,
                                          hero=self.myHero,
                                          font=font)
-        self.activate(self.myMinionFrame)
+        self.activate(self.myMinionFrame,
+                      xbuff=0,
+                      ybuff=0)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0)
@@ -17237,6 +17245,13 @@ class MinionFrame(Frame):
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
         self.rowHeight = 1.6875
         self.height = math.ceil(self.rowHeight*self.numRows)
+        # Make sure the parent window will stretch/squish this when the window is resized
+        myRoot = self.winfo_toplevel()
+        (myRootCols, myRootRows) = myRoot.grid_size()
+        for row in range(myRootRows+1):
+            myRoot.rowconfigure(row, weight=1)
+        for col in range(myRootCols+1):
+            myRoot.columnconfigure(col, weight=1)
         self.dispFont = tkinter.font.Font(root=self.myParent,
                                           name="Calibri10pt",
                                           exists=True)
