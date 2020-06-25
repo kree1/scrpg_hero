@@ -16855,6 +16855,7 @@ class ModeFrame(Frame):
         self.sectionTargets = [W, CENTER, E, CENTER, W]
         self.sectionReasons = [LEFT, CENTER, RIGHT, CENTER, LEFT]
         self.titleBG = "orange"
+        self.myMargin = 6
         self.titleRelief = RAISED
         self.headerRelief = RAISED
         self.dieRelief = GROOVE
@@ -16864,17 +16865,6 @@ class ModeFrame(Frame):
         self.powerGlue = E+W
         self.abilityGlue = N+S
         self.sectionWidths = [4, 1, 5, 2, 9]
-        # Number for converting width in characters to wraplength in pixels
-        self.wrapFactor = 10
-        self.powerModifier = 1
-        self.powerWrap = math.floor(self.sectionWidths[0] * self.columnWidth * \
-                                    self.powerModifier * self.wrapFactor)
-        self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sectionWidths[2:]) * self.columnWidth *
-                                    self.rulesModifier * self.wrapFactor)
-        self.abilityModifier = 1
-        self.abilityWraps = [math.floor(x * self.columnWidth * self.abilityModifier * \
-                                        self.wrapFactor) for x in self.sectionWidths[2:]]
         self.headerHeight = 1
         self.powerHeight = 1
         self.bufferHeight = 1
@@ -16958,8 +16948,6 @@ class ModeFrame(Frame):
                 thisPowerDie = ""
                 thisPowerHeight = 1
                 if isinstance(thisPower, PQDie):
-##                    thisPowerText = split_text(thisPower.flavorname,
-##                                               width=self.powerWrap)
                     thisPowerText = thisPower.flavorname
                     thisPowerDie = str(thisPower.diesize)
                     thisPowerHeight = max(self.powerHeight,
@@ -16974,14 +16962,15 @@ class ModeFrame(Frame):
                                                         text=thisPowerValues[k],
                                                         width=self.sectionWidths[k] * \
                                                         self.columnWidth,
-                                                        wraplength=self.powerWrap,
-                                                        height=thisPowerHeight,
                                                         font=self.dispFont)
                     self.myPowerValues[i][j][k].grid(row=topRow+leftHeight,
                                                      column=firstCol+sum(self.sectionWidths[0:k]),
                                                      rowspan=thisPowerHeight,
                                                      columnspan=self.sectionWidths[k],
                                                      sticky=self.powerGlue)
+                    self.myPowerValues[i][j][k].update_idletasks()
+                    thisDispWidth = self.myPowerValues[i][j][k].winfo_width()
+                    self.myPowerValues[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
                     self.myPowerValues[i][j][k].bind("<Double-1>",
                                                      self.ClipboardCopy)
                     if printing:
@@ -16992,9 +16981,6 @@ class ModeFrame(Frame):
                               " columns")
                 leftHeight += thisPowerHeight
             # Display mode rules across columns 6-21 starting at the second row
-##            thisRulesSections = [split_text(x,
-##                                            width=self.rulesWrap) \
-##                                 for x in self.myModeRules[i].split("\n")]
             thisRulesSections = [x for x in self.myModeRules[i].split("\n")]
             thisRulesText = "\n".join(thisRulesSections)
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
@@ -17004,14 +16990,15 @@ class ModeFrame(Frame):
                                          justify=LEFT,
                                          text=thisRulesText,
                                          width=sum(self.sectionWidths[2:])*self.columnWidth,
-                                         height=thisRulesHeight*self.rowHeight,
-                                         wraplength=self.rulesWrap,
                                          font=self.dispFont)
             self.myRuleValues[i].grid(row=topRow+rightHeight,
                                       column=firstCol+sum(self.sectionWidths[0:2]),
                                       rowspan=thisRulesHeight,
                                       columnspan=sum(self.sectionWidths[2:]),
                                       sticky=self.rulesGlue)
+            self.myRuleValues[i].update_idletasks()
+            thisDispWidth = self.myRuleValues[i].winfo_width()
+            self.myRuleValues[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myRuleValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
             if printing:
@@ -17046,11 +17033,7 @@ class ModeFrame(Frame):
                 thisAbilityType = self.myModeAbilities[i].type
                 thisAbilityText = self.myModeAbilities[i].dispText()
             thisAbilitySections = [thisAbilityName, thisAbilityType, thisAbilityText]
-##            thisAbilitySections = [split_text(thisAbilitySections[i],
-##                                              width=self.abilityWraps[i]) \
-##                                   for i in range(len(thisAbilitySections))]
-            thisAbilityHeight = 1 + max([len([x for x in y if x == "\n"]) \
-                                         for y in thisAbilitySections])
+            thisAbilityRows = 3
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Label(self,
                                                    background=modeColor,
@@ -17059,14 +17042,21 @@ class ModeFrame(Frame):
                                                    relief=self.abilityRelief,
                                                    text=thisAbilitySections[j],
                                                    width=self.sectionWidths[j+2]*self.columnWidth,
-                                                   height=thisAbilityHeight*self.rowHeight,
-                                                   wraplength=self.abilityWraps[j],
                                                    font=self.dispFont)
                 self.myAbilityValues[i][j].grid(row=topRow+rightHeight,
                                                 column=firstCol+sum(self.sectionWidths[0:j+2]),
-                                                rowspan=thisAbilityHeight,
+                                                rowspan=thisAbilityRows,
                                                 columnspan=self.sectionWidths[j+2],
                                                 sticky=self.abilityGlue)
+                self.myAbilityValues[i][j].update_idletasks()
+                thisDispWidth = self.myAbilityValues[i][j].winfo_width()
+##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " winfo_width=" + \
+##                      str(thisDispWidth))
+                self.myAbilityValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
+##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " wraplength target=" + \
+##                      str(thisDispWidth-self.myMargin))
+##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " wraplength value=" + \
+##                      str(self.myAbilityValues[i][j]["wraplength"]))
                 self.myAbilityValues[i][j].bind("<Double-1>",
                                                 self.ClipboardCopy)
                 if printing:
@@ -17075,7 +17065,7 @@ class ModeFrame(Frame):
                           str(firstCol+sum(self.sectionWidths[0:j+2])) + " and takes up " + \
                           str(thisAbilityHeight) + " rows and " + str(self.sectionWidths[j+2]) + \
                           " columns")
-            rightHeight += thisAbilityHeight
+            rightHeight += thisAbilityRows
             # If the two section heights are uneven, create a buffer to extend the shorter column
             cBufferRow = -1
             cBufferCol = -1
@@ -19061,17 +19051,17 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout()
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, columnspan=12)
-##root.lift()
-##root.mainloop()
-
-# Using a not-yet-constructed hero
-dispFrame = HeroFrame(root)
-dispFrame.grid(row=0, column=0, columnspan=12)
+firstHero = factory.getJo()
+disp_frame = HeroFrame(root, hero=firstHero)
+disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()
 root.mainloop()
+
+# Using a not-yet-constructed hero
+##dispFrame = HeroFrame(root)
+##dispFrame.grid(row=0, column=0, columnspan=12)
+##root.lift()
+##root.mainloop()
 
 # Testing display/details methods...
 
