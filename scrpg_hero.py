@@ -17118,10 +17118,16 @@ class ModeFrame(Frame):
                 self.myParent.update_idletasks()
 ##                print(notePrefix + "event width=" + str(event.width))
                 print(notePrefix + "\t\t\tparent width=" + str(self.myParent.winfo_width()))
+                (gCols, gRows) = self.grid_size()
+                print(notePrefix + str(gCols) + " columns, " + str(gRows) + " rows")
                 # Get the target value for the width of all widgets in ModeFrame
                 #  When parentMargin is 0, difference between self.width and self.winfo_width is 84
-                #  When parentMargin is 84, difference is 6 three times, then 1 18 times, then 0 
-                parentMargin = 4*self.numCols + 6
+                #  When parentMargin is 84, difference is 6 three times, then 1 18 times, then 0
+                #  When parentMargin is 90, difference is 0
+                if self.myParent.winfo_width() > 761:
+                    parentMargin = 4
+                else:
+                    parentMargin = 90
                 self.width = self.myParent.winfo_width() - parentMargin
                 # Set self.columnWidth to the target value divided by numCols, rounded down, and
                 #  save the remainder
@@ -17131,32 +17137,34 @@ class ModeFrame(Frame):
 ##                print(notePrefix + "remainder=" + str(remainder))
                 # Set the width of each of myBraces to the new columnWidth, adding the remainder to
                 #  the width of the last one
-##                canvasMargin = 4
+                canvasMargin = 4
                 for i in range(len(self.myBraces)):
-                    self.myBraces[i].config(width=self.columnWidth)
+                    self.myBraces[i].config(width=self.columnWidth-canvasMargin)
                     self.myBraces[i].update_idletasks()
 ##                    print(notePrefix + "myBraces[" + str(i) + "] cget width=" + \
 ##                          str(self.myBraces[i].cget("width")) + ", winfo width=" + \
 ##                          str(self.myBraces[i].winfo_width()))
                 if remainder > 0:
                     self.myBraces[len(self.myBraces)-1].config(width = self.columnWidth + \
-                                                               remainder)
+                                                               remainder-canvasMargin)
                     self.myBraces[len(self.myBraces)-1].update_idletasks()
 ##                    print(notePrefix + "myBraces[" + str(len(self.myBraces)-1) + \
 ##                          "] cget width=" + str(self.myBraces[i].cget("width")) + \
 ##                          ", winfo width=" + str(self.myBraces[i].winfo_width()))
                 totalBraceWidth = sum([x.winfo_width() for x in self.myBraces])
+                print(notePrefix + "Frame width=" + str(self.winfo_width()) + "...")
                 # Messages won't automatically set their text width upward, though, so restate all
                 #  their width definitions in terms of columnWidth, remembering that anything in
                 #  the last column is wider by remainder
                 for i in range(self.myModeCount):
+                    print(notePrefix + "processing mode " + str(i) + "...")
                     self.myModeHeaders[i].config(width = sum(self.sectionWidths) * \
                                                  self.columnWidth)
 ##                    self.myModeHeaders[i].update_idletasks()
 ##                    print(notePrefix + "myModeHeaders[" + str(i) + "] cget width=" + \
 ##                          str(self.myModeHeaders[i].cget("width")) + ", winfo width=" + \
 ##                          str(self.myModeHeaders[i].winfo_width()))
-                    self.myRuleValues[i].config(width= sum(self.sectionWidths[2:]) * \
+                    self.myRuleValues[i].config(width = sum(self.sectionWidths[2:]) * \
                                                 self.columnWidth)
 ##                    self.myRuleValues[i].update_idletasks()
 ##                    print(notePrefix + "myRuleValues[" + str(i) + "] cget width=" + \
@@ -17196,13 +17204,21 @@ class ModeFrame(Frame):
                 print(notePrefix + "all braces winfo_width=" + str(totalBraceWidth))
                 ctotal = 0
                 if self.winfo_width() > totalBraceWidth:
-                    (gCols, gRows) = self.grid_size()
-                    print(notePrefix + str(gCols) + " columns, " + str(gRows) + " rows")
+                    print(notePrefix + "target column width=" + str(self.columnWidth))
                     for i in range(gCols+2):
+                        wspace = " width="
+                        if i < 10:
+                            wspace = " " + wspace
                         (ix, iy, iwidth, iheight) = self.grid_bbox(i, 1)
                         ctotal += iwidth
                         if iwidth > 0:
-                            print(notePrefix + "column " + str(i) + " width=" + str(iwidth))
+                            if i-1 in range(len(self.myBraces)):
+                                self.myBraces[i-1].update_idletasks()
+                                bwidth = self.myBraces[i-1].winfo_width()
+                                print(notePrefix + "column " + str(i) + wspace + str(iwidth) + \
+                                      ", brace width=" + str(bwidth))
+                            else:
+                                print(notePrefix + "column " + str(i) + wspace + str(iwidth))
                     print(notePrefix + "total column width=" + str(ctotal))
 
 class MinionWindow(SubWindow):
