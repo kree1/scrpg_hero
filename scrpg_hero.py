@@ -19055,11 +19055,13 @@ root.title("SCRPG Hero Editor")
 ##firstHero = factory.getKnockout()
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.lift()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
 dispFrame = HeroFrame(root)
 dispFrame.grid(row=0, column=0, columnspan=12)
+root.lift()
 root.mainloop()
 
 # Testing display/details methods...
