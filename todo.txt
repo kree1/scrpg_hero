@@ -208,6 +208,22 @@ Standard orange:
 #FFA500
 
 Figure out wraplength
+ 0) set a margin variable to a small but significant number of pixels, something like 6
+ 1) initialize the widget with no wraplength or height
+ 2) update_idletasks
+ 3) get winfo_width()
+ 4) set wraplength = winfo_width() - margin
+Implement wraplength...
+	HeroFrame
+.	ModeFrame
+	MinionFrame
+.	FormFrame
+	SelectFrame
+	EntryFrame
+	ExpandFrame
+	SwapFrame
+	PrincipleFrame
+	AssignFrame
 
 Figure out titleWidth
   
