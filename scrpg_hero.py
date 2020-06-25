@@ -16264,7 +16264,7 @@ class HeroFrame(Frame):
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.power_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
-                    if not fm.std_qualities:
+                    if not md.std_qualities:
                         pqdie_ids.extend([[d.triplet(), d.flavorname, md.name] \
                                           for d in md.quality_dice if \
                                           [d.triplet(), d.flavorname, ""] not in pqdie_ids])
@@ -17749,7 +17749,8 @@ class FormFrame(Frame):
                                                           justify=self.reasons[5+k],
                                                           relief=self.abilityRelief,
                                                           text=thisAbilityText[k],
-                                                          width=self.lowerWidths[5+k],
+                                                          width=self.lowerWidths[5+k] * \
+                                                          self.columnWidth,
                                                           height=abilityHeight,
                                                           font=self.dispFont)
                         self.myAbilities[i][j][k].grid(row=thisRow,
@@ -19063,11 +19064,13 @@ root.title("SCRPG Hero Editor")
 ##firstHero = factory.getKnockout()
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, columnspan=12)
+##root.lift()
 ##root.mainloop()
 
 # Using a not-yet-constructed hero
 dispFrame = HeroFrame(root)
 dispFrame.grid(row=0, column=0, columnspan=12)
+root.lift()
 root.mainloop()
 
 # Testing display/details methods...
