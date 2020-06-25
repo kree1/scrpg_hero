@@ -14680,6 +14680,12 @@ class HeroFrame(Frame):
         self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
+##        # In order for contents to display correctly without stretching each other, HeroFrame
+##        #  itself contains only 4 direct child widgets across 2 rows and 3 columns
+##        self.rowconfigure(1, weight=1)
+##        self.rowconfigure(2, weight=self.numRows-1)
+##        for col in range(1,4):
+##            self.columnconfigure(col, weight=1)
         # Set up Hero Name and Alias labels spanning rows 1-2
         self.topCols = 32
         self.topFrame = Frame(self,
@@ -14688,6 +14694,10 @@ class HeroFrame(Frame):
                            column=1,
                            columnspan=2,
                            sticky=N+E+S+W)
+##        # topFrame contains widgets in 1 row and 32 columns
+##        self.topFrame.rowconfigure(1, weight=1)
+##        for col in range(1, self.topCols + 1):
+##            self.topFrame.columnconfigure(col, weight=1)
         self.nameTitles = [None, None]
         self.nameValues = [None, None]
         self.nameTitleText = ["Hero Name:", "Alias:"]
@@ -14731,9 +14741,14 @@ class HeroFrame(Frame):
         self.leftFrame.grid(row=2,
                             column=1,
                             sticky=N+E+S+W)
+        self.leftCols = 16
+        self.leftRows = 34
+##        for col in range(1, self.leftCols+1):
+##            self.leftFrame.columnconfigure(col, weight=1)
+        for row in range(1, self.leftRows+1):
+            self.leftFrame.rowconfigure(row, weight=1)
         # To guarantee width of Message widgets, hide Canvas widgets with specified width
         #  underneath
-        self.leftCols = 16
         self.leftBraces = [None] * self.leftCols
         for i in range(len(self.leftBraces)):
             self.leftBraces[i] = Canvas(self.leftFrame,
@@ -14774,8 +14789,8 @@ class HeroFrame(Frame):
                                     rowspan=groupHeight,
                                     columnspan=valueWidth,
                                     sticky=glue)
-        # Left half of row 7 deliberately left blank
-        # Set up Power and Quality labels for the first 10 columns of rows 8-25
+        # Row 7 of leftFrame deliberately left blank
+        # Set up Power and Quality labels in the first 10 columns of rows 8-25 of leftFrame
         self.pqTitles = [None for i in range(4)]
         self.pqValues = [[None for i in range(4)] for i in range(len(self.myHeroPowers))]
         self.pqTitleText = ["Powers", "Die", "Qualities", "Die"]
@@ -14819,7 +14834,7 @@ class HeroFrame(Frame):
                                          rowspan=groupHeight,
                                          columnspan=groupWidth,
                                          sticky=N+S+E+W)
-        # Set up hero Status die labels for columns 11-13 of rows 8-25
+        # Set up hero Status die labels for columns 11-13 of rows 8-25 of leftFrame
         titleRow = 8
         firstCol = 11
         groupWidth = 3
@@ -14850,7 +14865,7 @@ class HeroFrame(Frame):
                                       rowspan=groupHeight,
                                       columnspan=groupWidth,
                                       sticky=N+E+S+W)
-        # Set up hero Health labels in columns 15-16 of rows 8-25
+        # Set up hero Health labels in columns 15-16 of rows 8-25 of leftFrame
         titleRow = 8
         titleCol = 15
         titleWidth = 2
@@ -14883,8 +14898,8 @@ class HeroFrame(Frame):
                                       rowspan=groupHeight,
                                       columnspan=groupWidth,
                                       sticky=N+E+S+W)
-        # Left half of row 26 intentionally left blank
-        # Set up hero Principle labels in left half of rows 27-52
+        # Row 26 of leftFrame intentionally left blank
+        # Set up hero Principle labels in rows 27-34 of leftFrame
         self.prinSectionNames = ["During Roleplaying", "Minor Twist", "Major Twist"]
         self.prinTitles = [None for i in range(len(self.myHeroPrinciples))]
         self.prinSectionTitles = [[None for i in range(len(self.prinSectionNames))] \
@@ -14938,15 +14953,20 @@ class HeroFrame(Frame):
                                                   rowspan=sectionHeight,
                                                   columnspan=groupWidth,
                                                   sticky=N+E+S+W)
-        # EDIT: Set up hero Ability labels in the right half of rows 3-52
+        # Set up hero Ability labels in rows 1-18 of the right half of the sheet
         self.rightFrame = Frame(self,
                                 width=self.columnWidth*16)
         self.rightFrame.grid(row=2,
                              column=2,
                              sticky=N+E+S+W)
+        self.rightCols = 16
+        self.rightRows = 18
+##        for col in range(1, self.rightCols+1):
+##            self.rightFrame.columnconfigure(col, weight=1)
+        for row in range(1, self.rightRows+1):
+            self.rightFrame.rowconfigure(row, weight=1)
         # To guarantee width of Message widgets, hide Canvas widgets with specified width
         #  underneath
-        self.rightCols = 16
         self.rightBraces = [None] * self.rightCols
         for i in range(len(self.rightBraces)):
             self.rightBraces[i] = Canvas(self.rightFrame,
@@ -15027,6 +15047,8 @@ class HeroFrame(Frame):
                                                          rowspan=1,
                                                          columnspan=sectionWidths[s],
                                                          sticky=N+S+E+W)
+##                print(notePrefix + "self.zoneAbilityValues[" + str(z) + "][" + str(a) + \
+##                      "][0] starts at row " + str(thisRow) + " of rightFrame")
                 thisRow += 1
         rowsNeeded = 1
         self.outAbilityValue = Message(self.rightFrame,
@@ -15057,6 +15079,12 @@ class HeroFrame(Frame):
         self.buttonFrame.grid(row=buttonFrameRow,
                               column=buttonFrameColumn,
                               sticky=N+E+S+W)
+        self.buttonRows = 38
+        self.buttonCols = self.buttonWidth * 2
+##        for row in range(1, self.buttonRows + 1):
+##            self.buttonFrame.rowconfigure(row, weight=1)
+##        for col in range(1, self.buttonCols + 1):
+##            self.buttonFrame.columnconfigure(col, weight=1)
         # Auxiliary sheet buttons (Modes, Forms, Minion Forms) go in the first 2 rows of columns
         #  1-4 of buttonFrame, and use self.auxColors
         # These can display in the same spot for now- we don't have any way of creating a hero that
@@ -15360,6 +15388,8 @@ class HeroFrame(Frame):
 ##                               columnspan=self.buttonWidth,
 ##                               sticky=N+E+S+W)
 ##        prevButtonRows += 1
+##        print(notePrefix + "last occupied row of buttonFrame=" + \
+##              str(editRow + self.buttonHeight * prevButtonRows))
         self.ShowSingleStep()
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -16648,13 +16678,15 @@ class SubWindow(Toplevel):
     def activate(self,
                  contents,
                  xbuff=0,
-                 ybuff=0):
+                 ybuff=0,
+                 sticky=N+E+S+W):
         self.contents = contents
         self.initial_focus = self.body(self.contents)
         self.contents.grid(row=0,
                            column=0,
                            padx=xbuff,
-                           pady=ybuff)
+                           pady=ybuff,
+                           sticky=sticky)
         self.grab_set()
         if not self.initial_focus:
             self.initial_focus = self
@@ -16683,11 +16715,19 @@ class ModeWindow(SubWindow):
         self.myModeFrame = ModeFrame(self,
                                      hero=self.myHero,
                                      font=font)
+        self.bind("<Configure>", self.Resize)
         self.activate(self.myModeFrame)
     def body(self, master):
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0,
+                    column=0,
+                    sticky=N+E+S+W)
         return master
+    def Resize(self, event=None):
+        notePrefix = "### ModeWindow.Resize: "
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myModeFrame.Resize(event)
 
 class ModeFrame(Frame):
     def __init__(self,
@@ -16700,8 +16740,12 @@ class ModeFrame(Frame):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "### ModeFrame: __init__: "
-        self.numRows = 16
+        self.numRows = 31
         self.numCols = 21
+        for row in range(1, self.numRows + 1):
+            self.rowconfigure(row, weight=1)
+##        for col in range(1, self.numCols + 1):
+##            self.columnconfigure(col, weight=1)
         self.width = width
         self.height = height
         self.widthFactor = 6
@@ -16746,6 +16790,7 @@ class ModeFrame(Frame):
         self.myAbilityValues = [[None, None, None] for i in range(self.myModeCount)]
         self.myBuffers = [None for i in range(self.myModeCount-1)]
         self.myColumnBuffers = [None for i in range(self.myModeCount)]
+        self.myColumnBufferStats = [[-1,-1,-1,-1,None] for i in range(self.myModeCount)]
         # To guarantee width of Message widgets, hide Canvas widgets with specified width
         #  underneath
         self.myBraces = [None] * self.numCols
@@ -16834,14 +16879,14 @@ class ModeFrame(Frame):
                 thisPowerValues = [thisPowerText, thisPowerDie]
                 for k in range(len(self.myPowerValues[i][j])):
                     self.myPowerValues[i][j][k] = Message(self,
-                                                        background=modeColor,
-                                                        anchor=self.sectionTargets[k],
-                                                        justify=self.sectionReasons[k],
-                                                        relief=self.dieRelief,
-                                                        text=thisPowerValues[k],
-                                                        width=self.sectionWidths[k] * \
-                                                        self.columnWidth,
-                                                        font=self.dispFont)
+                                                          background=modeColor,
+                                                          anchor=self.sectionTargets[k],
+                                                          justify=self.sectionReasons[k],
+                                                          relief=self.dieRelief,
+                                                          text=thisPowerValues[k],
+                                                          width=self.sectionWidths[k] * \
+                                                          self.columnWidth,
+                                                          font=self.dispFont)
                     self.myPowerValues[i][j][k].grid(row=topRow+leftHeight,
                                                      column=firstCol+sum(self.sectionWidths[0:k]),
                                                      rowspan=thisPowerHeight,
@@ -16860,12 +16905,12 @@ class ModeFrame(Frame):
             thisRulesText = self.myModeRules[i]
             thisRulesHeight = 2
             self.myRuleValues[i] = Message(self,
-                                         background=modeColor,
-                                         anchor=W,
-                                         justify=LEFT,
-                                         text=thisRulesText,
-                                         width=sum(self.sectionWidths[2:])*self.columnWidth,
-                                         font=self.dispFont)
+                                           background=modeColor,
+                                           anchor=W,
+                                           justify=LEFT,
+                                           text=thisRulesText,
+                                           width=sum(self.sectionWidths[2:])*self.columnWidth,
+                                           font=self.dispFont)
             self.myRuleValues[i].grid(row=topRow+rightHeight,
                                       column=firstCol+sum(self.sectionWidths[0:2]),
                                       rowspan=thisRulesHeight,
@@ -16906,13 +16951,14 @@ class ModeFrame(Frame):
             thisAbilityHeight = 3
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Message(self,
-                                                   background=modeColor,
-                                                   anchor=self.sectionTargets[j+2],
-                                                   justify=self.sectionReasons[j+2],
-                                                   relief=self.abilityRelief,
-                                                   text=thisAbilitySections[j],
-                                                   width=self.sectionWidths[j+2]*self.columnWidth,
-                                                   font=self.dispFont)
+                                                     background=modeColor,
+                                                     anchor=self.sectionTargets[j+2],
+                                                     justify=self.sectionReasons[j+2],
+                                                     relief=self.abilityRelief,
+                                                     text=thisAbilitySections[j],
+                                                     width=self.sectionWidths[j+2] * \
+                                                     self.columnWidth,
+                                                     font=self.dispFont)
                 self.myAbilityValues[i][j].grid(row=topRow+rightHeight,
                                                 column=firstCol+sum(self.sectionWidths[0:j+2]),
                                                 rowspan=thisAbilityHeight,
@@ -16958,11 +17004,16 @@ class ModeFrame(Frame):
                                              rowspan=cBufferHeight,
                                              columnspan=cBufferWidth,
                                              sticky=cBufferGlue)
+                self.myColumnBufferStats[i] = [cBufferRow,
+                                               cBufferCol,
+                                               cBufferWidth,
+                                               cBufferHeight,
+                                               cBufferGlue]
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " column buffer starts at row " + \
                           str(cBufferRow) + ", column " + str(cBufferCol) + " and takes up " + \
                           str(cBufferHeight) + " rows and " + str(cBufferWidth) + " columns")
-            # If there's another Mode after this one, display an empty Message across the next empty
+            # If there's another Mode after this one, display an empty Label across the next empty
             #  row, and update thisRow for the next pass
             if i < self.myModeCount-1:
                 if printing:
@@ -17060,6 +17111,99 @@ class ModeFrame(Frame):
                 if isinstance(self.myModeAbilities[i], Ability):
                     rulesText += "You gain access to the following Ability:"
                 self.myModeRules[i] = rulesText
+    def Resize(self, event=None):
+        notePrefix = "### ModeFrame.Resize: "
+        if isinstance(event, Event):
+            if event.widget == self.myParent:
+                self.myParent.update_idletasks()
+##                print(notePrefix + "event width=" + str(event.width))
+                print(notePrefix + "\t\t\tparent width=" + str(self.myParent.winfo_width()))
+                # Get the target value for the width of all widgets in ModeFrame
+                #  When parentMargin is 0, difference between self.width and self.winfo_width is 84
+                #  When parentMargin is 84, difference is 6 three times, then 1 18 times, then 0 
+                parentMargin = 4*self.numCols + 6
+                self.width = self.myParent.winfo_width() - parentMargin
+                # Set self.columnWidth to the target value divided by numCols, rounded down, and
+                #  save the remainder
+                self.columnWidth = max(1, math.floor(self.width/self.numCols))
+                remainder = max(0, self.width - self.columnWidth * self.numCols)
+##                print(notePrefix + "new columnWidth=" + str(self.columnWidth))
+##                print(notePrefix + "remainder=" + str(remainder))
+                # Set the width of each of myBraces to the new columnWidth, adding the remainder to
+                #  the width of the last one
+##                canvasMargin = 4
+                for i in range(len(self.myBraces)):
+                    self.myBraces[i].config(width=self.columnWidth)
+                    self.myBraces[i].update_idletasks()
+##                    print(notePrefix + "myBraces[" + str(i) + "] cget width=" + \
+##                          str(self.myBraces[i].cget("width")) + ", winfo width=" + \
+##                          str(self.myBraces[i].winfo_width()))
+                if remainder > 0:
+                    self.myBraces[len(self.myBraces)-1].config(width = self.columnWidth + \
+                                                               remainder)
+                    self.myBraces[len(self.myBraces)-1].update_idletasks()
+##                    print(notePrefix + "myBraces[" + str(len(self.myBraces)-1) + \
+##                          "] cget width=" + str(self.myBraces[i].cget("width")) + \
+##                          ", winfo width=" + str(self.myBraces[i].winfo_width()))
+                totalBraceWidth = sum([x.winfo_width() for x in self.myBraces])
+                # Messages won't automatically set their text width upward, though, so restate all
+                #  their width definitions in terms of columnWidth, remembering that anything in
+                #  the last column is wider by remainder
+                for i in range(self.myModeCount):
+                    self.myModeHeaders[i].config(width = sum(self.sectionWidths) * \
+                                                 self.columnWidth)
+##                    self.myModeHeaders[i].update_idletasks()
+##                    print(notePrefix + "myModeHeaders[" + str(i) + "] cget width=" + \
+##                          str(self.myModeHeaders[i].cget("width")) + ", winfo width=" + \
+##                          str(self.myModeHeaders[i].winfo_width()))
+                    self.myRuleValues[i].config(width= sum(self.sectionWidths[2:]) * \
+                                                self.columnWidth)
+##                    self.myRuleValues[i].update_idletasks()
+##                    print(notePrefix + "myRuleValues[" + str(i) + "] cget width=" + \
+##                          str(self.myRuleValues[i].cget("width")) + ", winfo width=" + \
+##                          str(self.myRuleValues[i].winfo_width()))
+                    # Label widgets use sticky properly and don't need manual adjusting, especially
+                    #  if there's no text in them
+##                    if isinstance(self.myColumnBuffers[i], Label):
+##                        cBufferWidth = self.myColumnBufferStats[i][2]
+##                        self.myColumnBuffers[i].config(width=int(cBufferWidth * \
+##                                                                 self.columnWidth / \
+##                                                                 self.widthFactor))
+##                        self.myColumnBuffers[i].update_idletasks()
+##                        print(notePrefix + "myColumnBuffers[" + str(i) + "] cget width=" + \
+##                              str(self.myColumnBuffers[i].cget("width")) + ", winfo width=" + \
+##                              str(self.myColumnBuffers[i].winfo_width()))
+##                    if i in range(len(self.myBuffers)):
+##                        self.myBuffers[i].config(width=int(sum(self.sectionWidths) * \
+##                                                           self.columnWidth / self.widthFactor))
+##                        self.myBuffers[i].update_idletasks()
+##                        print(notePrefix + "myBuffers[" + str(i) + "] cget width=" + \
+##                              str(self.myBuffers[i].cget("width")) + ", winfo width=" + \
+##                              str(self.myBuffers[i].winfo_width()))
+                    for j in range(len(self.sectionTitles)):
+                        self.mySectionHeaders[i][j].config(width = self.sectionWidths[j] * \
+                                                           self.columnWidth)
+                    for j in range(len(self.myModePowers[i])):
+                        for k in range(len(self.myPowerValues[i][j])):
+                            self.myPowerValues[i][j][k].config(width = self.sectionWidths[k] * \
+                                                               self.columnWidth)
+                    for j in range(len(self.myAbilityValues[i])):
+                        self.myAbilityValues[i][j].config(width = self.sectionWidths[j+2] * \
+                                                          self.columnWidth)
+                self.update_idletasks()
+                print(notePrefix + "Frame width=" + str(self.winfo_width()))
+                print(notePrefix + "target self.width=" + str(self.width))
+                print(notePrefix + "all braces winfo_width=" + str(totalBraceWidth))
+                ctotal = 0
+                if self.winfo_width() > totalBraceWidth:
+                    (gCols, gRows) = self.grid_size()
+                    print(notePrefix + str(gCols) + " columns, " + str(gRows) + " rows")
+                    for i in range(gCols+2):
+                        (ix, iy, iwidth, iheight) = self.grid_bbox(i, 1)
+                        ctotal += iwidth
+                        if iwidth > 0:
+                            print(notePrefix + "column " + str(i) + " width=" + str(iwidth))
+                    print(notePrefix + "total column width=" + str(ctotal))
 
 class MinionWindow(SubWindow):
     def __init__(self,
@@ -17080,7 +17224,9 @@ class MinionWindow(SubWindow):
         self.activate(self.myMinionFrame)
     def body(self, master):
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0,
+                    column=0,
+                    sticky=N+E+S+W)
         return master
     def Resize(self, event=None):
         notePrefix = "### MinionWindow.Resize: "
@@ -17094,13 +17240,17 @@ class MinionFrame(Frame):
                  hero=None,
                  width=160,
                  font=None,
-                 printing=True):
+                 printing=False):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "MinionFrame: __init__: "
         self.SetHero(hero)
         self.numRows = 14 + self.myMinionCount
         self.numCols = 16
+##        for col in range(1, self.numCols + 1):
+##            self.columnconfigure(col, weight=1)
+##        for row in range(1, self.numRows + 1):
+##            self.rowconfigure(row, weight=1)
         self.width = width
         self.widthFactor = 6
         self.columnWidth = max(1,math.floor(self.width*self.widthFactor/self.numCols))
@@ -17146,7 +17296,7 @@ class MinionFrame(Frame):
         self.tableRelief = GROOVE
         self.headerGlue = E+S+W
         self.rulesGlue = N+E+S+W
-        self.titleGlue = E+S+W
+        self.titleGlue = N+E+S+W
         self.tableGlue = N+E+S+W
         # To guarantee width of Message widgets, hide Canvas widgets with specified width
         #  underneath
@@ -17332,15 +17482,24 @@ class MinionFrame(Frame):
                 self.myParent.update_idletasks()
 ##                print(notePrefix + "event width=" + str(event.width))
 ##                print(notePrefix + "parent width=" + str(self.myParent.winfo_width()))
+                # Get the target value for the width of all widgets in MinionFrame
+                #  (myParent.winfo_width() - 64, determined by experimentation)
                 self.width = self.myParent.winfo_width() - 64
+                # Set self.columnWidth to the target value divided by numCols, rounded down, and
+                #  save the remainder
                 self.columnWidth = max(1,math.floor(self.width/self.numCols))
                 remainder = self.width - self.columnWidth * self.numCols
+##                print(notePrefix + "target self.width=" + str(self.width))
 ##                print(notePrefix + "new columnWidth=" + str(self.columnWidth))
+                # Set the width of each of myBraces to the new columnWidth, adding the remainder to
+                #  the width of the last one
                 for i in range(len(self.myBraces)):
                     self.myBraces[i].config(width=self.columnWidth)
                 if remainder > 0:
                     self.myBraces[len(self.myBraces)-1].config(width=self.columnWidth+remainder)
-                self.myMinionSizeRules.config(width=sum(self.sizeWidths)*self.columnWidth)
+                # Messages won't automatically set their text width upward, though, so restate all
+                #  their width definitions in terms of columnWidth, remembering that anything in
+                #  the last column is wider by remainder
                 self.myMinionSizeTitle.config(width=sum(self.formWidths[0:2])*self.columnWidth)
                 for i in range(len(self.myMinionSizeHeaders)):
                     self.myMinionSizeHeaders[i].config(width=self.sizeWidths[i]*self.columnWidth)
@@ -17348,7 +17507,10 @@ class MinionFrame(Frame):
                     for r in range(len(self.myMinionSizeEntries[c])):
                         self.myMinionSizeEntries[c][r].config(width=self.sizeWidths[c] * \
                                                               self.columnWidth)
-                self.myMinionFormRules.config(width=sum(self.sizeWidths)*self.columnWidth)
+                        if c == len(self.myMinionSizeEntries) - 1:
+                            self.myMinionSizeEntries[c][r].config(width = remainder + \
+                                                                  self.sizeWidths[c] * \
+                                                                  self.columnWidth)
                 self.myMinionFormTitle.config(width=sum(self.formWidths[0:2])*self.columnWidth)
                 for i in range(len(self.myMinionFormHeaders)):
                     self.myMinionFormHeaders[i].config(width=self.formWidths[i]*self.columnWidth)
@@ -17356,6 +17518,24 @@ class MinionFrame(Frame):
                     for c in range(len(self.myMinionInfo[r])):
                         self.myMinionFormEntries[r][c].config(width=self.formWidths[c] * \
                                                               self.columnWidth)
+                        if c == len(self.myMinionInfo[r]) - 1:
+                            self.myMinionFormEntries[r][c].config(width = remainder + \
+                                                                  self.formWidths[c] * \
+                                                                  self.columnWidth)
+                # For Messages that span the entire width of the window, just use the full target
+                #  width
+                targetWidth = self.width + 48
+##                print(notePrefix + "myMinionSizeRules cset width=" + \
+##                      str(targetWidth))
+                self.myMinionSizeRules.config(width = targetWidth)
+                self.myMinionFormRules.config(width = targetWidth)
+                self.update_idletasks()
+##                print(notePrefix + "myMinionSizeRules cget width=" + \
+##                      str(self.myMinionSizeRules.cget("width")))
+##                print(notePrefix + "self.winfo_width=" + str(self.winfo_width()))
+                # Resizing a Message narrower may cause its height to increase. Should the window
+                #  automatically get taller to compensate?
+                # ...
 
 class FormWindow(SubWindow):
     def __init__(self,
@@ -18832,6 +19012,8 @@ factory = SampleMaker()
 root = Tk()
 root.geometry("+0+0")
 root.title("SCRPG Hero Editor")
+root.rowconfigure(0, weight=1)
+root.columnconfigure(0, weight=1)
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -18839,9 +19021,10 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
+disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+root.lift()
 root.mainloop()
 
 # Using a not-yet-constructed hero

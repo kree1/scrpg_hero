@@ -209,6 +209,17 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 .		EntryFrame/EntryWindow
 .		ExpandFrame/ExpandWindow
 	Create Configure() bindings to resize the inside of a Frame when its window is resized?
+		HeroFrame
+		ModeFrame
+.		MinionFrame
+		FormFrame
+		SelectFrame
+		EntryFrame
+		ExpandFrame
+		SwapFrame
+		PrincipleFrame
+		AssignFrame
+	  Should a window get taller when its contents are squished horizontally?
 
 Figure out titleWidth
   
