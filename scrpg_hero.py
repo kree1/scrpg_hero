@@ -17267,72 +17267,65 @@ class MinionFrame(Frame):
         self.formWidths = [2, 2, 12]
         self.formRules = "When creating a minion, you may discard a bonus on you or a willing " + \
                          "ally to give your minion one of the following upgrades:"
-        self.rulesModifier = 1
-        self.rulesWrap = math.floor(sum(self.sizeWidths)*self.columnWidth*self.rulesModifier)
-        self.titleModifier = 1
-        self.titleWrap = math.floor(sum(self.formWidths[0:1])*self.columnWidth*self.titleModifier)
-        self.sizeModifier = 1
-        self.sizeWraps = [math.floor(w*self.columnWidth*self.sizeModifier) for w in self.sizeWidths]
-        self.formModifier = 1
-        self.formWraps = [math.floor(w*self.columnWidth*self.formModifier) for w in self.formWidths]
         self.titleBG = "orange"
         self.rulesBG = "khaki"
         self.headerBG = "cyan"
         self.tableBG = "white"
+        self.myMargin = 6
         self.headerRelief = RAISED
         self.rulesRelief = GROOVE
         self.titleRelief = RAISED
         self.tableRelief = GROOVE
-        self.headerGlue = E+S+W
+        self.headerGlue = N+E+S+W
         self.rulesGlue = N+E+S+W
-        self.titleGlue = E+S+W
-        self.tableGlue = E+S+W
+        self.titleGlue = N+E+S+W
+        self.tableGlue = N+E+S+W
         # Display minion size rules in columns 1-16 of rows 1-2
         self.myMinionSizeRules = Label(self,
                                        background=self.rulesBG,
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.sizeRules,
-                                                       width=self.rulesWrap),
+                                       text=self.sizeRules,
                                        width=sum(self.sizeWidths)*self.columnWidth,
-                                       height=math.floor(2*self.rowHeight),
                                        font=self.dispFont)
         self.myMinionSizeRules.grid(row=1,
                                     column=1,
                                     rowspan=2,
                                     columnspan=sum(self.sizeWidths),
                                     sticky=self.rulesGlue)
+        self.myMinionSizeRules.update_idletasks()
+        thisDispWidth = self.myMinionSizeRules.winfo_width()
+        self.myMinionSizeRules.config(wraplength=thisDispWidth-self.myMargin)
         self.myMinionSizeRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Sizes title in columns 1-4 of row 3
         self.myMinionSizeTitle = Label(self,
                                        background=self.titleBG,
-                                       anchor=W,
+                                       anchor=S+W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Sizes",
-                                                       width=self.titleWrap),
+                                       text="Minion Sizes",
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight),
                                        font=self.dispFont)
         self.myMinionSizeTitle.grid(row=3,
                                     column=1,
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
+        self.myMinionSizeTitle.update_idletasks()
+        thisDispWidth = self.myMinionSizeTitle.winfo_width()
+        self.myMinionSizeTitle.config(wraplength=thisDispWidth-self.myMargin)
         # Display minion size column headers in row 4
         self.myMinionSizeHeaders = [None for i in self.sizeHeaders]
         for i in range(len(self.myMinionSizeHeaders)):
             thisHeader = Label(self,
                                background=self.headerBG,
-                               anchor=W,
+                               anchor=S+W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.sizeHeaders[i],
-                                               width=self.sizeWraps[i]),
+                               text=self.sizeHeaders[i],
                                width=self.sizeWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight),
                                font=self.dispFont)
             self.myMinionSizeHeaders[i] = thisHeader
             self.myMinionSizeHeaders[i].grid(row=4,
@@ -17340,6 +17333,9 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.sizeWidths[i],
                                              sticky=self.headerGlue)
+            self.myMinionSizeHeaders[i].update_idletasks()
+            thisDispWidth = self.myMinionSizeHeaders[i].winfo_width()
+            self.myMinionSizeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         # Display minion size column entries in rows 5-9
         self.myMinionSizeEntries = [[None for i in range(len(self.sizeText[0]))] \
                                     for j in range(len(self.sizeText))]
@@ -17350,10 +17346,8 @@ class MinionFrame(Frame):
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.sizeText[c][r],
-                                                  width=self.sizeWraps[c]),
+                                  text=self.sizeText[c][r],
                                   width=self.sizeWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight),
                                   font=self.dispFont)
                 self.myMinionSizeEntries[c][r] = thisEntry
                 self.myMinionSizeEntries[c][r].grid(row=5+r,
@@ -17361,6 +17355,9 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.sizeWidths[c],
                                                     sticky=self.tableGlue)
+                self.myMinionSizeEntries[c][r].update_idletasks()
+                thisDispWidth = self.myMinionSizeEntries[c][r].winfo_width()
+                self.myMinionSizeEntries[c][r].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionSizeEntries[c][r].bind("<Double-1>",
                                                     self.ClipboardCopy)
         # Insert buffer between rows 9 and 12
@@ -17371,46 +17368,46 @@ class MinionFrame(Frame):
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
-                                       text=split_text(self.formRules,
-                                                       width=self.rulesWrap),
+                                       text=self.formRules,
                                        width=sum(self.formWidths)*self.columnWidth,
-                                       height=math.floor(self.rowHeight),
                                        font=self.dispFont)
         self.myMinionFormRules.grid(row=12,
                                     column=1,
                                     rowspan=1,
                                     columnspan=sum(self.formWidths),
                                     sticky=self.rulesGlue)
+        self.myMinionFormRules.update_idletasks()
+        thisDispWidth = self.myMinionFormRules.winfo_width()
+        self.myMinionFormRules.config(wraplength=thisDispWidth-self.myMargin)
         self.myMinionFormRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Forms title in columns 1-4 of row 13
         self.myMinionFormTitle = Label(self,
                                        background=self.titleBG,
-                                       anchor=W,
+                                       anchor=S+W,
                                        justify=LEFT,
                                        relief=self.titleRelief,
-                                       text=split_text("Minion Forms",
-                                                       width=self.titleWrap),
+                                       text="Minion Forms",
                                        width=sum(self.formWidths[0:2])*self.columnWidth,
-                                       height=math.floor(self.rowHeight),
                                        font=self.dispFont)
         self.myMinionFormTitle.grid(row=13,
                                     column=1,
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
+        self.myMinionFormTitle.update_idletasks()
+        thisDispWidth = self.myMinionFormTitle.winfo_width()
+        self.myMinionFormTitle.config(wraplength=thisDispWidth-self.myMargin)
         # Display minion form column headers in row 14
         self.myMinionFormHeaders = [None for i in self.formHeaders]
         for i in range(len(self.myMinionFormHeaders)):
             thisHeader = Label(self,
                                background=self.headerBG,
-                               anchor=W,
+                               anchor=S+W,
                                justify=LEFT,
                                relief=self.headerRelief,
-                               text=split_text(self.formHeaders[i],
-                                               width=self.formWraps[i]),
+                               text=self.formHeaders[i],
                                width=self.formWidths[i]*self.columnWidth,
-                               height=math.floor(self.rowHeight),
                                font=self.dispFont)
             self.myMinionFormHeaders[i] = thisHeader
             self.myMinionFormHeaders[i].grid(row=14,
@@ -17418,6 +17415,9 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.formWidths[i],
                                              sticky=self.headerGlue)
+            self.myMinionFormHeaders[i].update_idletasks()
+            thisDispWidth = self.myMinionFormHeaders[i].winfo_width()
+            self.myMinionFormHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         # Display minion form column entries in rows 15-[14+self.myMinionCount]
         self.myMinionFormEntries = [[None,None,None] for i in range(self.myMinionCount)]
         for r in range(self.myMinionCount):
@@ -17427,10 +17427,8 @@ class MinionFrame(Frame):
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
-                                  text=split_text(self.myMinionInfo[r][c],
-                                                  width=self.formWraps[c]),
+                                  text=self.myMinionInfo[r][c],
                                   width=self.formWidths[c]*self.columnWidth,
-                                  height=math.floor(self.rowHeight),
                                   font=self.dispFont)
                 self.myMinionFormEntries[r][c] = thisEntry
                 self.myMinionFormEntries[r][c].grid(row=15+r,
@@ -17438,6 +17436,9 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.formWidths[c],
                                                     sticky=self.tableGlue)
+                self.myMinionFormEntries[r][c].update_idletasks()
+                thisDispWidth = self.myMinionFormEntries[r][c].winfo_width()
+                self.myMinionFormEntries[r][c].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
     def Empty(self):
@@ -19021,7 +19022,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()

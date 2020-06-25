@@ -216,8 +216,19 @@ Figure out wraplength
 Implement wraplength...
 	HeroFrame
 .	ModeFrame
-	MinionFrame
+.	MinionFrame
 .	FormFrame
+	SelectFrame
+	EntryFrame
+	ExpandFrame
+	SwapFrame
+	PrincipleFrame
+	AssignFrame
+Make wraplength dynamic with rowconfigure/columnconfigure and <Configure> bindings...
+	HeroFrame
+	ModeFrame
+	MinionFrame
+	FormFrame
 	SelectFrame
 	EntryFrame
 	ExpandFrame
