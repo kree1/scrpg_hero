@@ -16822,7 +16822,9 @@ class ModeWindow(SubWindow):
         self.myModeFrame = ModeFrame(self,
                                      hero=self.myHero,
                                      font=font)
-        self.activate(self.myModeFrame)
+        self.activate(self.myModeFrame,
+                      xbuff=0,
+                      ybuff=0)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0)
@@ -16909,7 +16911,7 @@ class ModeFrame(Frame):
                                                     relief=self.titleRelief,
                                                     text=self.sectionTitles[j],
                                                     width=self.sectionWidths[j]*self.columnWidth,
-                                                    height=self.powerHeight*self.rowHeight,
+##                                                    height=self.powerHeight*self.rowHeight,
                                                     font=self.dispFont)
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
@@ -16923,13 +16925,15 @@ class ModeFrame(Frame):
                                           relief=self.headerRelief,
                                           text=self.myModeNames[i],
                                           width=sum(self.sectionWidths)*self.columnWidth,
-                                          height=self.headerHeight*self.rowHeight,
                                           font=self.dispFont)
             self.myModeHeaders[i].grid(row=topRow,
                                        column=firstCol,
                                        rowspan=self.headerHeight,
                                        columnspan=sum(self.sectionWidths),
                                        sticky=self.headerGlue)
+            self.myModeHeaders[i].update_idletasks()
+            thisDispWidth = self.myModeHeaders[i].winfo_width()
+            self.myModeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myModeHeaders[i].bind("<Double-1>",
                                        self.ClipboardCopy)
             if printing:
@@ -16944,6 +16948,9 @@ class ModeFrame(Frame):
                                                  column=firstCol+sum(self.sectionWidths[0:j]),
                                                  rowspan=self.powerHeight,
                                                  columnspan=self.sectionWidths[j])
+                self.mySectionHeaders[i][j].update_idletasks()
+                thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
+                self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 if printing:
                     print(notePrefix + self.mySectionHeaders[i][j]["text"] + \
                           " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -17026,6 +17033,9 @@ class ModeFrame(Frame):
                                                  rowspan=self.headerHeight,
                                                  columnspan=self.sectionWidths[j],
                                                  sticky=self.headerGlue)
+                self.mySectionHeaders[i][j].update_idletasks()
+                thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
+                self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 if printing:
                     print(notePrefix + self.mySectionHeaders[i][j]["text"] + \
                           " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -17515,7 +17525,9 @@ class FormWindow(SubWindow):
         self.myFormFrame = FormFrame(self,
                                      hero=self.myHero,
                                      font=font)
-        self.activate(self.myFormFrame)
+        self.activate(self.myFormFrame,
+                      xbuff=0,
+                      ybuff=0)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0)
@@ -17621,13 +17633,15 @@ class FormFrame(Frame):
                                         justify=LEFT,
                                         text=thisName,
                                         width=self.numCols*self.columnWidth,
-                                        height=self.rowHeight,
                                         font=self.dispFont)
             self.myFormNames[i].grid(row=firstRow,
                                      column=1,
                                      rowspan=1,
                                      columnspan=sum(self.upperWidths),
                                      sticky=self.rulesGlue)
+            self.myFormNames[i].update_idletasks()
+            thisDispWidth = self.myFormNames[i].winfo_width()
+            self.myFormNames[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myFormNames[i].bind("<Double-1>",
                                      self.ClipboardCopy)
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
@@ -17639,13 +17653,15 @@ class FormFrame(Frame):
                                              relief=self.titleRelief,
                                              text=self.headerText[j],
                                              width=self.upperWidths[j]*self.columnWidth,
-                                             height=self.rowHeight,
                                              font=self.dispFont)
                 self.myHeaders[i][j].grid(row=firstRow+1,
                                           column=1+sum(self.upperWidths[0:j]),
                                           rowspan=1,
                                           columnspan=self.upperWidths[j],
                                           sticky=self.diceGlue)
+                self.myHeaders[i][j].update_idletasks()
+                thisDispWidth = self.myHeaders[i][j].winfo_width()
+                self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Label(self,
@@ -17656,13 +17672,15 @@ class FormFrame(Frame):
                                                 relief=self.statusRelief,
                                                 text=str(thisForm[4][j]),
                                                 width=self.upperWidths[4]*self.columnWidth,
-                                                height=self.rowHeight,
                                                 font=self.dispFont)
                 self.myStatusDice[i][j].grid(row=firstRow+2+j,
                                              column=1+sum(self.upperWidths[0:4]),
                                              rowspan=1,
                                              columnspan=self.upperWidths[4],
                                              sticky=self.diceGlue)
+                self.myStatusDice[i][j].update_idletasks()
+                thisDispWidth = self.myStatusDice[i][j].winfo_width()
+                self.myStatusDice[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 self.myStatusDice[i][j].bind("<Double-1>",
                                              self.ClipboardCopy)
             # Display Power and Quality dice across columns 1-10 of the third through
@@ -17712,13 +17730,15 @@ class FormFrame(Frame):
                                                  relief=self.titleRelief,
                                                  text=self.headerText[j],
                                                  width=self.lowerWidths[j]*self.columnWidth,
-                                                 height=self.rowHeight,
                                                  font=self.dispFont)
                     self.myHeaders[i][j].grid(row=firstRow+4,
                                               column=1+sum(self.lowerWidths[0:j]),
                                               rowspan=1,
                                               columnspan=self.lowerWidths[j],
                                               sticky=self.titleGlue)
+                    self.myHeaders[i][j].update_idletasks()
+                    thisDispWidth = self.myHeaders[i][j].winfo_width()
+                    self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 thisRow = firstRow + 5
                 # For each Ability associated with this form...
                 for j in range(len(thisForm[5])):
@@ -19056,7 +19076,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()
