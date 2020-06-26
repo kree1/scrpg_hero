@@ -209,7 +209,7 @@ Standard orange:
 
 Figure out wraplength
  0) set a margin variable to a small but significant number of pixels, something like 6
- 1) initialize the widget with no wraplength or height
+ 1) initialize and grid the widget with no wraplength or height
  2) update_idletasks
  3) get winfo_width()
  4) set wraplength = winfo_width() - margin
@@ -218,7 +218,7 @@ Implement wraplength...
 .	ModeFrame
 .	MinionFrame
 .	FormFrame
-	SelectFrame
+.	SelectFrame
 	EntryFrame
 	ExpandFrame
 	SwapFrame
@@ -229,7 +229,7 @@ Make window contents stretch
  2) add sticky=N+E+S+W to grid call in *Window.body
  2a) make sure all sticky values in *Frame are N+E+S+W
  3) add rowconfigure/columnconfigure to *Frame.__init__, after initializing & gridding widgets
-Make wraplength dynamic with rowconfigure/columnconfigure and <Configure> bindings
+Make wraplength dynamic
  1) create *Window.resize that calls *Frame.resize if given an event with widget == self
  2) bind <Configure> to *Window.resize in *Window.__init__ just before activate
  3) fill *Frame.resize with all the same wraplength definitions from *Frame.__init__
@@ -238,7 +238,7 @@ Implement stretchy window contents...
 .	ModeFrame
 .	MinionFrame
 .	FormFrame
-	SelectFrame
+.	SelectFrame
 	EntryFrame
 	ExpandFrame
 	SwapFrame
