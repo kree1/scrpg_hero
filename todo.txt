@@ -220,7 +220,7 @@ Implement wraplength...
 .	FormFrame
 .	SelectFrame
 .	EntryFrame
-	ExpandFrame
+.	ExpandFrame
 	SwapFrame
 	PrincipleFrame
 	AssignFrame
@@ -240,7 +240,7 @@ Implement stretchy window contents...
 .	FormFrame
 .	SelectFrame
 .	EntryFrame
-	ExpandFrame
+,	ExpandFrame
 	SwapFrame
 	PrincipleFrame
 	AssignFrame
@@ -256,3 +256,4 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
+

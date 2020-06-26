@@ -7038,7 +7038,6 @@ class Hero:
                                             var=answer,
                                             title=print_type + " Selection",
                                             lwidth=50,
-                                            lbuffer=15,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -7177,7 +7176,6 @@ class Hero:
                                         var=answer,
                                         title="Principle Selection",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=dispWidth)
                 entry_index = answer.get()
             else:
@@ -7298,7 +7296,6 @@ class Hero:
                                         var=answer,
                                         title="Principle Selection",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=ri_width)
                 entry_index = answer.get()
             else:
@@ -7709,7 +7706,6 @@ class Hero:
                                     var=answer,
                                     title="Background Selection",
                                     lwidth=30,
-                                    lbuffer=5,
                                     rwidth=bg_width)
             entry_index = answer.get()
         else:
@@ -7940,7 +7936,6 @@ class Hero:
                                             var=answer,
                                             title="Ability Selection",
                                             lwidth=40,
-                                            lbuffer=15,
                                             rwidth=a_width)
                     entry_index = answer.get()
                 else:
@@ -7982,7 +7977,6 @@ class Hero:
                                         var=answer,
                                         title="Ability Selection",
                                         lwidth=40,
-                                        lbuffer=15,
                                         rwidth=a_width)
                 entry_index = answer.get()
             else:
@@ -8710,7 +8704,6 @@ class Hero:
                                     var=answer,
                                     title="Power Source Selection",
                                     lwidth=35,
-                                    lbuffer=5,
                                     rwidth=ps_width)
             entry_index = answer.get()
         else:
@@ -9231,7 +9224,6 @@ class Hero:
                                     var=answer,
                                     title="Form Selection",
                                     lwidth=30,
-                                    lbuffer=5,
                                     rwidth=dispWidth)
             entry_index = answer.get()
         else:
@@ -9831,7 +9823,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection: Modular",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -9891,7 +9882,6 @@ class Hero:
                                                 var=answer,
                                                 title="Archetype Selection: Modular",
                                                 lwidth=30,
-                                                lbuffer=5,
                                                 rwidth=rwidth)
                         entry_index = answer.get()
                     else:
@@ -9948,7 +9938,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection: Modular",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=rwidth)
                     entry_index = answer.get()
                 else:
@@ -10269,7 +10258,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype: Divided - Transition Selection",
                                             lwidth=35,
-                                            lbuffer=5,
                                             rwidth=100)
                     entry_index = answer.get()
                 else:
@@ -11185,7 +11173,6 @@ class Hero:
                                             var=answer,
                                             title="Archetype Selection",
                                             lwidth=35,
-                                            lbuffer=5,
                                             rwidth=arc_width)
                     entry_index = answer.get()
                 else:
@@ -11285,7 +11272,6 @@ class Hero:
                                         var=answer,
                                         title="Archetype Selection",
                                         lwidth=35,
-                                        lbuffer=5,
                                         rwidth=arc_width)
                 entry_index = answer.get()
             else:
@@ -11662,7 +11648,6 @@ class Hero:
                                             var=answer,
                                             title="Personality Selection",
                                             lwidth=20,
-                                            lbuffer=0,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -11765,7 +11750,6 @@ class Hero:
                                             var=answer,
                                             title="Personality Selection",
                                             lwidth=30,
-                                            lbuffer=10,
                                             rwidth=pn_width)
                     entry_index = answer.get()
                 else:
@@ -11833,7 +11817,6 @@ class Hero:
                                         var=answer,
                                         title="Personality Selection",
                                         lwidth=35,
-                                        lbuffer=10,
                                         rwidth=pn_width)
                 entry_index = answer.get()
             else:
@@ -11980,7 +11963,6 @@ class Hero:
                                         var=answer,
                                         title="Red Ability Selection",
                                         lwidth=35,
-                                        lbuffer=15,
                                         rwidth=100)
                 entry_index = answer.get()
             else:
@@ -12199,7 +12181,6 @@ class Hero:
                                             title="Retcon: Change an Ability's related " + \
                                             "Power/Quality",
                                             lwidth=30,
-                                            lbuffer=5,
                                             rwidth=a_width)
                     entry_index = answer.get()
                 else:
@@ -12508,7 +12489,6 @@ class Hero:
                                             var=answer,
                                             title="Retcon: Change a Principle",
                                             lwidth=25,
-                                            lbuffer=5,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
                 else:
@@ -16264,9 +16244,9 @@ class HeroFrame(Frame):
             # ...
         # Once the list is complete, figure out which option to use
         rename_selection = ""
-        if len(rename_options) == 1:
-            # There's only one option, so we don't need to prompt the user
-            rename_selection = rename_options[0]
+        if len(rename_options) == 2:
+            # There's only one option other than "None", so we don't need to prompt the user
+            rename_selection = rename_options[1]
         elif len(rename_options) > 1:
             # Multiple options? Better ask the user which one to follow up on
             result = IntVar(self)
@@ -16359,7 +16339,6 @@ class HeroFrame(Frame):
                                         var=ability_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = ability_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16400,7 +16379,6 @@ class HeroFrame(Frame):
                                         var=mode_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = mode_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16453,7 +16431,6 @@ class HeroFrame(Frame):
                                         var=form_choice,
                                         title="Edit Hero",
                                         lwidth=30,
-                                        lbuffer=5,
                                         rwidth=100)
                 selection = form_choice.get()
                 if selection in range(1, len(text_options)):
@@ -16706,7 +16683,7 @@ class HeroFrame(Frame):
             if False not in self.completeSteps:
                 lastStep = len(step_names)
             stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
-            stepOptions = ["0: clear all hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
+            stepOptions = ["0: Clear ALL hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
             revertPrompt = "Choose a step of hero creation to redo from:"
             stepChoice = IntVar(self, 1)
             question = SelectWindow(self,
@@ -17119,14 +17096,14 @@ class ModeFrame(Frame):
                           " columns")
                 thisRow = bufferRow + self.bufferHeight
         # Make contents stretch/squish
-        for row in range(1,self.numRows+1):
+        for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
             # If anything appears in this row, make it flexible; otherwise, lock it at 0
             if iheight > 0:
                 self.rowconfigure(row, weight=1)
             else:
                 self.rowconfigure(row, weight=0)
-        for col in range(1,self.numCols+1):
+        for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
             if iwidth > 0:
@@ -17488,14 +17465,14 @@ class MinionFrame(Frame):
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
         # Make contents stretch/squish
-        for row in range(1,self.numRows+1):
+        for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
             # If anything appears in this row, make it flexible; otherwise, lock it at 0
             if iheight > 0:
                 self.rowconfigure(row, weight=1)
             else:
                 self.rowconfigure(row, weight=0)
-        for col in range(1,self.numCols+1):
+        for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
             if iwidth > 0:
@@ -17833,14 +17810,14 @@ class FormFrame(Frame):
                     thisRow += abilityHeight
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
         # Make contents stretch/squish
-        for row in range(1,self.numRows+1):
+        for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
             # If anything appears in this row, make it flexible; otherwise, lock it at 0
             if iheight > 0:
                 self.rowconfigure(row, weight=1)
             else:
                 self.rowconfigure(row, weight=0)
-        for col in range(1,self.numCols+1):
+        for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
             if iwidth > 0:
@@ -18050,7 +18027,7 @@ class SelectFrame(Frame):
                                column=1,
                                rowspan=1,
                                columnspan=3,
-                               sticky=N+E+S+W)
+                               sticky=E+W)
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
                                  anchor=CENTER,
@@ -18071,14 +18048,14 @@ class SelectFrame(Frame):
         self.bind("<Up>", self.prevoption)
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
-        for row in range(1,self.numRows+1):
+        for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
             # If anything appears in this row, make it flexible; otherwise, lock it at 0
             if iheight > 0:
                 self.rowconfigure(row, weight=1)
             else:
                 self.rowconfigure(row, weight=0)
-        for col in range(1,self.numCols+1):
+        for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
             if iwidth > 0:
@@ -18239,14 +18216,14 @@ class EntryFrame(Frame):
         self.myTextEntry.bind("<Return>", self.finish)
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
-        for row in range(1,self.numRows+1):
+        for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
             # If anything appears in this row, make it flexible; otherwise, lock it at 0
             if iheight > 0:
                 self.rowconfigure(row, weight=1)
             else:
                 self.rowconfigure(row, weight=0)
-        for col in range(1,self.numCols+1):
+        for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
             if iwidth > 0:
@@ -18288,9 +18265,7 @@ class ExpandWindow(SubWindow):
                  var=None,
                  title=None,
                  lwidth=40,
-                 lbuffer=-1,
-                 rwidth=100,
-                 rbuffer=-1):
+                 rwidth=100):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
         self.myOptions = [str(x) for x in options]
@@ -18305,14 +18280,20 @@ class ExpandWindow(SubWindow):
                                          self.myDetails,
                                          self.myVariable,
                                          lwidth=lwidth,
-                                         lbuffer=lbuffer,
-                                         rwidth=rwidth,
-                                         rbuffer=rbuffer)
+                                         rwidth=rwidth)
+        # Make the contents stretchable/squishable
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myExpandFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myExpandFrame.expand(event)
 
 class ExpandFrame(Frame):
     # A frame that poses a multiple-choice question to the user and reports the answer. Use if
@@ -18330,13 +18311,12 @@ class ExpandFrame(Frame):
                  expand_options,
                  destination,
                  lwidth=40,
-                 lbuffer=-1,
                  rwidth=100,
-                 rbuffer=-1,
                  printing=False):
         Frame.__init__(self, parent)
         notePrefix = "### ExpandFrame.__init__: "
         self.myParent = parent
+        self.myMargin = 6
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         # myDestination: IntVar, written to only in finish()
         self.myDestination = destination
@@ -18344,27 +18324,9 @@ class ExpandFrame(Frame):
         self.myAnswer = IntVar()
         # myString: StringVar, written to by OptionMenu directly
         self.myString = StringVar(self, self.myOptions[self.myDestination.get()])
-        # The prompt is allowed to split across multiple lines, but the options aren't,
-        #  so if one of the options is longer than lwidth, use its length as myPromptWidth
-##        for x in self.myOptions:
-##            print(notePrefix + "len(" + str(x) + ") = " + str(len(x)))
-##        print(notePrefix + "max len = " + str(max([len(x) for x in self.myOptions])))
         self.myPromptWidth = max(lwidth, max([len(x) for x in self.myOptions]))
-##        print(notePrefix + "myPromptWidth = " + str(self.myPromptWidth))
-        # If lbuffer isn't specified, use this formula
-        self.myPromptBuffer = max(0, math.floor(0.43 * self.myPromptWidth - 20))
-        if isinstance(lbuffer, int) and lbuffer >= 0:
-            self.myPromptBuffer = lbuffer
-        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myPromptWrap)
+        self.myPrompt = str(prompt)
         self.myDispWidth = rwidth
-        # If rbuffer isn't specified, use this formula
-        self.myDispBuffer = max(0, math.floor(0.43 * self.myDispWidth - 20))
-        if isinstance(rbuffer, int) and rbuffer >= 0:
-            self.myDispBuffer = rbuffer
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
         try:
             self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
         except (TclError):
@@ -18380,25 +18342,29 @@ class ExpandFrame(Frame):
                               rowspan=1,
                               columnspan=1,
                               sticky=N+E+S+W)
+        self.myLeftFrameCol = 1
         self.myPromptLabel = Label(self.myLeftFrame,
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=self.myPromptWidth,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+##                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
-                                sticky=N+E+S+W)
+                                sticky=E+W)
+        self.myPromptLabel.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
                                        command=self.expand)
-        self.myOptionMenu.config(anchor=W,
+        self.myOptionMenu.config(anchor=NW,
                                  justify=LEFT,
                                  font=self.myFont)
         self.myOptionMenu.grid(row=2,
@@ -18406,6 +18372,7 @@ class ExpandFrame(Frame):
                                rowspan=1,
                                columnspan=3,
                                sticky=E+W)
+        optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self.myLeftFrame,
                                  anchor=CENTER,
                                  justify=CENTER,
@@ -18427,73 +18394,73 @@ class ExpandFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myBPlusButton = Button(self.myLeftFrame,
-                                    anchor=CENTER,
-                                    justify=CENTER,
-                                    text="+B",
-                                    font=self.myFont,
-                                    padx=1,
-                                    command=self.plusbuffer)
-        self.myBMinusButton = Button(self.myLeftFrame,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="-B",
-                                     font=self.myFont,
-                                     padx=1,
-                                     command=self.minusbuffer)
-##        self.myBPlusButton.grid(row=5,
-##                                column=1,
-##                                rowspan=1,
-##                                columnspan=1,
-##                                sticky=N+E+S+W)
-##        self.myBMinusButton.grid(row=5,
-##                                 column=2,
-##                                 rowspan=1,
-##                                 columnspan=1,
-##                                 sticky=N+E+S+W)
-        self.myWPlusButton = Button(self.myLeftFrame,
-                                    anchor=CENTER,
-                                    justify=CENTER,
-                                    text="+W",
-                                    font=self.myFont,
-                                    padx=1,
-                                    command=self.pluswidth)
-        self.myWMinusButton = Button(self.myLeftFrame,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="-W",
-                                     font=self.myFont,
-                                     padx=1,
-                                     command=self.minuswidth)
-##        self.myWPlusButton.grid(row=6,
-##                                column=1,
-##                                rowspan=1,
-##                                columnspan=1,
-##                                sticky=N+E+S+W)
-##        self.myWMinusButton.grid(row=6,
-##                                 column=2,
-##                                 rowspan=1,
-##                                 columnspan=1,
-##                                 sticky=N+E+S+W)
-        detailsHeight = max([1 + len([x for x in split_text(y,
-                                                            width=self.myDispWrap) \
-                                      if x == "\n"]) for y in self.myDetails])
-        self.myDispLabel = Label(self,
-                                 anchor=NW,
-                                 justify=LEFT,
-                                 text="",
-                                 font=self.myFont,
-                                 width=self.myDispWidth,
-                                 relief=GROOVE)
-        if detailsHeight < 40:
-            self.myDispLabel.config(height=detailsHeight)
-        self.myDispLabel.grid(row=1,
-                              column=2,
-                              rowspan=1,
-                              columnspan=1,
-                              sticky=N+E+S+W)
-        self.myDispLabel.bind("<Double-1>",
-                              self.ClipboardCopy)
+        self.myLeftFrame.update_idletasks()
+        (numLeftCols, numLeftRows) = self.myLeftFrame.grid_size()
+        # Make myLeftFrame contents stretch/squish
+        for row in range(0,numLeftRows+1):
+            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(1, row)
+            print(notePrefix + "myLeftFrame row " + str(row) + ": y=" + str(iy) + ", height=" + \
+                  str(iheight))
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.myLeftFrame.rowconfigure(row, weight=1)
+            else:
+                self.myLeftFrame.rowconfigure(row, weight=0)
+        for col in range(0,numLeftCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(col, 1)
+            print(notePrefix + "myLeftFrame column " + str(col) + ": x=" + str(ix) + ", width=" + \
+                  str(iwidth))
+            if iwidth > 0:
+                self.myLeftFrame.columnconfigure(col, weight=1)
+            else:
+                self.myLeftFrame.columnconfigure(col, weight=0)
+        # Make sure myOptionMenu can't be squished too far to show all options
+        self.optionMargin = 50
+        self.maxOptionWidth = max([self.myFont.measure(txt) for txt in self.myOptions]) + \
+                              self.optionMargin
+        for col in optionCols:
+            self.myLeftFrame.columnconfigure(col,
+                                             minsize = math.ceil(self.maxOptionWidth / \
+                                                                 len(optionCols)))
+        self.columnconfigure(self.myLeftFrameCol,
+                             minsize=self.maxOptionWidth)
+        self.myDetailLabel = Label(self,
+                                   anchor=NW,
+                                   justify=LEFT,
+                                   text="",
+                                   font=self.myFont,
+                                   width=self.myDispWidth,
+                                   relief=GROOVE)
+        self.myDetailLabel.grid(row=1,
+                                column=2,
+                                rowspan=1,
+                                columnspan=1,
+                                sticky=N+E+S+W)
+        self.myDetailLabel.update_idletasks()
+        thisDispWidth = self.myDetailLabel.winfo_width()
+        self.myDetailLabel.config(wraplength=thisDispWidth-self.myMargin)
+        self.update_idletasks()
+        (self.numCols, self.numRows) = self.grid_size()
+        # Make contents stretch/squish
+        for row in range(0,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            print(notePrefix + "row " + str(row) + ": y=" + str(iy) + ", height=" + str(iheight))
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(0,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            print(notePrefix + "column " + str(col) + ": x=" + str(ix) + ", width=" + str(iwidth))
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
+        self.myDetailLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.bind("<Up>", self.prevoption)
@@ -18502,46 +18469,40 @@ class ExpandFrame(Frame):
     def expand(self,
                edited=False,
                event=None):
-        # Make sure myPromptWidth never gets narrower than the widest option
-        self.myPromptWidth = max(self.myPromptWidth, max([len(x) for x in self.myOptions]))
-        self.myPromptWrap = self.myPromptWidth + self.myPromptBuffer
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myPromptWrap)
-        self.myLeftFrame.config(width=self.myPromptWidth)
-        self.myPromptLabel.config(text=self.myPrompt,
-                                  width=self.myPromptWidth,
-                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
-        self.myDispWrap = self.myDispWidth + self.myDispBuffer
+        notePrefix = "### ExpandFrame.expand: "
+        # Update wraplength values
+        self.myPromptLabel.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
+        self.myDetailLabel.update_idletasks()
+        thisDispWidth = self.myDetailLabel.winfo_width()
+        self.myDetailLabel.config(wraplength=thisDispWidth-self.myMargin)
+        # Set contents of myDetailLabel to match the selection in myOptionMenu
         index = self.myOptions.index(self.myString.get())
+        self.myAnswer.set(index)
         dispText = ""
         if index in range(len(self.myDetails)):
-            dispText = split_text(self.myDetails[index],
-                                  width=self.myDispWrap)
-        self.myDispLabel.config(text=dispText,
-                                width=self.myDispWidth)
-        detailsHeight = max([1 + len([x for x in split_text(y,
-                                                            width=self.myDispWrap) \
-                                      if x == "\n"]) for y in self.myDetails])
-        if detailsHeight < 40:
-            self.myDispLabel.config(height=detailsHeight)
-        if edited:
-            print("### ExpandFrame.expand: myDispWidth = " + str(self.myDispWidth) + \
-                  ", myDispBuffer = " + str(self.myDispBuffer))
-            print("### ExpandFrame.expand: myPromptWidth = " + str(self.myPromptWidth) + \
-                  ", myPromptBuffer = " + str(self.myPromptBuffer))
-        self.myAnswer.set(index)
-    def plusbuffer(self, event=None):
-        self.myDispBuffer += 5
-        self.expand(edited=True)
-    def minusbuffer(self, event=None):
-        self.myDispBuffer -= 5
-        self.expand(edited=True)
-    def pluswidth(self, event=None):
-        self.myDispWidth += 5
-        self.expand(edited=True)
-    def minuswidth(self, event=None):
-        self.myDispWidth -= 5
-        self.expand(edited=True)
+            dispText = self.myDetails[index]
+        self.myDetailLabel.config(text=dispText)
+        # Display info on which contents are stretched strangely
+        self.myLeftFrame.update_idletasks()
+        (numLeftCols, numLeftRows) = self.myLeftFrame.grid_size()
+        for row in range(0,numLeftRows+1):
+            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(1, row)
+            print(notePrefix + "myLeftFrame row " + str(row) + ": y=" + str(iy) + ", height=" + \
+                  str(iheight))
+##        for col in range(0,numLeftCols+1):
+##            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(col, 1)
+##            print(notePrefix + "myLeftFrame column " + str(col) + ": x=" + str(ix) + ", width=" + \
+##                  str(iwidth))
+        self.update_idletasks()
+        (self.numCols, self.numRows) = self.grid_size()
+        for row in range(0,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            print(notePrefix + "row " + str(row) + ": y=" + str(iy) + ", height=" + str(iheight))
+##        for col in range(0,self.numCols+1):
+##            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+##            print(notePrefix + "column " + str(col) + ": x=" + str(ix) + ", width=" + str(iwidth))
     def nextoption(self, event=None):
         if len(self.myOptions) > 1:
             if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
@@ -18557,17 +18518,17 @@ class ExpandFrame(Frame):
     def ClipboardCopy(self, event=None):
         notePrefix = "### ExpandFrame.ClipboardCopy: "
         label = event.widget
-        if label == self.myDispLabel:
+        if label == self.myDetailLabel:
             if len(self.myDetails) > 0:
                 if self.myAnswer.get() in range(len(self.myDetails)):
                     flatText = self.myDetails[self.myAnswer.get()]
-                    print(notePrefix + flatText)
+##                    print(notePrefix + flatText)
                     self.clipboard_clear()
                     self.clipboard_append(flatText)
         elif label == self.myPromptLabel:
             if self.myRawPrompt:
-                flatText = self.myRawPrompt
-                print(notePrefix + flatText)
+                flatText = self.myPrompt
+##                print(notePrefix + flatText)
                 self.clipboard_clear()
                 self.clipboard_append(flatText)
     def finish(self, *args):
