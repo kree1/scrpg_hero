@@ -16822,13 +16822,20 @@ class ModeWindow(SubWindow):
         self.myModeFrame = ModeFrame(self,
                                      hero=self.myHero,
                                      font=font)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myModeFrame,
                       xbuff=0,
                       ybuff=0)
     def body(self, master):
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myModeFrame.resize(event)
 
 class ModeFrame(Frame):
     def __init__(self,
@@ -16841,8 +16848,8 @@ class ModeFrame(Frame):
         Frame.__init__(self, parent)
         self.myParent = parent
         notePrefix = "### ModeFrame: __init__: "
-        self.numRows = 16
-        self.numCols = 26
+        self.numRows = 31
+        self.numCols = 21
         self.width = width
         self.height = height
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
@@ -16874,8 +16881,8 @@ class ModeFrame(Frame):
         self.abilityRelief = GROOVE
         self.headerGlue = N+E+S+W
         self.rulesGlue = N+E+S+W
-        self.powerGlue = E+W
-        self.abilityGlue = N+S
+        self.powerGlue = N+E+S+W
+        self.abilityGlue = N+E+S+W
         self.sectionWidths = [4, 1, 5, 2, 9]
         self.headerHeight = 1
         self.powerHeight = 1
@@ -16911,7 +16918,6 @@ class ModeFrame(Frame):
                                                     relief=self.titleRelief,
                                                     text=self.sectionTitles[j],
                                                     width=self.sectionWidths[j]*self.columnWidth,
-##                                                    height=self.powerHeight*self.rowHeight,
                                                     font=self.dispFont)
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
@@ -16947,7 +16953,8 @@ class ModeFrame(Frame):
                 self.mySectionHeaders[i][j].grid(row=topRow+leftHeight,
                                                  column=firstCol+sum(self.sectionWidths[0:j]),
                                                  rowspan=self.powerHeight,
-                                                 columnspan=self.sectionWidths[j])
+                                                 columnspan=self.sectionWidths[j],
+                                                 sticky=self.powerGlue)
                 self.mySectionHeaders[i][j].update_idletasks()
                 thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
                 self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
@@ -17145,6 +17152,21 @@ class ModeFrame(Frame):
                           str(self.bufferHeight) + " rows and " + str(sum(self.sectionWidths)) + \
                           " columns")
                 thisRow = bufferRow + self.bufferHeight
+        # Make contents stretch/squish
+        for row in range(1,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(1,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -17218,6 +17240,30 @@ class ModeFrame(Frame):
                 if isinstance(self.myModeAbilities[i], Ability):
                     rulesText += "You gain access to the following Ability:"
                 self.myModeRules[i] = rulesText
+    def resize(self, event=None):
+        notePrefix = "### ModeFrame.resize: "
+        # Adjust wraplength values when window is stretched/squished
+        for i in range(self.myModeCount):
+            self.myModeHeaders[i].update_idletasks()
+            thisDispWidth = self.myModeHeaders[i].winfo_width()
+            self.myModeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(len(self.mySectionHeaders[i])):
+                self.mySectionHeaders[i][j].update_idletasks()
+                thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
+                self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(len(self.myModePowers[i])):
+                for k in range(len(self.myPowerValues[i][j])):
+                    self.myPowerValues[i][j][k].update_idletasks()
+                    thisDispWidth = self.myPowerValues[i][j][k].winfo_width()
+                    self.myPowerValues[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
+            self.myRuleValues[i].update_idletasks()
+            thisDispWidth = self.myRuleValues[i].winfo_width()
+            self.myRuleValues[i].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(len(self.myAbilityValues[i])):
+                self.myAbilityValues[i][j].update_idletasks()
+                thisDispWidth = self.myAbilityValues[i][j].winfo_width()
+                self.myAbilityValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
+        # ...
 
 class MinionWindow(SubWindow):
     def __init__(self,
@@ -17518,7 +17564,6 @@ class MinionFrame(Frame):
     def resize(self, event=None):
         notePrefix = "### MinionFrame.resize: "
         # Adjust wraplength values when window is stretched/squished
-        # ...
         self.myMinionSizeRules.update_idletasks()
         thisDispWidth = self.myMinionSizeRules.winfo_width()
         self.myMinionSizeRules.config(wraplength=thisDispWidth-self.myMargin)
@@ -19112,7 +19157,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()
