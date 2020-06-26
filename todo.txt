@@ -224,10 +224,16 @@ Implement wraplength...
 	SwapFrame
 	PrincipleFrame
 	AssignFrame
-Make wraplength dynamic with rowconfigure/columnconfigure and <Configure> bindings...
+Make window contents stretch
+ 1) add rowconfigure/columnconfigure to *Window.__init__, before calling activate
+ 2) add sticky=N+E+S+W to grid call in *Window.body
+ 3) add rowconfigure/columnconfigure to *Frame.__init__, after initializing & gridding widgets
+Make wraplength dynamic with rowconfigure/columnconfigure and <Configure> bindings
+ 1) ...
+Implement stretchy windows...
 	HeroFrame
 	ModeFrame
-	MinionFrame
+,	MinionFrame
 	FormFrame
 	SelectFrame
 	EntryFrame

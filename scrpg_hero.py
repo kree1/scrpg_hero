@@ -16784,12 +16784,16 @@ class SubWindow(Toplevel):
                  contents,
                  xbuff=5,
                  ybuff=5):
+        notePrefix = "### SubWindow.activate: "
         self.contents = contents
         self.initial_focus = self.body(self.contents)
         self.contents.grid(row=0,
                            column=0,
                            padx=xbuff,
                            pady=ybuff)
+##        options = self.contents.grid_info()
+##        for key in options:
+##            print(notePrefix + "contents[" + str(key) + "]=" + str(options[key]))
         self.grab_set()
         if not self.initial_focus:
             self.initial_focus = self
@@ -17220,12 +17224,19 @@ class MinionWindow(SubWindow):
         self.myMinionFrame = MinionFrame(self,
                                          hero=self.myHero,
                                          font=font)
+        # Make the contents stretchable/squishable
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
         self.activate(self.myMinionFrame,
                       xbuff=0,
                       ybuff=0)
     def body(self, master):
+        notePrefix = "### MinionWindow.body: "
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0, column=0, sticky=N+E+S+W)
+##        options = master.grid_info()
+##        for key in options:
+##            print(notePrefix + "master[" + str(key) + "]=" + str(options[key]))
         return master
 
 class MinionFrame(Frame):
@@ -17245,13 +17256,6 @@ class MinionFrame(Frame):
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
         self.rowHeight = 1.6875
         self.height = math.ceil(self.rowHeight*self.numRows)
-        # Make sure the parent window will stretch/squish this when the window is resized
-        myRoot = self.winfo_toplevel()
-        (myRootCols, myRootRows) = myRoot.grid_size()
-        for row in range(myRootRows+1):
-            myRoot.rowconfigure(row, weight=1)
-        for col in range(myRootCols+1):
-            myRoot.columnconfigure(col, weight=1)
         self.dispFont = tkinter.font.Font(root=self.myParent,
                                           name="Calibri10pt",
                                           exists=True)
@@ -17375,7 +17379,7 @@ class MinionFrame(Frame):
                 self.myMinionSizeEntries[c][r].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionSizeEntries[c][r].bind("<Double-1>",
                                                     self.ClipboardCopy)
-        # Insert buffer between rows 9 and 12
+        # Insert buffer between rows 9 and 12?
         # ...
         # Display minion form rules in columns 1-16 of row 12
         self.myMinionFormRules = Label(self,
@@ -17456,6 +17460,21 @@ class MinionFrame(Frame):
                 self.myMinionFormEntries[r][c].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
+        # Make contents stretch/squish
+        for row in range(1,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(1,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
