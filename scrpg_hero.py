@@ -17606,13 +17606,21 @@ class FormWindow(SubWindow):
         self.myFormFrame = FormFrame(self,
                                      hero=self.myHero,
                                      font=font)
+        # Make the contents stretchable/squishable
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myFormFrame,
                       xbuff=0,
                       ybuff=0)
     def body(self, master):
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myFormFrame.resize(event)
 
 class FormFrame(Frame):
     def __init__(self,
@@ -17836,7 +17844,7 @@ class FormFrame(Frame):
                     thisAbilityText = [thisAbility.flavorname,
                                        thisAbility.type,
                                        thisAbility.dispText()]
-                    for k in range(3):
+                    for k in range(len(thisAbilityText)):
                         self.myAbilities[i][j][k] = Label(self,
                                                           background=thisBG,
                                                           anchor=self.targets[5+k],
@@ -17858,6 +17866,21 @@ class FormFrame(Frame):
                                                        self.ClipboardCopy)
                     thisRow += abilityHeight
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
+        # Make contents stretch/squish
+        for row in range(1,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(1,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
     def Empty(self):
         # Clears all hero attributes
         self.myHero = None
@@ -17931,6 +17954,37 @@ class FormFrame(Frame):
                     # 7: Step number
                     thisFormInfo[7] = fm.step
                     self.myFormInfo.append(thisFormInfo)
+    def resize(self, event=None):
+        notePrefix = "### FormFrame.resize: "
+        # Adjust wraplength values when window is stretched/squished
+        for i in range(self.myFormCount):
+            self.myFormNames[i].update_idletasks()
+            thisDispWidth = self.myFormNames[i].winfo_width()
+            self.myFormNames[i].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(5):
+                self.myHeaders[i][j].update_idletasks()
+                thisDispWidth = self.myHeaders[i][j].winfo_width()
+                self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(len(self.zoneColors)):
+                self.myStatusDice[i][j].update_idletasks()
+                thisDispWidth = self.myStatusDice[i][j].winfo_width()
+                self.myStatusDice[i][j].config(wraplength=thisDispWidth-self.myMargin)
+            for j in range(4):
+                for k in range(max(len(self.myFormInfo[i][2]),len(self.myFormInfo[i][3]))):
+                    self.myPQDice[i][j][k].update_idletasks()
+                    thisDispWidth = self.myPQDice[i][j][k].winfo_width()
+                    self.myPQDice[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
+            if len(self.myFormInfo[i][5]) > 0:
+                for j in range(5, len(self.headerText)):
+                    self.myHeaders[i][j].update_idletasks()
+                    thisDispWidth = self.myHeaders[i][j].winfo_width()
+                    self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
+                for j in range(len(self.myFormInfo[i][5])):
+                    for k in range(3):
+                        self.myAbilities[i][j][k].update_idletasks()
+                        thisDispWidth = self.myAbilities[i][j][k].winfo_width()
+                        self.myAbilities[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
+        # ...
 
 class SelectWindow(SubWindow):
     def __init__(self,
@@ -19157,7 +19211,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()

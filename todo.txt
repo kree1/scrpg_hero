@@ -237,7 +237,7 @@ Implement stretchy window contents...
 	HeroFrame
 .	ModeFrame
 .	MinionFrame
-	FormFrame
+.	FormFrame
 	SelectFrame
 	EntryFrame
 	ExpandFrame
