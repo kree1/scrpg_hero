@@ -18143,8 +18143,7 @@ class EntryWindow(SubWindow):
                  prompt,
                  var=None,
                  title="",
-                 width=60,
-                 buffer=15):
+                 width=60):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
         if isinstance(var, StringVar):
@@ -18155,13 +18154,20 @@ class EntryWindow(SubWindow):
                                        self.myPrompt,
                                        self.myVariable,
                                        width=width,
-                                       buffer=buffer,
                                        titleWidth=len(str(title)))
+        # Make the contents stretchable/squishable
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myEntryFrame)
     def body(self, master):
         self.container = master
-        master.grid(row=0, column=0)
+        master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myEntryFrame.update(event)
 
 class EntryFrame(Frame):
     # A frame that asks the user for a line of text and returns the answer.
@@ -18173,17 +18179,13 @@ class EntryFrame(Frame):
                  destination,
                  printing=False,
                  width=60,
-                 buffer=15,
                  titleWidth=-1):
         Frame.__init__(self, parent)
         self.myParent = parent
+        self.myMargin = 6
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
-        self.myBuffer = buffer
-        self.myWrap = self.myWidth + self.myBuffer
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
+        self.myPrompt = str(prompt)
         self.myText = StringVar(self, destination.get())
         self.myDestination = destination
         try:
@@ -18196,13 +18198,16 @@ class EntryFrame(Frame):
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+                                   width=self.myWidth,
                                    font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         # Create Entry widget
@@ -18232,31 +18237,29 @@ class EntryFrame(Frame):
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.myTextEntry.bind("<Return>", self.finish)
+        (self.numCols, self.numRows) = self.grid_size()
+        # Make contents stretch/squish
+        for row in range(1,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(1,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
         # Give focus to myTextEntry immediately
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
     def update(self, event=None):
-        self.myWidth = max(self.myWidth, self.myTitleWidth)
-        self.myWrap = self.myWidth + self.myBuffer
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWrap)
-        self.myPromptLabel.config(text=self.myPrompt,
-                                  width=self.myWidth,
-                                  height=1+len([x for x in self.myPrompt if x == "\n"]))
-        print("### EntryFrame.update: myWidth = " + str(self.myWidth) + ", myBuffer = " + \
-              str(self.myBuffer))
-    def plusbuffer(self, event=None):
-        self.myBuffer += 5
-        self.update()
-    def minusbuffer(self, event=None):
-        self.myBuffer -= 5
-        self.update()
-    def pluswidth(self, event=None):
-        self.myWidth += 5
-        self.update()
-    def minuswidth(self, event=None):
-        self.myWidth -= 5
-        self.update()
+        self.myPromptLabel.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
     def ClipboardCopy(self, event=None):
         notePrefix = "### EntryFrame.ClipboardCopy: "
         flatText = self.myRawPrompt

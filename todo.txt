@@ -219,7 +219,7 @@ Implement wraplength...
 .	MinionFrame
 .	FormFrame
 .	SelectFrame
-	EntryFrame
+.	EntryFrame
 	ExpandFrame
 	SwapFrame
 	PrincipleFrame
@@ -239,7 +239,7 @@ Implement stretchy window contents...
 .	MinionFrame
 .	FormFrame
 .	SelectFrame
-	EntryFrame
+.	EntryFrame
 	ExpandFrame
 	SwapFrame
 	PrincipleFrame
