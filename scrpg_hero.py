@@ -16880,9 +16880,6 @@ class ModeFrame(Frame):
                                        rowspan=self.headerHeight,
                                        columnspan=sum(self.sectionWidths),
                                        sticky=self.headerGlue)
-            self.myModeHeaders[i].update_idletasks()
-            thisDispWidth = self.myModeHeaders[i].winfo_width()
-            self.myModeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myModeHeaders[i].bind("<Double-1>",
                                        self.ClipboardCopy)
             if printing:
@@ -16898,9 +16895,6 @@ class ModeFrame(Frame):
                                                  rowspan=self.powerHeight,
                                                  columnspan=self.sectionWidths[j],
                                                  sticky=self.powerGlue)
-                self.mySectionHeaders[i][j].update_idletasks()
-                thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
-                self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 if printing:
                     print(notePrefix + self.mySectionHeaders[i][j]["text"] + \
                           " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -16935,9 +16929,6 @@ class ModeFrame(Frame):
                                                      rowspan=thisPowerHeight,
                                                      columnspan=self.sectionWidths[k],
                                                      sticky=self.powerGlue)
-                    self.myPowerValues[i][j][k].update_idletasks()
-                    thisDispWidth = self.myPowerValues[i][j][k].winfo_width()
-                    self.myPowerValues[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
                     self.myPowerValues[i][j][k].bind("<Double-1>",
                                                      self.ClipboardCopy)
                     if printing:
@@ -16963,9 +16954,6 @@ class ModeFrame(Frame):
                                       rowspan=thisRulesHeight,
                                       columnspan=sum(self.sectionWidths[2:]),
                                       sticky=self.rulesGlue)
-            self.myRuleValues[i].update_idletasks()
-            thisDispWidth = self.myRuleValues[i].winfo_width()
-            self.myRuleValues[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myRuleValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
             if printing:
@@ -16983,9 +16971,6 @@ class ModeFrame(Frame):
                                                  rowspan=self.headerHeight,
                                                  columnspan=self.sectionWidths[j],
                                                  sticky=self.headerGlue)
-                self.mySectionHeaders[i][j].update_idletasks()
-                thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
-                self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 if printing:
                     print(notePrefix + self.mySectionHeaders[i][j]["text"] + \
                           " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -17018,15 +17003,6 @@ class ModeFrame(Frame):
                                                 rowspan=thisAbilityRows,
                                                 columnspan=self.sectionWidths[j+2],
                                                 sticky=self.abilityGlue)
-                self.myAbilityValues[i][j].update_idletasks()
-                thisDispWidth = self.myAbilityValues[i][j].winfo_width()
-##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " winfo_width=" + \
-##                      str(thisDispWidth))
-                self.myAbilityValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
-##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " wraplength target=" + \
-##                      str(thisDispWidth-self.myMargin))
-##                print(notePrefix + self.myAbilityValues[i][j]["text"] + " wraplength value=" + \
-##                      str(self.myAbilityValues[i][j]["wraplength"]))
                 self.myAbilityValues[i][j].bind("<Double-1>",
                                                 self.ClipboardCopy)
                 if printing:
@@ -17095,6 +17071,8 @@ class ModeFrame(Frame):
                           str(self.bufferHeight) + " rows and " + str(sum(self.sectionWidths)) + \
                           " columns")
                 thisRow = bufferRow + self.bufferHeight
+        # Set initial wraplength for all text widgets
+        self.resize()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -17234,9 +17212,6 @@ class MinionWindow(SubWindow):
         notePrefix = "### MinionWindow.body: "
         self.container = master
         master.grid(row=0, column=0, sticky=N+E+S+W)
-##        options = master.grid_info()
-##        for key in options:
-##            print(notePrefix + "master[" + str(key) + "]=" + str(options[key]))
         return master
     def resize(self, event=None):
         if isinstance(event, Event):
@@ -17317,9 +17292,6 @@ class MinionFrame(Frame):
                                     rowspan=2,
                                     columnspan=sum(self.sizeWidths),
                                     sticky=self.rulesGlue)
-        self.myMinionSizeRules.update_idletasks()
-        thisDispWidth = self.myMinionSizeRules.winfo_width()
-        self.myMinionSizeRules.config(wraplength=thisDispWidth-self.myMargin)
         self.myMinionSizeRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Sizes title in columns 1-4 of row 3
@@ -17336,9 +17308,6 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
-        self.myMinionSizeTitle.update_idletasks()
-        thisDispWidth = self.myMinionSizeTitle.winfo_width()
-        self.myMinionSizeTitle.config(wraplength=thisDispWidth-self.myMargin)
         # Display minion size column headers in row 4
         self.myMinionSizeHeaders = [None for i in self.sizeHeaders]
         for i in range(len(self.myMinionSizeHeaders)):
@@ -17356,9 +17325,6 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.sizeWidths[i],
                                              sticky=self.headerGlue)
-            self.myMinionSizeHeaders[i].update_idletasks()
-            thisDispWidth = self.myMinionSizeHeaders[i].winfo_width()
-            self.myMinionSizeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         # Display minion size column entries in rows 5-9
         self.myMinionSizeEntries = [[None for i in range(len(self.sizeText[0]))] \
                                     for j in range(len(self.sizeText))]
@@ -17378,9 +17344,6 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.sizeWidths[c],
                                                     sticky=self.tableGlue)
-                self.myMinionSizeEntries[c][r].update_idletasks()
-                thisDispWidth = self.myMinionSizeEntries[c][r].winfo_width()
-                self.myMinionSizeEntries[c][r].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionSizeEntries[c][r].bind("<Double-1>",
                                                     self.ClipboardCopy)
         # Insert buffer between rows 9 and 12?
@@ -17399,9 +17362,6 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths),
                                     sticky=self.rulesGlue)
-        self.myMinionFormRules.update_idletasks()
-        thisDispWidth = self.myMinionFormRules.winfo_width()
-        self.myMinionFormRules.config(wraplength=thisDispWidth-self.myMargin)
         self.myMinionFormRules.bind("<Double-1>",
                                     self.ClipboardCopy)
         # Display Minion Forms title in columns 1-4 of row 13
@@ -17418,9 +17378,6 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
-        self.myMinionFormTitle.update_idletasks()
-        thisDispWidth = self.myMinionFormTitle.winfo_width()
-        self.myMinionFormTitle.config(wraplength=thisDispWidth-self.myMargin)
         # Display minion form column headers in row 14
         self.myMinionFormHeaders = [None for i in self.formHeaders]
         for i in range(len(self.myMinionFormHeaders)):
@@ -17438,9 +17395,6 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.formWidths[i],
                                              sticky=self.headerGlue)
-            self.myMinionFormHeaders[i].update_idletasks()
-            thisDispWidth = self.myMinionFormHeaders[i].winfo_width()
-            self.myMinionFormHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         # Display minion form column entries in rows 15-[14+self.myMinionCount]
         self.myMinionFormEntries = [[None,None,None] for i in range(self.myMinionCount)]
         for r in range(self.myMinionCount):
@@ -17459,11 +17413,10 @@ class MinionFrame(Frame):
                                                     rowspan=1,
                                                     columnspan=self.formWidths[c],
                                                     sticky=self.tableGlue)
-                self.myMinionFormEntries[r][c].update_idletasks()
-                thisDispWidth = self.myMinionFormEntries[r][c].winfo_width()
-                self.myMinionFormEntries[r][c].config(wraplength=thisDispWidth-self.myMargin)
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
+        # Set initial wraplength for all text widgets
+        self.resize()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -17671,9 +17624,6 @@ class FormFrame(Frame):
                                      rowspan=1,
                                      columnspan=sum(self.upperWidths),
                                      sticky=self.rulesGlue)
-            self.myFormNames[i].update_idletasks()
-            thisDispWidth = self.myFormNames[i].winfo_width()
-            self.myFormNames[i].config(wraplength=thisDispWidth-self.myMargin)
             self.myFormNames[i].bind("<Double-1>",
                                      self.ClipboardCopy)
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
@@ -17691,9 +17641,6 @@ class FormFrame(Frame):
                                           rowspan=1,
                                           columnspan=self.upperWidths[j],
                                           sticky=self.diceGlue)
-                self.myHeaders[i][j].update_idletasks()
-                thisDispWidth = self.myHeaders[i][j].winfo_width()
-                self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Label(self,
@@ -17710,9 +17657,6 @@ class FormFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.upperWidths[4],
                                              sticky=self.diceGlue)
-                self.myStatusDice[i][j].update_idletasks()
-                thisDispWidth = self.myStatusDice[i][j].winfo_width()
-                self.myStatusDice[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 self.myStatusDice[i][j].bind("<Double-1>",
                                              self.ClipboardCopy)
             # Display Power and Quality dice across columns 1-10 of the third through
@@ -17746,9 +17690,6 @@ class FormFrame(Frame):
                                                 rowspan=pqHeights[k],
                                                 columnspan=self.upperWidths[j],
                                                 sticky=self.diceGlue)
-                    self.myPQDice[i][j][k].update_idletasks()
-                    thisDispWidth = self.myPQDice[i][j][k].winfo_width()
-                    self.myPQDice[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
                     self.myPQDice[i][j][k].bind("<Double-1>",
                                                 self.ClipboardCopy)
             # If thisForm has associated Abilities...
@@ -17768,9 +17709,6 @@ class FormFrame(Frame):
                                               rowspan=1,
                                               columnspan=self.lowerWidths[j],
                                               sticky=self.titleGlue)
-                    self.myHeaders[i][j].update_idletasks()
-                    thisDispWidth = self.myHeaders[i][j].winfo_width()
-                    self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 thisRow = firstRow + 5
                 # For each Ability associated with this form...
                 for j in range(len(thisForm[5])):
@@ -17802,13 +17740,12 @@ class FormFrame(Frame):
                                                        rowspan=abilityHeight,
                                                        columnspan=self.lowerWidths[5+k],
                                                        sticky=self.abilityGlue)
-                        self.myAbilities[i][j][k].update_idletasks()
-                        thisDispWidth = self.myAbilities[i][j][k].winfo_width()
-                        self.myAbilities[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
                         self.myAbilities[i][j][k].bind("<Double-1>",
                                                        self.ClipboardCopy)
                     thisRow += abilityHeight
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
+        # Set initial wraplength for all text widgets
+        self.resize()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -18012,9 +17949,6 @@ class SelectFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.update_idletasks()
-        thisDispWidth = self.myPromptLabel.winfo_width()
-        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self,
@@ -18047,6 +17981,8 @@ class SelectFrame(Frame):
         self.bind("<Down>", self.nextoption)
         self.bind("<Up>", self.prevoption)
         (self.numCols, self.numRows) = self.grid_size()
+        # Set initial wraplength for all text widgets
+        self.update()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -18182,9 +18118,6 @@ class EntryFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.update_idletasks()
-        thisDispWidth = self.myPromptLabel.winfo_width()
-        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         # Create Entry widget
@@ -18215,6 +18148,8 @@ class EntryFrame(Frame):
         self.bind("<Return>", self.finish)
         self.myTextEntry.bind("<Return>", self.finish)
         (self.numCols, self.numRows) = self.grid_size()
+        # Set initial wraplength for all text widgets
+        self.resize()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -19100,7 +19035,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()
