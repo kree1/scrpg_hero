@@ -229,11 +229,13 @@ Make window contents stretch
  2) add sticky=N+E+S+W to grid call in *Window.body
  3) add rowconfigure/columnconfigure to *Frame.__init__, after initializing & gridding widgets
 Make wraplength dynamic with rowconfigure/columnconfigure and <Configure> bindings
- 1) ...
+ 1) create *Window.resize that calls *Frame.resize if given an event with widget == self
+ 2) bind <Configure> to *Window.resize in *Window.__init__ just before activate
+ 3) fill *Frame.resize with all the same wraplength definitions from *Frame.__init__
 Implement stretchy windows...
 	HeroFrame
 	ModeFrame
-,	MinionFrame
+.	MinionFrame
 	FormFrame
 	SelectFrame
 	EntryFrame

@@ -17237,6 +17237,7 @@ class MinionWindow(SubWindow):
         # Make the contents stretchable/squishable
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myMinionFrame,
                       xbuff=0,
                       ybuff=0)
@@ -17248,6 +17249,10 @@ class MinionWindow(SubWindow):
 ##        for key in options:
 ##            print(notePrefix + "master[" + str(key) + "]=" + str(options[key]))
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myMinionFrame.resize(event)
 
 class MinionFrame(Frame):
     def __init__(self,
@@ -17510,6 +17515,37 @@ class MinionFrame(Frame):
                 self.myMinionInfo[i] = [str(thisMinion[0]),
                                         "+" + str(thisMinion[2]),
                                         str(thisMinion[1])]
+    def resize(self, event=None):
+        notePrefix = "### MinionFrame.resize: "
+        # Adjust wraplength values when window is stretched/squished
+        # ...
+        self.myMinionSizeRules.update_idletasks()
+        thisDispWidth = self.myMinionSizeRules.winfo_width()
+        self.myMinionSizeRules.config(wraplength=thisDispWidth-self.myMargin)
+        self.myMinionSizeTitle.update_idletasks()
+        thisDispWidth = self.myMinionSizeTitle.winfo_width()
+        self.myMinionSizeTitle.config(wraplength=thisDispWidth-self.myMargin)
+        for i in range(len(self.myMinionSizeHeaders)):
+            self.myMinionSizeHeaders[i].update_idletasks()
+            thisDispWidth = self.myMinionSizeHeaders[i].winfo_width()
+            self.myMinionSizeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
+        for c in range(len(self.myMinionSizeEntries)):
+            for r in range(len(self.myMinionSizeEntries[c])):
+                self.myMinionSizeEntries[c][r].update_idletasks()
+                thisDispWidth = self.myMinionSizeEntries[c][r].winfo_width()
+                self.myMinionSizeEntries[c][r].config(wraplength=thisDispWidth-self.myMargin)
+        self.myMinionFormRules.update_idletasks()
+        thisDispWidth = self.myMinionFormRules.winfo_width()
+        self.myMinionFormRules.config(wraplength=thisDispWidth-self.myMargin)
+        for i in range(len(self.myMinionFormHeaders)):
+            self.myMinionFormHeaders[i].update_idletasks()
+            thisDispWidth = self.myMinionFormHeaders[i].winfo_width()
+            self.myMinionFormHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
+        for r in range(self.myMinionCount):
+            for c in range(len(self.myMinionInfo[r])):
+                self.myMinionFormEntries[r][c].update_idletasks()
+                thisDispWidth = self.myMinionFormEntries[r][c].winfo_width()
+                self.myMinionFormEntries[r][c].config(wraplength=thisDispWidth-self.myMargin)
 
 class FormWindow(SubWindow):
     def __init__(self,
@@ -19076,7 +19112,7 @@ root.title("SCRPG Hero Editor")
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, columnspan=12)
 root.lift()
