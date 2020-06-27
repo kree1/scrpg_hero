@@ -14684,6 +14684,7 @@ class HeroFrame(Frame):
         self.height = height
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
+        self.myMargin = 6
 ##        print(notePrefix + "width=" + str(self.width))
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
 ##        print(notePrefix + "height=" + str(self.height))
@@ -14691,252 +14692,333 @@ class HeroFrame(Frame):
         self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
-        # Set up Hero Name and Alias labels spanning rows 1-2
+##        # Set geometry of Toplevel window to null so that it can be modified automatically
+##        self.winfo_toplevel().wm_geometry("")
+        # HeroFrame is organized into smaller Frames to stop widgets from needlessly stretching
+        #  each other
+        # Row 1, column 1-4 of HeroFrame contains hero name & alias widgets
+        # leftFrame
+        #     row 2, column 1-2 of HeroFrame
+        #     34 rows, 16 columns
+        #     contains Characteristic, Power/Quality, Status, Health, & Principle widgets
+        self.leftRows = 34
+        self.leftCols = 16
+        self.leftFrame = Frame(self,
+                               width=self.columnWidth*self.leftCols)
+        self.leftFrame.grid(row=2,
+                            column=1,
+                            columnspan=2,
+                            sticky=N+E+S+W)
+        # rightFrame
+        #     row 2, column 3-4 of HeroFrame
+        #     18 rows, 16 columns
+        #     contains Ability widgets
+        self.rightRows = 18
+        self.rightCols = 16
+        self.rightFrame = Frame(self,
+                                width=self.columnWidth*self.rightCols)
+        self.rightFrame.grid(row=2,
+                             column=3,
+                             columnspan=2,
+                             sticky=N+E+S+W)
+        # buttonFrame
+        #     row 2, column 5 of HeroFrame
+        #     38 rows, 8 columns
+        #     contains Button widgets
+        self.buttonColumns = 8
+        self.buttonFrame = Frame(self,
+                                 width=self.columnWidth*self.buttonColumns,
+                                 padx=5)
+        self.buttonFrame.grid(row=2,
+                              column=5,
+                              sticky=N+E+S+W)
+        # Set up Hero Name and Alias widgets (HeroFrame, row 1, columns 1-4)
         self.nameTitles = [None, None]
         self.nameValues = [None, None]
         self.nameTitleText = ["Hero Name:", "Alias:"]
-        firstRow = 1
-        firstCol = 1
-        groupWidth = 8
-        groupHeight = 2
+        self.firstNameRow = 1
+        self.firstNameCol = 1
+        self.nameWidth = 8
+        self.nameHeight = 2
+        self.nameGlue = N+E+S+W
         for i in range(len(self.nameTitles)):
             self.nameTitles[i] = Label(self,
                                        background="orange",
                                        text=self.nameTitleText[i],
-                                       anchor=W, relief=titleRelief,
-                                       width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight,
+                                       anchor=W,
+                                       relief=titleRelief,
+                                       width=self.columnWidth*self.nameWidth,
+                                       height=self.rowHeight*self.nameHeight,
                                        font=self.currentFont)
             self.nameValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
-                                       width=self.columnWidth*groupWidth,
-                                       height=self.rowHeight*groupHeight,
+                                       width=self.columnWidth*self.nameWidth,
+                                       height=self.rowHeight*self.nameHeight,
                                        font=self.currentFont)
-            self.nameTitles[i].grid(row=firstRow,
-                                    column=firstCol+i*2*groupWidth,
-                                    rowspan=groupHeight,
-                                    columnspan=groupWidth,
-                                    sticky=E+W)
-            self.nameValues[i].grid(row=firstRow,
-                                    column=firstCol+(i*2+1)*groupWidth,
-                                    rowspan=groupHeight,
-                                    columnspan=groupWidth,
-                                    sticky=E+W)
-        # Set up hero Characteristic labels for the left half of rows 3-6
+            self.nameTitles[i].grid(row=self.firstNameRow,
+                                    column=self.firstNameCol+i*2,
+                                    sticky=self.nameGlue)
+            self.nameTitles[i].update_idletasks()
+            thisDispWidth = self.nameTitles[i].winfo_width()
+            self.nameTitles[i].config(wraplength=thisDispWidth-self.myMargin)
+            self.nameValues[i].grid(row=self.firstNameRow,
+                                    column=self.firstNameCol+i*2+1,
+                                    sticky=self.nameGlue)
+            self.nameValues[i].update_idletasks()
+            thisDispWidth = self.nameValues[i].winfo_width()
+            self.nameValues[i].config(wraplength=thisDispWidth-self.myMargin)
+        # Set up hero Characteristic widgets (leftFrame, rows 1-4, columns 1-16)
         self.charTitleText = ["Background:", "Power Source:", "Archetype:", "Personality:"]
         self.charTitles = [None for i in range(4)]
         self.charValues = [None for i in range(4)]
-        firstRow += groupHeight
-        firstCol = 1
-        titleWidth = 3
-        valueWidth = 5
-        groupHeight = 2
-        charRelief = GROOVE
-        glue = N+E+S+W
+        self.firstCharRow = 1
+        self.firstCharCol = 1
+        self.charTitleWidth = 3
+        self.charValueWidth = 5
+        self.charHeight = 2
+        self.charRelief = GROOVE
+        self.charGlue = N+E+S+W
         for i in range(len(self.charTitles)):
-            self.charTitles[i] = Label(self,
+            self.charTitles[i] = Label(self.leftFrame,
                                        background="orange",
                                        text=self.charTitleText[i],
                                        anchor=W,
                                        relief=titleRelief,
-                                       width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*groupHeight,
+                                       width=self.columnWidth*self.charTitleWidth,
+##                                       height=self.rowHeight*self.charHeight,
                                        font=self.currentFont)
-            self.charValues[i] = Label(self,
+            self.charValues[i] = Label(self.leftFrame,
                                        background="white",
                                        anchor=W,
-                                       relief=charRelief,
-                                       width=self.columnWidth*valueWidth,
-                                       height=self.rowHeight*groupHeight,
+                                       relief=self.charRelief,
+                                       width=self.columnWidth*self.charValueWidth,
+##                                       height=self.rowHeight*self.charHeight,
                                        font=self.currentFont)
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
-##                  str(firstRow+math.floor(i/2)*groupHeight) + " and spans " + str(groupHeight) + \
-##                  " rows")
-            self.charTitles[i].grid(row=firstRow+math.floor(i/2)*groupHeight,
-                                    column=firstCol+(i%2)*(titleWidth+valueWidth),
-                                    rowspan=groupHeight,
-                                    columnspan=titleWidth,
-                                    sticky=glue)
-            self.charValues[i].grid(row=firstRow+math.floor(i/2)*groupHeight,
-                                    column=firstCol+titleWidth+(i%2)*(titleWidth+valueWidth),
-                                    rowspan=groupHeight,
-                                    columnspan=valueWidth,
-                                    sticky=glue)
-        # Left half of row 7 deliberately left blank
-        # Set up Power and Quality labels for the first 10 columns of rows 8-25
+##                  str(self.firstCharRow+math.floor(i/2)*self.charHeight) + " and spans " + \
+##                  str(self.charHeight) + " rows")
+            self.charTitles[i].grid(row=self.firstCharRow+math.floor(i/2)*self.charHeight,
+                                    column=self.firstCharCol + (i%2) * \
+                                    (self.charTitleWidth+self.charValueWidth),
+                                    rowspan=self.charHeight,
+                                    columnspan=self.charTitleWidth,
+                                    sticky=self.charGlue)
+            self.charTitles[i].update_idletasks()
+            thisDispWidth = self.charTitles[i].winfo_width()
+            self.charTitles[i].config(wraplength=thisDispWidth-self.myMargin)
+            self.charValues[i].grid(row=self.firstCharRow+math.floor(i/2)*self.charHeight,
+                                    column=self.firstCharCol + self.charTitleWidth + \
+                                    (i%2) * (self.charTitleWidth+self.charValueWidth),
+                                    rowspan=self.charHeight,
+                                    columnspan=self.charValueWidth,
+                                    sticky=self.charGlue)
+            self.charValues[i].update_idletasks()
+            thisDispWidth = self.charValues[i].winfo_width()
+            self.charValues[i].config(wraplength=thisDispWidth-self.myMargin)
+        # leftFrame row 5 deliberately left blank
+        # Set up hero Power and Quality widgets (leftFrame rows 6-23, columns 1-10)
         self.pqTitles = [None for i in range(4)]
         self.pqValues = [[None for i in range(4)] for i in range(len(self.myHeroPowers))]
         self.pqTitleText = ["Powers", "Die", "Qualities", "Die"]
-        pqRelief = GROOVE
-        sectionWidths = [4, 1]
+        self.pqRelief = GROOVE
+        self.pqSectionWidths = [4, 1]
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
-        firstRow = 8
-        firstCol = 1
-        sectionTargets = [W, CENTER]
-        sectionReasons = [LEFT, CENTER]
-        groupHeight = 2
+        self.firstPQRow = 6
+        self.firstPQCol = 1
+        self.pqSectionTargets = [W, CENTER]
+        self.pqSectionReasons = [LEFT, CENTER]
+        self.pqHeight = 2
+        self.pqGlue = N+E+S+W
         for i in range(len(self.pqTitles)):
-            groupWidth = sectionWidths[i%2]
-            groupCol = firstCol + (i%2)*sectionWidths[0] + math.floor(i/2)*sum(sectionWidths)
-            target = sectionTargets[i%2]
-            reason = sectionReasons[i%2]
-            self.pqTitles[i] = Label(self,
+            groupWidth = self.pqSectionWidths[i%2]
+            groupCol = self.firstPQCol + (i%2)*self.pqSectionWidths[0] + \
+                       math.floor(i/2)*sum(self.pqSectionWidths)
+            target = self.pqSectionTargets[i%2]
+            reason = self.pqSectionReasons[i%2]
+            self.pqTitles[i] = Label(self.leftFrame,
                                      background="orange",
                                      text=self.pqTitleText[i],
                                      anchor=target,
                                      justify=reason,
                                      relief=titleRelief,
                                      width=self.columnWidth*groupWidth,
-                                     height=self.rowHeight*groupHeight,
                                      font=self.currentFont)
-            self.pqTitles[i].grid(row=firstRow,
+            self.pqTitles[i].grid(row=self.firstPQRow,
                                   column=groupCol,
-                                  rowspan=groupHeight,
+                                  rowspan=self.pqHeight,
                                   columnspan=groupWidth,
-                                  sticky=E+W)
+                                  sticky=self.pqGlue)
+            self.pqTitles[i].update_idletasks()
+            thisDispWidth = self.pqTitles[i].winfo_width()
+            self.pqTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(pqDiceValues)):
-                self.pqValues[j][i] = Label(self,
+                self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
                                             anchor=target,
                                             justify=reason,
-                                            relief=pqRelief,
+                                            relief=self.pqRelief,
                                             width=self.columnWidth*groupWidth,
-                                            height=self.rowHeight*groupHeight,
                                             font=self.currentFont)
-                self.pqValues[j][i].grid(row=firstRow+(j+1)*groupHeight,
+                self.pqValues[j][i].grid(row=self.firstPQRow+(j+1)*self.pqHeight,
                                          column=groupCol,
-                                         rowspan=groupHeight,
+                                         rowspan=self.pqHeight,
                                          columnspan=groupWidth,
-                                         sticky=N+S+E+W)
-        # Set up hero Status die labels for columns 11-13 of rows 8-25
-        titleRow = 8
-        firstCol = 11
-        groupWidth = 3
-        titleHeight = 2
-        statusRelief = SUNKEN
-        statusBG = "gray80"
-        self.statusTitle = Label(self,
-                                 background=statusBG,
+                                         sticky=self.pqGlue)
+                self.pqValues[j][i].update_idletasks()
+                thisDispWidth = self.pqValues[j][i].winfo_width()
+                self.pqValues[j][i].config(wraplength=thisDispWidth-self.myMargin)
+        # Set up hero Status die widgets (leftFrame rows 6-23, columns 11-13)
+        self.statusTitleRow = self.firstPQRow
+        self.firstStatusCol = 11
+        self.statusWidth = 3
+        self.statusTitleHeight = 2
+        self.statusRelief = SUNKEN
+        self.statusBG = "gray80"
+        self.statusGlue = N+E+S+W
+        self.statusTitle = Label(self.leftFrame,
+                                 background=self.statusBG,
                                  text="Status Dice",
-                                 width=self.columnWidth*groupWidth,
-                                 height=self.rowHeight*titleHeight,
+                                 width=self.columnWidth*self.statusWidth,
+##                                 height=self.rowHeight*self.statusTitleHeight,
                                  font=self.currentFont)
-        self.statusTitle.grid(row=titleRow,
-                              column=firstCol,
-                              rowspan=titleHeight,
-                              columnspan=groupWidth,
-                              sticky=N+E+W)
+        self.statusTitle.grid(row=self.statusTitleRow,
+                              column=self.firstStatusCol,
+                              rowspan=self.statusTitleHeight,
+                              columnspan=self.statusWidth,
+                              sticky=self.statusGlue)
+        self.statusTitle.update_idletasks()
+        thisDispWidth = self.statusTitle.winfo_width()
+        self.statusTitle.configure(wraplength=thisDispWidth-self.myMargin)
         self.statusValues = [None for i in range(3)]
-        firstRow = titleRow + titleHeight + 1
-        groupHeight = 5
+        self.firstStatusRow = self.statusTitleRow + self.statusTitleHeight + 1
+        self.statusHeight = 5
         for i in range(len(self.statusValues)):
-            self.statusValues[i] = Label(self,
+            self.statusValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
-                                         relief=statusRelief,
-                                         width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight,
+                                         relief=self.statusRelief,
+                                         width=self.columnWidth*self.statusWidth,
+##                                         height=self.rowHeight*self.statusHeight,
                                          font=self.currentFont)
-            self.statusValues[i].grid(row=firstRow+i*groupHeight,
-                                      column=firstCol,
-                                      rowspan=groupHeight,
-                                      columnspan=groupWidth,
-                                      sticky=N+E+S+W)
-        # Set up hero Health labels in columns 15-16 of rows 8-25
-        titleRow = 8
-        titleCol = 15
-        titleWidth = 2
-        titleHeight = 2
-        self.healthTitle = Label(self,
-                                 background=statusBG,
+            self.statusValues[i].grid(row=self.firstStatusRow+i*self.statusHeight,
+                                      column=self.firstStatusCol,
+                                      rowspan=self.statusHeight,
+                                      columnspan=self.statusWidth,
+                                      sticky=self.statusGlue)
+            self.statusValues[i].update_idletasks()
+            thisDispWidth = self.statusValues[i].winfo_width()
+            self.statusValues[i].config(wraplength=thisDispWidth-self.myMargin)
+        # Set up hero Health widgets (leftFrame rows 6-23, columns 15-16)
+        self.healthTitleRow = self.firstPQRow
+        self.healthTitleCol = 15
+        self.healthWidth = 2
+        self.healthTitleHeight = 2
+        self.healthGlue = N+E+S+W
+        self.healthTitle = Label(self.leftFrame,
+                                 background=self.statusBG,
                                  text="Health Range",
                                  anchor=CENTER,
-                                 width=self.columnWidth*titleWidth,
-                                 height=self.rowHeight*titleHeight,
+                                 width=self.columnWidth*self.healthWidth,
+##                                 height=self.rowHeight*self.healthTitleHeight,
                                  font=self.currentFont)
-        self.healthTitle.grid(row=titleRow,
-                              column=titleCol,
-                              rowspan=titleHeight,
-                              columnspan=titleWidth,
-                              sticky=N+E+W)
+        self.healthTitle.grid(row=self.healthTitleRow,
+                              column=self.healthTitleCol,
+                              rowspan=self.healthTitleHeight,
+                              columnspan=self.healthWidth,
+                              sticky=self.healthGlue)
+        self.healthTitle.update_idletasks()
+        thisDispWidth = self.healthTitle.winfo_width()
+        self.healthTitle.config(wraplength=thisDispWidth-self.myMargin)
         self.healthValues = [None for i in range(3)]
-        firstRow = titleRow + titleHeight + 1
-        firstCol = 15
-        groupWidth = 2
-        groupHeight = 3
-        groupVSpace = 5
+        self.firstHealthRow = self.healthTitleRow + self.healthTitleHeight + 1
+        self.firstHealthCol = 15
+        self.healthHeight = 3
+        self.healthVSpacing = 5
         for i in range(len(self.healthValues)):
-            self.healthValues[i] = Label(self,
+            self.healthValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
-                                         relief=statusRelief,
-                                         width=self.columnWidth*groupWidth,
-                                         height=self.rowHeight*groupHeight,
+                                         relief=self.statusRelief,
+                                         width=self.columnWidth*self.healthWidth,
+##                                         height=self.rowHeight*self.healthHeight,
                                          font=self.currentFont)
-            self.healthValues[i].grid(row=firstRow+i*groupVSpace,
-                                      column=firstCol,
-                                      rowspan=groupHeight,
-                                      columnspan=groupWidth,
-                                      sticky=N+E+S+W)
-        # Left half of row 26 intentionally left blank
-        # Set up hero Principle labels in left half of rows 27-52
+            self.healthValues[i].grid(row=self.firstHealthRow+i*self.healthVSpacing,
+                                      column=self.firstHealthCol,
+                                      rowspan=self.healthHeight,
+                                      columnspan=self.healthWidth,
+                                      sticky=self.healthGlue)
+            self.healthValues[i].update_idletasks()
+            thisDispWidth = self.healthValues[i].winfo_width()
+            self.healthValues[i].config(wraplength=thisDispWidth-self.myMargin)
+        # leftFrame row 24 intentionally left blank
+        # Set up hero Principle widgets (leftFrame rows 25-32, columns 1-16)
         self.prinSectionNames = ["During Roleplaying", "Minor Twist", "Major Twist"]
         self.prinTitles = [None for i in range(len(self.myHeroPrinciples))]
         self.prinSectionTitles = [[None for i in range(len(self.prinSectionNames))] \
                                   for i in range(len(self.myHeroPrinciples))]
         self.prinSectionValues = [[None for i in range(len(self.prinSectionNames))] \
                                   for i in range(len(self.myHeroPrinciples))]
-        firstRow = 27
-        firstCol = 1
-        groupWidth = 8
-        titleWidth = 6
-        titleHeight = 1
-        mainTitleHeight = 2
-        sectionHeight = 2
-        sectionRelief = GROOVE
-        sectionWrap = math.floor(self.columnWidth*groupWidth*1.25)
-        self.principleWrap = sectionWrap
+        self.firstPrinRow = 25
+        self.firstPrinCol = 1
+        self.prinWidth = 8
+        self.prinTitleWidth = 6
+        self.prinSecTitleHeight = 1
+        self.prinTitleHeight = 2
+        self.prinSectionHeight = 1
+        self.prinSectionRelief = GROOVE
+        self.prinGlue = N+E+S+W
         for i in range(len(self.myHeroPrinciples)):
-            groupCol = firstCol+i*groupWidth
-            self.prinTitles[i] = Label(self,
+            groupCol = self.firstPrinCol+i*self.prinWidth
+            self.prinTitles[i] = Label(self.leftFrame,
                                        background="orange",
                                        text="Principle of ",
                                        anchor=W,
                                        relief=titleRelief,
-                                       width=self.columnWidth*titleWidth,
-                                       height=self.rowHeight*mainTitleHeight,
+                                       width=self.columnWidth*self.prinTitleWidth,
+##                                       height=self.rowHeight*self.prinTitleHeight,
                                        font=self.currentFont)
-            self.prinTitles[i].grid(row=firstRow,
+            self.prinTitles[i].grid(row=self.firstPrinRow,
                                     column=groupCol,
-                                    rowspan=mainTitleHeight,
-                                    columnspan=titleWidth,
-                                    sticky=N+E+S+W)
+                                    rowspan=self.prinTitleHeight,
+                                    columnspan=self.prinTitleWidth,
+                                    sticky=self.prinGlue)
+            self.prinTitles[i].update_idletasks()
+            thisDispWidth = self.prinTitles[i].winfo_width()
+            self.prinTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.prinSectionTitles[i])):
-                titleRow = firstRow + mainTitleHeight + j*(titleHeight + sectionHeight)
-                sectionRow = titleRow + titleHeight
-                self.prinSectionTitles[i][j] = Label(self,
+                titleRow = self.firstPrinRow + self.prinTitleHeight + \
+                           j*(self.prinSecTitleHeight + self.prinSectionHeight)
+                sectionRow = titleRow + self.prinSecTitleHeight
+                self.prinSectionTitles[i][j] = Label(self.leftFrame,
                                                      background="white",
                                                      text=self.prinSectionNames[j],
-                                                     relief=sectionRelief,
-                                                     width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*titleHeight,
+                                                     relief=self.prinSectionRelief,
+                                                     width=self.columnWidth*self.prinWidth,
                                                      font=self.currentFont)
+                self.prinSectionTitles[i][j].update_idletasks()
+                thisDispWidth = self.prinSectionTitles[i][j].winfo_width()
+                self.prinSectionTitles[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
-                                                  rowspan=titleHeight,
-                                                  columnspan=groupWidth,
-                                                  sticky=N+E+S+W)
-                self.prinSectionValues[i][j] = Label(self,
+                                                  rowspan=self.prinSecTitleHeight,
+                                                  columnspan=self.prinWidth,
+                                                  sticky=self.prinGlue)
+                self.prinSectionValues[i][j] = Label(self.leftFrame,
                                                      background="white",
-                                                     width=self.columnWidth*groupWidth,
-                                                     height=self.rowHeight*sectionHeight,
+                                                     width=self.columnWidth*self.prinWidth,
                                                      font=self.currentFont)
                 self.prinSectionValues[i][j].grid(row=sectionRow,
                                                   column=groupCol,
-                                                  rowspan=sectionHeight,
-                                                  columnspan=groupWidth,
-                                                  sticky=N+E+S+W)
-        # EDIT: Set up hero Ability labels in the right half of rows 3-52
+                                                  rowspan=self.prinSectionHeight,
+                                                  columnspan=self.prinWidth,
+                                                  sticky=self.prinGlue)
+                self.prinSectionValues[i][j].update_idletasks()
+                thisDispWidth = self.prinSectionValues[i][j].winfo_width()
+                self.prinSectionValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
+        # Set up hero Ability widgets (rightFrame rows 1-17, columns 1-16)
+        # z: zone index (green, yellow, red, out)
+        # a: ability index within a zone
+        # s: section index within an ability (name, type, text)
         self.abilityTitles = [None for i in range(3)]
         self.abilityTitleText = ["Name", "Type", "Text"]
         self.prinAbilityValues = [[None for i in range(3)] for j in range(len(self.myPrinAbilities))]
@@ -14944,112 +15026,102 @@ class HeroFrame(Frame):
                                    for j in range(len(self.myZoneAbilities[k]))] \
                                   for k in range(len(self.myZoneAbilities))]
         self.outAbilityValue = None
-        firstRow = 3
-        firstCol = 17
-        sectionWidths = [4, 2, 10]
-        sectionAnchors = [E, CENTER, W]
-        sectionReasons = [RIGHT, CENTER, LEFT]
-        titleHeight = 1
-        abilityRelief = GROOVE
-        for i in range(len(self.abilityTitleText)):
-            self.abilityTitles[i] = Label(self,
+        self.abilityTitleRow = 1
+        self.firstAbilityCol = 1
+        self.abilitySectionWidths = [4, 2, 10]
+        self.abilitySectionAnchors = [E, CENTER, W]
+        self.abilitySectionReasons = [RIGHT, CENTER, LEFT]
+        self.abilityTitleHeight = 1
+        self.abilityRelief = GROOVE
+        self.abilityGlue = N+E+S+W
+        for s in range(len(self.abilityTitleText)):
+            self.abilityTitles[s] = Label(self.rightFrame,
                                           background="orange",
-                                          text=self.abilityTitleText[i],
-                                          anchor=sectionAnchors[i],
+                                          text=self.abilityTitleText[s],
+                                          anchor=self.abilitySectionAnchors[s],
                                           relief=titleRelief,
-                                          width=self.columnWidth*sectionWidths[i],
-                                          height=self.rowHeight*titleHeight,
+                                          width=self.columnWidth*self.abilitySectionWidths[s],
                                           font=self.currentFont)
-##            print(notePrefix + str(self.abilityTitleText[i]) + " label starts at row " + \
-##                  str(firstRow) + " and spans " + str(titleHeight) + " rows")
-            self.abilityTitles[i].grid(row=firstRow,
-                                       column=firstCol+sum(sectionWidths[:i]),
-                                       rowspan=titleHeight,
-                                       columnspan=sectionWidths[i],
-                                       sticky=N+E+S+W)
+            self.abilityTitles[s].grid(row=self.abilityTitleRow,
+                                       column=self.firstAbilityCol + \
+                                       sum(self.abilitySectionWidths[:s]),
+                                       rowspan=self.abilityTitleHeight,
+                                       columnspan=self.abilitySectionWidths[s],
+                                       sticky=self.abilityGlue)
+            self.abilityTitles[s].update_idletasks()
+            thisDispWidth = self.abilityTitles[s].winfo_width()
+            self.abilityTitles[s].config(wraplength=thisDispWidth-self.myMargin)
         # Principle Abilities start after Green Abilities
-        greenRows = 0
-        abilityMultiplier = 1.25
-        self.abilityWraps = [math.floor(a*abilityMultiplier*self.columnWidth) \
-                             for a in sectionWidths]
-        greenRows = len(self.myZoneAbilities[0])
-##        print("Total rows in Green Abilities: " + str(greenRows))
-        prinRow = firstRow + titleHeight + greenRows
-        thisRow = prinRow
-        prinHeight = 0
-        for i in range(len(self.myPrinAbilities)):
+        prinRow = self.abilityTitleRow + self.abilityTitleHeight + len(self.myZoneAbilities[0])
+        prinHeight = len(self.myPrinAbilities)
+        for a in range(len(self.myPrinAbilities)):
             rowsNeeded = 1
-            for j in range(len(self.abilityTitleText)):
-                self.prinAbilityValues[i][j] = Label(self,
+            for s in range(len(self.abilityTitleText)):
+                self.prinAbilityValues[a][s] = Label(self.rightFrame,
                                                      background=self.zoneColors[0],
-                                                     anchor=sectionAnchors[j],
-                                                     justify=sectionReasons[j],
-                                                     relief=abilityRelief,
-                                                     width=self.columnWidth*sectionWidths[j],
-                                                     height=self.rowHeight*rowsNeeded,
+                                                     anchor=self.abilitySectionAnchors[s],
+                                                     justify=self.abilitySectionReasons[s],
+                                                     relief=self.abilityRelief,
+                                                     width=self.columnWidth * \
+                                                     self.abilitySectionWidths[s],
+##                                                     height=self.rowHeight*rowsNeeded,
                                                      font=self.currentFont)
-                self.prinAbilityValues[i][j].grid(row=thisRow,
-                                                  column=firstCol+sum(sectionWidths[:j]),
+                self.prinAbilityValues[a][s].grid(row=prinRow+a,
+                                                  column=self.firstAbilityCol + \
+                                                  sum(self.abilitySectionWidths[:s]),
                                                   rowspan=rowsNeeded,
-                                                  columnspan=sectionWidths[j],
-                                                  sticky=N+S+E+W)
-            thisRow += rowsNeeded
-            prinHeight += rowsNeeded
-        firstRows = [5, 26, 38]
-        thisRow = firstRow + titleHeight
+                                                  columnspan=self.abilitySectionWidths[s],
+                                                  sticky=self.abilityGlue)
+                self.prinAbilityValues[a][s].update_idletasks()
+                thisDispWidth = self.prinAbilityValues[a][s].winfo_width()
+                self.prinAbilityValues[a][s].config(wraplength=thisDispWidth-self.myMargin)
+        thisRow = self.abilityTitleRow + self.abilityTitleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
                 thisRow = prinRow + prinHeight
             for a in range(len(self.myZoneAbilities[z])):
-                rowsNeeded = 1
                 for s in range(len(self.zoneAbilityValues[z][a])):
-                    self.zoneAbilityValues[z][a][s] = Label(self,
+                    self.zoneAbilityValues[z][a][s] = Label(self.rightFrame,
                                                             background=self.zoneColors[z],
-                                                            anchor=sectionAnchors[s],
-                                                            justify=sectionReasons[s],
-                                                            relief=abilityRelief,
-                                                            width=self.columnWidth*sectionWidths[s],
-                                                            height=self.rowHeight*rowsNeeded,
+                                                            anchor=self.abilitySectionAnchors[s],
+                                                            justify=self.abilitySectionReasons[s],
+                                                            relief=self.abilityRelief,
+                                                            width=self.columnWidth * \
+                                                            self.abilitySectionWidths[s],
                                                             font=self.currentFont)
                     self.zoneAbilityValues[z][a][s].grid(row=thisRow,
-                                                         column=firstCol+sum(sectionWidths[:s]),
-                                                         rowspan=rowsNeeded,
-                                                         columnspan=sectionWidths[s],
-                                                         sticky=N+S+E+W)
-                thisRow += rowsNeeded
+                                                         column=self.firstAbilityCol + \
+                                                         sum(self.abilitySectionWidths[:s]),
+                                                         columnspan=self.abilitySectionWidths[s],
+                                                         sticky=self.abilityGlue)
+                    self.zoneAbilityValues[z][a][s].update_idletasks()
+                    thisDispWidth = self.zoneAbilityValues[z][a][s].winfo_width()
+                    self.zoneAbilityValues[z][a][s].config(wraplength=thisDispWidth-self.myMargin)
+                thisRow += 1
         rowsNeeded = 1
-        self.outAbilityValue = Label(self,
+        self.outAbilityValue = Label(self.rightFrame,
                                      background="gray50",
                                      anchor=W,
                                      justify=LEFT,
-                                     width=self.columnWidth*sum(sectionWidths),
-                                     height=rowsNeeded,
+                                     width=self.columnWidth*sum(self.abilitySectionWidths),
                                      font=self.currentFont)
         self.outAbilityValue.grid(row=thisRow,
-                                  column=firstCol,
+                                  column=self.firstAbilityCol,
                                   rowspan=rowsNeeded,
-                                  columnspan=sum(sectionWidths),
-                                  sticky=N+E+S+W)
+                                  columnspan=sum(self.abilitySectionWidths),
+                                  sticky=self.abilityGlue)
+        self.outAbilityValue.update_idletasks()
+        thisDispWidth = self.outAbilityValue.winfo_width()
+        self.outAbilityValue.config(wraplength=thisDispWidth-self.myMargin)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
-        # Set up buttons in rows 3-52 of columns 33-*
-        buttonFrameColumn = 33
-        buttonFrameRow = 3
+        # Set up buttons (buttonFrame rows 1-*, columns 1-8)
         self.buttonWidth = 4
         self.buttonHeight = 2
         self.buttonPadX = 2
         self.buttonPadY = 0
         self.stepAnchor = W
         self.stepReason = LEFT
-        self.buttonFrame = Frame(self,
-                                 width=self.columnWidth*self.buttonWidth*2,
-                                 height=self.rowHeight*(52-buttonFrameRow+1),
-                                 padx=5)
-        self.buttonFrame.grid(row=buttonFrameRow,
-                              column=buttonFrameColumn,
-                              rowspan=52-buttonFrameRow+1,
-                              columnspan=self.buttonWidth*2,
-                              sticky=N+E+S+W)
         # Auxiliary sheet buttons (Modes, Forms, Minion Forms) go in the first 2 rows of columns
         #  1-4 of buttonFrame, and use self.auxColors
         # These can display in the same spot for now- we don't have any way of creating a hero that
@@ -15352,22 +15424,6 @@ class HeroFrame(Frame):
 ##                               rowspan=self.buttonHeight,
 ##                               columnspan=self.buttonWidth,
 ##                               sticky=N+E+S+W)
-##        # Button for modifying wrap length in ability Text labels (for design purposes)
-##        self.wrapButton = Button(self.buttonFrame,
-##                                 background=self.demoColors[0],
-##                                 activebackground=self.demoColors[1],
-##                                 text=str(self.principleWrap),
-##                                 width=self.columnWidth*self.buttonWidth,
-##                                 height=self.rowHeight*self.buttonHeight,
-##                                 command=self.UpdateWrap,
-##                                 padx=self.buttonPadX,
-##                                 pady=self.buttonPadY)
-##        self.wrapButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-##                             column=secondBFCol,
-##                             rowspan=self.buttonHeight,
-##                             columnspan=self.buttonWidth,
-##                             sticky=N+E+S+W)
-##        prevButtonRows += 1
         self.ShowSingleStep()
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -15394,17 +15450,6 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j].config(relief=newRelief)
                 self.prinSectionValues[i][j].update_idletasks()
         self.reliefButton.config(text=str(newRelief))
-    def UpdateWrap(self):
-        self.principleWrap += 5
-        for i in range(len(self.prinSectionValues)):
-            for j in range(len(self.prinSectionValues[i])):
-                flatText = self.prinSectionValues[i][j]["text"].replace("\n", " ")
-                newSplit = split_text(flatText,
-                                      width=self.principleWrap)
-                self.prinSectionValues[i][j]["text"] = newSplit
-                self.prinSectionValues[i][j].update_idletasks()
-        self.wrapButton["text"] = str(self.principleWrap)
-        self.wrapButton.update_idletasks()
     def SwitchFont(self, increment=1):
         notePrefix = "### HeroFrame.SwitchFont: "
         self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
@@ -15589,6 +15634,7 @@ class HeroFrame(Frame):
                                 len(self.myHero.other_forms),
                                 len(self.myHero.min_forms)]
     def UpdateAll(self, hero=None):
+        # Reads all hero attributes from internal storage and updates display with new information
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
         print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
@@ -15601,31 +15647,20 @@ class HeroFrame(Frame):
             self.charValues[i].config(text=self.myHeroChars[i])
             self.charValues[i].bind("<Double-1>",
                                     self.ClipboardCopy)
-        sectionWidths = [4, 1]
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
         for x in range(len(self.myHeroPowers)):
             if isinstance(self.myHeroPowers[x], PQDie):
-                pqDiceValues[x][0] = split_text(self.myHeroPowers[x].flavorname,
-                                                width=sectionWidths[0]*self.columnWidth)
+                pqDiceValues[x][0] = self.myHeroPowers[x].flavorname
                 pqDiceValues[x][1] = str(self.myHeroPowers[x].diesize)
             if isinstance(self.myHeroQualities[x], PQDie):
-                pqDiceValues[x][2] = split_text(self.myHeroQualities[x].flavorname,
-                                                width=sectionWidths[0]*self.columnWidth)
+                pqDiceValues[x][2] = self.myHeroQualities[x].flavorname
                 pqDiceValues[x][3] = str(self.myHeroQualities[x].diesize)
         for i in range(len(self.pqTitles)):
             for j in range(len(pqDiceValues)):
-##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
-##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
-##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
-##                      str(self.pqValues[j][i]["justify"]))
                 self.pqValues[j][i].config(text=pqDiceValues[j][i])
                 self.pqValues[j][i].bind("<Double-1>",
                                          self.ClipboardCopy)
-##                print("pqValues[" + str(j) + "][" + str(i) + "]: text=" + \
-##                      str(self.pqValues[j][i]["text"]) + ", anchor=" + \
-##                      str(self.pqValues[j][i]["anchor"]) + ", justify=" + \
-##                      str(self.pqValues[j][i]["justify"]))
         for i in range(len(self.statusValues)):
             disp = ""
             if self.myHeroStatus[i] in legal_dice:
@@ -15637,22 +15672,6 @@ class HeroFrame(Frame):
             self.healthValues[i].config(text=self.RangeText(i))
             self.healthValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
-        # Get the maximum height of each Principle section across all Principles
-        prinSectionHeights = [[0,0] for i in range(len(self.prinSectionTitles[0]))]
-        for i in range(len(self.myHeroPrinciples)):
-            thisSections = ["", "", ""]
-            if isinstance(self.myHeroPrinciples[i], Principle):
-                thisSections[0] = self.myHeroPrinciples[i].during_roleplaying
-                thisSections[1] = self.myHeroPrinciples[i].minor_twist
-                thisSections[2] = self.myHeroPrinciples[i].major_twist
-            wrapSections = [split_text(x, width=self.principleWrap) for x in thisSections]
-            thisSectionHeights = [1 + len([c for c in x if c == "\n"]) for x in wrapSections]
-            for j in range(len(prinSectionHeights)):
-                prinSectionHeights[j][i] = thisSectionHeights[j]
-        sectionMaxHeights = [max(pair) for pair in prinSectionHeights]
-##        print(notePrefix + "sectionMaxHeights: " + str(sectionMaxHeights))
-        firstRow = 29
-        titleHeight = 1
         for i in range(len(self.myHeroPrinciples)):
             title = "Principle of "
             dr = ""
@@ -15664,114 +15683,36 @@ class HeroFrame(Frame):
                 minor = self.myHeroPrinciples[i].minor_twist
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
-            sectionValues = [split_text(x, width=self.principleWrap) for x in sectionValues]
             self.prinTitles[i].config(text=title)
             for j in range(len(self.prinSectionTitles[i])):
-                titleRow = firstRow + j*titleHeight + sum(sectionMaxHeights[0:j])
-##                print(notePrefix + "j=" + str(j) + ", titleRow=" + str(titleRow) + \
-##                      ", sectionRow=" + str(titleRow + titleHeight) + ", section height=" + \
-##                      str(self.rowHeight*sectionMaxHeights[j]))
-                self.prinSectionTitles[i][j].grid(row=titleRow)
-                self.prinSectionValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*sectionMaxHeights[j])
-                self.prinSectionValues[i][j].grid(row=titleRow + titleHeight,
-                                                  rowspan=sectionMaxHeights[j])
+                self.prinSectionValues[i][j].config(text=sectionValues[j])
                 self.prinSectionValues[i][j].bind("<Double-1>",
                                                   self.ClipboardCopy)
-        for l in self.abilityTitles:
-            l.config(font=self.dispFonts[self.fontIndex])
-        firstRow = 3
-        firstCol = 17
-        sectionWidths = [4, 2, 10]
-        titleHeight = 1
-        greenRows = 0
-        for a in self.myZoneAbilities[0]:
-            rowCount = 1
-            if isinstance(a, Ability):
-                textRows = split_text(a.dispText(),
-                                      width=self.abilityWraps[2])
-                nameRows = split_text(a.name,
-                                      width=self.abilityWraps[0])
-                rowCount = 1 + max(len([x for x in textRows if x == "\n"]),
-                                   len([y for y in nameRows if y == "\n"]))
-            greenRows += rowCount
-##        print("Total rows in Green Abilities: " + str(greenRows))
-        prinRow = firstRow + titleHeight + greenRows
-        thisRow = prinRow
-        prinHeight = 0
-        for i in range(len(self.myPrinAbilities)):
+        for a in range(len(self.myPrinAbilities)):
             sectionValues = ["" for a in range(len(self.abilityTitleText))]
-            rowsNeeded = 1
-            if isinstance(self.myPrinAbilities[i], Ability):
-                sectionValues = [self.myPrinAbilities[i].flavorname,
-                                 self.myPrinAbilities[i].type,
-                                 self.myPrinAbilities[i].dispText()]
-                sectionValues = [split_text(sectionValues[j],
-                                            width=self.abilityWraps[j]) \
-                                 for j in range(len(sectionValues))]
-                rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
-            rword = " rows"
-            if rowsNeeded == 1:
-                rword = " row"
-##            print(str(self.myPrinAbilities[i]) + " starts at row #" + str(thisRow) + \
-##                  " and takes up " + str(rowsNeeded) + rword)
-            for j in range(len(self.abilityTitleText)):
-                self.prinAbilityValues[i][j].config(text=sectionValues[j],
-                                                    height=self.rowHeight*rowsNeeded)
-                self.prinAbilityValues[i][j].grid(row=thisRow,
-                                                  column=firstCol+sum(sectionWidths[:j]),
-                                                  rowspan=rowsNeeded,
-                                                  columnspan=sectionWidths[j],
-                                                  sticky=N+S+E+W)
-                self.prinAbilityValues[i][j].bind("<Double-1>",
+            if isinstance(self.myPrinAbilities[a], Ability):
+                sectionValues = [self.myPrinAbilities[a].flavorname,
+                                 self.myPrinAbilities[a].type,
+                                 self.myPrinAbilities[a].dispText()]
+            for s in range(len(self.abilityTitleText)):
+                self.prinAbilityValues[a][s].config(text=sectionValues[s])
+                self.prinAbilityValues[a][s].bind("<Double-1>",
                                                   self.ClipboardCopy)
-            thisRow += rowsNeeded
-            prinHeight += rowsNeeded
-        firstRows = [5, 26, 38]
-        thisRow = firstRow + titleHeight
         for z in range(len(self.myZoneAbilities)):
-            if z == 1:
-                thisRow = prinRow + prinHeight
             for a in range(len(self.myZoneAbilities[z])):
                 sectionValues = ["" for x in range(len(self.abilityTitleText))]
-                rowsNeeded = 1
                 if isinstance(self.myZoneAbilities[z][a], Ability):
                     sectionValues = [self.myZoneAbilities[z][a].flavorname,
                                      self.myZoneAbilities[z][a].type,
                                      self.myZoneAbilities[z][a].dispText()]
-                    sectionValues = [split_text(sectionValues[j],
-                                                width=self.abilityWraps[j]) \
-                                     for j in range(len(sectionValues))]
-                    rowsNeeded = 1 + max([len([x for x in y if x == "\n"]) for y in sectionValues])
-                rword = " rows"
-                if rowsNeeded == 1:
-                    rword = " row"
-##                print(str(self.myZoneAbilities[z][a]) + " starts at row #" + str(thisRow) + \
-##                      " and takes up " + str(rowsNeeded) + rword)
                 for s in range(len(self.zoneAbilityValues[z][a])):
-                    self.zoneAbilityValues[z][a][s].config(text=sectionValues[s],
-                                                           height=self.rowHeight*rowsNeeded)
-                    self.zoneAbilityValues[z][a][s].grid(row=thisRow,
-                                                         column=firstCol+sum(sectionWidths[:s]),
-                                                         rowspan=rowsNeeded,
-                                                         columnspan=sectionWidths[s],
-                                                         sticky=N+S+E+W)
+                    self.zoneAbilityValues[z][a][s].config(text=sectionValues[s])
                     self.zoneAbilityValues[z][a][s].bind("<Double-1>",
                                                          self.ClipboardCopy)
-                thisRow += rowsNeeded
         outText = ""
-        rowsNeeded = 1
         if isinstance(self.myOutAbility, Ability):
-            outText = split_text(self.myOutAbility.dispText(),
-                                 width=sum(self.abilityWraps))
-            rowsNeeded = 1 + len([x for x in outText if x == "\n"])
-        self.outAbilityValue.config(text=outText,
-                                    height=rowsNeeded)
-        self.outAbilityValue.grid(row=thisRow,
-                                  column=firstCol,
-                                  rowspan=rowsNeeded,
-                                  columnspan=sum(sectionWidths),
-                                  sticky=N+E+S+W)
+            outText = self.myOutAbility.dispText()
+        self.outAbilityValue.config(text=outText)
         self.outAbilityValue.bind("<Double-1>",
                                   self.ClipboardCopy)
         if isinstance(self.myHero, Hero):
@@ -15784,8 +15725,7 @@ class HeroFrame(Frame):
                         for i in range(len(self.auxWords))]
         for i in range(len(self.auxButtons)):
             # Update this button's text
-            self.auxButtons[i].config(text=self.auxText[i],
-                                      font=self.dispFonts[self.fontIndex])
+            self.auxButtons[i].config(text=self.auxText[i])
             # If this button is relevant, show it; otherwise, hide it
             if self.myAuxCounts[i] > 0:
                 self.auxButtons[i].grid()
@@ -18149,7 +18089,7 @@ class EntryFrame(Frame):
         self.myTextEntry.bind("<Return>", self.finish)
         (self.numCols, self.numRows) = self.grid_size()
         # Set initial wraplength for all text widgets
-        self.resize()
+        self.update()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)

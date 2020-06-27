@@ -214,7 +214,7 @@ Figure out wraplength
  3) get winfo_width()
  4) set wraplength = winfo_width() - margin
 Implement wraplength...
-	HeroFrame
+.	HeroFrame
 .	ModeFrame
 .	MinionFrame
 .	FormFrame
