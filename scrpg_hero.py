@@ -16706,8 +16706,8 @@ class HeroFrame(Frame):
             firstRedo = stepChoice.get()
             if firstRedo in range(1, lastStep):
                 # User selected a step to redo from
-                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
-                      ") selected")
+##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
+##                      ") selected")
                 saveFirst = messagebox.askyesno(title="Save Changes?",
                                                 message="Your hero's existing data from the " + \
                                                 step_names[firstRedo] + " step and later will " + \
@@ -18284,9 +18284,6 @@ class ExpandFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=E+W)
-        self.myPromptLabel.update_idletasks()
-        thisDispWidth = self.myPromptLabel.winfo_width()
-        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
@@ -18325,21 +18322,12 @@ class ExpandFrame(Frame):
                                 sticky=N+E+S+W)
         self.myLeftFrame.update_idletasks()
         (numLeftCols, numLeftRows) = self.myLeftFrame.grid_size()
-        # Make myLeftFrame contents stretch/squish
-        for row in range(0,numLeftRows+1):
-            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(1, row)
-            print(notePrefix + "myLeftFrame row " + str(row) + ": y=" + str(iy) + ", height=" + \
-                  str(iheight))
-            # If anything appears in this row, make it flexible; otherwise, lock it at 0
-            if iheight > 0:
-                self.myLeftFrame.rowconfigure(row, weight=1)
-            else:
-                self.myLeftFrame.rowconfigure(row, weight=0)
+        # Make myLeftFrame contents stretch/squish (horizontal only!)
         for col in range(0,numLeftCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(col, 1)
-            print(notePrefix + "myLeftFrame column " + str(col) + ": x=" + str(ix) + ", width=" + \
-                  str(iwidth))
+##            print(notePrefix + "myLeftFrame column " + str(col) + ": x=" + str(ix) + ", width=" + \
+##                  str(iwidth))
             if iwidth > 0:
                 self.myLeftFrame.columnconfigure(col, weight=1)
             else:
@@ -18363,27 +18351,20 @@ class ExpandFrame(Frame):
                                    relief=GROOVE)
         self.myDetailLabel.grid(row=1,
                                 column=2,
-                                rowspan=1,
+                                rowspan=2,
                                 columnspan=1,
                                 sticky=N+E+S+W)
-        self.myDetailLabel.update_idletasks()
-        thisDispWidth = self.myDetailLabel.winfo_width()
-        self.myDetailLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
-        for row in range(0,self.numRows+1):
-            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
-            print(notePrefix + "row " + str(row) + ": y=" + str(iy) + ", height=" + str(iheight))
-            # If anything appears in this row, make it flexible; otherwise, lock it at 0
-            if iheight > 0:
-                self.rowconfigure(row, weight=1)
-            else:
-                self.rowconfigure(row, weight=0)
+        # Row 1 only contains myLeftFrame, which shouldn't stretch vertically
+        self.rowconfigure(1, weight=0)
+        # Row 2 only contains part of myDetailLabel, which should stretch vertically
+        self.rowconfigure(2, weight=1)
         for col in range(0,self.numCols+1):
             # If anything appears in this column, make it flexible; otherwise, lock it at 0
             (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
-            print(notePrefix + "column " + str(col) + ": x=" + str(ix) + ", width=" + str(iwidth))
+##            print(notePrefix + "column " + str(col) + ": x=" + str(ix) + ", width=" + str(iwidth))
             if iwidth > 0:
                 self.columnconfigure(col, weight=1)
             else:
@@ -18400,10 +18381,9 @@ class ExpandFrame(Frame):
                event=None):
         notePrefix = "### ExpandFrame.expand: "
         # Update wraplength values
-        self.myPromptLabel.update_idletasks()
+        self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
-        self.myDetailLabel.update_idletasks()
         thisDispWidth = self.myDetailLabel.winfo_width()
         self.myDetailLabel.config(wraplength=thisDispWidth-self.myMargin)
         # Set contents of myDetailLabel to match the selection in myOptionMenu
@@ -18413,25 +18393,6 @@ class ExpandFrame(Frame):
         if index in range(len(self.myDetails)):
             dispText = self.myDetails[index]
         self.myDetailLabel.config(text=dispText)
-        # Display info on which contents are stretched strangely
-        self.myLeftFrame.update_idletasks()
-        (numLeftCols, numLeftRows) = self.myLeftFrame.grid_size()
-        for row in range(0,numLeftRows+1):
-            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(1, row)
-            print(notePrefix + "myLeftFrame row " + str(row) + ": y=" + str(iy) + ", height=" + \
-                  str(iheight))
-##        for col in range(0,numLeftCols+1):
-##            (ix, iy, iwidth, iheight) = self.myLeftFrame.grid_bbox(col, 1)
-##            print(notePrefix + "myLeftFrame column " + str(col) + ": x=" + str(ix) + ", width=" + \
-##                  str(iwidth))
-        self.update_idletasks()
-        (self.numCols, self.numRows) = self.grid_size()
-        for row in range(0,self.numRows+1):
-            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
-            print(notePrefix + "row " + str(row) + ": y=" + str(iy) + ", height=" + str(iheight))
-##        for col in range(0,self.numCols+1):
-##            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
-##            print(notePrefix + "column " + str(col) + ": x=" + str(ix) + ", width=" + str(iwidth))
     def nextoption(self, event=None):
         if len(self.myOptions) > 1:
             if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
