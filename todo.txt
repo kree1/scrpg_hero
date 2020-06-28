@@ -234,7 +234,7 @@ Make wraplength dynamic
  2) bind <Configure> to *Window.resize in *Window.__init__ just before activate
  3) fill *Frame.resize with all the same wraplength definitions from *Frame.__init__
 Implement stretchy window contents...
-	HeroFrame
+.	HeroFrame
 .	ModeFrame
 .	MinionFrame
 .	FormFrame

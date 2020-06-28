@@ -14685,6 +14685,7 @@ class HeroFrame(Frame):
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
         self.myMargin = 6
+        self.currentDispWidth = -1
 ##        print(notePrefix + "width=" + str(self.width))
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
 ##        print(notePrefix + "height=" + str(self.height))
@@ -14692,8 +14693,6 @@ class HeroFrame(Frame):
         self.myHero = None
         self.SetHero(hero)
         titleRelief = RAISED
-##        # Set geometry of Toplevel window to null so that it can be modified automatically
-##        self.winfo_toplevel().wm_geometry("")
         # HeroFrame is organized into smaller Frames to stop widgets from needlessly stretching
         #  each other
         # Row 1, column 1-4 of HeroFrame contains hero name & alias widgets
@@ -14731,7 +14730,9 @@ class HeroFrame(Frame):
                                  padx=5)
         self.buttonFrame.grid(row=2,
                               column=5,
-                              sticky=N+E+S+W)
+                              sticky=N+E+W,
+                              ipadx=5,
+                              ipady=5)
         # Set up Hero Name and Alias widgets (HeroFrame, row 1, columns 1-4)
         self.nameTitles = [None, None]
         self.nameValues = [None, None]
@@ -14786,14 +14787,14 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*self.charTitleWidth,
-##                                       height=self.rowHeight*self.charHeight,
+                                       height=self.rowHeight*self.charHeight,
                                        font=self.currentFont)
             self.charValues[i] = Label(self.leftFrame,
                                        background="white",
                                        anchor=W,
                                        relief=self.charRelief,
                                        width=self.columnWidth*self.charValueWidth,
-##                                       height=self.rowHeight*self.charHeight,
+                                       height=self.rowHeight*self.charHeight,
                                        font=self.currentFont)
 ##            print(notePrefix + str(self.charTitleText[i]) + " label starts at row " + \
 ##                  str(self.firstCharRow+math.floor(i/2)*self.charHeight) + " and spans " + \
@@ -14853,7 +14854,7 @@ class HeroFrame(Frame):
             self.pqTitles[i].update_idletasks()
             thisDispWidth = self.pqTitles[i].winfo_width()
             self.pqTitles[i].config(wraplength=thisDispWidth-self.myMargin)
-            for j in range(len(pqDiceValues)):
+            for j in range(len(self.myHeroPowers)):
                 self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
                                             anchor=target,
@@ -14881,7 +14882,6 @@ class HeroFrame(Frame):
                                  background=self.statusBG,
                                  text="Status Dice",
                                  width=self.columnWidth*self.statusWidth,
-##                                 height=self.rowHeight*self.statusTitleHeight,
                                  font=self.currentFont)
         self.statusTitle.grid(row=self.statusTitleRow,
                               column=self.firstStatusCol,
@@ -14899,7 +14899,6 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=self.statusRelief,
                                          width=self.columnWidth*self.statusWidth,
-##                                         height=self.rowHeight*self.statusHeight,
                                          font=self.currentFont)
             self.statusValues[i].grid(row=self.firstStatusRow+i*self.statusHeight,
                                       column=self.firstStatusCol,
@@ -14920,7 +14919,6 @@ class HeroFrame(Frame):
                                  text="Health Range",
                                  anchor=CENTER,
                                  width=self.columnWidth*self.healthWidth,
-##                                 height=self.rowHeight*self.healthTitleHeight,
                                  font=self.currentFont)
         self.healthTitle.grid(row=self.healthTitleRow,
                               column=self.healthTitleCol,
@@ -14940,7 +14938,6 @@ class HeroFrame(Frame):
                                          background=self.zoneColors[i],
                                          relief=self.statusRelief,
                                          width=self.columnWidth*self.healthWidth,
-##                                         height=self.rowHeight*self.healthHeight,
                                          font=self.currentFont)
             self.healthValues[i].grid(row=self.firstHealthRow+i*self.healthVSpacing,
                                       column=self.firstHealthCol,
@@ -14975,7 +14972,7 @@ class HeroFrame(Frame):
                                        anchor=W,
                                        relief=titleRelief,
                                        width=self.columnWidth*self.prinTitleWidth,
-##                                       height=self.rowHeight*self.prinTitleHeight,
+                                       height=self.rowHeight*self.prinTitleHeight,
                                        font=self.currentFont)
             self.prinTitles[i].grid(row=self.firstPrinRow,
                                     column=groupCol,
@@ -15064,7 +15061,6 @@ class HeroFrame(Frame):
                                                      relief=self.abilityRelief,
                                                      width=self.columnWidth * \
                                                      self.abilitySectionWidths[s],
-##                                                     height=self.rowHeight*rowsNeeded,
                                                      font=self.currentFont)
                 self.prinAbilityValues[a][s].grid(row=prinRow+a,
                                                   column=self.firstAbilityCol + \
@@ -15428,7 +15424,8 @@ class HeroFrame(Frame):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
-        self.UpdateAll(hero)
+        self.UpdateAll(hero,
+                       internal=True)
         self.focus_set()
     def RangeText(self, zone):
         # Returns the text representation of the health range for the specified status zone if
@@ -15462,11 +15459,12 @@ class HeroFrame(Frame):
                        increment=1):
         notePrefix = "### HeroFrame.UpdateFontSize: "
         newSize = self.currentFont.actual(option="size") + increment
-        print(notePrefix + "newSize: " + str(newSize))
+##        print(notePrefix + "newSize: " + str(newSize))
         self.currentFont.config(size=newSize)
-        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
-              str(self.currentFont.actual(option="size")) + "pt")
-        self.UpdateAll(hero=self.myHero)
+##        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+##              str(self.currentFont.actual(option="size")) + "pt")
+        self.UpdateAll(hero=self.myHero,
+                       internal=True)
     def ClipboardCopy(self,
                       event=None):
         notePrefix = "### HeroFrame.ClipboardCopy: "
@@ -15633,12 +15631,14 @@ class HeroFrame(Frame):
             self.myAuxCounts = [len(self.myHero.other_modes),
                                 len(self.myHero.other_forms),
                                 len(self.myHero.min_forms)]
-    def UpdateAll(self, hero=None):
-        # Reads all hero attributes from internal storage and updates display with new information
+    def UpdateAll(self,
+                  hero=None,
+                  internal=False):
+        # Reads all hero attributes and updates display with new information
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
-        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
-              str(self.currentFont.actual(option="size")) + "pt")
+##        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+##              str(self.currentFont.actual(option="size")) + "pt")
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
             self.nameValues[i].bind("<Double-1>",
@@ -15732,6 +15732,10 @@ class HeroFrame(Frame):
             else:
                 self.auxButtons[i].grid_remove()
         self.ShowSingleStep()
+        self.update_idletasks()
+        self.currentDispWidth = self.winfo_width()
+        self.Resize(internal=internal)
+        self.SetFlex()
     def ShowSingleStep(self):
         notePrefix = "HeroFrame.ShowSingleStep: "
         # Hide all creation step buttons by default
@@ -15790,6 +15794,107 @@ class HeroFrame(Frame):
                                   self.myHero.health_zones != [0,0,0]]
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
+    def SetFlex(self):
+        notePrefix = "### HeroFrame.SetFlex: "
+        # Make subframe contents stretch/squish...
+        stretchFrames = [self.leftFrame, self.rightFrame, self.buttonFrame]
+        for i in range(len(stretchFrames)):
+            pane = stretchFrames[i]
+            pane.update_idletasks()
+            (numPaneCols, numPaneRows) = pane.grid_size()
+            # Make this Frame's contents stretch/squish
+            for row in range(0,numPaneRows+1):
+                (ix, iy, iwidth, iheight) = pane.grid_bbox(1, row)
+                # If anything appears in this row, make it flexible; otherwise, lock it at 0
+                if iheight > 0:
+                    pane.rowconfigure(row, weight=1)
+                else:
+                    pane.rowconfigure(row, weight=0)
+            for col in range(0,numPaneCols+1):
+                (ix, iy, iwidth, iheight) = pane.grid_bbox(col, 1)
+                # If anything appears in this column, make it flexible; otherwise, lock it at 0
+                if iwidth > 0:
+                    pane.columnconfigure(col, weight=1)
+                else:
+                    pane.columnconfigure(col, weight=0)
+        # Make subframes stretch/squish...
+        (gridCols, gridRows) = self.grid_size()
+        for col in range(0, gridCols + 1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            # Make the contents of this column flexible in proportion to their current size
+            self.columnconfigure(col, weight=iwidth)
+        for row in range(0, gridRows + 1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # Make the contents of this row flexible in proportion to their current size
+            self.rowconfigure(row, weight=iheight)
+    def Resize(self,
+               event=None,
+               internal=False):
+        notePrefix = "### HeroFrame.Resize: "
+        # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
+        if self.currentDispWidth != self.winfo_width() or internal:
+##            print(notePrefix + "currentDispWidth=" + str(self.currentDispWidth) + \
+##                  ", winfo_width=" + str(self.winfo_width()) + ", internal=" + str(internal))
+            if internal:
+                # Set geometry of Toplevel window to null so that it can be modified automatically
+                self.winfo_toplevel().wm_geometry("")
+            for i in range(len(self.nameTitles)):
+                thisDispWidth = self.nameTitles[i].winfo_width()
+                self.nameTitles[i].config(wraplength=thisDispWidth-self.myMargin)
+                thisDispWidth = self.nameValues[i].winfo_width()
+                self.nameValues[i].config(wraplength=thisDispWidth-self.myMargin)
+            # Characteristic labels share widths with other Characteristics in the same column
+            charWidths = [[self.charTitles[i].winfo_width(),
+                           self.charValues[i].winfo_width()] \
+                          for i in range(math.ceil(0.5*len(self.charTitles)))]
+            for i in range(len(self.charTitles)):
+                self.charTitles[i].config(wraplength=charWidths[i%2][0]-self.myMargin)
+                self.charValues[i].config(wraplength=charWidths[i%2][1]-self.myMargin)
+            # Power/Quality widgets share widths with other Power/Quality widgets in the same
+            #  column
+            pqWidths = [self.pqTitles[i].winfo_width() for i in range(len(self.pqTitles))]
+            for i in range(len(self.pqTitles)):
+                self.pqTitles[i].config(wraplength=pqWidths[i]-self.myMargin)
+                for j in range(len(self.myHeroPowers)):
+                    self.pqValues[j][i].config(wraplength=pqWidths[i]-self.myMargin)
+            # All Status widgets share a width
+            statusWidth = self.statusTitle.winfo_width()
+            self.statusTitle.configure(wraplength=statusWidth-self.myMargin)
+            for i in range(len(self.statusValues)):
+                self.statusValues[i].config(wraplength=statusWidth-self.myMargin)
+            # All Health widgets share a width
+            healthWidth = self.healthTitle.winfo_width()
+            self.healthTitle.config(wraplength=healthWidth-self.myMargin)
+            for i in range(len(self.healthValues)):
+                self.healthValues[i].config(wraplength=healthWidth-self.myMargin)
+            # Principle section widgets share widths with other sections of the same Principle
+            prinWidths = [self.prinSectionTitles[i][0].winfo_width() \
+                          for i in range(len(self.myHeroPrinciples))]
+            for i in range(len(self.myHeroPrinciples)):
+                thisDispWidth = self.prinTitles[i].winfo_width()
+                self.prinTitles[i].config(wraplength=thisDispWidth-self.myMargin)
+                for j in range(len(self.prinSectionTitles[i])):
+                    self.prinSectionTitles[i][j].config(wraplength=prinWidths[i]-self.myMargin)
+                    self.prinSectionValues[i][j].config(wraplength=prinWidths[i]-self.myMargin)
+            # Ability section widgets share widths with widgets for the same section of
+            #  other Abilities
+            abilityWidths = [self.abilityTitles[s].winfo_width() \
+                             for s in range(len(self.abilityTitles))]
+            for s in range(len(self.abilityTitleText)):
+                self.abilityTitles[s].config(wraplength=abilityWidths[s]-self.myMargin)
+            for a in range(len(self.myPrinAbilities)):
+                for s in range(len(self.abilityTitleText)):
+                    self.prinAbilityValues[a][s].config(wraplength=abilityWidths[s]-self.myMargin)
+            for z in range(len(self.myZoneAbilities)):
+                for a in range(len(self.myZoneAbilities[z])):
+                    for s in range(len(self.zoneAbilityValues[z][a])):
+                        self.zoneAbilityValues[z][a][s].config(wraplength = abilityWidths[s] - \
+                                                               self.myMargin)
+            outWidth = self.outAbilityValue.winfo_width()
+            self.outAbilityValue.config(wraplength=outWidth-self.myMargin)
+            self.update_idletasks()
+            self.currentDispWidth = self.winfo_width()
     def LaunchModeWindow(self):
         notePrefix = "HeroFrame.LaunchModeWindow: "
 ##        print(notePrefix + "activated for " + self.myHeroNames[0] + " (" + \
@@ -17104,27 +17209,22 @@ class ModeFrame(Frame):
     def resize(self, event=None):
         notePrefix = "### ModeFrame.resize: "
         # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
         for i in range(self.myModeCount):
-            self.myModeHeaders[i].update_idletasks()
             thisDispWidth = self.myModeHeaders[i].winfo_width()
             self.myModeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.mySectionHeaders[i])):
-                self.mySectionHeaders[i][j].update_idletasks()
                 thisDispWidth = self.mySectionHeaders[i][j].winfo_width()
                 self.mySectionHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.myModePowers[i])):
                 for k in range(len(self.myPowerValues[i][j])):
-                    self.myPowerValues[i][j][k].update_idletasks()
                     thisDispWidth = self.myPowerValues[i][j][k].winfo_width()
                     self.myPowerValues[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
-            self.myRuleValues[i].update_idletasks()
             thisDispWidth = self.myRuleValues[i].winfo_width()
             self.myRuleValues[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.myAbilityValues[i])):
-                self.myAbilityValues[i][j].update_idletasks()
                 thisDispWidth = self.myAbilityValues[i][j].winfo_width()
                 self.myAbilityValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
-        # ...
 
 class MinionWindow(SubWindow):
     def __init__(self,
@@ -17400,31 +17500,25 @@ class MinionFrame(Frame):
     def resize(self, event=None):
         notePrefix = "### MinionFrame.resize: "
         # Adjust wraplength values when window is stretched/squished
-        self.myMinionSizeRules.update_idletasks()
+        self.update_idletasks()
         thisDispWidth = self.myMinionSizeRules.winfo_width()
         self.myMinionSizeRules.config(wraplength=thisDispWidth-self.myMargin)
-        self.myMinionSizeTitle.update_idletasks()
         thisDispWidth = self.myMinionSizeTitle.winfo_width()
         self.myMinionSizeTitle.config(wraplength=thisDispWidth-self.myMargin)
         for i in range(len(self.myMinionSizeHeaders)):
-            self.myMinionSizeHeaders[i].update_idletasks()
             thisDispWidth = self.myMinionSizeHeaders[i].winfo_width()
             self.myMinionSizeHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         for c in range(len(self.myMinionSizeEntries)):
             for r in range(len(self.myMinionSizeEntries[c])):
-                self.myMinionSizeEntries[c][r].update_idletasks()
                 thisDispWidth = self.myMinionSizeEntries[c][r].winfo_width()
                 self.myMinionSizeEntries[c][r].config(wraplength=thisDispWidth-self.myMargin)
-        self.myMinionFormRules.update_idletasks()
         thisDispWidth = self.myMinionFormRules.winfo_width()
         self.myMinionFormRules.config(wraplength=thisDispWidth-self.myMargin)
         for i in range(len(self.myMinionFormHeaders)):
-            self.myMinionFormHeaders[i].update_idletasks()
             thisDispWidth = self.myMinionFormHeaders[i].winfo_width()
             self.myMinionFormHeaders[i].config(wraplength=thisDispWidth-self.myMargin)
         for r in range(self.myMinionCount):
             for c in range(len(self.myMinionInfo[r])):
-                self.myMinionFormEntries[r][c].update_idletasks()
                 thisDispWidth = self.myMinionFormEntries[r][c].winfo_width()
                 self.myMinionFormEntries[r][c].config(wraplength=thisDispWidth-self.myMargin)
 
@@ -17777,34 +17871,28 @@ class FormFrame(Frame):
     def resize(self, event=None):
         notePrefix = "### FormFrame.resize: "
         # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
         for i in range(self.myFormCount):
-            self.myFormNames[i].update_idletasks()
             thisDispWidth = self.myFormNames[i].winfo_width()
             self.myFormNames[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(5):
-                self.myHeaders[i][j].update_idletasks()
                 thisDispWidth = self.myHeaders[i][j].winfo_width()
                 self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.zoneColors)):
-                self.myStatusDice[i][j].update_idletasks()
                 thisDispWidth = self.myStatusDice[i][j].winfo_width()
                 self.myStatusDice[i][j].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(4):
                 for k in range(max(len(self.myFormInfo[i][2]),len(self.myFormInfo[i][3]))):
-                    self.myPQDice[i][j][k].update_idletasks()
                     thisDispWidth = self.myPQDice[i][j][k].winfo_width()
                     self.myPQDice[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
             if len(self.myFormInfo[i][5]) > 0:
                 for j in range(5, len(self.headerText)):
-                    self.myHeaders[i][j].update_idletasks()
                     thisDispWidth = self.myHeaders[i][j].winfo_width()
                     self.myHeaders[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 for j in range(len(self.myFormInfo[i][5])):
                     for k in range(3):
-                        self.myAbilities[i][j][k].update_idletasks()
                         thisDispWidth = self.myAbilities[i][j][k].winfo_width()
                         self.myAbilities[i][j][k].config(wraplength=thisDispWidth-self.myMargin)
-        # ...
 
 class SelectWindow(SubWindow):
     def __init__(self,
@@ -17948,7 +18036,7 @@ class SelectFrame(Frame):
                event=None,
                edited=False):
         notePrefix = "### SelectFrame.update: "
-        self.myPromptLabel.update_idletasks()
+        self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
     def nextoption(self, event=None):
@@ -18109,7 +18197,7 @@ class EntryFrame(Frame):
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
     def update(self, event=None):
-        self.myPromptLabel.update_idletasks()
+        self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
     def ClipboardCopy(self, event=None):
@@ -18968,6 +19056,8 @@ factory = SampleMaker()
 root = Tk()
 root.geometry("+0+0")
 root.title("SCRPG Hero Editor")
+root.rowconfigure(0, weight=1)
+root.columnconfigure(0, weight=1)
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -18977,13 +19067,15 @@ root.title("SCRPG Hero Editor")
 # Using the sample heroes (full or partial)
 firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, columnspan=12)
+disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+root.bind("<Configure>", disp_frame.Resize)
 root.lift()
 root.mainloop()
 
 # Using a not-yet-constructed hero
 ##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, columnspan=12)
+##dispFrame.grid(row=0, column=0, sticky=N+E+S+W)
+##root.bind("<Configure>", disp_frame.Resize)
 ##root.lift()
 ##root.mainloop()
 
