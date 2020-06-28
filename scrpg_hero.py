@@ -14747,6 +14747,7 @@ class HeroFrame(Frame):
                                        background="orange",
                                        text=self.nameTitleText[i],
                                        anchor=W,
+                                       justify=LEFT,
                                        relief=titleRelief,
                                        width=self.columnWidth*self.nameWidth,
                                        height=self.rowHeight*self.nameHeight,
@@ -14754,21 +14755,16 @@ class HeroFrame(Frame):
             self.nameValues[i] = Label(self,
                                        background="white",
                                        anchor=W,
+                                       justify=LEFT,
                                        width=self.columnWidth*self.nameWidth,
                                        height=self.rowHeight*self.nameHeight,
                                        font=self.currentFont)
             self.nameTitles[i].grid(row=self.firstNameRow,
                                     column=self.firstNameCol+i*2,
                                     sticky=self.nameGlue)
-            self.nameTitles[i].update_idletasks()
-            thisDispWidth = self.nameTitles[i].winfo_width()
-            self.nameTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             self.nameValues[i].grid(row=self.firstNameRow,
                                     column=self.firstNameCol+i*2+1,
                                     sticky=self.nameGlue)
-            self.nameValues[i].update_idletasks()
-            thisDispWidth = self.nameValues[i].winfo_width()
-            self.nameValues[i].config(wraplength=thisDispWidth-self.myMargin)
         # Set up hero Characteristic widgets (leftFrame, rows 1-4, columns 1-16)
         self.charTitleText = ["Background:", "Power Source:", "Archetype:", "Personality:"]
         self.charTitles = [None for i in range(4)]
@@ -14785,6 +14781,7 @@ class HeroFrame(Frame):
                                        background="orange",
                                        text=self.charTitleText[i],
                                        anchor=W,
+                                       justify=LEFT,
                                        relief=titleRelief,
                                        width=self.columnWidth*self.charTitleWidth,
                                        height=self.rowHeight*self.charHeight,
@@ -14792,6 +14789,7 @@ class HeroFrame(Frame):
             self.charValues[i] = Label(self.leftFrame,
                                        background="white",
                                        anchor=W,
+                                       justify=LEFT,
                                        relief=self.charRelief,
                                        width=self.columnWidth*self.charValueWidth,
                                        height=self.rowHeight*self.charHeight,
@@ -14805,18 +14803,12 @@ class HeroFrame(Frame):
                                     rowspan=self.charHeight,
                                     columnspan=self.charTitleWidth,
                                     sticky=self.charGlue)
-            self.charTitles[i].update_idletasks()
-            thisDispWidth = self.charTitles[i].winfo_width()
-            self.charTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             self.charValues[i].grid(row=self.firstCharRow+math.floor(i/2)*self.charHeight,
                                     column=self.firstCharCol + self.charTitleWidth + \
                                     (i%2) * (self.charTitleWidth+self.charValueWidth),
                                     rowspan=self.charHeight,
                                     columnspan=self.charValueWidth,
                                     sticky=self.charGlue)
-            self.charValues[i].update_idletasks()
-            thisDispWidth = self.charValues[i].winfo_width()
-            self.charValues[i].config(wraplength=thisDispWidth-self.myMargin)
         # leftFrame row 5 deliberately left blank
         # Set up hero Power and Quality widgets (leftFrame rows 6-23, columns 1-10)
         self.pqTitles = [None for i in range(4)]
@@ -14851,9 +14843,6 @@ class HeroFrame(Frame):
                                   rowspan=self.pqHeight,
                                   columnspan=groupWidth,
                                   sticky=self.pqGlue)
-            self.pqTitles[i].update_idletasks()
-            thisDispWidth = self.pqTitles[i].winfo_width()
-            self.pqTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.myHeroPowers)):
                 self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
@@ -14867,9 +14856,6 @@ class HeroFrame(Frame):
                                          rowspan=self.pqHeight,
                                          columnspan=groupWidth,
                                          sticky=self.pqGlue)
-                self.pqValues[j][i].update_idletasks()
-                thisDispWidth = self.pqValues[j][i].winfo_width()
-                self.pqValues[j][i].config(wraplength=thisDispWidth-self.myMargin)
         # Set up hero Status die widgets (leftFrame rows 6-23, columns 11-13)
         self.statusTitleRow = self.firstPQRow
         self.firstStatusCol = 11
@@ -14881,6 +14867,8 @@ class HeroFrame(Frame):
         self.statusTitle = Label(self.leftFrame,
                                  background=self.statusBG,
                                  text="Status Dice",
+                                 anchor=CENTER,
+                                 justify=CENTER,
                                  width=self.columnWidth*self.statusWidth,
                                  font=self.currentFont)
         self.statusTitle.grid(row=self.statusTitleRow,
@@ -14888,15 +14876,14 @@ class HeroFrame(Frame):
                               rowspan=self.statusTitleHeight,
                               columnspan=self.statusWidth,
                               sticky=self.statusGlue)
-        self.statusTitle.update_idletasks()
-        thisDispWidth = self.statusTitle.winfo_width()
-        self.statusTitle.configure(wraplength=thisDispWidth-self.myMargin)
         self.statusValues = [None for i in range(3)]
         self.firstStatusRow = self.statusTitleRow + self.statusTitleHeight + 1
         self.statusHeight = 5
         for i in range(len(self.statusValues)):
             self.statusValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
+                                         anchor=CENTER,
+                                         justify=CENTER,
                                          relief=self.statusRelief,
                                          width=self.columnWidth*self.statusWidth,
                                          font=self.currentFont)
@@ -14905,9 +14892,6 @@ class HeroFrame(Frame):
                                       rowspan=self.statusHeight,
                                       columnspan=self.statusWidth,
                                       sticky=self.statusGlue)
-            self.statusValues[i].update_idletasks()
-            thisDispWidth = self.statusValues[i].winfo_width()
-            self.statusValues[i].config(wraplength=thisDispWidth-self.myMargin)
         # Set up hero Health widgets (leftFrame rows 6-23, columns 15-16)
         self.healthTitleRow = self.firstPQRow
         self.healthTitleCol = 15
@@ -14918,6 +14902,7 @@ class HeroFrame(Frame):
                                  background=self.statusBG,
                                  text="Health Range",
                                  anchor=CENTER,
+                                 justify=CENTER,
                                  width=self.columnWidth*self.healthWidth,
                                  font=self.currentFont)
         self.healthTitle.grid(row=self.healthTitleRow,
@@ -14925,9 +14910,6 @@ class HeroFrame(Frame):
                               rowspan=self.healthTitleHeight,
                               columnspan=self.healthWidth,
                               sticky=self.healthGlue)
-        self.healthTitle.update_idletasks()
-        thisDispWidth = self.healthTitle.winfo_width()
-        self.healthTitle.config(wraplength=thisDispWidth-self.myMargin)
         self.healthValues = [None for i in range(3)]
         self.firstHealthRow = self.healthTitleRow + self.healthTitleHeight + 1
         self.firstHealthCol = 15
@@ -14936,6 +14918,8 @@ class HeroFrame(Frame):
         for i in range(len(self.healthValues)):
             self.healthValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
+                                         anchor=CENTER,
+                                         justify=CENTER,
                                          relief=self.statusRelief,
                                          width=self.columnWidth*self.healthWidth,
                                          font=self.currentFont)
@@ -14944,9 +14928,6 @@ class HeroFrame(Frame):
                                       rowspan=self.healthHeight,
                                       columnspan=self.healthWidth,
                                       sticky=self.healthGlue)
-            self.healthValues[i].update_idletasks()
-            thisDispWidth = self.healthValues[i].winfo_width()
-            self.healthValues[i].config(wraplength=thisDispWidth-self.myMargin)
         # leftFrame row 24 intentionally left blank
         # Set up hero Principle widgets (leftFrame rows 25-32, columns 1-16)
         self.prinSectionNames = ["During Roleplaying", "Minor Twist", "Major Twist"]
@@ -14970,6 +14951,7 @@ class HeroFrame(Frame):
                                        background="orange",
                                        text="Principle of ",
                                        anchor=W,
+                                       justify=LEFT,
                                        relief=titleRelief,
                                        width=self.columnWidth*self.prinTitleWidth,
                                        height=self.rowHeight*self.prinTitleHeight,
@@ -14979,22 +14961,18 @@ class HeroFrame(Frame):
                                     rowspan=self.prinTitleHeight,
                                     columnspan=self.prinTitleWidth,
                                     sticky=self.prinGlue)
-            self.prinTitles[i].update_idletasks()
-            thisDispWidth = self.prinTitles[i].winfo_width()
-            self.prinTitles[i].config(wraplength=thisDispWidth-self.myMargin)
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = self.firstPrinRow + self.prinTitleHeight + \
                            j*(self.prinSecTitleHeight + self.prinSectionHeight)
                 sectionRow = titleRow + self.prinSecTitleHeight
                 self.prinSectionTitles[i][j] = Label(self.leftFrame,
                                                      background="white",
+                                                     anchor=CENTER,
+                                                     justify=CENTER,
                                                      text=self.prinSectionNames[j],
                                                      relief=self.prinSectionRelief,
                                                      width=self.columnWidth*self.prinWidth,
                                                      font=self.currentFont)
-                self.prinSectionTitles[i][j].update_idletasks()
-                thisDispWidth = self.prinSectionTitles[i][j].winfo_width()
-                self.prinSectionTitles[i][j].config(wraplength=thisDispWidth-self.myMargin)
                 self.prinSectionTitles[i][j].grid(row=titleRow,
                                                   column=groupCol,
                                                   rowspan=self.prinSecTitleHeight,
@@ -15002,6 +14980,8 @@ class HeroFrame(Frame):
                                                   sticky=self.prinGlue)
                 self.prinSectionValues[i][j] = Label(self.leftFrame,
                                                      background="white",
+                                                     anchor=CENTER,
+                                                     justify=CENTER,
                                                      width=self.columnWidth*self.prinWidth,
                                                      font=self.currentFont)
                 self.prinSectionValues[i][j].grid(row=sectionRow,
@@ -15009,9 +14989,6 @@ class HeroFrame(Frame):
                                                   rowspan=self.prinSectionHeight,
                                                   columnspan=self.prinWidth,
                                                   sticky=self.prinGlue)
-                self.prinSectionValues[i][j].update_idletasks()
-                thisDispWidth = self.prinSectionValues[i][j].winfo_width()
-                self.prinSectionValues[i][j].config(wraplength=thisDispWidth-self.myMargin)
         # Set up hero Ability widgets (rightFrame rows 1-17, columns 1-16)
         # z: zone index (green, yellow, red, out)
         # a: ability index within a zone
@@ -15036,6 +15013,7 @@ class HeroFrame(Frame):
                                           background="orange",
                                           text=self.abilityTitleText[s],
                                           anchor=self.abilitySectionAnchors[s],
+                                          justify=self.abilitySectionReasons[s],
                                           relief=titleRelief,
                                           width=self.columnWidth*self.abilitySectionWidths[s],
                                           font=self.currentFont)
@@ -15045,9 +15023,6 @@ class HeroFrame(Frame):
                                        rowspan=self.abilityTitleHeight,
                                        columnspan=self.abilitySectionWidths[s],
                                        sticky=self.abilityGlue)
-            self.abilityTitles[s].update_idletasks()
-            thisDispWidth = self.abilityTitles[s].winfo_width()
-            self.abilityTitles[s].config(wraplength=thisDispWidth-self.myMargin)
         # Principle Abilities start after Green Abilities
         prinRow = self.abilityTitleRow + self.abilityTitleHeight + len(self.myZoneAbilities[0])
         prinHeight = len(self.myPrinAbilities)
@@ -15068,9 +15043,6 @@ class HeroFrame(Frame):
                                                   rowspan=rowsNeeded,
                                                   columnspan=self.abilitySectionWidths[s],
                                                   sticky=self.abilityGlue)
-                self.prinAbilityValues[a][s].update_idletasks()
-                thisDispWidth = self.prinAbilityValues[a][s].winfo_width()
-                self.prinAbilityValues[a][s].config(wraplength=thisDispWidth-self.myMargin)
         thisRow = self.abilityTitleRow + self.abilityTitleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
@@ -15090,9 +15062,6 @@ class HeroFrame(Frame):
                                                          sum(self.abilitySectionWidths[:s]),
                                                          columnspan=self.abilitySectionWidths[s],
                                                          sticky=self.abilityGlue)
-                    self.zoneAbilityValues[z][a][s].update_idletasks()
-                    thisDispWidth = self.zoneAbilityValues[z][a][s].winfo_width()
-                    self.zoneAbilityValues[z][a][s].config(wraplength=thisDispWidth-self.myMargin)
                 thisRow += 1
         rowsNeeded = 1
         self.outAbilityValue = Label(self.rightFrame,
@@ -15106,9 +15075,6 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(self.abilitySectionWidths),
                                   sticky=self.abilityGlue)
-        self.outAbilityValue.update_idletasks()
-        thisDispWidth = self.outAbilityValue.winfo_width()
-        self.outAbilityValue.config(wraplength=thisDispWidth-self.myMargin)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
         # Set up buttons (buttonFrame rows 1-*, columns 1-8)
@@ -19073,8 +19039,8 @@ root.lift()
 root.mainloop()
 
 # Using a not-yet-constructed hero
-##dispFrame = HeroFrame(root)
-##dispFrame.grid(row=0, column=0, sticky=N+E+S+W)
+##disp_frame = HeroFrame(root)
+##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 ##root.bind("<Configure>", disp_frame.Resize)
 ##root.lift()
 ##root.mainloop()
