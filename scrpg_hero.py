@@ -18539,9 +18539,6 @@ class SwapFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
-        self.myPromptLabel.update_idletasks()
-        thisDispWidth = self.myPromptLabel.winfo_width()
-        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenus = [None for x in range(2)]
@@ -18558,7 +18555,7 @@ class SwapFrame(Frame):
                                        column=1,
                                        rowspan=1,
                                        columnspan=3,
-                                       sticky=N+E+S+W)
+                                       sticky=E+W)
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
                                  anchor=CENTER,
@@ -18598,6 +18595,7 @@ class SwapFrame(Frame):
 ##                  str(self.columnconfigure(col)['minsize']))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        self.resize()
     def nextoption0(self, event=None):
         if len(self.myOptions) > 1:
             if self.myAnswers[0].get() != self.myOptions[len(self.myOptions)-1]:
@@ -18625,7 +18623,6 @@ class SwapFrame(Frame):
         self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
-        # ...
     def ClipboardCopy(self, event=None):
         notePrefix = "### SwapFrame.ClipboardCopy: "
         flatText = self.myRawPrompt
@@ -18685,11 +18682,19 @@ class PrincipleWindow(SubWindow):
                                                greenVar,
                                                width=width,
                                                titleWidth=len(str(title)))
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.minsize(self.myPrincipleFrame.maxPromptWidth + 25, 0)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myPrincipleFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myPrincipleFrame.resize(event)
 
 class PrincipleFrame(Frame):
     def __init__(self,
@@ -18703,8 +18708,10 @@ class PrincipleFrame(Frame):
                  width=100,
                  titleWidth=-1):
         Frame.__init__(self, parent)
+        notePrefix = "### PrincipleFrame.__init__: "
         self.myParent = parent
         self.myPrinciple = principle
+        self.myMargin = 6
         self.prinSectionNames = ["Principle of ",
                                  "During Roleplaying",
                                  "Minor Twist",
@@ -18751,6 +18758,7 @@ class PrincipleFrame(Frame):
                                           column=2,
                                           columnspan=4,
                                           sticky=N+E+S+W)
+        promptCols = [1]
         self.myOKButton = Button(self,
                                  anchor=CENTER,
                                  justify=CENTER,
@@ -18761,8 +18769,43 @@ class PrincipleFrame(Frame):
         self.myOKButton.grid(row=len(self.prinSectionNames)+1,
                              column=3,
                              sticky=N+E+S+W)
+        self.update_idletasks()
+        (self.numCols, self.numRows) = self.grid_size()
+        # Make contents stretch/squish
+        for row in range(0,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(0,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
+        # Make sure mySectionLabels can't be squished too far to show all prompts
+        self.promptMargin = 10
+        self.maxPromptWidth = max([self.myFont.measure(txt) for txt in self.prinSectionNames]) + \
+                              self.promptMargin
+        for col in promptCols:
+            self.columnconfigure(col, minsize=math.ceil(self.maxPromptWidth/len(promptCols)))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        self.resize()
+    def resize(self, event=None):
+        notePrefix = "### PrincipleFrame.resize: "
+        # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
+##        (self.numCols, self.numRows) = self.grid_size()
+##        for col in range(0,self.numCols+1):
+##            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+##            print(notePrefix + "col #" + str(col) + " width=" + str(iwidth))
+        promptWidth = self.mySectionLabels[0].winfo_width()
+        for i in range(len(self.mySectionLabels)):
+            self.mySectionLabels[i].config(wraplength=promptWidth-self.myMargin)
     def finish(self, *args):
         notePrefix = "### PrincipleFrame.finish: "
         complete = True
@@ -19051,7 +19094,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=2)
+firstHero = factory.getShikari(step=0)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
