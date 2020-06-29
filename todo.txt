@@ -221,7 +221,7 @@ Implement wraplength...
 .	SelectFrame
 .	EntryFrame
 .	ExpandFrame
-	SwapFrame
+.	SwapFrame
 	PrincipleFrame
 	AssignFrame
 Make window contents stretch
@@ -241,7 +241,7 @@ Implement stretchy window contents...
 .	SelectFrame
 .	EntryFrame
 .	ExpandFrame
-	SwapFrame
+.	SwapFrame
 	PrincipleFrame
 	AssignFrame
 

@@ -17884,6 +17884,7 @@ class SelectWindow(SubWindow):
         # Make the contents stretchable/squishable
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.minsize(self.mySelectFrame.maxOptionWidth + 25, 0)
         self.bind("<Configure>", self.resize)
         self.initial_focus = self.mySelectFrame
         self.activate(self.mySelectFrame)
@@ -17998,6 +17999,16 @@ class SelectFrame(Frame):
                               self.optionMargin
         for col in optionCols:
             self.columnconfigure(col, minsize=math.ceil(self.maxOptionWidth/len(optionCols)))
+        # Make sure window can't be squished too far to show all options
+        myRoot = self.myParent
+##        myRoot.minsize(self.maxOptionWidth, None)
+##        myColumn = self.gridInfo['column']
+##        myColumnSpan = self.gridInfo['columnspan']
+##        myColumns = [c for c in range(self.gridInfo['column'],
+##                                      self.gridInfo['column'] + self.gridInfo['columnspan'])]
+##        for col in myColumns:
+##            self.myParent.columnconfigure(col,
+##                                          minsize=math.ceil(self.maxOptionWidth/len(myColumns)))
     def update(self,
                event=None,
                edited=False):
@@ -18213,6 +18224,7 @@ class ExpandWindow(SubWindow):
         # Make the contents stretchable/squishable
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.minsize(self.myExpandFrame.maxOptionWidth + 25, 0)
         self.bind("<Configure>", self.resize)
         self.activate(self.myExpandFrame)
     def body(self, master):
@@ -18468,11 +18480,20 @@ class SwapWindow(SubWindow):
                                      self.myVariables,
                                      width=width,
                                      titleWidth=len(str(title)))
+        # Make the contents stretchable/squishable
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.minsize(self.mySwapFrame.maxOptionWidth + 25, 0)
+        self.bind("<Configure>", self.resize)
         self.activate(self.mySwapFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.mySwapFrame.resize(event)
 
 class SwapFrame(Frame):
     # Asks the user to choose 2 different entries from a list, returns the selected indices
@@ -18488,14 +18509,17 @@ class SwapFrame(Frame):
                  width=100,
                  titleWidth=-1,
                  printing=False):
+        notePrefix = "### SwapFrame.__init__: "
         Frame.__init__(self, parent)
         self.myParent = parent
+        self.myMargin = 6
         self.myOptions = [str(x) for x in options]
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
-        self.myRawPrompt = str(prompt)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=self.myWidth)
+        self.myPrompt = str(prompt)
+##        self.myRawPrompt = str(prompt)
+##        self.myPrompt = split_text(self.myRawPrompt,
+##                                   width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
         try:
@@ -18508,17 +18532,20 @@ class SwapFrame(Frame):
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
+##                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myPromptLabel.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
         self.myOptionMenus = [None for x in range(2)]
-        for i in range(2):
+        for i in range(len(self.myOptionMenus)):
             self.myAnswers[i].set(self.myOptions[i])
             self.myDestinations[i].set(-1)
             self.myOptionMenus[i] = OptionMenu(self,
@@ -18532,6 +18559,7 @@ class SwapFrame(Frame):
                                        rowspan=1,
                                        columnspan=3,
                                        sticky=N+E+S+W)
+        optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
                                  anchor=CENTER,
                                  justify=CENTER,
@@ -18544,6 +18572,30 @@ class SwapFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        (self.numCols, self.numRows) = self.grid_size()
+        # Make contents stretch/squish
+        for row in range(0,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(0,self.numCols+1):
+            # If anything appears in this column, make it flexible; otherwise, lock it at 0
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            if iwidth > 0:
+                self.columnconfigure(col, weight=1)
+            else:
+                self.columnconfigure(col, weight=0)
+        # Make sure myOptionMenus can't be squished too far to show all options
+        self.optionMargin = 50
+        self.maxOptionWidth = max([self.myFont.measure(txt) for txt in self.myOptions]) + \
+                              self.optionMargin
+        for col in optionCols:
+            self.columnconfigure(col, minsize=math.ceil(self.maxOptionWidth/len(optionCols)))
+##            print(notePrefix + "col #" + str(col) + " minsize=" + \
+##                  str(self.columnconfigure(col)['minsize']))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
     def nextoption0(self, event=None):
@@ -18567,6 +18619,13 @@ class SwapFrame(Frame):
             if self.myAnswers[1].get() != self.myOptions[0]:
                 index = self.myOptions.index(self.myAnswers[1].get())
                 self.myAnswers[1].set(self.myOptions[index-1])
+    def resize(self, event=None):
+        notePrefix = "### SwapFrame.resize: "
+        # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
+        # ...
     def ClipboardCopy(self, event=None):
         notePrefix = "### SwapFrame.ClipboardCopy: "
         flatText = self.myRawPrompt
@@ -18992,7 +19051,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKnockout(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
