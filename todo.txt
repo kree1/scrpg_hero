@@ -223,7 +223,7 @@ Implement wraplength...
 .	ExpandFrame
 .	SwapFrame
 .	PrincipleFrame
-	AssignFrame
+.	AssignFrame
 Make window contents stretch
  1) add rowconfigure/columnconfigure to *Window.__init__, before calling activate
  2) add sticky=N+E+S+W to grid call in *Window.body
@@ -243,7 +243,7 @@ Implement stretchy window contents...
 .	ExpandFrame
 .	SwapFrame
 .	PrincipleFrame
-	AssignFrame
+.	AssignFrame
 
 Figure out titleWidth
   

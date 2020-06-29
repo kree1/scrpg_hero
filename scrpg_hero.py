@@ -17895,7 +17895,7 @@ class SelectWindow(SubWindow):
     def resize(self, event=None):
         if isinstance(event, Event):
             if event.widget == self:
-                self.mySelectFrame.update(event)
+                self.mySelectFrame.renew(event)
 
 # A value used to represent the discrepancy between "number of characters in this title" and
 #  "width (in characters) of a window that will fully display this title"- that is, the width of
@@ -17977,7 +17977,7 @@ class SelectFrame(Frame):
         self.bind("<Up>", self.prevoption)
         (self.numCols, self.numRows) = self.grid_size()
         # Set initial wraplength for all text widgets
-        self.update()
+        self.renew()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -18009,10 +18009,10 @@ class SelectFrame(Frame):
 ##        for col in myColumns:
 ##            self.myParent.columnconfigure(col,
 ##                                          minsize=math.ceil(self.maxOptionWidth/len(myColumns)))
-    def update(self,
-               event=None,
-               edited=False):
-        notePrefix = "### SelectFrame.update: "
+    def renew(self,
+              event=None,
+              edited=False):
+        notePrefix = "### SelectFrame.renew: "
         self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
@@ -18021,13 +18021,13 @@ class SelectFrame(Frame):
             if self.myString.get() != self.myOptions[len(self.myOptions)-1]:
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index+1])
-                self.update()
+                self.renew()
     def prevoption(self, event=None):
         if len(self.myOptions) > 1:
             if self.myString.get() != self.myOptions[0]:
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index-1])
-                self.update()
+                self.renew()
     def ClipboardCopy(self, event=None):
         notePrefix = "### SelectFrame.ClipboardCopy: "
         flatText = self.myRawPrompt
@@ -18085,7 +18085,7 @@ class EntryWindow(SubWindow):
     def resize(self, event=None):
         if isinstance(event, Event):
             if event.widget == self:
-                self.myEntryFrame.update(event)
+                self.myEntryFrame.renew(event)
 
 class EntryFrame(Frame):
     # A frame that asks the user for a line of text and returns the answer.
@@ -18154,7 +18154,7 @@ class EntryFrame(Frame):
         self.myTextEntry.bind("<Return>", self.finish)
         (self.numCols, self.numRows) = self.grid_size()
         # Set initial wraplength for all text widgets
-        self.update()
+        self.renew()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
             (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
@@ -18173,7 +18173,8 @@ class EntryFrame(Frame):
         # Give focus to myTextEntry immediately
         self.initial_focus = self.myTextEntry
         self.initial_focus.focus_set()
-    def update(self, event=None):
+    def renew(self, event=None):
+        notePrefix = "### EntryFrame.renew: "
         self.update_idletasks()
         thisDispWidth = self.myPromptLabel.winfo_width()
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
@@ -18601,7 +18602,6 @@ class SwapFrame(Frame):
             if self.myAnswers[0].get() != self.myOptions[len(self.myOptions)-1]:
                 index = self.myOptions.index(self.myAnswers[0].get())
                 self.myAnswers[0].set(self.myOptions[index+1])
-                self.update()
     def prevoption0(self, event=None):
         if len(self.myOptions) > 1:
             if self.myAnswers[0].get() != self.myOptions[0]:
@@ -18799,10 +18799,6 @@ class PrincipleFrame(Frame):
         notePrefix = "### PrincipleFrame.resize: "
         # Adjust wraplength values when window is stretched/squished
         self.update_idletasks()
-##        (self.numCols, self.numRows) = self.grid_size()
-##        for col in range(0,self.numCols+1):
-##            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
-##            print(notePrefix + "col #" + str(col) + " width=" + str(iwidth))
         promptWidth = self.mySectionLabels[0].winfo_width()
         for i in range(len(self.mySectionLabels)):
             self.mySectionLabels[i].config(wraplength=promptWidth-self.myMargin)
@@ -18861,11 +18857,19 @@ class AssignWindow(SubWindow):
                                          firstMax=firstMax,
                                          counter=counter,
                                          titleWidth=len(self.myTitle))
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.minsize(sum(self.myAssignFrame.categoryWidths) + 25, 0)
+        self.bind("<Configure>", self.resize)
         self.activate(self.myAssignFrame)
     def body(self, master):
         self.container = master
         master.grid(row=0, column=0, sticky=N+E+S+W)
         return master
+    def resize(self, event=None):
+        if isinstance(event, Event):
+            if event.widget == self:
+                self.myAssignFrame.renew(event)
 
 class AssignFrame(Frame):
     # Presents the user with a list of items that each need to be assigned to one of a number of
@@ -18894,7 +18898,8 @@ class AssignFrame(Frame):
         notePrefix = "### AssignFrame.__init__: "
         Frame.__init__(self, parent)
         self.myParent = parent
-        self.myRawPrompt = str(prompt)
+        self.myMargin = 6
+        self.optionMargin = 30
         self.myCategories = [str(x) for x in categories]
         self.myItems = [str(x) for x in items]
         self.myDestination = StringVar(self)
@@ -18930,8 +18935,7 @@ class AssignFrame(Frame):
         self.myAnswerKey = string.ascii_uppercase[0:len(self.myCategories)]
         totalWidth = max(self.myItemWidth + self.myColumnWidth*len(self.myCategories),
                          titleWidth + titleBuffer)
-        self.myPrompt = split_text(self.myRawPrompt,
-                                   width=totalWidth)
+        self.myPrompt = prompt
         try:
             self.myFont = tkinter.font.nametofont("HeroFrame Display Font")
         except (TclError):
@@ -18944,7 +18948,6 @@ class AssignFrame(Frame):
                                    justify=LEFT,
                                    text=self.myPrompt,
                                    width=totalWidth,
-                                   height=1+len([x for x in self.myPrompt if x == "\n"]),
                                    font=self.myFont)
         self.myPromptLabel.grid(row=1,
                                 column=1,
@@ -18987,37 +18990,63 @@ class AssignFrame(Frame):
                                                         variable=self.myAssignments[i],
                                                         value=j,
                                                         indicatoron=0,
-                                                        command=self.update)
+                                                        command=self.renew)
                 self.myRadioButtons[i][j].grid(row=thisRow,
                                                column=thisCol,
                                                rowspan=1,
                                                columnspan=1,
                                                sticky=N+E+S+W)
-            self.myCountLabel = Label(self,
-                                      anchor=SE,
-                                      justify=RIGHT,
-                                      text="",
-                                      font=self.myFont)
-            self.myCountLabel.grid(row=len(self.myItems)+3,
-                                   column=1,
-                                   rowspan=1,
-                                   columnspan=1,
-                                   sticky=N+E+S+W)
-            self.myOKButton = Button(self,
-                                     anchor=CENTER,
-                                     justify=CENTER,
-                                     text="OK",
-                                     font=self.myFont,
-                                     command=self.finish)
-            self.myOKButton.grid(row=len(self.myItems)+3,
-                                 column=2,
-                                 rowspan=1,
-                                 columnspan=1,
-                                 sticky=N+E+S+W)
-            self.bind("<Return>", self.finish)
-            self.update()
-    def update(self, *args):
-        notePrefix = "### AssignFrame.update: "
+        self.myCountLabel = Label(self,
+                                  anchor=SE,
+                                  justify=RIGHT,
+                                  text="",
+                                  font=self.myFont)
+        self.myCountLabel.grid(row=len(self.myItems)+3,
+                               column=1,
+                               rowspan=1,
+                               columnspan=1,
+                               sticky=N+E+S+W)
+        self.myOKButton = Button(self,
+                                 anchor=CENTER,
+                                 justify=CENTER,
+                                 text="OK",
+                                 font=self.myFont,
+                                 command=self.finish)
+        self.myOKButton.grid(row=len(self.myItems)+3,
+                             column=2,
+                             rowspan=1,
+                             columnspan=1,
+                             sticky=N+E+S+W)
+        self.update_idletasks()
+        (self.numCols, self.numRows) = self.grid_size()
+        # Make contents stretch/squish
+        for row in range(0,self.numRows+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(1, row)
+            # If anything appears in this row, make it flexible; otherwise, lock it at 0
+            if iheight > 0:
+                self.rowconfigure(row, weight=1)
+            else:
+                self.rowconfigure(row, weight=0)
+        for col in range(0,self.numCols+1):
+            (ix, iy, iwidth, iheight) = self.grid_bbox(col, 1)
+            # Make the contents of this column flexible in proportion to their current size
+            self.columnconfigure(col, weight=iwidth)
+        # Make sure columns can't be squished too far to show category names
+        self.categoryWidths = [self.myFont.measure(txt) for txt in self.myCategories]
+        for j in range(len(self.myCategories)):
+            self.columnconfigure(j+2, minsize=self.categoryWidths[j]+self.optionMargin)
+        self.bind("<Return>", self.finish)
+        self.renew()
+    def renew(self, *args):
+        notePrefix = "### AssignFrame.renew: "
+        # Adjust wraplength values when window is stretched/squished
+        self.update_idletasks()
+        thisDispWidth = self.myPromptLabel.winfo_width()
+        self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
+        itemWidth = self.myItemLabels[0].winfo_width()
+        for i in range(len(self.myItemLabels)):
+            self.myItemLabels[i].config(wraplength=itemWidth+self.myMargin)
+        # Adjust myCountLabel when a radiobutton is toggled
         firstCount = len([x for x in self.myAssignments if x.get()==0])
         for i in range(len(self.myItems)):
             choice = self.myAssignments[i].get()
@@ -19072,13 +19101,16 @@ class AssignFrame(Frame):
                 self.myParent.cancel()
         elif len([x for x in self.myAssignments if x.get() in range(len(self.myCategories))]) < \
              len(self.myItems):
-            print("Error! Not all items have been assigned...")
+            messagebox.showerror(title="Hero Creation",
+                                 message="Error! Not all items have been assigned...")
         elif self.myFirstMin in range(len(self.myItems)) and firstCount < self.myFirstMin:
-            print("Error! Less than " + str(self.myFirstMin) + " items have been assigned to " + \
-                  "the first category...")
+            messagebox.showerror(title="Hero Creation",
+                                 message="Error! Less than " + str(self.myFirstMin) + \
+                                 " items have been assigned to " + self.myCategories[0] + "...")
         else:
-            print("Error! More than " + str(self.myFirstMax) + " items have been assigned to " + \
-                  "the first category...")
+            messagebox.showerror(title="Hero Creation",
+                                 message="Error! More than " + str(self.myFirstMax) + \
+                                 " items have been assigned to " + self.myCategories[0] + "...")
                 
 factory = SampleMaker()
 
@@ -19094,19 +19126,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getShikari(step=0)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-root.bind("<Configure>", disp_frame.Resize)
-root.lift()
-root.mainloop()
-
-# Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
+##firstHero = factory.getKim(step=2)
+##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 ##root.bind("<Configure>", disp_frame.Resize)
 ##root.lift()
 ##root.mainloop()
+
+# Using a not-yet-constructed hero
+disp_frame = HeroFrame(root)
+disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+root.bind("<Configure>", disp_frame.Resize)
+root.lift()
+root.mainloop()
 
 # Testing display/details methods...
 
