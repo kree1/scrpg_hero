@@ -8134,7 +8134,7 @@ class Hero:
                     #  COULD be met, narrow the field to dice that match those
                     used_triplets = []
                     for j in ability_matching_slots:
-                        used_triplets += pq_triplets[j]
+                        used_triplets.append(pq_triplets[j])
 ##                    print(notePrefix + "used_triplets: " + str(used_triplets))
                     if len(triplet_options) > 0:
                         if len([d for d in used_triplets if d in triplet_options]) == 0 and \
@@ -8154,7 +8154,11 @@ class Hero:
 ##                                  str([str(d) for d in die_options]))
                     if len(die_options) == 0:
                         # No valid options? Fail with an error
-                        print("Error! " + error)
+                        if self.UseGUI(inputs):
+                            messagebox.showerror(title="Ability Error",
+                                                 message=error)
+                        else:
+                            print("Error! " + error)
                         template_options.remove(ability_template)
                         if add==1:
                             return template_options
@@ -13743,7 +13747,7 @@ def Create_Chameleon(step=len(step_names)):
         if track_inputs:
             print(notePrefix + tracker_open)
         cham.AddPersonality(pn[0],
-                            inputs=[[["a","Frontline Ambassador"]],["a"]])
+                            inputs=[[["a","Agent of Change"]],["a"]])
         if track_inputs:
             print(notePrefix + tracker_close)
     if step >= 5:
@@ -15093,7 +15097,7 @@ class HeroFrame(Frame):
         self.auxCommands = [self.LaunchModeWindow,
                             self.LaunchFormWindow,
                             self.LaunchMinionWindow]
-        self.auxWords = ["Modes", "Forms", "Minions"]
+        self.auxWords = ["Modes", "Forms", "Minion Forms"]
         self.auxText = ["View " + self.auxWords[i] + " (" + str(self.myAuxCounts[i]) + ")"
                         for i in range(len(self.auxWords))]
         firstBFRow = 1
@@ -15650,6 +15654,8 @@ class HeroFrame(Frame):
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
             self.prinTitles[i].config(text=title)
+            self.prinTitles[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
             for j in range(len(self.prinSectionTitles[i])):
                 self.prinSectionValues[i][j].config(text=sectionValues[j])
                 self.prinSectionValues[i][j].bind("<Double-1>",

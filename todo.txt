@@ -138,7 +138,7 @@ Assign rwidth values to existing ExpandWindow calls
 .	Hero.AddRetcon, 10843 (choose an ability to edit)
 	Hero.AddRetcon, 11091 (choose a category of replacement principle)
 
-Assign width/buffer values to existing EnterText calls
+Assign width values to existing EnterText calls
  Hero.AddPQDie, line 6326 (rename this power/quality)
  Hero.ChooseAbility, line 7617 (rename this ability)
  Hero.AddMode, line 8202 (rename this Mode)
@@ -170,85 +170,13 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 ? Consolidate mode selection process into a single loop, like form selection ?
  ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.
 
-~ When implementing Split Form for Form-Changers, any Power that only appears in a [Heroic/Civilian] form can automatically be given the matching tag; it's the ones that appear in both that are undefined
- MUERTO DOES THIS, DUMBASS, LOOK AT HIS SHEET
-  Powers			Gh	EG	EY
-   Awareness		10	10	6
-   Electricity		8		
-   Intangibility	10	10	10
-   Part Detachment		6	12
-   Power Suit			8	10
-   Remote Viewing	8		
-  So it looks like... they deliberately restricted themselves while creating his Power lists in Electronics forms so that he would always have exactly two constant Powers.
-   That's technically feasible for anyone doing this- if you knew you were going with Split Form, you would just be required to change exactly (X-2) of your Powers to other Powers every time you created a Form for Form-Changer that wasn't getting the same Divided tag as their base form. It wouldn't even have to be the same set of replacement powers every time, just as long as the overlap between one side of Divided and the other was exactly 2.
-    *BUT* the instructions for Divided say to do everything except Principles for your other archetype first, and only then make your Divided choices.
-    To make Muerto, they had to select Split Form first, then use that information in the steps for his other Archetype. You *CAN'T* guarantee that Split Form will be feasible if you follow the instructions as written.
-  Also notable: the base sheet's Power list is split between Ghost and Electronics; like any other Divided hero, Muerto doesn't have access to the full list of P/Q dice on his sheet in ANY form
-   Does Muerto have a "base form"? He doesn't use the Form-Changer Ability that requires one
-   His transition Abilities are weird...
-    Calavera Wisps
-	 Take a basic action using Intangibility. Then, switch to your Ghost form on your auxiliary sheet.
-	  This is Change Forms (page 90), which lets the hero switch to any available form. Why is it restricted for Muerto?
-	   I guess it makes sense to have one ability that only switches to Ghost, since Possess Object only switches to Electronics...
-	Haunt Electronics
-	 Overcome using Technology. On a success, enter an Electronics form on your auxiliary sheet. Then, take a basic action using your Min die.
-	  This is Possess Object (page 94), which lets the hero merge with an item, so it makes sense for switching to Electronics forms but not Ghost ones.
-	  (If Muerto wasn't a Form-Changer and only had one possessed-item form, how would he change back?)
-	Polterheist
-	 Attack using Intangibility and use your Max die. Then change to any available form.
-	  This is Surprise Shift (page 90), which lets the hero change to any available form.
- Compromise: we now VERIFY whether a hero has done this, and only show Split Form as an option if they have.
-
-Light orange colors:
-#FFC76C
-#FFBB4D
-#FFB845
-
-Standard orange:
-#FFA500
-
-Figure out wraplength
- 0) set a margin variable to a small but significant number of pixels, something like 6
- 1) initialize and grid the widget with no wraplength or height
- 2) update_idletasks
- 3) get winfo_width()
- 4) set wraplength = winfo_width() - margin
-Implement wraplength...
-.	HeroFrame
-.	ModeFrame
-.	MinionFrame
-.	FormFrame
-.	SelectFrame
-.	EntryFrame
-.	ExpandFrame
-.	SwapFrame
-.	PrincipleFrame
-.	AssignFrame
-Make window contents stretch
- 1) add rowconfigure/columnconfigure to *Window.__init__, before calling activate
- 2) add sticky=N+E+S+W to grid call in *Window.body
- 2a) make sure all sticky values in *Frame are N+E+S+W
- 3) add rowconfigure/columnconfigure to *Frame.__init__, after initializing & gridding widgets
-Make wraplength dynamic
- 1) create *Window.resize that calls *Frame.resize if given an event with widget == self
- 2) bind <Configure> to *Window.resize in *Window.__init__ just before activate
- 3) fill *Frame.resize with all the same wraplength definitions from *Frame.__init__
-Implement stretchy window contents...
-.	HeroFrame
-.	ModeFrame
-.	MinionFrame
-.	FormFrame
-.	SelectFrame
-.	EntryFrame
-.	ExpandFrame
-.	SwapFrame
-.	PrincipleFrame
-.	AssignFrame
-
 Figure out titleWidth
   
 Complete steps of hero creation are now reversible
  Can we make this more granular?
+ Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", without breaking StepDetails?
+ 
+Give some indication that ClipboardCopy has worked
   
 Let EditNames rename...
 .	Abilities
@@ -256,4 +184,3 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
-
