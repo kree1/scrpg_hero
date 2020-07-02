@@ -180,9 +180,10 @@ Give some indication that ClipboardCopy has worked
  Flash a different color?
   Label widgets have the activebackground option even though they don't have a "natural" trigger for the Active state like Buttons do
   a) give each Label with a ClipboardCopy binding an appropriate activebackground color
+	HeroFrame: cyan
   b) add label.config(state=active) and label.after(100, label.config, state=normal) to ClipboardCopy
 Implement for...
-	HeroFrame
+.	HeroFrame
 	ModeFrame
 	MinionFrame
 	FormFrame

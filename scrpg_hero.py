@@ -31,6 +31,9 @@ step_names = ["",
               "Retcon",
               "Health"]
 
+global clipboard_delay
+clipboard_delay = 150
+
 global p_athletic, p_elemental, p_hallmark, p_intellectual, p_materials, p_mobility, p_psychic
 global p_self_control, p_technological, p_unlisted, p_categories, p_collection
 p_athletic = ["Agility",
@@ -14689,6 +14692,7 @@ class HeroFrame(Frame):
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
         self.myMargin = 6
+        self.copyBackground = "cyan"
         self.currentDispWidth = -1
 ##        print(notePrefix + "width=" + str(self.width))
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
@@ -14758,6 +14762,7 @@ class HeroFrame(Frame):
                                        font=self.currentFont)
             self.nameValues[i] = Label(self,
                                        background="white",
+                                       activebackground=self.copyBackground,
                                        anchor=W,
                                        justify=LEFT,
                                        width=self.columnWidth*self.nameWidth,
@@ -14769,6 +14774,8 @@ class HeroFrame(Frame):
             self.nameValues[i].grid(row=self.firstNameRow,
                                     column=self.firstNameCol+i*2+1,
                                     sticky=self.nameGlue)
+            self.nameValues[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
         # Set up hero Characteristic widgets (leftFrame, rows 1-4, columns 1-16)
         self.charTitleText = ["Background:", "Power Source:", "Archetype:", "Personality:"]
         self.charTitles = [None for i in range(4)]
@@ -14792,6 +14799,7 @@ class HeroFrame(Frame):
                                        font=self.currentFont)
             self.charValues[i] = Label(self.leftFrame,
                                        background="white",
+                                       activebackground=self.copyBackground,
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.charRelief,
@@ -14813,6 +14821,8 @@ class HeroFrame(Frame):
                                     rowspan=self.charHeight,
                                     columnspan=self.charValueWidth,
                                     sticky=self.charGlue)
+            self.charValues[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
         # leftFrame row 5 deliberately left blank
         # Set up hero Power and Quality widgets (leftFrame rows 6-23, columns 1-10)
         self.pqTitles = [None for i in range(4)]
@@ -14850,6 +14860,7 @@ class HeroFrame(Frame):
             for j in range(len(self.myHeroPowers)):
                 self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
+                                            activebackground=self.copyBackground,
                                             anchor=target,
                                             justify=reason,
                                             relief=self.pqRelief,
@@ -14860,6 +14871,8 @@ class HeroFrame(Frame):
                                          rowspan=self.pqHeight,
                                          columnspan=groupWidth,
                                          sticky=self.pqGlue)
+                self.pqValues[j][i].bind("<Double-1>",
+                                         self.ClipboardCopy)
         # Set up hero Status die widgets (leftFrame rows 6-23, columns 11-13)
         self.statusTitleRow = self.firstPQRow
         self.firstStatusCol = 11
@@ -14886,6 +14899,7 @@ class HeroFrame(Frame):
         for i in range(len(self.statusValues)):
             self.statusValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
+                                         activebackground=self.copyBackground,
                                          anchor=CENTER,
                                          justify=CENTER,
                                          relief=self.statusRelief,
@@ -14896,6 +14910,8 @@ class HeroFrame(Frame):
                                       rowspan=self.statusHeight,
                                       columnspan=self.statusWidth,
                                       sticky=self.statusGlue)
+            self.statusValues[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
         # Set up hero Health widgets (leftFrame rows 6-23, columns 15-16)
         self.healthTitleRow = self.firstPQRow
         self.healthTitleCol = 15
@@ -14922,6 +14938,7 @@ class HeroFrame(Frame):
         for i in range(len(self.healthValues)):
             self.healthValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
+                                         activebackground=self.copyBackground,
                                          anchor=CENTER,
                                          justify=CENTER,
                                          relief=self.statusRelief,
@@ -14932,6 +14949,8 @@ class HeroFrame(Frame):
                                       rowspan=self.healthHeight,
                                       columnspan=self.healthWidth,
                                       sticky=self.healthGlue)
+            self.healthValues[i].bind("<Double-1>",
+                                      self.ClipboardCopy)
         # leftFrame row 24 intentionally left blank
         # Set up hero Principle widgets (leftFrame rows 25-32, columns 1-16)
         self.prinSectionNames = ["During Roleplaying", "Minor Twist", "Major Twist"]
@@ -14953,7 +14972,7 @@ class HeroFrame(Frame):
             groupCol = self.firstPrinCol+i*self.prinWidth
             self.prinTitles[i] = Label(self.leftFrame,
                                        background="orange",
-                                       activebackground="#FFC76C",
+                                       activebackground=self.copyBackground,
                                        text="Principle of ",
                                        anchor=W,
                                        justify=LEFT,
@@ -14966,6 +14985,8 @@ class HeroFrame(Frame):
                                     rowspan=self.prinTitleHeight,
                                     columnspan=self.prinTitleWidth,
                                     sticky=self.prinGlue)
+            self.prinTitles[i].bind("<Double-1>",
+                                    self.ClipboardCopy)
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = self.firstPrinRow + self.prinTitleHeight + \
                            j*(self.prinSecTitleHeight + self.prinSectionHeight)
@@ -14985,6 +15006,7 @@ class HeroFrame(Frame):
                                                   sticky=self.prinGlue)
                 self.prinSectionValues[i][j] = Label(self.leftFrame,
                                                      background="white",
+                                                     activebackground=self.copyBackground,
                                                      anchor=CENTER,
                                                      justify=CENTER,
                                                      width=self.columnWidth*self.prinWidth,
@@ -14994,6 +15016,8 @@ class HeroFrame(Frame):
                                                   rowspan=self.prinSectionHeight,
                                                   columnspan=self.prinWidth,
                                                   sticky=self.prinGlue)
+                self.prinSectionValues[i][j].bind("<Double-1>",
+                                                  self.ClipboardCopy)
         # Set up hero Ability widgets (rightFrame rows 1-17, columns 1-16)
         # z: zone index (green, yellow, red, out)
         # a: ability index within a zone
@@ -15036,6 +15060,7 @@ class HeroFrame(Frame):
             for s in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[a][s] = Label(self.rightFrame,
                                                      background=self.zoneColors[0],
+                                                     activebackground=self.copyBackground,
                                                      anchor=self.abilitySectionAnchors[s],
                                                      justify=self.abilitySectionReasons[s],
                                                      relief=self.abilityRelief,
@@ -15048,6 +15073,8 @@ class HeroFrame(Frame):
                                                   rowspan=rowsNeeded,
                                                   columnspan=self.abilitySectionWidths[s],
                                                   sticky=self.abilityGlue)
+                self.prinAbilityValues[a][s].bind("<Double-1>",
+                                                  self.ClipboardCopy)
         thisRow = self.abilityTitleRow + self.abilityTitleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
@@ -15056,6 +15083,7 @@ class HeroFrame(Frame):
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s] = Label(self.rightFrame,
                                                             background=self.zoneColors[z],
+                                                            activebackground=self.copyBackground,
                                                             anchor=self.abilitySectionAnchors[s],
                                                             justify=self.abilitySectionReasons[s],
                                                             relief=self.abilityRelief,
@@ -15067,10 +15095,13 @@ class HeroFrame(Frame):
                                                          sum(self.abilitySectionWidths[:s]),
                                                          columnspan=self.abilitySectionWidths[s],
                                                          sticky=self.abilityGlue)
+                    self.zoneAbilityValues[z][a][s].bind("<Double-1>",
+                                                         self.ClipboardCopy)
                 thisRow += 1
         rowsNeeded = 1
         self.outAbilityValue = Label(self.rightFrame,
                                      background="gray50",
+                                     activebackground=self.copyBackground,
                                      anchor=W,
                                      justify=LEFT,
                                      width=self.columnWidth*sum(self.abilitySectionWidths),
@@ -15080,6 +15111,8 @@ class HeroFrame(Frame):
                                   rowspan=rowsNeeded,
                                   columnspan=sum(self.abilitySectionWidths),
                                   sticky=self.abilityGlue)
+        self.outAbilityValue.bind("<Double-1>",
+                                  self.ClipboardCopy)
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
         # Set up buttons (buttonFrame rows 1-*, columns 1-8)
@@ -15447,7 +15480,7 @@ class HeroFrame(Frame):
             self.clipboard_append(flatText)
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
-                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def SwitchHero(self, update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -15615,12 +15648,8 @@ class HeroFrame(Frame):
 ##              str(self.currentFont.actual(option="size")) + "pt")
         for i in range(len(self.nameTitles)):
             self.nameValues[i].config(text=self.myHeroNames[i])
-            self.nameValues[i].bind("<Double-1>",
-                                    self.ClipboardCopy)
         for i in range(len(self.charTitles)):
             self.charValues[i].config(text=self.myHeroChars[i])
-            self.charValues[i].bind("<Double-1>",
-                                    self.ClipboardCopy)
         pqDiceValues = [["" for a in range(len(self.pqTitles))] \
                         for a in range(len(self.myHeroPowers))]
         for x in range(len(self.myHeroPowers)):
@@ -15633,19 +15662,13 @@ class HeroFrame(Frame):
         for i in range(len(self.pqTitles)):
             for j in range(len(pqDiceValues)):
                 self.pqValues[j][i].config(text=pqDiceValues[j][i])
-                self.pqValues[j][i].bind("<Double-1>",
-                                         self.ClipboardCopy)
         for i in range(len(self.statusValues)):
             disp = ""
             if self.myHeroStatus[i] in legal_dice:
                 disp = str(self.myHeroStatus[i])
             self.statusValues[i].config(text=disp)
-            self.statusValues[i].bind("<Double-1>",
-                                      self.ClipboardCopy)
         for i in range(len(self.healthValues)):
             self.healthValues[i].config(text=self.RangeText(i))
-            self.healthValues[i].bind("<Double-1>",
-                                      self.ClipboardCopy)
         for i in range(len(self.myHeroPrinciples)):
             title = "Principle of "
             dr = ""
@@ -15658,12 +15681,8 @@ class HeroFrame(Frame):
                 major = self.myHeroPrinciples[i].major_twist
             sectionValues = [dr, minor, major]
             self.prinTitles[i].config(text=title)
-            self.prinTitles[i].bind("<Double-1>",
-                                    self.ClipboardCopy)
             for j in range(len(self.prinSectionTitles[i])):
                 self.prinSectionValues[i][j].config(text=sectionValues[j])
-                self.prinSectionValues[i][j].bind("<Double-1>",
-                                                  self.ClipboardCopy)
         for a in range(len(self.myPrinAbilities)):
             sectionValues = ["" for a in range(len(self.abilityTitleText))]
             if isinstance(self.myPrinAbilities[a], Ability):
@@ -15672,8 +15691,6 @@ class HeroFrame(Frame):
                                  self.myPrinAbilities[a].dispText()]
             for s in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[a][s].config(text=sectionValues[s])
-                self.prinAbilityValues[a][s].bind("<Double-1>",
-                                                  self.ClipboardCopy)
         for z in range(len(self.myZoneAbilities)):
             for a in range(len(self.myZoneAbilities[z])):
                 sectionValues = ["" for x in range(len(self.abilityTitleText))]
@@ -15683,14 +15700,10 @@ class HeroFrame(Frame):
                                      self.myZoneAbilities[z][a].dispText()]
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s].config(text=sectionValues[s])
-                    self.zoneAbilityValues[z][a][s].bind("<Double-1>",
-                                                         self.ClipboardCopy)
         outText = ""
         if isinstance(self.myOutAbility, Ability):
             outText = self.myOutAbility.dispText()
         self.outAbilityValue.config(text=outText)
-        self.outAbilityValue.bind("<Double-1>",
-                                  self.ClipboardCopy)
         if isinstance(self.myHero, Hero):
             self.myAuxCounts = [len(self.myHero.other_modes),
                                 len(self.myHero.other_forms),
@@ -17129,7 +17142,7 @@ class ModeFrame(Frame):
             self.clipboard_append(flatText)
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
-                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         notePrefix = "### ModeFrame.SetHero: "
@@ -17467,7 +17480,7 @@ class MinionFrame(Frame):
             self.clipboard_append(flatText)
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
-                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -17795,7 +17808,7 @@ class FormFrame(Frame):
             self.clipboard_append(flatText)
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
-                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -18210,7 +18223,7 @@ class EntryFrame(Frame):
             self.clipboard_append(flatText)
             if self.myPromptLabel.cget("activebackground"):
                 self.myPromptLabel.config(state=ACTIVE)
-                self.myPromptLabel.after(100,
+                self.myPromptLabel.after(clipboard_delay,
                                          lambda arg1=NORMAL : \
                                          self.myPromptLabel.config(state=arg1))
     def finish(self, *args):
@@ -18458,7 +18471,7 @@ class ExpandFrame(Frame):
                     self.clipboard_append(flatText)
                     if label.cget("activebackground"):
                         label.config(state=ACTIVE)
-                        label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                        label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
         elif label == self.myPromptLabel:
             if self.myPrompt:
                 flatText = self.myPrompt
@@ -18467,7 +18480,7 @@ class ExpandFrame(Frame):
                 self.clipboard_append(flatText)
                 if label.cget("activebackground"):
                     label.config(state=ACTIVE)
-                    label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                    label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
@@ -18665,7 +18678,7 @@ class SwapFrame(Frame):
             self.clipboard_append(flatText)
             if self.myPromptLabel.cget("activebackground"):
                 self.myPromptLabel.config(state=ACTIVE)
-                self.myPromptLabel.after(100,
+                self.myPromptLabel.after(clipboard_delay,
                                          lambda arg1=NORMAL : \
                                          self.myPromptLabel.config(state=arg1))
     def finish(self, *args):
@@ -19116,7 +19129,7 @@ class AssignFrame(Frame):
             self.clipboard_append(flatText)
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
-                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### AssignFrame.finish: "
         complete = True
@@ -19167,19 +19180,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKim(step=2)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-##root.bind("<Configure>", disp_frame.Resize)
-##root.lift()
-##root.mainloop()
-
-# Using a not-yet-constructed hero
-disp_frame = HeroFrame(root)
+firstHero = factory.getJo()
+disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
 root.lift()
 root.mainloop()
+
+# Using a not-yet-constructed hero
+##disp_frame = HeroFrame(root)
+##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+##root.bind("<Configure>", disp_frame.Resize)
+##root.lift()
+##root.mainloop()
 
 # Testing display/details methods...
 
