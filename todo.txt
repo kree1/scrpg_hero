@@ -184,7 +184,7 @@ Give some indication that ClipboardCopy has worked
   b) add label.config(state=active) and label.after(100, label.config, state=normal) to ClipboardCopy
 Implement for...
 .	HeroFrame
-	ModeFrame
+.	ModeFrame
 	MinionFrame
 	FormFrame
 	SelectFrame

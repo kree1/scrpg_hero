@@ -16851,6 +16851,7 @@ class ModeFrame(Frame):
         self.sectionTargets = [W, CENTER, E, CENTER, W]
         self.sectionReasons = [LEFT, CENTER, RIGHT, CENTER, LEFT]
         self.titleBG = "orange"
+        self.copyBG = "cyan"
         self.myMargin = 6
         self.titleRelief = RAISED
         self.headerRelief = RAISED
@@ -16903,6 +16904,7 @@ class ModeFrame(Frame):
             # Display Mode Name across the full first row of the section
             self.myModeHeaders[i] = Label(self,
                                           background=headerColor,
+                                          activebackground=self.copyBG,
                                           anchor=W,
                                           justify=LEFT,
                                           relief=self.headerRelief,
@@ -16951,6 +16953,7 @@ class ModeFrame(Frame):
                 for k in range(len(self.myPowerValues[i][j])):
                     self.myPowerValues[i][j][k] = Label(self,
                                                         background=modeColor,
+                                                        activebackground=self.copyBG,
                                                         anchor=self.sectionTargets[k],
                                                         justify=self.sectionReasons[k],
                                                         relief=self.dieRelief,
@@ -16978,6 +16981,7 @@ class ModeFrame(Frame):
             thisRulesHeight = 1 + len([x for x in thisRulesText if x == "\n"])
             self.myRuleValues[i] = Label(self,
                                          background=modeColor,
+                                         activebackground=self.copyBG,
                                          anchor=W,
                                          justify=LEFT,
                                          text=thisRulesText,
@@ -17026,6 +17030,7 @@ class ModeFrame(Frame):
             for j in range(len(self.myAbilityValues[i])):
                 self.myAbilityValues[i][j] = Label(self,
                                                    background=modeColor,
+                                                   activebackground=self.copyBG,
                                                    anchor=self.sectionTargets[j+2],
                                                    justify=self.sectionReasons[j+2],
                                                    relief=self.abilityRelief,
