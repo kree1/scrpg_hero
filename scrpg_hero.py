@@ -14953,6 +14953,7 @@ class HeroFrame(Frame):
             groupCol = self.firstPrinCol+i*self.prinWidth
             self.prinTitles[i] = Label(self.leftFrame,
                                        background="orange",
+                                       activebackground="#FFC76C",
                                        text="Principle of ",
                                        anchor=W,
                                        justify=LEFT,
@@ -15444,6 +15445,9 @@ class HeroFrame(Frame):
 ##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def SwitchHero(self, update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
@@ -17123,6 +17127,9 @@ class ModeFrame(Frame):
 ##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         notePrefix = "### ModeFrame.SetHero: "
@@ -17455,9 +17462,12 @@ class MinionFrame(Frame):
         label = event.widget
         if label.cget("text"):
             flatText = label.cget("text").replace("\n","")
-            print(notePrefix + flatText)
+##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -17783,6 +17793,9 @@ class FormFrame(Frame):
 ##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -18036,9 +18049,11 @@ class SelectFrame(Frame):
                 self.renew()
     def ClipboardCopy(self, event=None):
         notePrefix = "### SelectFrame.ClipboardCopy: "
-        flatText = self.myRawPrompt
+        # Only one widget in SelectFrame contains text, so we don't need to check which widget
+        #  fired this event
+        flatText = self.myPrompt
         if flatText:
-            print(notePrefix + flatText)
+##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
     def finish(self, *args):
@@ -18186,11 +18201,18 @@ class EntryFrame(Frame):
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
     def ClipboardCopy(self, event=None):
         notePrefix = "### EntryFrame.ClipboardCopy: "
-        flatText = self.myRawPrompt
+        # Only one widget in EntryFrame contains text, so we don't have to check which widget fired
+        #  this event
+        flatText = self.myPrompt
         if flatText:
-            print(notePrefix + flatText)
+##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if self.myPromptLabel.cget("activebackground"):
+                self.myPromptLabel.config(state=ACTIVE)
+                self.myPromptLabel.after(100,
+                                         lambda arg1=NORMAL : \
+                                         self.myPromptLabel.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
@@ -18434,12 +18456,18 @@ class ExpandFrame(Frame):
 ##                    print(notePrefix + flatText)
                     self.clipboard_clear()
                     self.clipboard_append(flatText)
+                    if label.cget("activebackground"):
+                        label.config(state=ACTIVE)
+                        label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
         elif label == self.myPromptLabel:
-            if self.myRawPrompt:
+            if self.myPrompt:
                 flatText = self.myPrompt
 ##                print(notePrefix + flatText)
                 self.clipboard_clear()
                 self.clipboard_append(flatText)
+                if label.cget("activebackground"):
+                    label.config(state=ACTIVE)
+                    label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
@@ -18524,9 +18552,6 @@ class SwapFrame(Frame):
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
         self.myPrompt = str(prompt)
-##        self.myRawPrompt = str(prompt)
-##        self.myPrompt = split_text(self.myRawPrompt,
-##                                   width=self.myWidth)
         self.myDestinations = [x for x in destinations[0:2]]
         self.myAnswers = [StringVar() for x in range(2)]
         try:
@@ -18631,11 +18656,18 @@ class SwapFrame(Frame):
         self.myPromptLabel.config(wraplength=thisDispWidth-self.myMargin)
     def ClipboardCopy(self, event=None):
         notePrefix = "### SwapFrame.ClipboardCopy: "
-        flatText = self.myRawPrompt
+        # Only one widget in SwapFrame contains text, so we don't need to check which widget fired
+        #  this event
+        flatText = self.myPrompt
         if flatText:
-            print(notePrefix + flatText)
+##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if self.myPromptLabel.cget("activebackground"):
+                self.myPromptLabel.config(state=ACTIVE)
+                self.myPromptLabel.after(100,
+                                         lambda arg1=NORMAL : \
+                                         self.myPromptLabel.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### SwapFrame.finish: "
         if len(self.myOptions) > 0:
@@ -19074,14 +19106,17 @@ class AssignFrame(Frame):
         flatText = ""
         label = event.widget
         if label == self.myPromptLabel:
-            flatText = self.myRawPrompt
+            flatText = self.myPrompt
         elif label in self.myItemLabels:
             i = self.myItemLabels.index(label)
             flatText = self.myItems[i]
         if flatText:
-            print(notePrefix + flatText)
+##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(100, lambda arg1=NORMAL : label.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### AssignFrame.finish: "
         complete = True
