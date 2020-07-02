@@ -185,7 +185,7 @@ Give some indication that ClipboardCopy has worked
 Implement for...
 .	HeroFrame
 .	ModeFrame
-	MinionFrame
+.	MinionFrame
 	FormFrame
 	SelectFrame
 	EntryFrame

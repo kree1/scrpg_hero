@@ -17304,8 +17304,9 @@ class MinionFrame(Frame):
                          "ally to give your minion one of the following upgrades:"
         self.titleBG = "orange"
         self.rulesBG = "khaki"
-        self.headerBG = "cyan"
+        self.headerBG = "deepskyblue"
         self.tableBG = "white"
+        self.copyBG = "cyan"
         self.myMargin = 6
         self.headerRelief = RAISED
         self.rulesRelief = GROOVE
@@ -17318,6 +17319,7 @@ class MinionFrame(Frame):
         # Display minion size rules in columns 1-16 of rows 1-2
         self.myMinionSizeRules = Label(self,
                                        background=self.rulesBG,
+                                       activebackground=self.copyBG,
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
@@ -17369,6 +17371,7 @@ class MinionFrame(Frame):
             for r in range(len(self.myMinionSizeEntries[c])):
                 thisEntry = Label(self,
                                   background=self.tableBG,
+                                  activebackground=self.copyBG,
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
@@ -17388,6 +17391,7 @@ class MinionFrame(Frame):
         # Display minion form rules in columns 1-16 of row 12
         self.myMinionFormRules = Label(self,
                                        background=self.rulesBG,
+                                       activebackground=self.copyBG,
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.rulesRelief,
@@ -17438,6 +17442,7 @@ class MinionFrame(Frame):
             for c in range(len(self.myMinionInfo[r])):
                 thisEntry = Label(self,
                                   background=self.tableBG,
+                                  activebackground=self.copyBG,
                                   anchor=W,
                                   justify=LEFT,
                                   relief=self.tableRelief,
@@ -19185,7 +19190,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
