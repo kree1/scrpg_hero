@@ -17590,6 +17590,7 @@ class FormFrame(Frame):
         self.darkColorIndex = 2
         self.titleBG = "orange"
         self.diceBG = "white"
+        self.copyBG = "cyan"
         self.myMargin = 6
         self.titleRelief = RAISED
         self.diceRelief = GROOVE
@@ -17653,6 +17654,7 @@ class FormFrame(Frame):
 ##            print(notePrefix + "displaying " + thisName + " for form #" + str(i))
             self.myFormNames[i] = Label(self,
                                         background=thisBG,
+                                        activebackground=self.copyBG,
                                         anchor=W,
                                         justify=LEFT,
                                         text=thisName,
@@ -17685,6 +17687,7 @@ class FormFrame(Frame):
                 self.myStatusDice[i][j] = Label(self,
                                                 background=self.zoneColors[j] + \
                                                 str(self.darkColorIndex),
+                                                activebackground=self.copyBG,
                                                 anchor=self.targets[4],
                                                 justify=self.reasons[4],
                                                 relief=self.statusRelief,
@@ -17718,6 +17721,7 @@ class FormFrame(Frame):
                 for k in range(len(columnText)):
                     self.myPQDice[i][j][k] = Label(self,
                                                    background=self.diceBG,
+                                                   activebackground=self.copyBG,
                                                    anchor=self.targets[j],
                                                    justify=self.reasons[j],
                                                    relief=self.diceRelief,
@@ -17767,6 +17771,7 @@ class FormFrame(Frame):
                     for k in range(len(thisAbilityText)):
                         self.myAbilities[i][j][k] = Label(self,
                                                           background=thisBG,
+                                                          activebackground=self.copyBG,
                                                           anchor=self.targets[5+k],
                                                           justify=self.reasons[5+k],
                                                           relief=self.abilityRelief,
@@ -19190,7 +19195,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
