@@ -14662,8 +14662,11 @@ class HeroFrame(Frame):
                  hero=None,
                  width=195,
                  height=52):
-        Frame.__init__(self, parent)
         notePrefix = "### HeroFrame.__init__: "
+        self.normalBG = "gray94"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
         self.zoneColors = ["PaleGreen1", "LightGoldenrod1", "IndianRed1"]
         self.myParent = parent
         self.dispFonts = [tkinter.font.Font(root=self.myParent,
@@ -14692,7 +14695,7 @@ class HeroFrame(Frame):
         self.columnWidth = max(1, math.floor(self.width/self.numCols))
         self.rowHeight = max(1, math.floor(self.height/self.numRows))
         self.myMargin = 6
-        self.copyBackground = "cyan"
+        self.copyBG = "cyan"
         self.currentDispWidth = -1
 ##        print(notePrefix + "width=" + str(self.width))
 ##        print(notePrefix + "columnWidth=" + str(self.columnWidth))
@@ -14762,7 +14765,7 @@ class HeroFrame(Frame):
                                        font=self.currentFont)
             self.nameValues[i] = Label(self,
                                        background="white",
-                                       activebackground=self.copyBackground,
+                                       activebackground=self.copyBG,
                                        anchor=W,
                                        justify=LEFT,
                                        width=self.columnWidth*self.nameWidth,
@@ -14799,7 +14802,7 @@ class HeroFrame(Frame):
                                        font=self.currentFont)
             self.charValues[i] = Label(self.leftFrame,
                                        background="white",
-                                       activebackground=self.copyBackground,
+                                       activebackground=self.copyBG,
                                        anchor=W,
                                        justify=LEFT,
                                        relief=self.charRelief,
@@ -14860,7 +14863,7 @@ class HeroFrame(Frame):
             for j in range(len(self.myHeroPowers)):
                 self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
-                                            activebackground=self.copyBackground,
+                                            activebackground=self.copyBG,
                                             anchor=target,
                                             justify=reason,
                                             relief=self.pqRelief,
@@ -14899,7 +14902,7 @@ class HeroFrame(Frame):
         for i in range(len(self.statusValues)):
             self.statusValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
-                                         activebackground=self.copyBackground,
+                                         activebackground=self.copyBG,
                                          anchor=CENTER,
                                          justify=CENTER,
                                          relief=self.statusRelief,
@@ -14938,7 +14941,7 @@ class HeroFrame(Frame):
         for i in range(len(self.healthValues)):
             self.healthValues[i] = Label(self.leftFrame,
                                          background=self.zoneColors[i],
-                                         activebackground=self.copyBackground,
+                                         activebackground=self.copyBG,
                                          anchor=CENTER,
                                          justify=CENTER,
                                          relief=self.statusRelief,
@@ -14972,7 +14975,7 @@ class HeroFrame(Frame):
             groupCol = self.firstPrinCol+i*self.prinWidth
             self.prinTitles[i] = Label(self.leftFrame,
                                        background="orange",
-                                       activebackground=self.copyBackground,
+                                       activebackground=self.copyBG,
                                        text="Principle of ",
                                        anchor=W,
                                        justify=LEFT,
@@ -15006,7 +15009,7 @@ class HeroFrame(Frame):
                                                   sticky=self.prinGlue)
                 self.prinSectionValues[i][j] = Label(self.leftFrame,
                                                      background="white",
-                                                     activebackground=self.copyBackground,
+                                                     activebackground=self.copyBG,
                                                      anchor=CENTER,
                                                      justify=CENTER,
                                                      width=self.columnWidth*self.prinWidth,
@@ -15060,7 +15063,7 @@ class HeroFrame(Frame):
             for s in range(len(self.abilityTitleText)):
                 self.prinAbilityValues[a][s] = Label(self.rightFrame,
                                                      background=self.zoneColors[0],
-                                                     activebackground=self.copyBackground,
+                                                     activebackground=self.copyBG,
                                                      anchor=self.abilitySectionAnchors[s],
                                                      justify=self.abilitySectionReasons[s],
                                                      relief=self.abilityRelief,
@@ -15083,7 +15086,7 @@ class HeroFrame(Frame):
                 for s in range(len(self.zoneAbilityValues[z][a])):
                     self.zoneAbilityValues[z][a][s] = Label(self.rightFrame,
                                                             background=self.zoneColors[z],
-                                                            activebackground=self.copyBackground,
+                                                            activebackground=self.copyBG,
                                                             anchor=self.abilitySectionAnchors[s],
                                                             justify=self.abilitySectionReasons[s],
                                                             relief=self.abilityRelief,
@@ -15101,7 +15104,7 @@ class HeroFrame(Frame):
         rowsNeeded = 1
         self.outAbilityValue = Label(self.rightFrame,
                                      background="gray50",
-                                     activebackground=self.copyBackground,
+                                     activebackground=self.copyBG,
                                      anchor=W,
                                      justify=LEFT,
                                      width=self.columnWidth*sum(self.abilitySectionWidths),
@@ -16822,9 +16825,15 @@ class ModeFrame(Frame):
                  height=27,
                  font=None,
                  printing=False):
-        Frame.__init__(self, parent)
-        self.myParent = parent
         notePrefix = "### ModeFrame: __init__: "
+        self.normalBG = "gray94"
+        self.titleBG = "orange"
+        self.copyBG = "cyan"
+        self.myMargin = 6
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.numRows = 31
         self.numCols = 21
         self.width = width
@@ -16850,9 +16859,6 @@ class ModeFrame(Frame):
         self.sectionTitles = ["Power", "Die", "Name", "Type", "Text"]
         self.sectionTargets = [W, CENTER, E, CENTER, W]
         self.sectionReasons = [LEFT, CENTER, RIGHT, CENTER, LEFT]
-        self.titleBG = "orange"
-        self.copyBG = "cyan"
-        self.myMargin = 6
         self.titleRelief = RAISED
         self.headerRelief = RAISED
         self.dieRelief = GROOVE
@@ -17262,9 +17268,18 @@ class MinionFrame(Frame):
                  width=160,
                  font=None,
                  printing=False):
-        Frame.__init__(self, parent)
-        self.myParent = parent
         notePrefix = "MinionFrame: __init__: "
+        self.normalBG = "gray94"
+        self.titleBG = "orange"
+        self.rulesBG = "khaki"
+        self.headerBG = "deepskyblue"
+        self.tableBG = "white"
+        self.copyBG = "cyan"
+        self.myMargin = 6
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.SetHero(hero)
         self.numRows = 14 + self.myMinionCount
         self.numCols = 16
@@ -17302,12 +17317,6 @@ class MinionFrame(Frame):
         self.formWidths = [2, 2, 12]
         self.formRules = "When creating a minion, you may discard a bonus on you or a willing " + \
                          "ally to give your minion one of the following upgrades:"
-        self.titleBG = "orange"
-        self.rulesBG = "khaki"
-        self.headerBG = "deepskyblue"
-        self.tableBG = "white"
-        self.copyBG = "cyan"
-        self.myMargin = 6
         self.headerRelief = RAISED
         self.rulesRelief = GROOVE
         self.titleRelief = RAISED
@@ -17564,9 +17573,16 @@ class FormFrame(Frame):
                  width=112,
                  font=None,
                  printing=False):
-        Frame.__init__(self, parent)
-        self.myParent = parent
         notePrefix = "FormFrame: __init__: "
+        self.normalBG = "gray94"
+        self.titleBG = "orange"
+        self.diceBG = "white"
+        self.copyBG = "cyan"
+        self.myMargin = 6
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.numCols = 28
         self.width = width
         self.columnWidth = max(1,math.floor(self.width/self.numCols))
@@ -17588,10 +17604,6 @@ class FormFrame(Frame):
             self.dispFont = font
         self.mainColorIndex = 1
         self.darkColorIndex = 2
-        self.titleBG = "orange"
-        self.diceBG = "white"
-        self.copyBG = "cyan"
-        self.myMargin = 6
         self.titleRelief = RAISED
         self.diceRelief = GROOVE
         self.statusRelief = SUNKEN
@@ -17964,14 +17976,18 @@ class SelectFrame(Frame):
                  printing=False,
                  width=40,
                  titleWidth=-1):
-        Frame.__init__(self, parent)
         notePrefix = "### SelectFrame.__init__: "
+        self.myMargin = 6
+        self.normalBG = "gray94"
+        self.clickedBG = "gray86"
+        self.copyBG = "cyan"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
         self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
-        self.copyBG = "cyan"
-        self.myMargin = 6
         self.myPrompt = str(prompt)
         self.myDestination = destination
         self.myString = StringVar(self, self.myOptions[destination.get()])
@@ -17982,6 +17998,7 @@ class SelectFrame(Frame):
                                             size=9,
                                             name="SelectFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   background=self.normalBG,
                                    activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
@@ -17998,9 +18015,15 @@ class SelectFrame(Frame):
         self.myOptionMenu = OptionMenu(self,
                                        self.myString,
                                        *self.myOptions)
-        self.myOptionMenu.config(anchor=W,
+        self.myOptionMenu.config(background=self.normalBG,
+                                 activebackground=self.normalBG,
+                                 anchor=W,
                                  justify=LEFT,
                                  font=self.myFont)
+        # Get the Menu that displays when myOptionMenu is clicked, and set its font to match
+        menu = self.myOptionMenu.nametowidget(self.myOptionMenu.menuname)
+        menu.config(font=self.myFont,
+                    background=self.normalBG)
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
@@ -18008,6 +18031,8 @@ class SelectFrame(Frame):
                                sticky=E+W)
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
+                                 background=self.normalBG,
+                                 activebackground=self.clickedBG,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
@@ -18048,16 +18073,6 @@ class SelectFrame(Frame):
                               self.optionMargin
         for col in optionCols:
             self.columnconfigure(col, minsize=math.ceil(self.maxOptionWidth/len(optionCols)))
-        # Make sure window can't be squished too far to show all options
-        myRoot = self.myParent
-##        myRoot.minsize(self.maxOptionWidth, None)
-##        myColumn = self.gridInfo['column']
-##        myColumnSpan = self.gridInfo['columnspan']
-##        myColumns = [c for c in range(self.gridInfo['column'],
-##                                      self.gridInfo['column'] + self.gridInfo['columnspan'])]
-##        for col in myColumns:
-##            self.myParent.columnconfigure(col,
-##                                          minsize=math.ceil(self.maxOptionWidth/len(myColumns)))
     def renew(self,
               event=None,
               edited=False):
@@ -18154,10 +18169,15 @@ class EntryFrame(Frame):
                  printing=False,
                  width=60,
                  titleWidth=-1):
-        Frame.__init__(self, parent)
-        self.myParent = parent
+        notePrefix = "### EntryFrame.__init__: "
         self.myMargin = 6
+        self.normalBG = "gray94"
+        self.clickedBG = "gray86"
         self.copyBG = "cyan"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
         self.myPrompt = str(prompt)
@@ -18170,6 +18190,7 @@ class EntryFrame(Frame):
                                             size=9,
                                             name="EntryFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   background=self.normalBG,
                                    activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
@@ -18196,6 +18217,8 @@ class EntryFrame(Frame):
         # Select all text
         self.myTextEntry.select_range(0,"end")
         self.myOKButton = Button(self,
+                                 background=self.normalBG,
+                                 activebackground=self.clickedBG,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
@@ -18320,11 +18343,15 @@ class ExpandFrame(Frame):
                  lwidth=40,
                  rwidth=100,
                  printing=False):
-        Frame.__init__(self, parent)
         notePrefix = "### ExpandFrame.__init__: "
-        self.myParent = parent
         self.myMargin = 6
+        self.normalBG = "gray94"
+        self.clickedBG = "gray86"
         self.copyBG = "cyan"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         # myDestination: IntVar, written to only in finish()
         self.myDestination = destination
@@ -18343,6 +18370,7 @@ class ExpandFrame(Frame):
                                             name="ExpandFrame Display Font")
         self.myDetails = [str(x) for x in expand_options]
         self.myLeftFrame = Frame(self,
+                                 background=self.normalBG,
                                  width=self.myPromptWidth,
                                  height=4+len([x for x in self.myPrompt if x == "\n"]))
         self.myLeftFrame.grid(row=1,
@@ -18352,6 +18380,7 @@ class ExpandFrame(Frame):
                               sticky=N+E+S+W)
         self.myLeftFrameCol = 1
         self.myPromptLabel = Label(self.myLeftFrame,
+                                   background=self.normalBG,
                                    activebackground=self.copyBG,
                                    anchor=NW,
                                    justify=LEFT,
@@ -18370,9 +18399,15 @@ class ExpandFrame(Frame):
                                        self.myString,
                                        *self.myOptions,
                                        command=self.expand)
-        self.myOptionMenu.config(anchor=NW,
+        self.myOptionMenu.config(background=self.normalBG,
+                                 activebackground=self.normalBG,
+                                 anchor=NW,
                                  justify=LEFT,
                                  font=self.myFont)
+        # Get the Menu that displays when myOptionMenu is clicked, and set its font to match
+        menu = self.myOptionMenu.nametowidget(self.myOptionMenu.menuname)
+        menu.config(font=self.myFont,
+                    background=self.normalBG)
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
@@ -18380,6 +18415,8 @@ class ExpandFrame(Frame):
                                sticky=E+W)
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self.myLeftFrame,
+                                 background=self.normalBG,
+                                 activebackground=self.clickedBG,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
@@ -18392,6 +18429,7 @@ class ExpandFrame(Frame):
                              columnspan=1,
                              sticky=E+W)
         self.myBufferLabel = Label(self.myLeftFrame,
+                                   background=self.normalBG,
                                    anchor=W,
                                    text="",
                                    font=self.myFont)
@@ -18423,6 +18461,7 @@ class ExpandFrame(Frame):
         self.columnconfigure(self.myLeftFrameCol,
                              minsize=self.maxOptionWidth)
         self.myDetailLabel = Label(self,
+                                   background=self.normalBG,
                                    activebackground=self.copyBG,
                                    anchor=NW,
                                    justify=LEFT,
@@ -18584,10 +18623,14 @@ class SwapFrame(Frame):
                  titleWidth=-1,
                  printing=False):
         notePrefix = "### SwapFrame.__init__: "
-        Frame.__init__(self, parent)
-        self.myParent = parent
         self.myMargin = 6
+        self.normalBG = "gray94"
+        self.clickedBG = "gray86"
         self.copyBG = "cyan"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.myOptions = [str(x) for x in options]
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
@@ -18601,6 +18644,7 @@ class SwapFrame(Frame):
                                             size=9,
                                             name="SwapFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   background=self.normalBG,
                                    activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
@@ -18621,9 +18665,16 @@ class SwapFrame(Frame):
             self.myOptionMenus[i] = OptionMenu(self,
                                                self.myAnswers[i],
                                                *self.myOptions)
-            self.myOptionMenus[i].config(anchor=W,
+            self.myOptionMenus[i].config(background=self.normalBG,
+                                         activebackground=self.normalBG,
+                                         anchor=W,
                                          justify=LEFT,
                                          font=self.myFont)
+            # Get the Menu that displays when myOptionMenus[i] is clicked, and set its font to
+            #  match
+            menu = self.myOptionMenus[i].nametowidget(self.myOptionMenus[i].menuname)
+            menu.config(font=self.myFont,
+                        background=self.normalBG)
             self.myOptionMenus[i].grid(row=i+2,
                                        column=1,
                                        rowspan=1,
@@ -18631,6 +18682,8 @@ class SwapFrame(Frame):
                                        sticky=E+W)
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
+                                 background=self.normalBG,
+                                 activebackground=self.clickedBG,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
@@ -18786,11 +18839,14 @@ class PrincipleFrame(Frame):
                  greenVar,
                  width=100,
                  titleWidth=-1):
-        Frame.__init__(self, parent)
         notePrefix = "### PrincipleFrame.__init__: "
+        self.myMargin = 6
+        self.normalBG = "gray94"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
         self.myParent = parent
         self.myPrinciple = principle
-        self.myMargin = 6
         self.prinSectionNames = ["Principle of ",
                                  "During Roleplaying",
                                  "Minor Twist",
@@ -18821,7 +18877,7 @@ class PrincipleFrame(Frame):
             self.mySectionLabels[i] = Label(self,
                                             anchor=E,
                                             justify=RIGHT,
-                                            background="white",
+                                            background=self.normalBG,
                                             text=self.prinSectionNames[i],
                                             font=self.myFont,
                                             padx=2)
@@ -18975,10 +19031,15 @@ class AssignFrame(Frame):
                  counter=False,
                  titleWidth=-1):
         notePrefix = "### AssignFrame.__init__: "
-        Frame.__init__(self, parent)
-        self.myParent = parent
         self.myMargin = 6
         self.optionMargin = 30
+        self.normalBG = "gray94"
+        self.clickedBG = "gray86"
+        self.copyBG = "cyan"
+        Frame.__init__(self,
+                       parent,
+                       background=self.normalBG)
+        self.myParent = parent
         self.myCategories = [str(x) for x in categories]
         self.myItems = [str(x) for x in items]
         self.myDestination = StringVar(self)
@@ -19023,6 +19084,8 @@ class AssignFrame(Frame):
                                             name="AssignFrame Display Font")
         # myPromptLabel goes across the full first row
         self.myPromptLabel = Label(self,
+                                   background=self.normalBG,
+                                   activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
@@ -19044,6 +19107,8 @@ class AssignFrame(Frame):
         for i in range(len(self.myItems)):
             thisRow = i + 2
             self.myItemLabels[i] = Label(self,
+                                         background=self.normalBG,
+                                         activebackground=self.copyBG,
                                          anchor=W,
                                          justify=LEFT,
                                          text=self.myItems[i],
@@ -19062,6 +19127,8 @@ class AssignFrame(Frame):
             for j in range(len(self.myCategories)):
                 thisCol = j + 2
                 self.myRadioButtons[i][j] = Radiobutton(self,
+                                                        background=self.normalBG,
+                                                        activebackground=self.normalBG,
                                                         anchor=CENTER,
                                                         justify=CENTER,
                                                         text=self.myCategories[j],
@@ -19076,6 +19143,7 @@ class AssignFrame(Frame):
                                                columnspan=1,
                                                sticky=N+E+S+W)
         self.myCountLabel = Label(self,
+                                  background=self.normalBG,
                                   anchor=SE,
                                   justify=RIGHT,
                                   text="",
@@ -19086,6 +19154,8 @@ class AssignFrame(Frame):
                                columnspan=1,
                                sticky=N+E+S+W)
         self.myOKButton = Button(self,
+                                 background=self.normalBG,
+                                 activebackground=self.clickedBG,
                                  anchor=CENTER,
                                  justify=CENTER,
                                  text="OK",
@@ -19208,19 +19278,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=2)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-root.bind("<Configure>", disp_frame.Resize)
-root.lift()
-root.mainloop()
-
-# Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
+##firstHero = factory.getKnockout(step=2)
+##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 ##root.bind("<Configure>", disp_frame.Resize)
 ##root.lift()
 ##root.mainloop()
+
+# Using a not-yet-constructed hero
+disp_frame = HeroFrame(root)
+disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+root.bind("<Configure>", disp_frame.Resize)
+root.lift()
+root.mainloop()
 
 # Testing display/details methods...
 
