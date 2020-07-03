@@ -192,7 +192,7 @@ Implement for...
 .	SelectFrame
 .	EntryFrame
 .	ExpandFrame
-	SwapFrame
+.	SwapFrame
 	AssignFrame
   
 Let EditNames rename...

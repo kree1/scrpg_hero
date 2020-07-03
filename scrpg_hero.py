@@ -18587,6 +18587,7 @@ class SwapFrame(Frame):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myMargin = 6
+        self.copyBG = "cyan"
         self.myOptions = [str(x) for x in options]
         self.myTitleWidth = titleWidth
         self.myWidth = max(width, self.myTitleWidth, max([len(s) for s in self.myOptions]))
@@ -18600,6 +18601,7 @@ class SwapFrame(Frame):
                                             size=9,
                                             name="SwapFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
@@ -19206,7 +19208,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKnockout(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
