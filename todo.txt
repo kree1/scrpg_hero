@@ -191,7 +191,7 @@ Implement for...
 .	FormFrame
 .	SelectFrame
 .	EntryFrame
-	ExpandFrame
+.	ExpandFrame
 	SwapFrame
 	AssignFrame
   

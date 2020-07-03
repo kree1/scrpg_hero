@@ -18324,6 +18324,7 @@ class ExpandFrame(Frame):
         notePrefix = "### ExpandFrame.__init__: "
         self.myParent = parent
         self.myMargin = 6
+        self.copyBG = "cyan"
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         # myDestination: IntVar, written to only in finish()
         self.myDestination = destination
@@ -18351,6 +18352,7 @@ class ExpandFrame(Frame):
                               sticky=N+E+S+W)
         self.myLeftFrameCol = 1
         self.myPromptLabel = Label(self.myLeftFrame,
+                                   activebackground=self.copyBG,
                                    anchor=NW,
                                    justify=LEFT,
                                    text=self.myPrompt,
@@ -18421,6 +18423,7 @@ class ExpandFrame(Frame):
         self.columnconfigure(self.myLeftFrameCol,
                              minsize=self.maxOptionWidth)
         self.myDetailLabel = Label(self,
+                                   activebackground=self.copyBG,
                                    anchor=NW,
                                    justify=LEFT,
                                    text="",
@@ -18486,25 +18489,24 @@ class ExpandFrame(Frame):
     def ClipboardCopy(self, event=None):
         notePrefix = "### ExpandFrame.ClipboardCopy: "
         label = event.widget
+        flatText = ""
+        # Get the appropriate text from the source label
         if label == self.myDetailLabel:
             if len(self.myDetails) > 0:
                 if self.myAnswer.get() in range(len(self.myDetails)):
                     flatText = self.myDetails[self.myAnswer.get()]
-##                    print(notePrefix + flatText)
-                    self.clipboard_clear()
-                    self.clipboard_append(flatText)
-                    if label.cget("activebackground"):
-                        label.config(state=ACTIVE)
-                        label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
         elif label == self.myPromptLabel:
             if self.myPrompt:
                 flatText = self.myPrompt
-##                print(notePrefix + flatText)
-                self.clipboard_clear()
-                self.clipboard_append(flatText)
-                if label.cget("activebackground"):
-                    label.config(state=ACTIVE)
-                    label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+        # Regardless of where it came from, if some text was retrieved, put it in the clipboard and
+        #  indicate it to the user
+        if flatText:
+##            print(notePrefix + flatText)
+            self.clipboard_clear()
+            self.clipboard_append(flatText)
+            if label.cget("activebackground"):
+                label.config(state=ACTIVE)
+                label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
