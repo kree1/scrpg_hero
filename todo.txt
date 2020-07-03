@@ -176,6 +176,8 @@ Complete steps of hero creation are now reversible
  Can we make this more granular?
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", without breaking StepDetails?
  
+Default background is gray94
+ 
 Give some indication that ClipboardCopy has worked
  Flash a different color?
   Label widgets have the activebackground option even though they don't have a "natural" trigger for the Active state like Buttons do
@@ -187,7 +189,7 @@ Implement for...
 .	ModeFrame
 .	MinionFrame
 .	FormFrame
-	SelectFrame
+.	SelectFrame
 	EntryFrame
 	ExpandFrame
 	SwapFrame

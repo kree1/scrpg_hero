@@ -17970,6 +17970,7 @@ class SelectFrame(Frame):
         self.myOptions = [str(x).replace("\n"," ") for x in print_options]
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth, max([len(x) for x in self.myOptions]))
+        self.copyBG = "cyan"
         self.myMargin = 6
         self.myPrompt = str(prompt)
         self.myDestination = destination
@@ -17981,6 +17982,7 @@ class SelectFrame(Frame):
                                             size=9,
                                             name="SelectFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
@@ -18084,6 +18086,11 @@ class SelectFrame(Frame):
 ##            print(notePrefix + flatText)
             self.clipboard_clear()
             self.clipboard_append(flatText)
+            if self.myPromptLabel.cget("activebackground"):
+                self.myPromptLabel.config(state=ACTIVE)
+                self.myPromptLabel.after(clipboard_delay,
+                                         lambda arg1=NORMAL : \
+                                         self.myPromptLabel.config(state=arg1))
     def finish(self, *args):
         notePrefix = "### SelectFrame.finish: "
         if len(self.myOptions) > 0:
