@@ -190,7 +190,7 @@ Implement for...
 .	MinionFrame
 .	FormFrame
 .	SelectFrame
-	EntryFrame
+.	EntryFrame
 	ExpandFrame
 	SwapFrame
 	AssignFrame

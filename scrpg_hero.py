@@ -18157,6 +18157,7 @@ class EntryFrame(Frame):
         Frame.__init__(self, parent)
         self.myParent = parent
         self.myMargin = 6
+        self.copyBG = "cyan"
         self.myTitleWidth = titleWidth + titleBuffer
         self.myWidth = max(width, self.myTitleWidth)
         self.myPrompt = str(prompt)
@@ -18169,6 +18170,7 @@ class EntryFrame(Frame):
                                             size=9,
                                             name="EntryFrame Display Font")
         self.myPromptLabel = Label(self,
+                                   activebackground=self.copyBG,
                                    anchor=W,
                                    justify=LEFT,
                                    text=self.myPrompt,
