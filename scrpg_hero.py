@@ -10109,6 +10109,7 @@ class Hero:
                             #  met, and if not, restrict this Ability to unused ones.
                             # Start by making a list of the Powers/Qualities already used in
                             #  arc_zone_abilities:
+                            arc_triplets = []
                             for x in arc_zone_abilities:
                                 arc_triplets += [y for y in x.insert_pqs \
                                                  if len(y) == 3 and y not in arc_triplets]
