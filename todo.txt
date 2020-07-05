@@ -166,6 +166,35 @@ Assign indented/breaks/hanging values to existing DisplayBackground, BackgroundD
 	Hero.AddArchetype, line 9022 (expand this mode template if not UseGUI)
   Details() methods
 	done!
+	
+Create a Hero method for "let the user choose from a list or request details" so that code isn't being duplicated all over the place
+ Hero.ChooseDetailIndex
+ Call this method from...
+	Hero.ChoosePQ, 7112 (choose a section of the Power/Quality list)
+	Hero.AddPrinciple, 7256 (choose a Principle to replace)
+	Hero.ChoosePrinciple, 7378 (choose a Principle to add)
+	Hero.GuidedBackground, 7701 (choose a die result to use)
+	Hero.ConstructedBackground, 7785 (choose a Background to add)
+	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
+	Hero.ChooseAbility, 8061 (choose an Ability to add)
+	Hero.GuidedPowerSource, 8704 (choose a die result to use)
+	Hero.ConstructedPowerSource, 8786 (choose a Power Source to add)
+	Hero.ChooseForm, 9309 (choose a Form to add)
+	Hero.AddArchetype, 9907 (choose a Green Mode to add)
+	Hero.AddArchetype, 9965 (choose a Yellow Mode to add)
+	Hero.AddArchetype, 10021 (choose a Red Mode to add)
+	Hero.AddArchetype, 10343 (choose a transition type for Divided)
+	Hero.AddArchetype, 10512 (choose a build option for Divided)
+	Hero.GuidedArchetype, 11114 (choose a die result to use)
+	Hero.GuidedArchetype, 11260 (choose a die result to use with the specified Archetype modifier)
+	Hero.ConstructedArchetype, 11309 (choose an Archetype to add)
+	Hero.ConstructedArchetype, 11355 (choose an Archetype to use with the specified Archetype modifier)
+	Hero.GuidedPersonality, 11729 (choose a die result to use)
+	Hero.ConstructedPersonality, 11834 (choose a Personality to add in this Divided form)
+	Hero.ConstructedPersonality, 11901 (choose a single Personality to add)
+	Hero.AddRedAbility, 12029 (choose a category of Red Abilities)
+	Hero.AddRetcon, 12265 (choose an Ability to edit)
+	Hero.AddRetcon, 12572 (choose a Principle category)
 
 ? Consolidate mode selection process into a single loop, like form selection ?
  ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.

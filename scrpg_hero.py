@@ -6756,6 +6756,95 @@ class Hero:
                 line_prompt = "> "
             entry_line = input(line_prompt)
         return [entry_line, inputs]
+    def ChooseDetailIndex(self,
+                          guiPrompt,
+                          shellPrompt,
+                          options,
+                          details,
+                          title="Hero Creation",
+                          shellHeader="",
+                          shellFooter="",
+                          lwidth=40,
+                          rwidth=100,
+                          swidth=100,
+                          inputs=[]):
+        # Prints a prompt and a list of lettered options (options, indicated by A, B, C, etc.),
+        #  then lets the user choose from among them
+        # Keeps prompting the user (displaying repeat_message) until the first letter of their
+        #  response matches one of the options
+        # guiPrompt: the prompt to display in the ExpandWindow, if one is used
+        # shellPrompt: the prompt to display in the text shell, if that is used instead
+        # options: the list of short text strings identifying the user's available choices
+        # details: the list of longer text strings to display if the user requests additional info
+        #   on any of options
+        # title: a string to display in the title bar of the ExpandWindow, if there is one
+        # shellHeader: a string to display before printing the list of lettered options, if the
+        #  text shell is used
+        # shellFooter: a string to display after printing the list of lettered options, if the text
+        #  shell is used
+        # lwidth: the width of the left side of the ExpandWindow, if used
+        # rwidth: the width of the right side of the ExpandWindow, if used
+        # swidth: the maximum length in characters of a line of text in the shell, if used
+        # inputs: a list of text inputs to use automatically instead of prompting the user
+        # Returns [index of user's response, any remaining inputs]
+        notePrefix = "### Hero.ChooseDetailIndex: "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
+        entry_index = -1
+        if self.UseGUI(inputs):
+            # Create an ExpandWindow to communicate with the user
+            answer = IntVar()
+            question = ExpandWindow(self.myWindow,
+                                    guiPrompt,
+                                    options,
+                                    details,
+                                    var=answer,
+                                    title=title,
+                                    lwidth=lwidth,
+                                    rwidth=rwidth)
+            entry_index = answer.get()
+        else:
+            # Use the text shell to communicate with the user
+            # entry_options: list of letters to pair with options
+            # entry_choice: first character of user's most recent entry
+            entry_options = string.ascii_uppercase[0:len(options)]
+            entry_choice = ' '
+            # If shellHeader is specified, print it before the list of options
+            if shellHeader:
+                printlong(shellHeader,
+                          width=swidth)
+            # Print each option with its associated letter from entry_options
+            for i in range(len(options)):
+                print("    " + entry_options[i] + ": " + str(options[i]))
+            # If shellFooter is specified, print it after the list of options
+            if shellFooter:
+                printlong(shellFooter,
+                          width=swidth)
+            while entry_choice not in entry_options:
+                # Prompt the user to make a selection
+                printlong(shellPrompt,
+                          width=swidth)
+                # If there's a saved input, print it and use its first character as entry_choice;
+                #  otherwise, wait for the user to type and use their first character as
+                #  entry_choice
+                if len(inputs) > 0:
+                    print("> " + inputs[0])
+                    entry_choice = inputs.pop(0)[0]
+                else:
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0]
+                # If entry_choice is the lowercase version of one of entry_options, identify which
+                #  one and print the corresponding item from details
+                if entry_choice.upper() in entry_options and not entry_choice in entry_options:
+                    expand_index = entry_options.find(entry_choice.upper())
+                    printlong(str(details[expand_index]),
+                              width=swidth)
+            # Eventually they'll enter a valid choice (entry_choice in entry_options) and the loop
+            #  will terminate. Then, convert that choice to an index using find().
+            entry_index = entry_options.find(entry_choice)
+        return [entry_index, inputs]
     def AddPQDie(self,
                  ispower,
                  pair,
@@ -10109,6 +10198,7 @@ class Hero:
                             #  met, and if not, restrict this Ability to unused ones.
                             # Start by making a list of the Powers/Qualities already used in
                             #  arc_zone_abilities:
+                            arc_triplets = []
                             for x in arc_zone_abilities:
                                 arc_triplets += [y for y in x.insert_pqs \
                                                  if len(y) == 3 and y not in arc_triplets]
