@@ -8685,51 +8685,32 @@ class Hero:
             ps_indices = [x-1 for x in ps_options]
 ##            print(notePrefix + "ps_indices: " + str(ps_indices))
             # Let the user choose from the options provided by their roll...
-            entry_choice = ' '
-            entry_options = string.ascii_uppercase[0:len(ps_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
-                           for i in range(len(ps_indices))]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [PowerSourceDetails(i,
-                                                            width=-1,
-                                                            indented=True,
-                                                            breaks=2,
-                                                            grid=False) for i in ps_indices],
-                                        var=answer,
-                                        title="Power Source Selection",
-                                        lwidth=35,
-                                        rwidth=ps_width)
-                entry_index = answer.get()
-            else:
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + ps_collection[ps_indices[i]][0] + \
-                          " (" + str(ps_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an option expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:-1] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPowerSource(ps_indices[entry_index],
-                                           width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
+                       for i in range(len(ps_indices))]
+            if rerolls > 0:
+                options += ["REROLL"]
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see an option " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [PowerSourceDetails(i,
+                                                                  width=-1,
+                                                                  indented=True,
+                                                                  breaks=2,
+                                                                  grid=False) for i in ps_indices],
+                                              [PowerSourceDetails(i,
+                                                                  width=100,
+                                                                  breaks=1,
+                                                                  indented=True,
+                                                                  hanging=True,
+                                                                  grid=True) for i in ps_indices],
+                                              title="Power Source Selection",
+                                              lwidth=35,
+                                              rwidth=ps_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(ps_options):
                 # User selected to reroll.
@@ -8767,46 +8748,31 @@ class Hero:
         notePrefix = "### ConstructedPowerSource: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(ps_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user.
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose a Power Source from the list:",
-                                    [x[0] for x in ps_collection],
-                                    [PowerSourceDetails(i,
-                                                        width=-1,
-                                                        indented=True,
-                                                        breaks=2,
-                                                        grid=False) \
-                                     for i in range(len(ps_collection))],
-                                    var=answer,
-                                    title="Power Source Selection",
-                                    lwidth=35,
-                                    rwidth=ps_width)
-            entry_index = answer.get()
-        else:
-            print("Choose a Power Source from the list:")
-            for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + \
-                      ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Power Source expanded, or an " + \
-                      "uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayPowerSource(entry_index,
-                                       width=100)
-            entry_index = entry_options.find(entry_choice)
+        decision = self.ChooseDetailIndex("Choose a Power Source from the list:",
+                                          "Enter a lowercase letter to see a Power Source " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in ps_collection],
+                                          [PowerSourceDetails(i,
+                                                              width=-1,
+                                                              indented=True,
+                                                              breaks=2,
+                                                              grid=False) \
+                                           for i in range(len(ps_collection))],
+                                          [PowerSourceDetails(i,
+                                                              width=100,
+                                                              breaks=1,
+                                                              indented=True,
+                                                              hanging=True,
+                                                              grid=True) \
+                                           for i in range(len(ps_collection))],
+                                          title="Power Source Selection",
+                                          shellHeader="Choose a Power Source from the list:",
+                                          lwidth=35,
+                                          rwidth=ps_width,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(ps_collection[entry_index][0] + " Power Source selected.")
         return entry_index
     def AddMode(self,

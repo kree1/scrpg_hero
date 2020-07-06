@@ -173,8 +173,6 @@ Create a Hero method for "let the user choose from a list or request details" so
 	Hero.ChoosePQ, 7112 (choose a section of the Power/Quality list)
 ?	Hero.AddPrinciple, 7256 (choose a Principle to replace)
 ?	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
-	Hero.GuidedPowerSource, 8704 (choose a die result to use)
-	Hero.ConstructedPowerSource, 8786 (choose a Power Source to add)
 	Hero.ChooseForm, 9309 (choose a Form to add)
 	Hero.AddArchetype, 9907 (choose a Green Mode to add)
 	Hero.AddArchetype, 9965 (choose a Yellow Mode to add)
