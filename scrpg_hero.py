@@ -163,21 +163,24 @@ tracker_close = "~~~ ]"
 
 def printlong(text,
               width=100,
-              prefix=""):
+              prefix="",
+              detect=True):
     # Prints the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
     notePrefix = "### printlong: "
     print(split_text(text,
                      width=width,
-                     prefix=prefix))
+                     prefix=prefix,
+                     detect=detect))
 
 def split_text(text,
                width=100,
-               prefix=""):
+               prefix="",
+               detect=True):
     # Returns the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
     notePrefix = "### split_text: "
-    if prefix == "":
+    if prefix == "" and detect:
         # No prefix specified? Check to see if text starts with whitespace; if so, use that
         okToShift = False
         if len(text) > 0:
@@ -204,7 +207,8 @@ def split_text(text,
         sections = text.split("\n")
         lines = split_text(sections[0],
                            width=width,
-                           prefix=prefix)
+                           prefix=prefix,
+                           detect=detect)
         for s in sections[1:]:
             lines += "\n" + split_text(s,
                                        width=width,
@@ -6760,7 +6764,8 @@ class Hero:
                           guiPrompt,
                           shellPrompt,
                           options,
-                          details,
+                          guiDetails,
+                          shellDetails,
                           title="Hero Creation",
                           shellHeader="",
                           shellFooter="",
@@ -6770,13 +6775,13 @@ class Hero:
                           inputs=[]):
         # Prints a prompt and a list of lettered options (options, indicated by A, B, C, etc.),
         #  then lets the user choose from among them
-        # Keeps prompting the user (displaying repeat_message) until the first letter of their
-        #  response matches one of the options
         # guiPrompt: the prompt to display in the ExpandWindow, if one is used
         # shellPrompt: the prompt to display in the text shell, if that is used instead
         # options: the list of short text strings identifying the user's available choices
-        # details: the list of longer text strings to display if the user requests additional info
-        #   on any of options
+        # guiDetails: the list of longer text strings to display if the user requests additional
+        #  info on any of options (formatted for the GUI)
+        # shellDetails: the list of longer text strings to display if the user requests additional
+        #  info on any of options (formatted for the text shell)
         # title: a string to display in the title bar of the ExpandWindow, if there is one
         # shellHeader: a string to display before printing the list of lettered options, if the
         #  text shell is used
@@ -6797,7 +6802,7 @@ class Hero:
             question = ExpandWindow(self.myWindow,
                                     guiPrompt,
                                     options,
-                                    details,
+                                    guiDetails,
                                     var=answer,
                                     title=title,
                                     lwidth=lwidth,
@@ -6836,13 +6841,14 @@ class Hero:
                         line_prompt = "> "
                     entry_choice = input(line_prompt)[0]
                 # If entry_choice is the lowercase version of one of entry_options, identify which
-                #  one and print the corresponding item from details
+                #  one and print the corresponding item from shellDetails
                 if entry_choice.upper() in entry_options and not entry_choice in entry_options:
                     expand_index = entry_options.find(entry_choice.upper())
-                    printlong(str(details[expand_index]),
-                              width=swidth)
-            # Eventually they'll enter a valid choice (entry_choice in entry_options) and the loop
-            #  will terminate. Then, convert that choice to an index using find().
+                    printlong(str(shellDetails[expand_index]),
+                              width=swidth,
+                              detect=False)
+            # Once they enter a valid choice (entry_choice in entry_options), convert that choice
+            #  to an index using find().
             entry_index = entry_options.find(entry_choice)
         return [entry_index, inputs]
     def AddPQDie(self,
@@ -7375,46 +7381,30 @@ class Hero:
                 prompt = "Choose an " + rc_names[category] + " Principle."
             else:
                 prompt = "Choose a " + rc_names[category] + " Principle."
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        prompt,
-                                        [x.title for x in r_options],
-                                        [x.details(width=-1,
-                                                   indented=False,
-                                                   breaks=2,
-                                                   hanging=False) for x in r_options],
-                                        var=answer,
-                                        title="Principle Selection",
-                                        lwidth=30,
-                                        rwidth=ri_width)
-                entry_index = answer.get()
-            else:
-                print(prompt)
-                print("The following Principles are in this category...")
-                entry_options = string.ascii_uppercase[0:len(r_options)]
-                for i in range(len(r_options)):
-                    print("    " + entry_options[i] + ": " + r_options[i].title)
-                entry_choice = ' '
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see a Principle expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt = "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options and not entry_choice in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        r_options[entry_index].display(width=dispWidth,
-                                                       prefix="    ",
-                                                       indented=True,
-                                                       hanging=False)
-                entry_index = entry_options.find(entry_choice)
+            guiDetails = [x.details(width=-1,
+                                    indented=False,
+                                    breaks=2,
+                                    hanging=False) for x in r_options]
+            shellDetails = [x.details(width=dispWidth,
+                                      prefix="    ",
+                                      indented=True,
+                                      breaks=1,
+                                      hanging=False) for x in r_options]
+            decision = self.ChooseDetailIndex(prompt,
+                                              "Enter a lowercase letter to see a Principle " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x.title for x in r_options],
+                                              guiDetails,
+                                              shellDetails,
+                                              title="Principle Selection",
+                                              shellHeader=prompt+"\nThe following Principles " + \
+                                              "are in this category...",
+                                              lwidth=30,
+                                              rwidth=ri_width,
+                                              swidth=dispWidth,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             ri = r_options[entry_index]
             print(str(ri) + " selected!")
             entry_title = ri.title
@@ -19356,11 +19346,11 @@ class AssignFrame(Frame):
                 
 factory = SampleMaker()
 
-root = Tk()
-root.geometry("+0+0")
-root.title("SCRPG Hero Editor")
-root.rowconfigure(0, weight=1)
-root.columnconfigure(0, weight=1)
+##root = Tk()
+##root.geometry("+0+0")
+##root.title("SCRPG Hero Editor")
+##root.rowconfigure(0, weight=1)
+##root.columnconfigure(0, weight=1)
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)
@@ -19368,19 +19358,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout(step=2)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-##root.bind("<Configure>", disp_frame.Resize)
-##root.lift()
-##root.mainloop()
-
-# Using a not-yet-constructed hero
-disp_frame = HeroFrame(root)
+firstHero = factory.getJo(step=0)
+disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
 root.lift()
 root.mainloop()
+
+# Using a not-yet-constructed hero
+##disp_frame = HeroFrame(root)
+##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+##root.bind("<Configure>", disp_frame.Resize)
+##root.lift()
+##root.mainloop()
 
 # Testing display/details methods...
 
