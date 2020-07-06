@@ -6844,9 +6844,10 @@ class Hero:
                 #  one and print the corresponding item from shellDetails
                 if entry_choice.upper() in entry_options and not entry_choice in entry_options:
                     expand_index = entry_options.find(entry_choice.upper())
-                    printlong(str(shellDetails[expand_index]),
-                              width=swidth,
-                              detect=False)
+                    if expand_index in range(len(shellDetails)):
+                        printlong(str(shellDetails[expand_index]),
+                                  width=swidth,
+                                  detect=False)
             # Once they enter a valid choice (entry_choice in entry_options), convert that choice
             #  to an index using find().
             entry_index = entry_options.find(entry_choice)
@@ -7688,51 +7689,76 @@ class Hero:
             # Let the user choose from the options provided by their roll...
             entry_choice = ' '
             entry_options = string.ascii_uppercase[0:len(bg_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to ask the user to choose
-                answer = IntVar()
-                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [BackgroundDetails(x,
-                                                           width=-1,
-                                                           breaks=2,
-                                                           indented=True,
-                                                           grid=False) for x in bg_indices],
-                                        var=answer,
-                                        title="Background Selection",
-                                        lwidth=30,
-                                        rwidth=bg_width)
-                entry_index = answer.get()
-            else:
-                print(roll_report)
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + bg_collection[bg_indices[i]][0] + \
-                          " (" + str(bg_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-                              "uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-                              "uppercase letter to select it.")
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:-1] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayBackground(bg_indices[entry_index],
-                                          width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
+            if rerolls > 0:
+                options += ["REROLL"]
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see a Background " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [BackgroundDetails(x,
+                                                                 width=-1,
+                                                                 breaks=2,
+                                                                 indented=True,
+                                                                 grid=False) for x in bg_indices],
+                                              [BackgroundDetails(x,
+                                                                 width=100,
+                                                                 breaks=1,
+                                                                 indented=True,
+                                                                 hanging=True,
+                                                                 grid=True) for x in bg_indices],
+                                              title="Background Selection",
+                                              lwidth=30,
+                                              rwidth=bg_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
+##            if self.UseGUI(inputs):
+##                # Create an ExpandWindow to ask the user to choose
+##                answer = IntVar()
+##                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
+##                if rerolls > 0:
+##                    options += ["REROLL"]
+##                question = ExpandWindow(self.myWindow,
+##                                        roll_report + "\nChoose one:",
+##                                        options,
+##                                        [BackgroundDetails(x,
+##                                                           width=-1,
+##                                                           breaks=2,
+##                                                           indented=True,
+##                                                           grid=False) for x in bg_indices],
+##                                        var=answer,
+##                                        title="Background Selection",
+##                                        lwidth=30,
+##                                        rwidth=bg_width)
+##                entry_index = answer.get()
+##            else:
+##                print(roll_report)
+##                for i in range(len(entry_options)-rerolls):
+##                    print("    " + entry_options[i] + ": " + bg_collection[bg_indices[i]][0] + \
+##                          " (" + str(bg_options[i]) + ")")
+##                if rerolls > 0:
+##                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
+##                while entry_choice not in entry_options:
+##                    if len(inputs) > 0:
+##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+##                              "uppercase letter to select it.")
+##                        print("> " + str(inputs[0]))
+##                        entry_choice = inputs.pop(0)[0]
+##                    else:
+##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+##                              "uppercase letter to select it.")
+##                        line_prompt = ""
+##                        if track_inputs:
+##                            line_prompt += "> "
+##                        entry_choice = input(line_prompt)[0]
+##                    if entry_choice.upper() in entry_options[:-1] and \
+##                       entry_choice not in entry_options:
+##                        entry_index = entry_options.find(entry_choice.upper())
+##                        DisplayBackground(bg_indices[entry_index],
+##                                          width=100)
+##                entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
                 # User selected to reroll.
@@ -7770,46 +7796,32 @@ class Hero:
         notePrefix = "### ConstructedBackground: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(bg_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose a Background from the list:",
-                                    [x[0] for x in bg_collection],
-                                    [BackgroundDetails(i,
-                                                       width=-1,
-                                                       breaks=2,
-                                                       indented=True,
-                                                       hanging=False,
-                                                       grid=False) \
-                                     for i in range(len(bg_collection))],
-                                    var=answer,
-                                    title="Background Selection",
-                                    lwidth=30,
-                                    rwidth=bg_width)
-            entry_index = answer.get()
-        else:
-            print("Choose a Background from the list:")
-            for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + bg_collection[i][0] + " (" + str(i+1) + ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Background expanded, or an " + \
-                      "uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayBackground(entry_index,
-                                      width=100)
-            entry_index = entry_options.find(entry_choice)
+        decision = self.ChooseDetailIndex("Choose a Background from the list:",
+                                          "Enter a lowercase letter to see a Background " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in bg_collection],
+                                          [BackgroundDetails(i,
+                                                             width=-1,
+                                                             breaks=2,
+                                                             indented=True,
+                                                             hanging=False,
+                                                             grid=False) \
+                                           for i in range(len(bg_collection))],
+                                          [BackgroundDetails(i,
+                                                             width=100,
+                                                             breaks=1,
+                                                             indented=True,
+                                                             hanging=True,
+                                                             grid=True) \
+                                           for i in range(len(bg_collection))],
+                                          title="Background Selection",
+                                          shellHeader="Choose a Background from the list:",
+                                          lwidth=30,
+                                          rwidth=bg_width,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
     def AddAbility(self, new_ability):
@@ -19346,11 +19358,11 @@ class AssignFrame(Frame):
                 
 factory = SampleMaker()
 
-##root = Tk()
-##root.geometry("+0+0")
-##root.title("SCRPG Hero Editor")
-##root.rowconfigure(0, weight=1)
-##root.columnconfigure(0, weight=1)
+root = Tk()
+root.geometry("+0+0")
+root.title("SCRPG Hero Editor")
+root.rowconfigure(0, weight=1)
+root.columnconfigure(0, weight=1)
 
 # Testing SampleGUI
 ##gui = SampleGUI(root)

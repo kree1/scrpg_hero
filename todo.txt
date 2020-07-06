@@ -171,9 +171,7 @@ Create a Hero method for "let the user choose from a list or request details" so
  Hero.ChooseDetailIndex
  Call this method from...
 	Hero.ChoosePQ, 7112 (choose a section of the Power/Quality list)
-	Hero.AddPrinciple, 7256 (choose a Principle to replace)
-	Hero.GuidedBackground, 7701 (choose a die result to use)
-	Hero.ConstructedBackground, 7785 (choose a Background to add)
+?	Hero.AddPrinciple, 7256 (choose a Principle to replace)
 	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
 	Hero.ChooseAbility, 8061 (choose an Ability to add)
 	Hero.GuidedPowerSource, 8704 (choose a die result to use)
