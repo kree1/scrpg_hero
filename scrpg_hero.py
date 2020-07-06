@@ -8060,40 +8060,22 @@ class Hero:
                 entry_end = min(entry_start + section_length, len(template_options))
                 template_options = template_options[entry_start:entry_end]
                 template_restricted_slots = template_restricted_slots[entry_start:entry_end]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to ask the user to choose an ability
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        choose_prompt,
-                                        [str(x) for x in template_options],
-                                        [x.details(width=-1,
-                                                   indented=True) for x in template_options],
-                                        var=answer,
-                                        title="Ability Selection",
-                                        lwidth=40,
-                                        rwidth=a_width)
-                entry_index = answer.get()
-            else:
-                entry_options = string.ascii_uppercase[0:len(template_options)]
-                entry_choice = ' '
-                printlong(choose_prompt, 100)
-                for i in range(len(template_options)):
-                    print("    " + entry_options[i] + ": " + str(template_options[i]))
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an ability expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice not in entry_options and entry_choice.upper() in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        template_options[entry_index].display(width=100)
-                entry_index = entry_options.find(entry_choice)
+            # Use ChooseDetailIndex to get the user's choice of Ability from the list
+            decision = self.ChooseDetailIndex(choose_prompt,
+                                              "Enter a lowercase letter to see an Ability " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [str(x) for x in template_options],
+                                              [x.details(width=-1,
+                                                         indented=True) for x in template_options],
+                                              [x.details(width=100) for x in template_options],
+                                              title="Ability Selection",
+                                              shellHeader=choose_prompt,
+                                              lwidth=40,
+                                              rwidth=a_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             ability_template = template_options[entry_index]
             ability_matching_slots = template_restricted_slots[entry_index]
         notePrefix += ability_template.name + ": "
@@ -19370,7 +19352,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo(step=0)
+firstHero = factory.getJo(step=1)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
