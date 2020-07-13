@@ -7848,16 +7848,28 @@ class Hero:
                 if len(triplet_options) > 0:
                     # If triplet_options are specified, and pq_options[i] are specified, then
                     #  the only matching options are the ones that fit both
-                    a_matching_options = [t for t in a.pq_options[i] if t in triplet_options]
-##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
-##                              " that match triplet_options: " + str(MixedPQs(a_matching_options)))
+                    a_matching_options = [t for t in a_matching_options \
+                                          if t in triplet_options]
+##                    print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                          " that match triplet_options: " + str(MixedPQs(a_matching_options)))
                 if category_req in [0,1]:
                     # If category_req is specified, and pq_options[i] are specified, then the
                     #  only matching options are the ones that fit both
-                    a_matching_options = [t for t in a.pq_options[i] if t[0]==category_req]
-##                        print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
-##                              " that match triplet_options and category_req: " + \
-##                              str(MixedPQs(a_matching_options)))
+                    a_matching_options = [t for t in a_matching_options if t[0]==category_req]
+##                    print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                          " that match category_req: " + \
+##                          str(MixedPQs(a_matching_options)))
+                # Finally, there has to be at least one match between the list of options for the
+                #  Ability and the list of options available to the hero
+                if len(alt_powers) > 0:
+                    hero_options = [d.triplet() for d in alt_powers] + \
+                                   [d.triplet() for d in self.quality_dice]
+                else:
+                    hero_options = [d.triplet() for d in (self.power_dice + self.quality_dice)]
+                a_matching_options = [t for t in a_matching_options if t in hero_options]
+##                print(notePrefix + "options for slot " + str(i) + " of " + str(a) + \
+##                      " that match " + self.hero_name + "'s available dice: " + \
+##                      str(MixedPQs(a_matching_options)))
                 if len(a_matching_options) > 0:
                     a_isMatch = True
                     a_matching_slots.append(i)
@@ -8020,7 +8032,7 @@ class Hero:
                     print(ability_template.details(indented=True) + "\n\n" + "Error! " + \
                           self.hero_name + "doesn't have any of the required Powers/Qualities " + \
                           "for this ability " + "(" + \
-                          MixedPQs(ability_template.required_pqs[i]) + ").")
+                          str(MixedPQs(ability_template.required_pqs[i])) + ").")
                     template_options.remove(ability_template)
                     if add==1:
                         return template_options
@@ -19279,7 +19291,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getKnockout(step=2)
+##firstHero = factory.getCham(step=4)
 ##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 ##root.bind("<Configure>", disp_frame.Resize)
