@@ -6159,14 +6159,15 @@ def ModeTemplateDetails(zone,
         prefix += "    "
     for d in legal_dice:
         matching_dice = [size for size in mode[2] if size==d]
+        ptext = " Powers at d"
         if len(matching_dice) == 1:
-            modeText += "\n" + split_text(str(len(matching_dice)) + " Power at d" + str(d),
+            ptext = " Power at d"
+        else:
+            ptext = " Powers at d"
+        if len(matching_dice) > 0:
+            modeText += "\n" + split_text(str(len(matching_dice)) + ptext + str(d),
                                           width=width,
-                                          prefix=prefix)
-        elif len(matching_dice) > 1:
-            modeText += "\n" + split_text(str(len(matching_dice)) + " Powers at d" + str(d),
-                                          width=width,
-                                          prefix=prefix)
+                                          prefix=prefix+indent)
     for modifier in range(-2, 3):
         mod_text = str(modifier)
         if modifier >=0:
@@ -6177,13 +6178,13 @@ def ModeTemplateDetails(zone,
             mod_text += " die sizes"
         matching_mods = [m for m in mode[3] if m==modifier]
         if len(matching_mods) == 1:
-            modeText += "\n" + split_text(str(len(matching_mods)) + " Power at " + mod_text,
+            ptext = " Power at "
+        else:
+            ptext = " Powers at "
+        if len(matching_mods) > 0:
+            modeText += "\n" + split_text(str(len(matching_mods)) + ptext + mod_text,
                                           width=width,
-                                          prefix=prefix)
-        elif len(matching_mods) > 1:
-            modeText += "\n" + split_text(str(len(matching_mods)) + " Powers at " + mod_text,
-                                          width=width,
-                                          prefix=prefix)
+                                          prefix=prefix+indent)
     if len(mode[4]) > 0:
         prohibited_text = mode[4][0]
         for i in range(1, len(mode[4])-1):
@@ -8816,7 +8817,7 @@ class Hero:
                 for d in mode_power_dice:
                     die_prompt += "    " + str(d) + "\n"
                 die_prompt += "\n"
-            die_prompt += "Choose a Power to add to this mode at d" + str(die_size) + ":"
+            die_prompt += "Choose a Power to add to this Mode at d" + str(die_size) + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
@@ -8859,7 +8860,7 @@ class Hero:
                 for d in mode_power_dice:
                     die_prompt += "    " + str(d) + "\n"
                 die_prompt += "\n"
-            die_prompt += "Choose a Power to add to this mode at " + mod_text + ":"
+            die_prompt += "Choose a Power to add to this Mode at " + mod_text + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
@@ -8935,6 +8936,8 @@ class Hero:
         self.other_modes.append(new_mode)
         print("All set! " + mode_name + " added to " + self.hero_name + "'s Mode Sheet in " + \
               status_zones[zone] + ".")
+        # If we have a GUI, update it
+        self.RefreshFrame()
     def DisplayMode(self,
                     index,
                     codename=True,
@@ -9256,48 +9259,26 @@ class Hero:
             form_options = [fa for fa in form_options if fa.name not in \
                             [oa.name for oa in other_abilities]]
         prompt = "Choose a Form to add in " + status_zones[zone] + ":"
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user
-            dispWidth = 100
-            answer = IntVar()
-            options = [x.name for x in form_options]
-            details = [x.details(width=-1,
-                                 indented=True) for x in form_options]
-            question = ExpandWindow(self.myWindow,
-                                    prompt,
-                                    options,
-                                    details,
-                                    var=answer,
-                                    title="Form Selection",
-                                    lwidth=30,
-                                    rwidth=dispWidth)
-            entry_index = answer.get()
-        else:
-            entry_options = string.ascii_uppercase[0:len(form_options)]
-            entry_choice = ' '
-            print(prompt)
-            for i in range(len(form_options)):
-                print("    " + entry_options[i] + ": " + form_options[i].name)
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Form expanded, " + \
-                      "or an uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    form_options[entry_index].display()
-            entry_index = entry_options.find(entry_choice)
+        dispWidth = 100
+        decision = self.ChooseDetailIndex(prompt,
+                                          "Enter a lowercase letter to see a Form expanded, " + \
+                                          "or an uppercase letter to select it.",
+                                          [x.name for x in form_options],
+                                          [x.details(width=-1,
+                                                     indented=True) for x in form_options],
+                                          [x.details(width=dispWidth,
+                                                     indented=True) for x in form_options],
+                                          title="Form Selection",
+                                          lwidth=30,
+                                          rwidth=dispWidth,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         form_ability_template = form_options[entry_index]
         form_name = form_ability_template.name
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
         title = "Form Creation: " + form_ability_template.name
-        dispWidth = 100
         form_power_dice = []
         form_ability_template.display(prefix="    ")
         for d in self.power_dice:
@@ -9499,6 +9480,8 @@ class Hero:
         self.other_forms.append(new_form)
         print("All set! " + form_name + " added to " + self.hero_name + "'s Form Sheet in " + \
               status_zones[zone] + ".")
+        # If we have a GUI, update it
+        self.RefreshFrame()
     def AddArchetype(self,
                      arc_index,
                      mod_index=0,
@@ -9854,44 +9837,29 @@ class Hero:
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then, they get 1 additional Green Mode.
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    options = [x[0] for x in mc_green]
-                    details = [ModeTemplateDetails(0,
-                                                   i,
-                                                   indented=True) for i in range(len(mc_green))]
-                    rwidth = 100
-                    answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
-                                            "Choose 1 additional Green Mode:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype Selection: Modular",
-                                            lwidth=30,
-                                            rwidth=rwidth)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(mc_green)]
-                    entry_choice = ' '
-                    print("Choose 1 additional Green Mode:")
-                    for i in range(len(mc_green)):
-                        print("    " + entry_options[i] + ": " + mc_green[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex("Choose 1 additional Green Mode:",
+                                                  "Enter a lowercase letter to see a Mode " + \
+                                                  "expanded, or an uppercase letter to select it.",
+                                                  [x[0] for x in mc_green],
+                                                  [ModeTemplateDetails(0,
+                                                                       i,
+                                                                       width=-1,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_green))],
+                                                  [ModeTemplateDetails(0,
+                                                                       i,
+                                                                       width=dispWidth,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_green))],
+                                                  title="Mode Selection",
+                                                  lwidth=30,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader="Choose 1 additional Green Mode:",
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -9912,47 +9880,29 @@ class Hero:
                         prompt = "Choose the second Yellow Mode:"
                     else:
                         prompt = "Choose the first Yellow Mode:"
-                    if self.UseGUI(inputs):
-                        # Create an ExpandWindow to prompt the user
-                        options = [mc_yellow[x][0] for x in yellow_indices]
-                        details = [ModeTemplateDetails(1,
-                                                       x,
-                                                       width=-1,
-                                                       indented=True) for x in yellow_indices]
-                        rwidth = 100
-                        answer = IntVar()
-                        question = ExpandWindow(self.myWindow,
-                                                prompt,
-                                                options,
-                                                details,
-                                                var=answer,
-                                                title="Archetype Selection: Modular",
-                                                lwidth=30,
-                                                rwidth=rwidth)
-                        entry_index = answer.get()
-                    else:
-                        entry_options = string.ascii_uppercase[0:len(yellow_indices)]
-                        entry_choice = ' '
-                        print(prompt)
-                        for i in range(len(yellow_indices)):
-                            print("    " + entry_options[i] + ": " + \
-                                  mc_yellow[yellow_indices[i]][0])
-                        while entry_choice not in entry_options:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            if len(inputs) > 0:
-                                print("> " + inputs[0])
-                                entry_choice = inputs.pop(0)[0]
-                            else:
-                                line_prompt = ""
-                                if track_inputs:
-                                    line_prompt += "> "
-                                entry_choice = input(line_prompt)[0]
-                            if entry_choice.upper() in entry_options and \
-                               entry_choice not in entry_options:
-                                entry_index = entry_options.find(entry_choice.upper())
-                                DisplayModeTemplate(1, yellow_indices[entry_index])
-                        entry_index = entry_options.find(entry_choice)
+                    decision = self.ChooseDetailIndex(prompt,
+                                                      "Enter a lowercase letter to see a Mode " + \
+                                                      "expanded, or an uppercase letter to " + \
+                                                      "select it.",
+                                                      [mc_yellow[x][0] for x in yellow_indices],
+                                                      [ModeTemplateDetails(1,
+                                                                           x,
+                                                                           width=-1,
+                                                                           indented=True) \
+                                                       for x in yellow_indices],
+                                                      [ModeTemplateDetails(1,
+                                                                           x,
+                                                                           width=dispWidth,
+                                                                           indented=True) \
+                                                       for x in yellow_indices],
+                                                      title="Mode Selection",
+                                                      lwidth=30,
+                                                      rwidth=100,
+                                                      swidth=dispWidth,
+                                                      shellHeader=prompt,
+                                                      inputs=inputs)
+                    entry_index = decision[0]
+                    inputs = decision[1]
                     mode_index = yellow_indices[entry_index]
                     if track_inputs:
                         print(notePrefix + tracker_open)
@@ -9968,45 +9918,29 @@ class Hero:
                         print(notePrefix + tracker_close)
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    options = [x[0] for x in mc_red]
-                    details = [ModeTemplateDetails(2,
-                                                   i,
-                                                   width=-1,
-                                                   indented=True) for i in range(len(mc_red))]
-                    rwidth = 100
-                    answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
-                                            "Choose a Red Mode:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype Selection: Modular",
-                                            lwidth=30,
-                                            rwidth=rwidth)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(mc_red)]
-                    entry_choice = ' '
-                    print("Choose a Red Mode:")
-                    for i in range(len(mc_red)):
-                        print("    " + entry_options[i] + ": " + mc_red[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                decision = self.ChooseDetailIndex("Choose a Red Mode:",
+                                                  "Enter a lowercase letter to see a Mode " + \
+                                                  "expanded, or an uppercase letter to " + \
+                                                  "select it.",
+                                                  [x[0] for x in mc_red],
+                                                  [ModeTemplateDetails(2,
+                                                                       i,
+                                                                       width=-1,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_red))],
+                                                  [ModeTemplateDetails(2,
+                                                                       i,
+                                                                       width=dispWidth,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_red))],
+                                                  title="Mode Selection",
+                                                  lwidth=30,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader="Choose a Red Mode:",
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -13676,7 +13610,7 @@ def Create_Ultra_Boy(step=len(step_names)):
                                 ["b","c","a","b",
                                  ["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
                                 "D",
-                                ["d","a","a","a",
+                                ["b","a","b","a",
                                  ["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
                                 "B",
                                 ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
@@ -19318,7 +19252,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo(step=1)
+firstHero = factory.getJo(step=5)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
