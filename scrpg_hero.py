@@ -6283,7 +6283,7 @@ def ArchetypeDetails(index,
                 arcText += "\n" + split_text("(If already present: " + \
                                              alternatives[archetype[3]] + ")",
                                              width=width,
-                                             prefix=prefix)
+                                             prefix=prefix+indent)
             # Include the secondary power(s)/quality(ies) from archetype[5]
             secondary_count = "1"
             if archetype[4] > 1:
@@ -10757,8 +10757,8 @@ class Hero:
                                 else:
                                     heroic_powers.append(assigning_die)
                         # Now we can compile the list of Power dice that each base form gets.
-                        hr_power_dice = [d for d in heroic_powers + constant_powers]
-                        cv_power_dice = [d for d in civilian_powers + constant_powers]
+                        hr_power_dice = [d for d in constant_powers + heroic_powers]
+                        cv_power_dice = [d for d in constant_powers + civilian_powers]
                     # Phew! That takes care of Power assignment.
                     # Form-Changer can't alter a hero's Qualities, so they get assigned as
                     #  PQDie objects no matter what.
@@ -10962,53 +10962,33 @@ class Hero:
             # To convert to 0-index, subtract 1 from each option:
             arc_indices = [x-1 for x in arc_options]
             # Let the user choose from the options provided by their roll...
-            entry_choice = ' '
-            entry_options = string.ascii_uppercase[0:len(arc_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
-                           for i in range(len(arc_options))]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [ArchetypeDetails(i,
-                                                          width=-1,
-                                                          indented=True,
-                                                          breaks=2,
-                                                          grid=False) for i in arc_indices],
-                                        var=answer,
-                                        title="Archetype Selection",
-                                        lwidth=35,
-                                        rwidth=arc_width)
-                entry_index = answer.get()
-            else:
-                # USe the shell to prompt the user
-                print(roll_report)
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + arc_collection[arc_indices[i]][0] + \
-                          " (" + str(arc_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:len(arc_options)] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(arc_indices[entry_index],
-                                         width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
+                       for i in range(len(arc_options))]
+            if rerolls > 0:
+                options += ["REROLL"]
+            dispWidth = 100
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see an Archetype " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [ArchetypeDetails(i,
+                                                                width=-1,
+                                                                indented=True,
+                                                                breaks=2,
+                                                                grid=False) for i in arc_indices],
+                                              [ArchetypeDetails(i,
+                                                                width=dispWidth,
+                                                                indented=True,
+                                                                breaks=1,
+                                                                grid=True) for i in arc_indices],
+                                              title="Archetype Selection",
+                                              lwidth=35,
+                                              rwidth=arc_width,
+                                              swidth=dispWidth,
+                                              shellHeader=roll_report,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(arc_options):
                 # User selected to reroll.
@@ -11102,50 +11082,34 @@ class Hero:
                             del arc_options[i]
                 # To convert to 0-index, subtract 1 from each option:
                 arc_indices = [x-1 for x in arc_options]
-                # Let the user choose from the list of options:
-                entry_options = string.ascii_uppercase[0:len(arc_options)]
-                entry_choice = ' '
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [arc_mod[0] + ":" + arc_simple[arc_indices[i]][0] + " (" + \
-                              str(arc_options[i]) + ")" for i in range(len(arc_options))]
-                    question = ExpandWindow(self.myWindow,
-                                            roll_report + "\nChoose one:",
-                                            options,
-                                            [ArchetypeDetails(i,
-                                                              width=-1,
-                                                              indented=True,
-                                                              breaks=2,
-                                                              grid=False) \
-                                             for i in arc_indices],
-                                            var=answer,
-                                            title="Archetype Selection",
-                                            lwidth=35,
-                                            rwidth=arc_width)
-                    entry_index = answer.get()
-                else:
-                    print(roll_report)
-                    for i in range(len(arc_options)):
-                        print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
-                              arc_simple[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")")
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayArchetype(arc_indices[entry_index],
-                                             width=100)
-                    entry_index = entry_options.find(entry_choice)
+                decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                                  "Enter a lowercase letter to see an " + \
+                                                  "Archetype expanded, or an uppercase letter " + \
+                                                  "to select it.",
+                                                  [arc_mod[0] + ":" + \
+                                                   arc_simple[arc_indices[i]][0] + " (" + \
+                                                   str(arc_options[i]) + ")" \
+                                                   for i in range(len(arc_options))],
+                                                  [ArchetypeDetails(i,
+                                                                    width=-1,
+                                                                    indented=True,
+                                                                    breaks=2,
+                                                                    grid=False) \
+                                                   for i in arc_indices],
+                                                  [ArchetypeDetails(i,
+                                                                    width=dispWidth,
+                                                                    indented=True,
+                                                                    breaks=1,
+                                                                    grid=True) \
+                                                   for i in arc_indices],
+                                                  title="Archetype Selection",
+                                                  lwidth=35,
+                                                  rwidth=arc_width,
+                                                  swidth=dispWidth,
+                                                  shellHeader=roll_report,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
                 print(arc_mod[0] + ":" + arc_collection[arc_index][0] + " Archetype selected.")
@@ -11157,94 +11121,63 @@ class Hero:
         notePrefix = "### ConstructedArchetype: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(arc_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user.
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose an Archetype from the list:",
-                                    [x[0] for x in arc_collection],
-                                    [ArchetypeDetails(i,
-                                                      width=-1,
-                                                      indented=True,
-                                                      breaks=2,
-                                                      grid=False) \
-                                     for i in range(len(arc_collection))],
-                                    var=answer,
-                                    title="Archetype Selection",
-                                    lwidth=35,
-                                    rwidth=arc_width)
-            entry_index = answer.get()
-        else:
-            print("Choose an Archetype from the list:")
-            for i in range(len(arc_collection)):
-                print("    " + entry_options[i] + ": " + arc_collection[i][0] + " (" + str(i+1) + \
-                      ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see an Archetype expanded, " + \
-                      "or an uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayArchetype(entry_index,
-                                     width=100)
-            entry_index = entry_options.find(entry_choice)
+        dispWidth = 100
+        decision = self.ChooseDetailIndex("Choose an Archetype from the list:",
+                                          "Enter a lowercase letter to see an Archetype " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in arc_collection],
+                                          [ArchetypeDetails(i,
+                                                            width=-1,
+                                                            indented=True,
+                                                            breaks=2,
+                                                            grid=False) \
+                                           for i in range(len(arc_collection))],
+                                          [ArchetypeDetails(i,
+                                                            width=dispWidth,
+                                                            indented=True,
+                                                            breaks=1,
+                                                            grid=True) \
+                                           for i in range(len(arc_collection))],
+                                          title="Archetype Selection",
+                                          lwidth=35,
+                                          rwidth=arc_width,
+                                          swidth=dispWidth,
+                                          shellHeader="Choose an Archetype from the list:",
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(arc_collection[entry_index][0] + " Archetype selected.")
         if entry_index in range(len(arc_simple)):
             return [entry_index, 0]
         else:
             modifier_index = entry_index - len(arc_collection) + len(arc_modifiers)
             arc_mod = arc_modifiers[modifier_index]
-            entry_options = string.ascii_uppercase[0:len(arc_simple)]
-            entry_choice = ' '
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user.
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        arc_mod[0] + " modifies another Archetype. Choose " + \
-                                        "another Archetype from the list:",
-                                        [x[0] for x in arc_simple],
-                                        [ArchetypeDetails(i,
-                                                          width=-1,
-                                                          indented=True,
-                                                          breaks=2,
-                                                          grid=False) \
-                                         for i in range(len(arc_simple))],
-                                        var=answer,
-                                        title="Archetype Selection",
-                                        lwidth=35,
-                                        rwidth=arc_width)
-                entry_index = answer.get()
-            else:
-                print(arc_mod[0] + \
-                      " modifies another Archetype. Choose another Archetype from the list:")
-                for i in range(len(arc_simple)):
-                    print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
-                          arc_simple[i][0] + " (" + str(i+1) + ")")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(entry_index,
-                                         width=100)
-                entry_index = entry_options.find(entry_choice)
+            decision = self.ChooseDetailIndex(arc_mod[0] + " modifies another Archetype. " + \
+                                              "Choose another Archetype from the list:",
+                                              "Enter a lowercase letter to see an Archetype " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x[0] for x in arc_simple],
+                                              [ArchetypeDetails(i,
+                                                                width=-1,
+                                                                indented=True,
+                                                                breaks=2,
+                                                                grid=False) \
+                                               for i in range(len(arc_simple))],
+                                              [ArchetypeDetails(i,
+                                                                width=dispWidth,
+                                                                indented=True,
+                                                                breaks=1,
+                                                                grid=True) \
+                                               for i in range(len(arc_simple))],
+                                              title="Archetype Selection",
+                                              lwidth=35,
+                                              rwidth=arc_width,
+                                              swidth=dispWidth,
+                                              shellHeader=arc_mod[0] + " modifies another " + \
+                                              "Archetype. Choose another Archetype from the list:",
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
     def AddPersonality(self,
@@ -19220,7 +19153,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=2)
+firstHero = factory.getKnockout(step=5)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
