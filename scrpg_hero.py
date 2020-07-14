@@ -6092,11 +6092,14 @@ def TransitionDetails(index,
         else:
             indent = ""
         transition = tr_collection[index]
-        trText = split_text(transition[0] + ": " + transition[1],
+        trText = split_text(transition[0],
                             width=width,
                             prefix=prefix)
         if hanging:
             prefix += "    "
+        trText += "\n" + split_text(transition[1],
+                                    width=width,
+                                    prefix=prefix+indent)
         if len(transition[2]) > 1:
             trText += "\n" + split_text("Optional Green Abilities:",
                                         width=width,
@@ -10225,44 +10228,29 @@ class Hero:
                 # Choose a method of transition
                 tr_prompt = "Choose a method of transformation between your " + self.dv_tags[0] + \
                             " and " + self.dv_tags[1] + " forms:"
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [tr_collection[i][0] for i in range(len(tr_collection))]
-                    details = [TransitionDetails(i,
-                                                 width=-1,
-                                                 indented=True) for i in range(len(tr_collection))]
-                    question = ExpandWindow(self.myWindow,
-                                            tr_prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype: Divided - Transition Selection",
-                                            lwidth=35,
-                                            rwidth=100)
-                    entry_index = answer.get()
-                else:
-                    # Use the shell to prompt the user
-                    entry_options = string.ascii_uppercase[0:len(tr_collection)]
-                    entry_choice = ' '
-                    print(tr_prompt)
-                    for i in range(len(tr_collection)):
-                        print("    " + entry_options[i] + ": " + tr_collection[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a transition method " + \
-                              "expanded, or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex(tr_prompt,
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "transition method expanded, or an " + \
+                                                  "uppercase letter to select it.",
+                                                  [x[0] for x in tr_collection],
+                                                  [TransitionDetails(i,
+                                                                     width=-1,
+                                                                     indented=True) \
+                                                   for i in range(len(tr_collection))],
+                                                  [TransitionDetails(i,
+                                                                     width=dispWidth,
+                                                                     indented=True) \
+                                                   for i in range(len(tr_collection))],
+                                                  title="Archetype: Divided - " + \
+                                                  "Transition Selection",
+                                                  lwidth=35,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader=tr_prompt,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
                 # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
@@ -10394,46 +10382,26 @@ class Hero:
                     if self.archetype == 15 and a_split_form in build_options:
                         print(notePrefix + "Split Form check passed!")
                     # If both options are valid...
-                    if self.UseGUI(inputs):
-                        # Create an ExpandWindow to prompt the user
-                        answer = IntVar()
-                        options = [build_options[i].name for i in range(len(build_options))]
-                        details = [build_options[i].details(width=-1,
-                                                            indented=False) \
-                                   for i in range(len(build_options))]
-                        question = ExpandWindow(self.myWindow,
-                                                bo_prompt,
-                                                options,
-                                                details,
-                                                var=answer,
-                                                title="Archetype: Divided - Divided Nature",
-                                                lwidth=30,
-                                                rwidth=100)
-                        dv_nature = build_options[answer.get()]
-                    else:
-                        # Use the shell to prompt the user
-                        entry_options = string.ascii_uppercase[0:len(build_options)]
-                        entry_choice = ' '
-                        print(bo_prompt)
-                        for i in range(len(build_options)):
-                            print("    " + entry_options[i] + ": " + build_options[i].name)
-                        while entry_choice not in entry_options:
-                            print("Enter a lowercase letter to see a divided nature expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            if len(inputs) > 0:
-                                print("> " + inputs[0])
-                                entry_choice = inputs.pop(0)[0]
-                            else:
-                                line_prompt = ""
-                                if track_inputs:
-                                    line_prompt += "> "
-                                entry_choice = input(line_prompt)[0]
-                            if entry_choice.upper() in entry_options and \
-                               entry_choice not in entry_options:
-                                expand_index = entry_options.find(entry_choice.upper())
-                                build_options[expand_index].display(prefix="    ",
-                                                                    width=100)
-                        dv_nature = build_options[entry_options.find(entry_choice)]
+                    decision = self.ChooseDetailIndex(bo_prompt,
+                                                      "Enter a lowercase letter to see a " + \
+                                                      "divided nature expanded, or an " + \
+                                                      "uppercase letter to select it.",
+                                                      [x.name for x in build_options],
+                                                      [x.details(width=-1,
+                                                                 indented=True) \
+                                                       for x in build_options],
+                                                      [x.details(width=dispWidth,
+                                                                 indented=True) \
+                                                       for x in build_options],
+                                                      title="Archetype: Divided - Divided Nature",
+                                                      lwidth=30,
+                                                      rwidth=100,
+                                                      swidth=dispWidth,
+                                                      shellHeader=bo_prompt,
+                                                      inputs=inputs)
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    dv_nature = build_options[entry_index]
                 else:
                     if self.archetype == 15 and a_split_form not in build_options:
                         print(notePrefix + "Split Form check failed!")
@@ -19252,7 +19220,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo(step=5)
+firstHero = factory.getKnockout(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)

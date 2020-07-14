@@ -173,8 +173,6 @@ Create a Hero method for "let the user choose from a list or request details" so
 	Hero.ChoosePQ, 7112 (choose a section of the Power/Quality list)
 ?	Hero.AddPrinciple, 7256 (choose a Principle to replace)
 ?	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
-	Hero.AddArchetype, 10343 (choose a transition type for Divided)
-	Hero.AddArchetype, 10512 (choose a build option for Divided)
 	Hero.GuidedArchetype, 11114 (choose a die result to use)
 	Hero.GuidedArchetype, 11260 (choose a die result to use with the specified Archetype modifier)
 	Hero.ConstructedArchetype, 11309 (choose an Archetype to add)
