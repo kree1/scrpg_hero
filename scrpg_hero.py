@@ -11510,52 +11510,34 @@ class Hero:
                 # To convert to 0-index, subtract 1 from each option.
                 pn_indices = [x-1 for x in pn_options]
                 # Let the user choose from the options provided by their roll...
-                entry_choice = ' '
-                entry_options = string.ascii_uppercase[0:len(pn_options) + rerolls]
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [pn_collection[pn_indices[i]][0] + " (" + str(pn_options[i]) + ")" \
-                               for i in range(len(pn_indices))]
-                    if rerolls > 0:
-                        options += ["REROLL"]
-                    details = [PersonalityDetails(i,
-                                                  width=-1,
-                                                  indented=True,
-                                                  breaks=2) for i in pn_indices]
-                    question = ExpandWindow(self.myWindow,
-                                            roll_report + "\n\nChoose one:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Personality Selection",
-                                            lwidth=20,
-                                            rwidth=pn_width)
-                    entry_index = answer.get()
-                else:
-                    print(roll_report)
-                    for i in range(len(entry_options)-rerolls):
-                        print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0] + \
-                              " (" + str(pn_options[i]) + ")")
-                    if rerolls > 0:
-                        print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options[:-1] and \
-                           entry_choice not in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(pn_indices[entry_index],
-                                               width=100)
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                options = [pn_collection[pn_indices[i]][0] + " (" + str(pn_options[i]) + ")" \
+                           for i in range(len(pn_indices))]
+                if rerolls > 0:
+                    options += ["REROLL"]
+                decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "Personality expanded, or an uppercase " + \
+                                                  "letter to select it.",
+                                                  options,
+                                                  [PersonalityDetails(i,
+                                                                      width=-1,
+                                                                      indented=True,
+                                                                      breaks=2) \
+                                                   for i in pn_indices],
+                                                  [PersonalityDetails(i,
+                                                                      width=dispWidth,
+                                                                      indented=True,
+                                                                      breaks=1) \
+                                                   for i in pn_indices],
+                                                  title="Personality Selection",
+                                                  shellHeader=roll_report,
+                                                  lwidth=20,
+                                                  rwidth=pn_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 # Now we have a commitment to a valid choice from the list.
                 if entry_index == len(pn_options):
                     # User selected to reroll.
@@ -11614,47 +11596,32 @@ class Hero:
             out_options = [None, None]
             pn_indices = [x for x in range(len(pn_collection))]
             for f in range(len(personalities)):
-                entry_options = string.ascii_uppercase[0:len(pn_indices)]
-                entry_choice = ' '
                 prompt = "Choose a Personality for " + self.dv_tags[f] + " form:"
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [pn_collection[x][0] for x in pn_indices]
-                    details = [PersonalityDetails(x,
-                                                  width=-1,
-                                                  indented=True,
-                                                  breaks=2) for x in pn_indices]
-                    question = ExpandWindow(self.myWindow,
-                                            prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Personality Selection",
-                                            lwidth=30,
-                                            rwidth=pn_width)
-                    entry_index = answer.get()
-                else:
-                    print(prompt)
-                    for i in range(len(pn_indices)):
-                        print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice not in entry_options and \
-                           entry_choice.upper() in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(entry_index,
-                                               width=100)
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex(prompt,
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "Personality expanded, or an uppercase " + \
+                                                  "letter to select it.",
+                                                  [pn_collection[x][0] for x in pn_indices],
+                                                  [PersonalityDetails(x,
+                                                                      width=-1,
+                                                                      indented=True,
+                                                                      breaks=2) \
+                                                   for x in pn_indices],
+                                                  [PersonalityDetails(x,
+                                                                      width=dispWidth,
+                                                                      indented=True,
+                                                                      hanging=True,
+                                                                      breaks=1) \
+                                                   for x in pn_indices],
+                                                  title="Personality Selection",
+                                                  shellHeader=prompt,
+                                                  lwidth=30,
+                                                  rwidth=pn_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 print(pn_collection[entry_index][0] + " Personality selected.")
                 # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
                 #  [Heroic, Civilian] because Civilian is optional, so flip them here
@@ -11682,45 +11649,31 @@ class Hero:
         else:
             # Choose 1 Personality.
             # Returns [personality index]
-            entry_options = string.ascii_uppercase[0:len(pn_collection)]
-            entry_choice = ' '
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user.
-                answer = IntVar()
-                options = [x[0] for x in pn_collection]
-                details = [PersonalityDetails(i,
-                                              width=-1,
-                                              indented=True,
-                                              breaks=2) for i in range(len(pn_collection))]
-                question = ExpandWindow(self.myWindow,
-                                        "Choose a Personality from the list:",
-                                        options,
-                                        details,
-                                        var=answer,
-                                        title="Personality Selection",
-                                        lwidth=35,
-                                        rwidth=pn_width)
-                entry_index = answer.get()
-            else:
-                print("OK! Choose a Personality from the list:")
-                for i in range(len(pn_collection)):
-                    print("    " + entry_options[i] + ": " + pn_collection[i][0])
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see a Personality expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice not in entry_options and entry_choice.upper() in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPersonality(entry_index,
-                                           width=100)
-                entry_index = entry_options.find(entry_choice)
+            dispWidth = 100
+            decision = self.ChooseDetailIndex("Choose a Personality from the list:",
+                                              "Enter a lowercase letter to see a Personality " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x[0] for x in pn_collection],
+                                              [PersonalityDetails(i,
+                                                                  width=-1,
+                                                                  indented=True,
+                                                                  breaks=2) \
+                                               for i in range(len(pn_collection))],
+                                              [PersonalityDetails(i,
+                                                                  width=dispWidth,
+                                                                  indented=True,
+                                                                  hanging=True,
+                                                                  breaks=1) \
+                                               for i in range(len(pn_collection))],
+                                              title="Personality Selection",
+                                              shellHeader="OK! Choose a Personality from the " + \
+                                              "list:",
+                                              lwidth=35,
+                                              rwidth=pn_width,
+                                              swidth=dispWidth,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             print(pn_collection[entry_index][0] + " Personality selected.")
             return [entry_index]
     def AddRedAbility(self, retcon_step=0, inputs=[]):
@@ -19153,7 +19106,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=5)
+firstHero = factory.getKnockout(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
