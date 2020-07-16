@@ -172,10 +172,11 @@ Create a Hero method for "let the user choose from a list or request details" so
  Call this method from...
 	Hero.ChoosePQ, 7112 (choose a section of the Power/Quality list)
 ?	Hero.AddPrinciple, 7256 (choose a Principle to replace)
-?	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
-	Hero.AddRedAbility, 12029 (choose a category of Red Abilities)
-	Hero.AddRetcon, 12265 (choose an Ability to edit)
-	Hero.AddRetcon, 12572 (choose a Principle category)
+x	Hero.ChooseAbility, 8011 (choose a section of the Ability list)
+x	Hero.AddRedAbility, 12029 (choose a category of Red Abilities)
+x	Hero.AddRetcon, 12572 (choose a Principle category)
+		These decisions need the short list items to be multi-line in the text shell so the user can tell them apart, and ExpandWindow won't take a multi-line list item, so
+		the text and GUI versions need different lists of line items, which ChooseDetailIndex isn't set up for
 
 ? Consolidate mode selection process into a single loop, like form selection ?
  ~ This would pretty much require creating a ChooseMode method to handle the text prompts, mode option lists, GUI/nonGUI procedures, etc.

@@ -11993,53 +11993,38 @@ class Hero:
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Change the Power/Quality used in an Ability":
                 # Choose an Ability to change
-                ability_options = [a for a in self.abilities]
+                ability_options = []
+                # Make a list of all the hero's Abilities that use at least one Power/Quality,
+                #  sorted by status zone
+                for i in range(len(status_zones)):
+                    ability_options.extend([a for a in self.abilities \
+                                            if "%p" in a.text and a.zone == i])
+                # If the hero has other Forms or Modes that have Abilities that use at least one
+                #  Power/Quality, add those to the list
                 for f in self.other_forms:
-                    ability_options += [a for a in f.abilities]
+                    ability_options += [a for a in f.abilities if "%p" in a.text]
                 for m in self.other_modes:
-                    ability_options += [a for a in m.abilities]
-                # If an Ability doesn't use a Power or Quality in its text, it's not a valid
-                #  choice here...
-                ability_options = [a for a in ability_options if "%p" in a.text]
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [str(x) for x in ability_options]
-                    details = [x.details(width=-1,
-                                         indented=True) for x in ability_options]
-                    prompt = "Choose an Ability to edit:"
-                    question = ExpandWindow(self.myWindow,
-                                            prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Retcon: Change an Ability's related " + \
-                                            "Power/Quality",
-                                            lwidth=30,
-                                            rwidth=a_width)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(ability_options)]
-                    entry_choice = ' '
-                    print("Choose an Ability to edit:")
-                    for i in range(len(ability_options)):
-                        print("    " + entry_options[i] + ": " + str(ability_options[i]))
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see an Ability expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice not in entry_options and \
-                           entry_choice.upper() in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            ability_options[entry_index].display()
-                    entry_index = entry_options.find(entry_choice)
+                    ability_options += [a for a in m.abilities if "%p" in a.text]
+                dispWidth = 100
+                decision = self.ChooseDetailIndex("Choose an Ability to edit:",
+                                                  "Enter a lowercase letter to see an Ability " + \
+                                                  "expanded, or an uppercase letter to select it.",
+                                                  [str(x) for x in ability_options],
+                                                  [x.details(width=-1,
+                                                             indented=True) \
+                                                   for x in ability_options],
+                                                  [x.details(width=dispWidth,
+                                                             indented=True) \
+                                                   for x in ability_options],
+                                                  title="Retcon: Change an Ability's related " + \
+                                                  "Power/Quality",
+                                                  shellHeader="Choose an Ability to edit:",
+                                                  lwidth=30,
+                                                  rwidth=a_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 edit_ability = ability_options[entry_index]
                 edit_index = 0
                 # If the ability uses more than one power/quality, specify which to change
@@ -19106,19 +19091,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=3)
-disp_frame = HeroFrame(root, hero=firstHero)
-disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-root.bind("<Configure>", disp_frame.Resize)
-root.lift()
-root.mainloop()
-
-# Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
+##firstHero = factory.getKnockout(step=5)
+##disp_frame = HeroFrame(root, hero=firstHero)
 ##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 ##root.bind("<Configure>", disp_frame.Resize)
 ##root.lift()
 ##root.mainloop()
+
+# Using a not-yet-constructed hero
+disp_frame = HeroFrame(root)
+disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+root.bind("<Configure>", disp_frame.Resize)
+root.lift()
+root.mainloop()
 
 # Testing display/details methods...
 
