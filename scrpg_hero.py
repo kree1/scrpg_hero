@@ -163,21 +163,24 @@ tracker_close = "~~~ ]"
 
 def printlong(text,
               width=100,
-              prefix=""):
+              prefix="",
+              detect=True):
     # Prints the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
     notePrefix = "### printlong: "
     print(split_text(text,
                      width=width,
-                     prefix=prefix))
+                     prefix=prefix,
+                     detect=detect))
 
 def split_text(text,
                width=100,
-               prefix=""):
+               prefix="",
+               detect=True):
     # Returns the string [text] with line breaks inserted to prevent any line showing more than
     #  [width] characters, and with [prefix] inserted at the start of each line.
     notePrefix = "### split_text: "
-    if prefix == "":
+    if prefix == "" and detect:
         # No prefix specified? Check to see if text starts with whitespace; if so, use that
         okToShift = False
         if len(text) > 0:
@@ -204,7 +207,8 @@ def split_text(text,
         sections = text.split("\n")
         lines = split_text(sections[0],
                            width=width,
-                           prefix=prefix)
+                           prefix=prefix,
+                           detect=detect)
         for s in sections[1:]:
             lines += "\n" + split_text(s,
                                        width=width,
@@ -6088,11 +6092,14 @@ def TransitionDetails(index,
         else:
             indent = ""
         transition = tr_collection[index]
-        trText = split_text(transition[0] + ": " + transition[1],
+        trText = split_text(transition[0],
                             width=width,
                             prefix=prefix)
         if hanging:
             prefix += "    "
+        trText += "\n" + split_text(transition[1],
+                                    width=width,
+                                    prefix=prefix+indent)
         if len(transition[2]) > 1:
             trText += "\n" + split_text("Optional Green Abilities:",
                                         width=width,
@@ -6155,14 +6162,15 @@ def ModeTemplateDetails(zone,
         prefix += "    "
     for d in legal_dice:
         matching_dice = [size for size in mode[2] if size==d]
+        ptext = " Powers at d"
         if len(matching_dice) == 1:
-            modeText += "\n" + split_text(str(len(matching_dice)) + " Power at d" + str(d),
+            ptext = " Power at d"
+        else:
+            ptext = " Powers at d"
+        if len(matching_dice) > 0:
+            modeText += "\n" + split_text(str(len(matching_dice)) + ptext + str(d),
                                           width=width,
-                                          prefix=prefix)
-        elif len(matching_dice) > 1:
-            modeText += "\n" + split_text(str(len(matching_dice)) + " Powers at d" + str(d),
-                                          width=width,
-                                          prefix=prefix)
+                                          prefix=prefix+indent)
     for modifier in range(-2, 3):
         mod_text = str(modifier)
         if modifier >=0:
@@ -6173,13 +6181,13 @@ def ModeTemplateDetails(zone,
             mod_text += " die sizes"
         matching_mods = [m for m in mode[3] if m==modifier]
         if len(matching_mods) == 1:
-            modeText += "\n" + split_text(str(len(matching_mods)) + " Power at " + mod_text,
+            ptext = " Power at "
+        else:
+            ptext = " Powers at "
+        if len(matching_mods) > 0:
+            modeText += "\n" + split_text(str(len(matching_mods)) + ptext + mod_text,
                                           width=width,
-                                          prefix=prefix)
-        elif len(matching_mods) > 1:
-            modeText += "\n" + split_text(str(len(matching_mods)) + " Powers at " + mod_text,
-                                          width=width,
-                                          prefix=prefix)
+                                          prefix=prefix+indent)
     if len(mode[4]) > 0:
         prohibited_text = mode[4][0]
         for i in range(1, len(mode[4])-1):
@@ -6275,7 +6283,7 @@ def ArchetypeDetails(index,
                 arcText += "\n" + split_text("(If already present: " + \
                                              alternatives[archetype[3]] + ")",
                                              width=width,
-                                             prefix=prefix)
+                                             prefix=prefix+indent)
             # Include the secondary power(s)/quality(ies) from archetype[5]
             secondary_count = "1"
             if archetype[4] > 1:
@@ -6756,6 +6764,98 @@ class Hero:
                 line_prompt = "> "
             entry_line = input(line_prompt)
         return [entry_line, inputs]
+    def ChooseDetailIndex(self,
+                          guiPrompt,
+                          shellPrompt,
+                          options,
+                          guiDetails,
+                          shellDetails,
+                          title="Hero Creation",
+                          shellHeader="",
+                          shellFooter="",
+                          lwidth=40,
+                          rwidth=100,
+                          swidth=100,
+                          inputs=[]):
+        # Prints a prompt and a list of lettered options (options, indicated by A, B, C, etc.),
+        #  then lets the user choose from among them
+        # guiPrompt: the prompt to display in the ExpandWindow, if one is used
+        # shellPrompt: the prompt to display in the text shell, if that is used instead
+        # options: the list of short text strings identifying the user's available choices
+        # guiDetails: the list of longer text strings to display if the user requests additional
+        #  info on any of options (formatted for the GUI)
+        # shellDetails: the list of longer text strings to display if the user requests additional
+        #  info on any of options (formatted for the text shell)
+        # title: a string to display in the title bar of the ExpandWindow, if there is one
+        # shellHeader: a string to display before printing the list of lettered options, if the
+        #  text shell is used
+        # shellFooter: a string to display after printing the list of lettered options, if the text
+        #  shell is used
+        # lwidth: the width of the left side of the ExpandWindow, if used
+        # rwidth: the width of the right side of the ExpandWindow, if used
+        # swidth: the maximum length in characters of a line of text in the shell, if used
+        # inputs: a list of text inputs to use automatically instead of prompting the user
+        # Returns [index of user's response, any remaining inputs]
+        notePrefix = "### Hero.ChooseDetailIndex: "
+        if len(inputs) > 0:
+            print(notePrefix + "inputs=" + str(inputs))
+        entry_index = -1
+        if self.UseGUI(inputs):
+            # Create an ExpandWindow to communicate with the user
+            answer = IntVar()
+            question = ExpandWindow(self.myWindow,
+                                    guiPrompt,
+                                    options,
+                                    guiDetails,
+                                    var=answer,
+                                    title=title,
+                                    lwidth=lwidth,
+                                    rwidth=rwidth)
+            entry_index = answer.get()
+        else:
+            # Use the text shell to communicate with the user
+            # entry_options: list of letters to pair with options
+            # entry_choice: first character of user's most recent entry
+            entry_options = string.ascii_uppercase[0:len(options)]
+            entry_choice = ' '
+            # If shellHeader is specified, print it before the list of options
+            if shellHeader:
+                printlong(shellHeader,
+                          width=swidth)
+            # Print each option with its associated letter from entry_options
+            for i in range(len(options)):
+                print("    " + entry_options[i] + ": " + str(options[i]))
+            # If shellFooter is specified, print it after the list of options
+            if shellFooter:
+                printlong(shellFooter,
+                          width=swidth)
+            while entry_choice not in entry_options:
+                # Prompt the user to make a selection
+                printlong(shellPrompt,
+                          width=swidth)
+                # If there's a saved input, print it and use its first character as entry_choice;
+                #  otherwise, wait for the user to type and use their first character as
+                #  entry_choice
+                if len(inputs) > 0:
+                    print("> " + inputs[0])
+                    entry_choice = inputs.pop(0)[0]
+                else:
+                    line_prompt = ""
+                    if track_inputs:
+                        line_prompt = "> "
+                    entry_choice = input(line_prompt)[0]
+                # If entry_choice is the lowercase version of one of entry_options, identify which
+                #  one and print the corresponding item from shellDetails
+                if entry_choice.upper() in entry_options and not entry_choice in entry_options:
+                    expand_index = entry_options.find(entry_choice.upper())
+                    if expand_index in range(len(shellDetails)):
+                        printlong(str(shellDetails[expand_index]),
+                                  width=swidth,
+                                  detect=False)
+            # Once they enter a valid choice (entry_choice in entry_options), convert that choice
+            #  to an index using find().
+            entry_index = entry_options.find(entry_choice)
+        return [entry_index, inputs]
     def AddPQDie(self,
                  ispower,
                  pair,
@@ -7286,46 +7386,30 @@ class Hero:
                 prompt = "Choose an " + rc_names[category] + " Principle."
             else:
                 prompt = "Choose a " + rc_names[category] + " Principle."
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        prompt,
-                                        [x.title for x in r_options],
-                                        [x.details(width=-1,
-                                                   indented=False,
-                                                   breaks=2,
-                                                   hanging=False) for x in r_options],
-                                        var=answer,
-                                        title="Principle Selection",
-                                        lwidth=30,
-                                        rwidth=ri_width)
-                entry_index = answer.get()
-            else:
-                print(prompt)
-                print("The following Principles are in this category...")
-                entry_options = string.ascii_uppercase[0:len(r_options)]
-                for i in range(len(r_options)):
-                    print("    " + entry_options[i] + ": " + r_options[i].title)
-                entry_choice = ' '
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see a Principle expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt = "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options and not entry_choice in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        r_options[entry_index].display(width=dispWidth,
-                                                       prefix="    ",
-                                                       indented=True,
-                                                       hanging=False)
-                entry_index = entry_options.find(entry_choice)
+            guiDetails = [x.details(width=-1,
+                                    indented=False,
+                                    breaks=2,
+                                    hanging=False) for x in r_options]
+            shellDetails = [x.details(width=dispWidth,
+                                      prefix="    ",
+                                      indented=True,
+                                      breaks=1,
+                                      hanging=False) for x in r_options]
+            decision = self.ChooseDetailIndex(prompt,
+                                              "Enter a lowercase letter to see a Principle " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x.title for x in r_options],
+                                              guiDetails,
+                                              shellDetails,
+                                              title="Principle Selection",
+                                              shellHeader=prompt+"\nThe following Principles " + \
+                                              "are in this category...",
+                                              lwidth=30,
+                                              rwidth=ri_width,
+                                              swidth=dispWidth,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             ri = r_options[entry_index]
             print(str(ri) + " selected!")
             entry_title = ri.title
@@ -7609,51 +7693,76 @@ class Hero:
             # Let the user choose from the options provided by their roll...
             entry_choice = ' '
             entry_options = string.ascii_uppercase[0:len(bg_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to ask the user to choose
-                answer = IntVar()
-                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [BackgroundDetails(x,
-                                                           width=-1,
-                                                           breaks=2,
-                                                           indented=True,
-                                                           grid=False) for x in bg_indices],
-                                        var=answer,
-                                        title="Background Selection",
-                                        lwidth=30,
-                                        rwidth=bg_width)
-                entry_index = answer.get()
-            else:
-                print(roll_report)
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + bg_collection[bg_indices[i]][0] + \
-                          " (" + str(bg_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    if len(inputs) > 0:
-                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-                              "uppercase letter to select it.")
-                        print("> " + str(inputs[0]))
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-                              "uppercase letter to select it.")
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:-1] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayBackground(bg_indices[entry_index],
-                                          width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
+            if rerolls > 0:
+                options += ["REROLL"]
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see a Background " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [BackgroundDetails(x,
+                                                                 width=-1,
+                                                                 breaks=2,
+                                                                 indented=True,
+                                                                 grid=False) for x in bg_indices],
+                                              [BackgroundDetails(x,
+                                                                 width=100,
+                                                                 breaks=1,
+                                                                 indented=True,
+                                                                 hanging=True,
+                                                                 grid=True) for x in bg_indices],
+                                              title="Background Selection",
+                                              lwidth=30,
+                                              rwidth=bg_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
+##            if self.UseGUI(inputs):
+##                # Create an ExpandWindow to ask the user to choose
+##                answer = IntVar()
+##                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
+##                if rerolls > 0:
+##                    options += ["REROLL"]
+##                question = ExpandWindow(self.myWindow,
+##                                        roll_report + "\nChoose one:",
+##                                        options,
+##                                        [BackgroundDetails(x,
+##                                                           width=-1,
+##                                                           breaks=2,
+##                                                           indented=True,
+##                                                           grid=False) for x in bg_indices],
+##                                        var=answer,
+##                                        title="Background Selection",
+##                                        lwidth=30,
+##                                        rwidth=bg_width)
+##                entry_index = answer.get()
+##            else:
+##                print(roll_report)
+##                for i in range(len(entry_options)-rerolls):
+##                    print("    " + entry_options[i] + ": " + bg_collection[bg_indices[i]][0] + \
+##                          " (" + str(bg_options[i]) + ")")
+##                if rerolls > 0:
+##                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
+##                while entry_choice not in entry_options:
+##                    if len(inputs) > 0:
+##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+##                              "uppercase letter to select it.")
+##                        print("> " + str(inputs[0]))
+##                        entry_choice = inputs.pop(0)[0]
+##                    else:
+##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
+##                              "uppercase letter to select it.")
+##                        line_prompt = ""
+##                        if track_inputs:
+##                            line_prompt += "> "
+##                        entry_choice = input(line_prompt)[0]
+##                    if entry_choice.upper() in entry_options[:-1] and \
+##                       entry_choice not in entry_options:
+##                        entry_index = entry_options.find(entry_choice.upper())
+##                        DisplayBackground(bg_indices[entry_index],
+##                                          width=100)
+##                entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
                 # User selected to reroll.
@@ -7691,46 +7800,32 @@ class Hero:
         notePrefix = "### ConstructedBackground: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(bg_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose a Background from the list:",
-                                    [x[0] for x in bg_collection],
-                                    [BackgroundDetails(i,
-                                                       width=-1,
-                                                       breaks=2,
-                                                       indented=True,
-                                                       hanging=False,
-                                                       grid=False) \
-                                     for i in range(len(bg_collection))],
-                                    var=answer,
-                                    title="Background Selection",
-                                    lwidth=30,
-                                    rwidth=bg_width)
-            entry_index = answer.get()
-        else:
-            print("Choose a Background from the list:")
-            for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + bg_collection[i][0] + " (" + str(i+1) + ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Background expanded, or an " + \
-                      "uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayBackground(entry_index,
-                                      width=100)
-            entry_index = entry_options.find(entry_choice)
+        decision = self.ChooseDetailIndex("Choose a Background from the list:",
+                                          "Enter a lowercase letter to see a Background " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in bg_collection],
+                                          [BackgroundDetails(i,
+                                                             width=-1,
+                                                             breaks=2,
+                                                             indented=True,
+                                                             hanging=False,
+                                                             grid=False) \
+                                           for i in range(len(bg_collection))],
+                                          [BackgroundDetails(i,
+                                                             width=100,
+                                                             breaks=1,
+                                                             indented=True,
+                                                             hanging=True,
+                                                             grid=True) \
+                                           for i in range(len(bg_collection))],
+                                          title="Background Selection",
+                                          shellHeader="Choose a Background from the list:",
+                                          lwidth=30,
+                                          rwidth=bg_width,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
     def AddAbility(self, new_ability):
@@ -7981,40 +8076,22 @@ class Hero:
                 entry_end = min(entry_start + section_length, len(template_options))
                 template_options = template_options[entry_start:entry_end]
                 template_restricted_slots = template_restricted_slots[entry_start:entry_end]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to ask the user to choose an ability
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        choose_prompt,
-                                        [str(x) for x in template_options],
-                                        [x.details(width=-1,
-                                                   indented=True) for x in template_options],
-                                        var=answer,
-                                        title="Ability Selection",
-                                        lwidth=40,
-                                        rwidth=a_width)
-                entry_index = answer.get()
-            else:
-                entry_options = string.ascii_uppercase[0:len(template_options)]
-                entry_choice = ' '
-                printlong(choose_prompt, 100)
-                for i in range(len(template_options)):
-                    print("    " + entry_options[i] + ": " + str(template_options[i]))
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an ability expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice not in entry_options and entry_choice.upper() in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        template_options[entry_index].display(width=100)
-                entry_index = entry_options.find(entry_choice)
+            # Use ChooseDetailIndex to get the user's choice of Ability from the list
+            decision = self.ChooseDetailIndex(choose_prompt,
+                                              "Enter a lowercase letter to see an Ability " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [str(x) for x in template_options],
+                                              [x.details(width=-1,
+                                                         indented=True) for x in template_options],
+                                              [x.details(width=100) for x in template_options],
+                                              title="Ability Selection",
+                                              shellHeader=choose_prompt,
+                                              lwidth=40,
+                                              rwidth=a_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             ability_template = template_options[entry_index]
             ability_matching_slots = template_restricted_slots[entry_index]
         notePrefix += ability_template.name + ": "
@@ -8624,51 +8701,32 @@ class Hero:
             ps_indices = [x-1 for x in ps_options]
 ##            print(notePrefix + "ps_indices: " + str(ps_indices))
             # Let the user choose from the options provided by their roll...
-            entry_choice = ' '
-            entry_options = string.ascii_uppercase[0:len(ps_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
-                           for i in range(len(ps_indices))]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [PowerSourceDetails(i,
-                                                            width=-1,
-                                                            indented=True,
-                                                            breaks=2,
-                                                            grid=False) for i in ps_indices],
-                                        var=answer,
-                                        title="Power Source Selection",
-                                        lwidth=35,
-                                        rwidth=ps_width)
-                entry_index = answer.get()
-            else:
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + ps_collection[ps_indices[i]][0] + \
-                          " (" + str(ps_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an option expanded, or an " + \
-                          "uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:-1] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPowerSource(ps_indices[entry_index],
-                                           width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [ps_collection[ps_indices[i]][0] + " (" + str(ps_options[i]) + ")" \
+                       for i in range(len(ps_indices))]
+            if rerolls > 0:
+                options += ["REROLL"]
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see an option " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [PowerSourceDetails(i,
+                                                                  width=-1,
+                                                                  indented=True,
+                                                                  breaks=2,
+                                                                  grid=False) for i in ps_indices],
+                                              [PowerSourceDetails(i,
+                                                                  width=100,
+                                                                  breaks=1,
+                                                                  indented=True,
+                                                                  hanging=True,
+                                                                  grid=True) for i in ps_indices],
+                                              title="Power Source Selection",
+                                              lwidth=35,
+                                              rwidth=ps_width,
+                                              swidth=100,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(ps_options):
                 # User selected to reroll.
@@ -8706,46 +8764,31 @@ class Hero:
         notePrefix = "### ConstructedPowerSource: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(ps_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user.
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose a Power Source from the list:",
-                                    [x[0] for x in ps_collection],
-                                    [PowerSourceDetails(i,
-                                                        width=-1,
-                                                        indented=True,
-                                                        breaks=2,
-                                                        grid=False) \
-                                     for i in range(len(ps_collection))],
-                                    var=answer,
-                                    title="Power Source Selection",
-                                    lwidth=35,
-                                    rwidth=ps_width)
-            entry_index = answer.get()
-        else:
-            print("Choose a Power Source from the list:")
-            for i in range(len(bg_collection)):
-                print("    " + entry_options[i] + ": " + ps_collection[i][0] + " (" + str(i+1) + \
-                      ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Power Source expanded, or an " + \
-                      "uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayPowerSource(entry_index,
-                                       width=100)
-            entry_index = entry_options.find(entry_choice)
+        decision = self.ChooseDetailIndex("Choose a Power Source from the list:",
+                                          "Enter a lowercase letter to see a Power Source " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in ps_collection],
+                                          [PowerSourceDetails(i,
+                                                              width=-1,
+                                                              indented=True,
+                                                              breaks=2,
+                                                              grid=False) \
+                                           for i in range(len(ps_collection))],
+                                          [PowerSourceDetails(i,
+                                                              width=100,
+                                                              breaks=1,
+                                                              indented=True,
+                                                              hanging=True,
+                                                              grid=True) \
+                                           for i in range(len(ps_collection))],
+                                          title="Power Source Selection",
+                                          shellHeader="Choose a Power Source from the list:",
+                                          lwidth=35,
+                                          rwidth=ps_width,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(ps_collection[entry_index][0] + " Power Source selected.")
         return entry_index
     def AddMode(self,
@@ -8789,7 +8832,7 @@ class Hero:
                 for d in mode_power_dice:
                     die_prompt += "    " + str(d) + "\n"
                 die_prompt += "\n"
-            die_prompt += "Choose a Power to add to this mode at d" + str(die_size) + ":"
+            die_prompt += "Choose a Power to add to this Mode at d" + str(die_size) + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
@@ -8832,7 +8875,7 @@ class Hero:
                 for d in mode_power_dice:
                     die_prompt += "    " + str(d) + "\n"
                 die_prompt += "\n"
-            die_prompt += "Choose a Power to add to this mode at " + mod_text + ":"
+            die_prompt += "Choose a Power to add to this Mode at " + mod_text + ":"
             if len(remaining_dice) == 1:
                 entry_die = remaining_dice[0]
             else:
@@ -8908,6 +8951,8 @@ class Hero:
         self.other_modes.append(new_mode)
         print("All set! " + mode_name + " added to " + self.hero_name + "'s Mode Sheet in " + \
               status_zones[zone] + ".")
+        # If we have a GUI, update it
+        self.RefreshFrame()
     def DisplayMode(self,
                     index,
                     codename=True,
@@ -9229,48 +9274,26 @@ class Hero:
             form_options = [fa for fa in form_options if fa.name not in \
                             [oa.name for oa in other_abilities]]
         prompt = "Choose a Form to add in " + status_zones[zone] + ":"
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user
-            dispWidth = 100
-            answer = IntVar()
-            options = [x.name for x in form_options]
-            details = [x.details(width=-1,
-                                 indented=True) for x in form_options]
-            question = ExpandWindow(self.myWindow,
-                                    prompt,
-                                    options,
-                                    details,
-                                    var=answer,
-                                    title="Form Selection",
-                                    lwidth=30,
-                                    rwidth=dispWidth)
-            entry_index = answer.get()
-        else:
-            entry_options = string.ascii_uppercase[0:len(form_options)]
-            entry_choice = ' '
-            print(prompt)
-            for i in range(len(form_options)):
-                print("    " + entry_options[i] + ": " + form_options[i].name)
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see a Form expanded, " + \
-                      "or an uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    form_options[entry_index].display()
-            entry_index = entry_options.find(entry_choice)
+        dispWidth = 100
+        decision = self.ChooseDetailIndex(prompt,
+                                          "Enter a lowercase letter to see a Form expanded, " + \
+                                          "or an uppercase letter to select it.",
+                                          [x.name for x in form_options],
+                                          [x.details(width=-1,
+                                                     indented=True) for x in form_options],
+                                          [x.details(width=dispWidth,
+                                                     indented=True) for x in form_options],
+                                          title="Form Selection",
+                                          lwidth=30,
+                                          rwidth=dispWidth,
+                                          swidth=100,
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         form_ability_template = form_options[entry_index]
         form_name = form_ability_template.name
         print("OK! Let's create the Power list for " + form_ability_template.name + "...")
         title = "Form Creation: " + form_ability_template.name
-        dispWidth = 100
         form_power_dice = []
         form_ability_template.display(prefix="    ")
         for d in self.power_dice:
@@ -9472,6 +9495,8 @@ class Hero:
         self.other_forms.append(new_form)
         print("All set! " + form_name + " added to " + self.hero_name + "'s Form Sheet in " + \
               status_zones[zone] + ".")
+        # If we have a GUI, update it
+        self.RefreshFrame()
     def AddArchetype(self,
                      arc_index,
                      mod_index=0,
@@ -9827,44 +9852,29 @@ class Hero:
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then, they get 1 additional Green Mode.
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    options = [x[0] for x in mc_green]
-                    details = [ModeTemplateDetails(0,
-                                                   i,
-                                                   indented=True) for i in range(len(mc_green))]
-                    rwidth = 100
-                    answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
-                                            "Choose 1 additional Green Mode:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype Selection: Modular",
-                                            lwidth=30,
-                                            rwidth=rwidth)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(mc_green)]
-                    entry_choice = ' '
-                    print("Choose 1 additional Green Mode:")
-                    for i in range(len(mc_green)):
-                        print("    " + entry_options[i] + ": " + mc_green[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayModeTemplate(0, entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex("Choose 1 additional Green Mode:",
+                                                  "Enter a lowercase letter to see a Mode " + \
+                                                  "expanded, or an uppercase letter to select it.",
+                                                  [x[0] for x in mc_green],
+                                                  [ModeTemplateDetails(0,
+                                                                       i,
+                                                                       width=-1,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_green))],
+                                                  [ModeTemplateDetails(0,
+                                                                       i,
+                                                                       width=dispWidth,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_green))],
+                                                  title="Mode Selection",
+                                                  lwidth=30,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader="Choose 1 additional Green Mode:",
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -9885,47 +9895,29 @@ class Hero:
                         prompt = "Choose the second Yellow Mode:"
                     else:
                         prompt = "Choose the first Yellow Mode:"
-                    if self.UseGUI(inputs):
-                        # Create an ExpandWindow to prompt the user
-                        options = [mc_yellow[x][0] for x in yellow_indices]
-                        details = [ModeTemplateDetails(1,
-                                                       x,
-                                                       width=-1,
-                                                       indented=True) for x in yellow_indices]
-                        rwidth = 100
-                        answer = IntVar()
-                        question = ExpandWindow(self.myWindow,
-                                                prompt,
-                                                options,
-                                                details,
-                                                var=answer,
-                                                title="Archetype Selection: Modular",
-                                                lwidth=30,
-                                                rwidth=rwidth)
-                        entry_index = answer.get()
-                    else:
-                        entry_options = string.ascii_uppercase[0:len(yellow_indices)]
-                        entry_choice = ' '
-                        print(prompt)
-                        for i in range(len(yellow_indices)):
-                            print("    " + entry_options[i] + ": " + \
-                                  mc_yellow[yellow_indices[i]][0])
-                        while entry_choice not in entry_options:
-                            print("Enter a lowercase letter to see a Mode expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            if len(inputs) > 0:
-                                print("> " + inputs[0])
-                                entry_choice = inputs.pop(0)[0]
-                            else:
-                                line_prompt = ""
-                                if track_inputs:
-                                    line_prompt += "> "
-                                entry_choice = input(line_prompt)[0]
-                            if entry_choice.upper() in entry_options and \
-                               entry_choice not in entry_options:
-                                entry_index = entry_options.find(entry_choice.upper())
-                                DisplayModeTemplate(1, yellow_indices[entry_index])
-                        entry_index = entry_options.find(entry_choice)
+                    decision = self.ChooseDetailIndex(prompt,
+                                                      "Enter a lowercase letter to see a Mode " + \
+                                                      "expanded, or an uppercase letter to " + \
+                                                      "select it.",
+                                                      [mc_yellow[x][0] for x in yellow_indices],
+                                                      [ModeTemplateDetails(1,
+                                                                           x,
+                                                                           width=-1,
+                                                                           indented=True) \
+                                                       for x in yellow_indices],
+                                                      [ModeTemplateDetails(1,
+                                                                           x,
+                                                                           width=dispWidth,
+                                                                           indented=True) \
+                                                       for x in yellow_indices],
+                                                      title="Mode Selection",
+                                                      lwidth=30,
+                                                      rwidth=100,
+                                                      swidth=dispWidth,
+                                                      shellHeader=prompt,
+                                                      inputs=inputs)
+                    entry_index = decision[0]
+                    inputs = decision[1]
                     mode_index = yellow_indices[entry_index]
                     if track_inputs:
                         print(notePrefix + tracker_open)
@@ -9941,45 +9933,29 @@ class Hero:
                         print(notePrefix + tracker_close)
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    options = [x[0] for x in mc_red]
-                    details = [ModeTemplateDetails(2,
-                                                   i,
-                                                   width=-1,
-                                                   indented=True) for i in range(len(mc_red))]
-                    rwidth = 100
-                    answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
-                                            "Choose a Red Mode:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype Selection: Modular",
-                                            lwidth=30,
-                                            rwidth=rwidth)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(mc_red)]
-                    entry_choice = ' '
-                    print("Choose a Red Mode:")
-                    for i in range(len(mc_red)):
-                        print("    " + entry_options[i] + ": " + mc_red[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Mode expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayModeTemplate(2, entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                decision = self.ChooseDetailIndex("Choose a Red Mode:",
+                                                  "Enter a lowercase letter to see a Mode " + \
+                                                  "expanded, or an uppercase letter to " + \
+                                                  "select it.",
+                                                  [x[0] for x in mc_red],
+                                                  [ModeTemplateDetails(2,
+                                                                       i,
+                                                                       width=-1,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_red))],
+                                                  [ModeTemplateDetails(2,
+                                                                       i,
+                                                                       width=dispWidth,
+                                                                       indented=True) \
+                                                   for i in range(len(mc_red))],
+                                                  title="Mode Selection",
+                                                  lwidth=30,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader="Choose a Red Mode:",
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -10264,44 +10240,29 @@ class Hero:
                 # Choose a method of transition
                 tr_prompt = "Choose a method of transformation between your " + self.dv_tags[0] + \
                             " and " + self.dv_tags[1] + " forms:"
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [tr_collection[i][0] for i in range(len(tr_collection))]
-                    details = [TransitionDetails(i,
-                                                 width=-1,
-                                                 indented=True) for i in range(len(tr_collection))]
-                    question = ExpandWindow(self.myWindow,
-                                            tr_prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Archetype: Divided - Transition Selection",
-                                            lwidth=35,
-                                            rwidth=100)
-                    entry_index = answer.get()
-                else:
-                    # Use the shell to prompt the user
-                    entry_options = string.ascii_uppercase[0:len(tr_collection)]
-                    entry_choice = ' '
-                    print(tr_prompt)
-                    for i in range(len(tr_collection)):
-                        print("    " + entry_options[i] + ": " + tr_collection[i][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a transition method " + \
-                              "expanded, or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            DisplayTransitionMethod(entry_options.find(entry_choice.upper()))
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex(tr_prompt,
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "transition method expanded, or an " + \
+                                                  "uppercase letter to select it.",
+                                                  [x[0] for x in tr_collection],
+                                                  [TransitionDetails(i,
+                                                                     width=-1,
+                                                                     indented=True) \
+                                                   for i in range(len(tr_collection))],
+                                                  [TransitionDetails(i,
+                                                                     width=dispWidth,
+                                                                     indented=True) \
+                                                   for i in range(len(tr_collection))],
+                                                  title="Archetype: Divided - " + \
+                                                  "Transition Selection",
+                                                  lwidth=35,
+                                                  rwidth=100,
+                                                  swidth=dispWidth,
+                                                  shellHeader=tr_prompt,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
                 # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
@@ -10433,46 +10394,26 @@ class Hero:
                     if self.archetype == 15 and a_split_form in build_options:
                         print(notePrefix + "Split Form check passed!")
                     # If both options are valid...
-                    if self.UseGUI(inputs):
-                        # Create an ExpandWindow to prompt the user
-                        answer = IntVar()
-                        options = [build_options[i].name for i in range(len(build_options))]
-                        details = [build_options[i].details(width=-1,
-                                                            indented=False) \
-                                   for i in range(len(build_options))]
-                        question = ExpandWindow(self.myWindow,
-                                                bo_prompt,
-                                                options,
-                                                details,
-                                                var=answer,
-                                                title="Archetype: Divided - Divided Nature",
-                                                lwidth=30,
-                                                rwidth=100)
-                        dv_nature = build_options[answer.get()]
-                    else:
-                        # Use the shell to prompt the user
-                        entry_options = string.ascii_uppercase[0:len(build_options)]
-                        entry_choice = ' '
-                        print(bo_prompt)
-                        for i in range(len(build_options)):
-                            print("    " + entry_options[i] + ": " + build_options[i].name)
-                        while entry_choice not in entry_options:
-                            print("Enter a lowercase letter to see a divided nature expanded, " + \
-                                  "or an uppercase letter to select it.")
-                            if len(inputs) > 0:
-                                print("> " + inputs[0])
-                                entry_choice = inputs.pop(0)[0]
-                            else:
-                                line_prompt = ""
-                                if track_inputs:
-                                    line_prompt += "> "
-                                entry_choice = input(line_prompt)[0]
-                            if entry_choice.upper() in entry_options and \
-                               entry_choice not in entry_options:
-                                expand_index = entry_options.find(entry_choice.upper())
-                                build_options[expand_index].display(prefix="    ",
-                                                                    width=100)
-                        dv_nature = build_options[entry_options.find(entry_choice)]
+                    decision = self.ChooseDetailIndex(bo_prompt,
+                                                      "Enter a lowercase letter to see a " + \
+                                                      "divided nature expanded, or an " + \
+                                                      "uppercase letter to select it.",
+                                                      [x.name for x in build_options],
+                                                      [x.details(width=-1,
+                                                                 indented=True) \
+                                                       for x in build_options],
+                                                      [x.details(width=dispWidth,
+                                                                 indented=True) \
+                                                       for x in build_options],
+                                                      title="Archetype: Divided - Divided Nature",
+                                                      lwidth=30,
+                                                      rwidth=100,
+                                                      swidth=dispWidth,
+                                                      shellHeader=bo_prompt,
+                                                      inputs=inputs)
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    dv_nature = build_options[entry_index]
                 else:
                     if self.archetype == 15 and a_split_form not in build_options:
                         print(notePrefix + "Split Form check failed!")
@@ -10828,8 +10769,8 @@ class Hero:
                                 else:
                                     heroic_powers.append(assigning_die)
                         # Now we can compile the list of Power dice that each base form gets.
-                        hr_power_dice = [d for d in heroic_powers + constant_powers]
-                        cv_power_dice = [d for d in civilian_powers + constant_powers]
+                        hr_power_dice = [d for d in constant_powers + heroic_powers]
+                        cv_power_dice = [d for d in constant_powers + civilian_powers]
                     # Phew! That takes care of Power assignment.
                     # Form-Changer can't alter a hero's Qualities, so they get assigned as
                     #  PQDie objects no matter what.
@@ -11033,53 +10974,33 @@ class Hero:
             # To convert to 0-index, subtract 1 from each option:
             arc_indices = [x-1 for x in arc_options]
             # Let the user choose from the options provided by their roll...
-            entry_choice = ' '
-            entry_options = string.ascii_uppercase[0:len(arc_options) + rerolls]
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user
-                answer = IntVar()
-                options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
-                           for i in range(len(arc_options))]
-                if rerolls > 0:
-                    options += ["REROLL"]
-                question = ExpandWindow(self.myWindow,
-                                        roll_report + "\nChoose one:",
-                                        options,
-                                        [ArchetypeDetails(i,
-                                                          width=-1,
-                                                          indented=True,
-                                                          breaks=2,
-                                                          grid=False) for i in arc_indices],
-                                        var=answer,
-                                        title="Archetype Selection",
-                                        lwidth=35,
-                                        rwidth=arc_width)
-                entry_index = answer.get()
-            else:
-                # USe the shell to prompt the user
-                print(roll_report)
-                for i in range(len(entry_options)-rerolls):
-                    print("    " + entry_options[i] + ": " + arc_collection[arc_indices[i]][0] + \
-                          " (" + str(arc_options[i]) + ")")
-                if rerolls > 0:
-                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options[:len(arc_options)] and \
-                       entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(arc_indices[entry_index],
-                                         width=100)
-                entry_index = entry_options.find(entry_choice)
+            options = [arc_collection[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")" \
+                       for i in range(len(arc_options))]
+            if rerolls > 0:
+                options += ["REROLL"]
+            dispWidth = 100
+            decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                              "Enter a lowercase letter to see an Archetype " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              options,
+                                              [ArchetypeDetails(i,
+                                                                width=-1,
+                                                                indented=True,
+                                                                breaks=2,
+                                                                grid=False) for i in arc_indices],
+                                              [ArchetypeDetails(i,
+                                                                width=dispWidth,
+                                                                indented=True,
+                                                                breaks=1,
+                                                                grid=True) for i in arc_indices],
+                                              title="Archetype Selection",
+                                              lwidth=35,
+                                              rwidth=arc_width,
+                                              swidth=dispWidth,
+                                              shellHeader=roll_report,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(arc_options):
                 # User selected to reroll.
@@ -11173,50 +11094,34 @@ class Hero:
                             del arc_options[i]
                 # To convert to 0-index, subtract 1 from each option:
                 arc_indices = [x-1 for x in arc_options]
-                # Let the user choose from the list of options:
-                entry_options = string.ascii_uppercase[0:len(arc_options)]
-                entry_choice = ' '
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [arc_mod[0] + ":" + arc_simple[arc_indices[i]][0] + " (" + \
-                              str(arc_options[i]) + ")" for i in range(len(arc_options))]
-                    question = ExpandWindow(self.myWindow,
-                                            roll_report + "\nChoose one:",
-                                            options,
-                                            [ArchetypeDetails(i,
-                                                              width=-1,
-                                                              indented=True,
-                                                              breaks=2,
-                                                              grid=False) \
-                                             for i in arc_indices],
-                                            var=answer,
-                                            title="Archetype Selection",
-                                            lwidth=35,
-                                            rwidth=arc_width)
-                    entry_index = answer.get()
-                else:
-                    print(roll_report)
-                    for i in range(len(arc_options)):
-                        print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
-                              arc_simple[arc_indices[i]][0] + " (" + str(arc_options[i]) + ")")
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see an Archetype expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options and \
-                           entry_choice not in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayArchetype(arc_indices[entry_index],
-                                             width=100)
-                    entry_index = entry_options.find(entry_choice)
+                decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                                  "Enter a lowercase letter to see an " + \
+                                                  "Archetype expanded, or an uppercase letter " + \
+                                                  "to select it.",
+                                                  [arc_mod[0] + ":" + \
+                                                   arc_simple[arc_indices[i]][0] + " (" + \
+                                                   str(arc_options[i]) + ")" \
+                                                   for i in range(len(arc_options))],
+                                                  [ArchetypeDetails(i,
+                                                                    width=-1,
+                                                                    indented=True,
+                                                                    breaks=2,
+                                                                    grid=False) \
+                                                   for i in arc_indices],
+                                                  [ArchetypeDetails(i,
+                                                                    width=dispWidth,
+                                                                    indented=True,
+                                                                    breaks=1,
+                                                                    grid=True) \
+                                                   for i in arc_indices],
+                                                  title="Archetype Selection",
+                                                  lwidth=35,
+                                                  rwidth=arc_width,
+                                                  swidth=dispWidth,
+                                                  shellHeader=roll_report,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
                 print(arc_mod[0] + ":" + arc_collection[arc_index][0] + " Archetype selected.")
@@ -11228,94 +11133,63 @@ class Hero:
         notePrefix = "### ConstructedArchetype: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        entry_options = string.ascii_uppercase[0:len(arc_collection)]
-        entry_choice = ' '
-        if self.UseGUI(inputs):
-            # Create an ExpandWindow to prompt the user.
-            answer = IntVar()
-            question = ExpandWindow(self.myWindow,
-                                    "Choose an Archetype from the list:",
-                                    [x[0] for x in arc_collection],
-                                    [ArchetypeDetails(i,
-                                                      width=-1,
-                                                      indented=True,
-                                                      breaks=2,
-                                                      grid=False) \
-                                     for i in range(len(arc_collection))],
-                                    var=answer,
-                                    title="Archetype Selection",
-                                    lwidth=35,
-                                    rwidth=arc_width)
-            entry_index = answer.get()
-        else:
-            print("Choose an Archetype from the list:")
-            for i in range(len(arc_collection)):
-                print("    " + entry_options[i] + ": " + arc_collection[i][0] + " (" + str(i+1) + \
-                      ")")
-            while entry_choice not in entry_options:
-                print("Enter a lowercase letter to see an Archetype expanded, " + \
-                      "or an uppercase letter to select it.")
-                if len(inputs) > 0:
-                    print("> " + inputs[0])
-                    entry_choice = inputs.pop(0)[0]
-                else:
-                    line_prompt = ""
-                    if track_inputs:
-                        line_prompt += "> "
-                    entry_choice = input(line_prompt)[0]
-                if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                    entry_index = entry_options.find(entry_choice.upper())
-                    DisplayArchetype(entry_index,
-                                     width=100)
-            entry_index = entry_options.find(entry_choice)
+        dispWidth = 100
+        decision = self.ChooseDetailIndex("Choose an Archetype from the list:",
+                                          "Enter a lowercase letter to see an Archetype " + \
+                                          "expanded, or an uppercase letter to select it.",
+                                          [x[0] for x in arc_collection],
+                                          [ArchetypeDetails(i,
+                                                            width=-1,
+                                                            indented=True,
+                                                            breaks=2,
+                                                            grid=False) \
+                                           for i in range(len(arc_collection))],
+                                          [ArchetypeDetails(i,
+                                                            width=dispWidth,
+                                                            indented=True,
+                                                            breaks=1,
+                                                            grid=True) \
+                                           for i in range(len(arc_collection))],
+                                          title="Archetype Selection",
+                                          lwidth=35,
+                                          rwidth=arc_width,
+                                          swidth=dispWidth,
+                                          shellHeader="Choose an Archetype from the list:",
+                                          inputs=inputs)
+        entry_index = decision[0]
+        inputs = decision[1]
         print(arc_collection[entry_index][0] + " Archetype selected.")
         if entry_index in range(len(arc_simple)):
             return [entry_index, 0]
         else:
             modifier_index = entry_index - len(arc_collection) + len(arc_modifiers)
             arc_mod = arc_modifiers[modifier_index]
-            entry_options = string.ascii_uppercase[0:len(arc_simple)]
-            entry_choice = ' '
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user.
-                answer = IntVar()
-                question = ExpandWindow(self.myWindow,
-                                        arc_mod[0] + " modifies another Archetype. Choose " + \
-                                        "another Archetype from the list:",
-                                        [x[0] for x in arc_simple],
-                                        [ArchetypeDetails(i,
-                                                          width=-1,
-                                                          indented=True,
-                                                          breaks=2,
-                                                          grid=False) \
-                                         for i in range(len(arc_simple))],
-                                        var=answer,
-                                        title="Archetype Selection",
-                                        lwidth=35,
-                                        rwidth=arc_width)
-                entry_index = answer.get()
-            else:
-                print(arc_mod[0] + \
-                      " modifies another Archetype. Choose another Archetype from the list:")
-                for i in range(len(arc_simple)):
-                    print("    " + entry_options[i] + ": " + arc_mod[0] + ":" + \
-                          arc_simple[i][0] + " (" + str(i+1) + ")")
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see an Archetype expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice.upper() in entry_options and entry_choice not in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayArchetype(entry_index,
-                                         width=100)
-                entry_index = entry_options.find(entry_choice)
+            decision = self.ChooseDetailIndex(arc_mod[0] + " modifies another Archetype. " + \
+                                              "Choose another Archetype from the list:",
+                                              "Enter a lowercase letter to see an Archetype " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x[0] for x in arc_simple],
+                                              [ArchetypeDetails(i,
+                                                                width=-1,
+                                                                indented=True,
+                                                                breaks=2,
+                                                                grid=False) \
+                                               for i in range(len(arc_simple))],
+                                              [ArchetypeDetails(i,
+                                                                width=dispWidth,
+                                                                indented=True,
+                                                                breaks=1,
+                                                                grid=True) \
+                                               for i in range(len(arc_simple))],
+                                              title="Archetype Selection",
+                                              lwidth=35,
+                                              rwidth=arc_width,
+                                              swidth=dispWidth,
+                                              shellHeader=arc_mod[0] + " modifies another " + \
+                                              "Archetype. Choose another Archetype from the list:",
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
             return [entry_index, modifier_index]
     def AddPersonality(self,
@@ -11648,52 +11522,34 @@ class Hero:
                 # To convert to 0-index, subtract 1 from each option.
                 pn_indices = [x-1 for x in pn_options]
                 # Let the user choose from the options provided by their roll...
-                entry_choice = ' '
-                entry_options = string.ascii_uppercase[0:len(pn_options) + rerolls]
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [pn_collection[pn_indices[i]][0] + " (" + str(pn_options[i]) + ")" \
-                               for i in range(len(pn_indices))]
-                    if rerolls > 0:
-                        options += ["REROLL"]
-                    details = [PersonalityDetails(i,
-                                                  width=-1,
-                                                  indented=True,
-                                                  breaks=2) for i in pn_indices]
-                    question = ExpandWindow(self.myWindow,
-                                            roll_report + "\n\nChoose one:",
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Personality Selection",
-                                            lwidth=20,
-                                            rwidth=pn_width)
-                    entry_index = answer.get()
-                else:
-                    print(roll_report)
-                    for i in range(len(entry_options)-rerolls):
-                        print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0] + \
-                              " (" + str(pn_options[i]) + ")")
-                    if rerolls > 0:
-                        print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice.upper() in entry_options[:-1] and \
-                           entry_choice not in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(pn_indices[entry_index],
-                                               width=100)
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                options = [pn_collection[pn_indices[i]][0] + " (" + str(pn_options[i]) + ")" \
+                           for i in range(len(pn_indices))]
+                if rerolls > 0:
+                    options += ["REROLL"]
+                decision = self.ChooseDetailIndex(roll_report + "\nChoose one:",
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "Personality expanded, or an uppercase " + \
+                                                  "letter to select it.",
+                                                  options,
+                                                  [PersonalityDetails(i,
+                                                                      width=-1,
+                                                                      indented=True,
+                                                                      breaks=2) \
+                                                   for i in pn_indices],
+                                                  [PersonalityDetails(i,
+                                                                      width=dispWidth,
+                                                                      indented=True,
+                                                                      breaks=1) \
+                                                   for i in pn_indices],
+                                                  title="Personality Selection",
+                                                  shellHeader=roll_report,
+                                                  lwidth=20,
+                                                  rwidth=pn_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 # Now we have a commitment to a valid choice from the list.
                 if entry_index == len(pn_options):
                     # User selected to reroll.
@@ -11752,47 +11608,32 @@ class Hero:
             out_options = [None, None]
             pn_indices = [x for x in range(len(pn_collection))]
             for f in range(len(personalities)):
-                entry_options = string.ascii_uppercase[0:len(pn_indices)]
-                entry_choice = ' '
                 prompt = "Choose a Personality for " + self.dv_tags[f] + " form:"
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [pn_collection[x][0] for x in pn_indices]
-                    details = [PersonalityDetails(x,
-                                                  width=-1,
-                                                  indented=True,
-                                                  breaks=2) for x in pn_indices]
-                    question = ExpandWindow(self.myWindow,
-                                            prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Personality Selection",
-                                            lwidth=30,
-                                            rwidth=pn_width)
-                    entry_index = answer.get()
-                else:
-                    print(prompt)
-                    for i in range(len(pn_indices)):
-                        print("    " + entry_options[i] + ": " + pn_collection[pn_indices[i]][0])
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see a Personality expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice not in entry_options and \
-                           entry_choice.upper() in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            DisplayPersonality(entry_index,
-                                               width=100)
-                    entry_index = entry_options.find(entry_choice)
+                dispWidth = 100
+                decision = self.ChooseDetailIndex(prompt,
+                                                  "Enter a lowercase letter to see a " + \
+                                                  "Personality expanded, or an uppercase " + \
+                                                  "letter to select it.",
+                                                  [pn_collection[x][0] for x in pn_indices],
+                                                  [PersonalityDetails(x,
+                                                                      width=-1,
+                                                                      indented=True,
+                                                                      breaks=2) \
+                                                   for x in pn_indices],
+                                                  [PersonalityDetails(x,
+                                                                      width=dispWidth,
+                                                                      indented=True,
+                                                                      hanging=True,
+                                                                      breaks=1) \
+                                                   for x in pn_indices],
+                                                  title="Personality Selection",
+                                                  shellHeader=prompt,
+                                                  lwidth=30,
+                                                  rwidth=pn_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 print(pn_collection[entry_index][0] + " Personality selected.")
                 # Divided tags go [Civilian, Heroic] but we want the Personality indexes to go
                 #  [Heroic, Civilian] because Civilian is optional, so flip them here
@@ -11820,45 +11661,31 @@ class Hero:
         else:
             # Choose 1 Personality.
             # Returns [personality index]
-            entry_options = string.ascii_uppercase[0:len(pn_collection)]
-            entry_choice = ' '
-            if self.UseGUI(inputs):
-                # Create an ExpandWindow to prompt the user.
-                answer = IntVar()
-                options = [x[0] for x in pn_collection]
-                details = [PersonalityDetails(i,
-                                              width=-1,
-                                              indented=True,
-                                              breaks=2) for i in range(len(pn_collection))]
-                question = ExpandWindow(self.myWindow,
-                                        "Choose a Personality from the list:",
-                                        options,
-                                        details,
-                                        var=answer,
-                                        title="Personality Selection",
-                                        lwidth=35,
-                                        rwidth=pn_width)
-                entry_index = answer.get()
-            else:
-                print("OK! Choose a Personality from the list:")
-                for i in range(len(pn_collection)):
-                    print("    " + entry_options[i] + ": " + pn_collection[i][0])
-                while entry_choice not in entry_options:
-                    print("Enter a lowercase letter to see a Personality expanded, " + \
-                          "or an uppercase letter to select it.")
-                    if len(inputs) > 0:
-                        print("> " + inputs[0])
-                        entry_choice = inputs.pop(0)[0]
-                    else:
-                        line_prompt = ""
-                        if track_inputs:
-                            line_prompt += "> "
-                        entry_choice = input(line_prompt)[0]
-                    if entry_choice not in entry_options and entry_choice.upper() in entry_options:
-                        entry_index = entry_options.find(entry_choice.upper())
-                        DisplayPersonality(entry_index,
-                                           width=100)
-                entry_index = entry_options.find(entry_choice)
+            dispWidth = 100
+            decision = self.ChooseDetailIndex("Choose a Personality from the list:",
+                                              "Enter a lowercase letter to see a Personality " + \
+                                              "expanded, or an uppercase letter to select it.",
+                                              [x[0] for x in pn_collection],
+                                              [PersonalityDetails(i,
+                                                                  width=-1,
+                                                                  indented=True,
+                                                                  breaks=2) \
+                                               for i in range(len(pn_collection))],
+                                              [PersonalityDetails(i,
+                                                                  width=dispWidth,
+                                                                  indented=True,
+                                                                  hanging=True,
+                                                                  breaks=1) \
+                                               for i in range(len(pn_collection))],
+                                              title="Personality Selection",
+                                              shellHeader="OK! Choose a Personality from the " + \
+                                              "list:",
+                                              lwidth=35,
+                                              rwidth=pn_width,
+                                              swidth=dispWidth,
+                                              inputs=inputs)
+            entry_index = decision[0]
+            inputs = decision[1]
             print(pn_collection[entry_index][0] + " Personality selected.")
             return [entry_index]
     def AddRedAbility(self, retcon_step=0, inputs=[]):
@@ -12178,53 +12005,38 @@ class Hero:
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Change the Power/Quality used in an Ability":
                 # Choose an Ability to change
-                ability_options = [a for a in self.abilities]
+                ability_options = []
+                # Make a list of all the hero's Abilities that use at least one Power/Quality,
+                #  sorted by status zone
+                for i in range(len(status_zones)):
+                    ability_options.extend([a for a in self.abilities \
+                                            if "%p" in a.text and a.zone == i])
+                # If the hero has other Forms or Modes that have Abilities that use at least one
+                #  Power/Quality, add those to the list
                 for f in self.other_forms:
-                    ability_options += [a for a in f.abilities]
+                    ability_options += [a for a in f.abilities if "%p" in a.text]
                 for m in self.other_modes:
-                    ability_options += [a for a in m.abilities]
-                # If an Ability doesn't use a Power or Quality in its text, it's not a valid
-                #  choice here...
-                ability_options = [a for a in ability_options if "%p" in a.text]
-                if self.UseGUI(inputs):
-                    # Create an ExpandWindow to prompt the user
-                    answer = IntVar()
-                    options = [str(x) for x in ability_options]
-                    details = [x.details(width=-1,
-                                         indented=True) for x in ability_options]
-                    prompt = "Choose an Ability to edit:"
-                    question = ExpandWindow(self.myWindow,
-                                            prompt,
-                                            options,
-                                            details,
-                                            var=answer,
-                                            title="Retcon: Change an Ability's related " + \
-                                            "Power/Quality",
-                                            lwidth=30,
-                                            rwidth=a_width)
-                    entry_index = answer.get()
-                else:
-                    entry_options = string.ascii_uppercase[0:len(ability_options)]
-                    entry_choice = ' '
-                    print("Choose an Ability to edit:")
-                    for i in range(len(ability_options)):
-                        print("    " + entry_options[i] + ": " + str(ability_options[i]))
-                    while entry_choice not in entry_options:
-                        print("Enter a lowercase letter to see an Ability expanded, " + \
-                              "or an uppercase letter to select it.")
-                        if len(inputs) > 0:
-                            print("> " + inputs[0])
-                            entry_choice = inputs.pop(0)[0]
-                        else:
-                            line_prompt = ""
-                            if track_inputs:
-                                line_prompt += "> "
-                            entry_choice = input(line_prompt)[0]
-                        if entry_choice not in entry_options and \
-                           entry_choice.upper() in entry_options:
-                            entry_index = entry_options.find(entry_choice.upper())
-                            ability_options[entry_index].display()
-                    entry_index = entry_options.find(entry_choice)
+                    ability_options += [a for a in m.abilities if "%p" in a.text]
+                dispWidth = 100
+                decision = self.ChooseDetailIndex("Choose an Ability to edit:",
+                                                  "Enter a lowercase letter to see an Ability " + \
+                                                  "expanded, or an uppercase letter to select it.",
+                                                  [str(x) for x in ability_options],
+                                                  [x.details(width=-1,
+                                                             indented=True) \
+                                                   for x in ability_options],
+                                                  [x.details(width=dispWidth,
+                                                             indented=True) \
+                                                   for x in ability_options],
+                                                  title="Retcon: Change an Ability's related " + \
+                                                  "Power/Quality",
+                                                  shellHeader="Choose an Ability to edit:",
+                                                  lwidth=30,
+                                                  rwidth=a_width,
+                                                  swidth=dispWidth,
+                                                  inputs=inputs)
+                entry_index = decision[0]
+                inputs = decision[1]
                 edit_ability = ability_options[entry_index]
                 edit_index = 0
                 # If the ability uses more than one power/quality, specify which to change
@@ -13649,7 +13461,7 @@ def Create_Ultra_Boy(step=len(step_names)):
                                 ["b","c","a","b",
                                  ["c","a","Sprock These Two In Particular"],"a","Flash Vision"],
                                 "D",
-                                ["d","a","a","a",
+                                ["b","a","b","a",
                                  ["d","a","Everybody Behind Me!"],"a","Ultra Invulnerability"],
                                 "B",
                                 ["d","b",["a","a","Was That Important?"],"a","Ultra Strength"],
