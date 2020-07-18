@@ -12847,6 +12847,9 @@ class Hero:
                         pnTitle += "*"
                     if self.dv_personality in range(len(pn_collection)):
                         pnTitle = pn_collection[self.dv_personality][0] + "/" + pnTitle
+                    stepText += "\n" + split_text("Personality: " + pnTitle,
+                                                  width=width,
+                                                  prefix=secPrefix)
                 if len(step_principles) > 0:
                     stepText += "\n" + split_text("Principles:",
                                                   width=width,

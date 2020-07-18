@@ -169,6 +169,19 @@ Complete steps of hero creation are now reversible
  Can we make this more granular?
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", without breaking StepDetails?
  
+Can we create a context menu?
+ Entries...
+  Copy Text (any widget that has text)
+  Edit Name (any widget associated with a hero name field, Power, Quality, Ability, Form, or Mode)
+  Redo from Step (any widget associated with a hero name field, Power, Quality, Ability, Form, or Mode)
+  
+Let EditNames rename...
+.	Abilities
+	Principles?
+.	Forms
+.	Modes
+.	dice
+ 
 Default background is gray94
 
 Label
@@ -185,10 +198,3 @@ OptionMenu
 	activebackground=self.normalBG
 Menu
 	background=self.normalBG
-  
-Let EditNames rename...
-.	Abilities
-	Principles?
-.	Forms
-.	Modes
-.	dice
