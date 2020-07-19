@@ -12,7 +12,7 @@ from tkinter import messagebox
 
 random.seed()
 
-global categories_plural, categories_singular, pronouns, step_names
+global categories_plural, categories_singular, pronouns, step_names, substep_names
 categories_plural = ["Qualities",
                      "Powers",
                      "Powers/Qualities"]
@@ -30,6 +30,14 @@ step_names = ["",
               "Red Abilities",
               "Retcon",
               "Health"]
+substep_names = [[],
+                 ["Qualities", "Principle"], # Background substeps
+                 [], # Power Source substeps
+                 [], # Archetype substeps
+                 [], # Personality substeps
+                 ["First Red Ability", "Second Red Ability"], # Red Ability substeps
+                 [], # Retcon substeps
+                 ["8", "Red die", "Power/Quality", "4 or 1d8"]] # Health substeps
 
 global clipboard_delay
 clipboard_delay = 150
@@ -6572,6 +6580,9 @@ class Hero:
         self.other_forms = []
         self.health_pqs = Category(1,0) + Category(0,1)
         self.health_step = 0
+        self.health_status = None
+        self.health_pqdie = None
+        self.health_choice = None
         self.myFrame = None
         self.myWindow = None
         self.steps_modified = []
@@ -7609,7 +7620,9 @@ class Hero:
         else:
             # This hero doesn't have a Background yet, so we can add this one.
             print("OK! You've chosen the " + your_bg[0] + " Background!")
-            self.SetPrevious(this_step)
+            # Adding Qualities is the first substep.
+            quality_step = this_step + 0.1
+            self.SetPrevious(quality_step)
             self.background = bg_index
             print("You get " + str(your_bg[2]) + " to assign to Qualities.")
             if len(q_requirements) > 0:
@@ -7626,7 +7639,7 @@ class Hero:
                 remaining_dice = self.ChoosePQDieSize(q_requirements[0][0],
                                                       q_requirements[0][1:],
                                                       remaining_dice,
-                                                      stepnum=this_step,
+                                                      stepnum=quality_step,
                                                       inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -7640,10 +7653,16 @@ class Hero:
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AssignAllPQ(q_options, remaining_dice, stepnum=this_step, inputs=pass_inputs)
+            self.AssignAllPQ(q_options,
+                             remaining_dice,
+                             stepnum=quality_step,
+                             inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             self.RefreshFrame()
+            # Adding a Principle is the second substep.
+            prin_step = this_step + 0.2
+            self.SetPrevious(prin_step)
             # Use ChoosePrinciple to have the user select a Principle from the specified category.
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -7652,7 +7671,7 @@ class Hero:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.ChoosePrinciple(r_category,
-                                 stepnum=this_step,
+                                 stepnum=prin_step,
                                  inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
@@ -11688,7 +11707,9 @@ class Hero:
             inputs = decision[1]
             print(pn_collection[entry_index][0] + " Personality selected.")
             return [entry_index]
-    def AddRedAbility(self, retcon_step=0, inputs=[]):
+    def AddRedAbility(self,
+                      retcon_step=0,
+                      inputs=[]):
         # Walks the user through picking out a Red Ability from the options available based on
         #  the hero's current Powers and Qualities.
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -11717,6 +11738,11 @@ class Hero:
                       " Red Abilities in step " + str(this_step) + ".")
                 slots_remaining = False
                 input()
+            # If this is the normal Red Abilities step, add a fraction to this Ability's step
+            #  number indicating whether it was added first or second (.1 if there are no other
+            #  Abilities from this step yet, .2 if there was another before this, etc.)
+            if this_step == 5:
+                this_step += 0.1*(len(rs_abilities)+1)
         if slots_remaining:
             # First, determine which Red Abilities are available
             pq_dice = self.power_dice + self.quality_dice
@@ -12397,11 +12423,53 @@ class Hero:
             input()
         else:
             # The hero doesn't have defined Health yet, so we can continue.
-            self.SetPrevious(this_step)
-            self.health_step = this_step
             # Add up the following:
-            # 8...
-            # ... die size of an eligible Power or Quality...
+            # Substep 1: 8...
+            self.SetPrevious(this_step + 0.1)
+            self.health_step = this_step
+            # Substep 2: Red status die size...
+            red_step = this_step + 0.2
+            self.SetPrevious(red_step)
+            red_options = [self.status_dice.red]
+            red_sources = ["base form"]
+            if self.dv_personality in range(len(pn_collection)) and \
+               self.status_dice.red != self.dv_status.red:
+                red_options = [self.dv_status.red, self.status_dice.red]
+                red_sources = [str(x) + " Form" for x in self.dv_tags]
+            for md in self.other_modes:
+                if md.status_dice.reference not in range(len(dv_defaults)) and \
+                   md.status_dice.red not in red_options:
+                    red_options.append(md.status_dice.red)
+                    red_sources.append(md.name)
+            for fm in self.other_forms:
+                if fm.status_dice.reference not in range(len(dv_defaults)) and \
+                   fm.status_dice.red not in red_options:
+                    red_options.append(fm.status_dice.red)
+                    red_sources.append(fm.name)
+            red_part = 0
+            if len(red_options) == 1:
+                red_report = self.hero_name + "'s only Red status die size is " + \
+                             str(red_options[0]) + "."
+                red_part = red_options[0]
+                self.health_status = red_sources[0]
+            else:
+                decision = self.ChooseIndex([str(red_options[i]) + " (" + red_sources[i] + ")" \
+                                             for i in range(len(red_options))],
+                                            prompt="Choose a Red status die to use for " + \
+                                            self.hero_name + "'s max Health:",
+                                            inputs=inputs,
+                                            width=50,
+                                            title="Determine Health")
+                entry_index = decision[0]
+                inputs = decision[1]
+                red_report = "Using d" + str(red_options[entry_index]) + " from " + \
+                             self.hero_name + "'s Red status."
+                red_part = red_options[entry_index]
+                self.health_status = red_sources[entry_index]
+            print("OK! " + red_report)
+            # Substep 3: die size of an eligible Power or Quality...
+            pq_step = this_step + 0.3
+            self.SetPrevious(pq_step)
             pq_options = self.power_dice + self.quality_dice
             for md in self.other_modes:
                 md.CheckReference()
@@ -12425,6 +12493,7 @@ class Hero:
                 pq_report = self.hero_name + "'s only valid Power or Quality for Health is " + \
                             str(pq_options[0]) + "."
                 pq_part = pq_options[0].diesize
+                self.health_pqdie = pq_options[0]
             elif len(pq_options) == 0:
                 pq_report = self.hero_name + " has no eligible Powers or Qualities to use for " + \
                             "Health. Using a d4."
@@ -12441,48 +12510,15 @@ class Hero:
                 pq_report = "Using " + str(pq_options[entry_index]) + " from " + self.hero_name + \
                             "'s Powers/Qualities."
                 pq_part = pq_options[entry_index].diesize
+                self.health_pqdie = pq_options[entry_index]
             print("OK! " + pq_report)
-            # ... Red status die size ...
-            red_options = [self.status_dice.red]
-            red_sources = ["base form"]
-            if self.dv_personality in range(len(pn_collection)) and \
-               self.status_dice.red != self.dv_status.red:
-                red_options = [self.dv_status.red, self.status_dice.red]
-                red_sources = [str(x) + " Form" for x in self.dv_tags]
-            for md in self.other_modes:
-                if md.status_dice.reference not in range(len(dv_defaults)) and \
-                   md.status_dice.red not in red_options:
-                    red_options.append(md.status_dice.red)
-                    red_sources.append(md.name)
-            for fm in self.other_forms:
-                if fm.status_dice.reference not in range(len(dv_defaults)) and \
-                   fm.status_dice.red not in red_options:
-                    red_options.append(fm.status_dice.red)
-                    red_sources.append(fm.name)
-            red_part = 0
-            if len(red_options) == 1:
-                red_report = self.hero_name + "'s only Red status die size is " + \
-                             str(red_options[0]) + "."
-                red_part = red_options[0]
-            else:
-                decision = self.ChooseIndex([str(red_options[i]) + " (" + red_sources[i] + ")" \
-                                             for i in range(len(red_options))],
-                                            prompt="Choose a Red status die to use for " + \
-                                            self.hero_name + "'s max Health:",
-                                            inputs=inputs,
-                                            width=50,
-                                            title="Determine Health")
-                entry_index = decision[0]
-                inputs = decision[1]
-                red_report = "Using d" + str(red_options[entry_index]) + " from " + \
-                             self.hero_name + "'s Red status."
-                red_part = red_options[entry_index]
-            print("OK! " + red_report)
-            # ... and either 4 OR 1d8
+            # Substep 4: either 4 OR 1d8
+            choice_step = this_step + 0.4
+            self.SetPrevious(choice_step)
             random_part = 4
-            random_prompt = pq_report + "\n" + red_report + "\n" + "The total so far is " + \
-                            str(8 + pq_part + red_part) + " (8 + " + str(pq_part) + " + " + \
-                            str(red_part) + ")." + "\n" + "Which would you like to add?"
+            random_prompt = red_report + "\n" + pq_report + "\n" + "The total so far is " + \
+                            str(8 + pq_part + red_part) + " (8 + " + str(red_part) + " + " + \
+                            str(pq_part) + ")." + "\n" + "Which would you like to add?"
             random_options = ["4", "Roll 1d8"]
             decision = self.ChooseIndex(random_options,
                                         prompt=random_prompt,
@@ -12500,6 +12536,7 @@ class Hero:
                 print("Rolled " + str(random_part) + "!")
             else:
                 print("Using 4 for Health.")
+            self.health_choice = random_part
             max_health = 8 + pq_part + red_part + random_part
             print(self.hero_name + "'s max Health is " + str(max_health) + ".")
             health_index = max_health - hp_bounds[0][0]
@@ -12789,22 +12826,22 @@ class Hero:
             secPrefix += "    "
         stepText = ""
         if stepnum in range(1,len(step_names)):
-            step_powers = [d for d in self.power_dice if d.step == stepnum]
-            step_qualities = [d for d in self.quality_dice if d.step == stepnum]
-            step_principles = [pri for pri in self.principles if pri.step == stepnum]
-            step_abilities = [a for a in self.abilities if a.step == stepnum]
-            step_forms = [fm for fm in self.other_forms if fm.step == stepnum]
-            step_modes = [md for md in self.other_modes if md.step == stepnum]
+            step_powers = [d for d in self.power_dice if math.floor(d.step) == stepnum]
+            step_qualities = [d for d in self.quality_dice if math.floor(d.step) == stepnum]
+            step_principles = [pri for pri in self.principles if math.floor(pri.step) == stepnum]
+            step_abilities = [a for a in self.abilities if math.floor(a.step) == stepnum]
+            step_forms = [fm for fm in self.other_forms if math.floor(fm.step) == stepnum]
+            step_modes = [md for md in self.other_modes if math.floor(md.step) == stepnum]
             any_added = max([len(step_powers),
                              len(step_qualities),
                              len(step_principles),
                              len(step_abilities),
                              len(step_forms),
                              len(step_modes)])
-            if stepnum == self.health_step or \
-               stepnum == self.status_dice.step or \
-               stepnum == self.dv_status.step or \
-               (stepnum == self.mf_step and len(self.min_forms) > 0) or \
+            if stepnum == math.floor(self.health_step) or \
+               stepnum == math.floor(self.status_dice.step) or \
+               stepnum == math.floor(self.dv_status.step) or \
+               (stepnum == math.floor(self.mf_step) and len(self.min_forms) > 0) or \
                (stepnum == 1 and self.background != 99) or \
                (stepnum == 2 and self.power_source != 99) or \
                (stepnum == 3 and (self.archetype != 99 or self.archetype_modifier != 99)) or \
@@ -12967,27 +13004,33 @@ class Hero:
                                                                 width=width,
                                                                 prefix=secPrefix+indent,
                                                                 stepnum=stepnum)
-            modified_powers = [d for d in self.power_dice if stepnum in d.steps_modified and \
-                               d not in step_powers]
-            modified_qualities = [d for d in self.quality_dice if stepnum in d.steps_modified and \
-                                  d not in step_qualities]
-            modified_principles = [r for r in self.principles if stepnum in r.steps_modified and \
-                                   r not in step_principles]
-            modified_abilities = [a for a in self.abilities if stepnum in a.steps_modified and \
-                                  a not in step_abilities]
-            modified_modes = [md for md in self.other_modes if stepnum in md.steps_modified and \
-                              md not in step_modes]
-            modified_forms = [fm for fm in self.other_forms if stepnum in fm.steps_modified and \
-                              fm not in step_forms]
+            modified_powers = [d for d in self.power_dice \
+                               if stepnum in [math.floor(s) for s in d.steps_modified] \
+                               and d not in step_powers]
+            modified_qualities = [d for d in self.quality_dice \
+                                  if stepnum in [math.floor(s) for s in d.steps_modified] \
+                                  and d not in step_qualities]
+            modified_principles = [r for r in self.principles \
+                                   if stepnum in [math.floor(s) for s in r.steps_modified] \
+                                   and r not in step_principles]
+            modified_abilities = [a for a in self.abilities \
+                                  if stepnum in [math.floor(s) for s in a.steps_modified] \
+                                  and a not in step_abilities]
+            modified_modes = [md for md in self.other_modes \
+                              if stepnum in [math.floor(s) for s in md.steps_modified] \
+                              and md not in step_modes]
+            modified_forms = [fm for fm in self.other_forms \
+                              if stepnum in [math.floor(s) for s in fm.steps_modified] \
+                              and fm not in step_forms]
             any_modified = max([len(modified_powers),
                                 len(modified_qualities),
                                 len(modified_abilities),
                                 len(modified_modes),
                                 len(modified_forms)])
-            if stepnum in self.status_dice.steps_modified:
+            if stepnum in [math.floor(s) for s in self.status_dice.steps_modified]:
                 any_modified = 1
             if self.dv_personality in range(len(pn_collection)) and \
-               stepnum in self.dv_status.steps_modified:
+               stepnum in [math.floor(s) for s in self.dv_status.steps_modified]:
                 any_modified = 1
             if any_modified > 0:
                 if len(stepText) > 0:
@@ -15566,7 +15609,7 @@ class HeroFrame(Frame):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
             self.stepButtons[0].config(text="Edit Names...")
-            rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
+            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
             self.completeSteps = [isinstance(self.myHero, Hero),
                                   self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
@@ -19106,19 +19149,19 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getCham(step=4)
-##disp_frame = HeroFrame(root, hero=firstHero)
-##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-##root.bind("<Configure>", disp_frame.Resize)
-##root.lift()
-##root.mainloop()
-
-# Using a not-yet-constructed hero
-disp_frame = HeroFrame(root)
+firstHero = factory.getCham()
+disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
 root.lift()
 root.mainloop()
+
+# Using a not-yet-constructed hero
+##disp_frame = HeroFrame(root)
+##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
+##root.bind("<Configure>", disp_frame.Resize)
+##root.lift()
+##root.mainloop()
 
 # Testing display/details methods...
 
