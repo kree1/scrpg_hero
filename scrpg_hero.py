@@ -32,9 +32,9 @@ step_names = ["",
               "Health"]
 substep_names = [[],
                  ["Qualities", "Principle"], # Background substeps
-                 [], # Power Source substeps
+                 ["Powers", "Yellow Abilities", "Green Abilities", "Power Source Bonus"], # Power Source substeps
                  [], # Archetype substeps
-                 [], # Personality substeps
+                 ["Roleplaying Quality", "Status Dice", "Out Ability", "Personality Bonus"], # Personality substeps
                  ["First Red Ability", "Second Red Ability"], # Red Ability substeps
                  [], # Retcon substeps
                  ["8", "Red die", "Power/Quality", "4 or 1d8"]] # Health substeps
@@ -528,7 +528,7 @@ class Status:
                     self.step == other.step and \
                     self.steps_modified == other.steps_modified and \
                     self.prev_version == other.prev_version
-            return True
+            return match
         else:
             return False
     def SetReference(self,
@@ -7620,10 +7620,11 @@ class Hero:
         else:
             # This hero doesn't have a Background yet, so we can add this one.
             print("OK! You've chosen the " + your_bg[0] + " Background!")
-            # Adding Qualities is the first substep.
+            self.SetPrevious(this_step)
+            self.background = bg_index
+            # Substep 1: Qualities...
             quality_step = this_step + 0.1
             self.SetPrevious(quality_step)
-            self.background = bg_index
             print("You get " + str(your_bg[2]) + " to assign to Qualities.")
             if len(q_requirements) > 0:
                 # Use ChoosePQDieSize to have the user choose which of their dice goes to the
@@ -8409,6 +8410,9 @@ class Hero:
             print("OK! You've chosen the " + your_ps[0] + " Power Source!")
             self.SetPrevious(this_step)
             self.power_source = ps_index
+            # Substep 1: Powers...
+            power_step = this_step + 0.1
+            self.SetPrevious(power_step)
             print("You have " + str(pdice) + " to assign to Powers.")
             if len(required_powers) > 0:
                 # Use ChoosePQ to assign one of pdice to one of required_powers
@@ -8420,7 +8424,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 pdice = self.ChoosePQ(required_powers,
                                       pdice,
-                                      stepnum=this_step,
+                                      stepnum=power_step,
                                       inputs=pass_inputs)[1]
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8433,18 +8437,22 @@ class Hero:
                     pass_inputs = inputs.pop(0)
             self.AssignAllPQ(optional_powers,
                              pdice,
-                             stepnum=this_step,
+                             stepnum=power_step,
                              inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            # Substep 2: Yellow Abilities...
+            yellow_step = this_step + 0.2
+            if yellow_count > 0:
+                self.SetPrevious(yellow_step)
             for i in range(yellow_count):
                 # Use ChooseAbility to select and add a Yellow Ability from yellow_options and
                 #  update yellow_options to remove that Ability
                 legal_triplets = [x.triplet() for x in self.power_dice] + \
                                  [y.triplet() for y in self.quality_dice]
-                # Make a list of abilities the hero has in this zone from this Archetype
+                # Make a list of abilities the hero has in this zone from this Power Source
                 ps_zone_abilities = [x for x in self.abilities \
-                                     if x.step == this_step and x.zone == 1]
+                                     if math.floor(x.step) == this_step and x.zone == 1]
 ##                print(notePrefix + "ps_zone_abilities = " + \
 ##                      str([str(x) for x in ps_zone_abilities]))
                 if len(ps_zone_abilities) > 0:
@@ -8473,10 +8481,14 @@ class Hero:
                 yellow_options = self.ChooseAbility(yellow_options,
                                                     1,
                                                     triplet_options=legal_triplets,
-                                                    stepnum=this_step,
+                                                    stepnum=yellow_step,
                                                     inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+            # Substep 3: Green Abilities...
+            green_step = this_step + 0.3
+            if green_count > 0:
+                self.SetPrevious(green_step)
             for i in range(green_count):
                 # Use ChooseAbility to select and add a Green Ability from green_options and update
                 #  green_options to remove that Ability
@@ -8488,11 +8500,15 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 green_options = self.ChooseAbility(green_options,
                                                    0,
-                                                   stepnum=this_step,
+                                                   stepnum=green_step,
                                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-            # Evaluate and implement ps_bonus
+            # Substep 4: Power Source Bonus
+            bonus_step = this_step + 0.4
+            if ps_bonus > 0:
+##                print(notePrefix + "ps_bonus = " + str(ps_bonus))
+                self.SetPrevious(bonus_step)
             if ps_bonus == 1:
                 # Training: Next step, add a bonus d8 Quality from your Archetype's list.
                 self.arc_bonus_quality = 8
@@ -8509,7 +8525,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(Category(0,0),
                               [10],
-                              stepnum=this_step,
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8527,7 +8543,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(non_optional_powers,
                               [10],
-                              stepnum=this_step,
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8547,14 +8563,14 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.ChoosePQ(optional_powers,
                                   [6],
-                                  stepnum=this_step,
+                                  stepnum=bonus_step,
                                   inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 elif len(d6_pqs) == 1:
                     # Exactly 1 d6: upgrade it without prompting the user.
                     print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
-                    d6_pqs[0].SetPrevious(this_step)
+                    d6_pqs[0].SetPrevious(bonus_step)
                     d6_pqs[0].diesize = 8
                 else:
                     # More than 1 d6: user gets to choose which to upgrade.
@@ -8567,7 +8583,7 @@ class Hero:
                     entry_index = decision[0]
                     inputs = decision[1]
                     print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
-                    d6_pqs[entry_index].SetPrevious(this_step)
+                    d6_pqs[entry_index].SetPrevious(bonus_step)
                     d6_pqs[entry_index].diesize = 8
             elif ps_bonus == 5:
                 # Genius: Gain 1 d10 Information or Mental Quality
@@ -8581,7 +8597,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(optional_qualities,
                               [10],
-                              stepnum=this_step,
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8608,7 +8624,7 @@ class Hero:
                     downgraded_power = d8_plus_powers[entry_index]
                     print("Downgrading " + str(downgraded_power) + " by one size (d" + \
                           str(downgraded_power.diesize-2) + ").")
-                    downgraded_power.SetPrevious(this_step)
+                    downgraded_power.SetPrevious(bonus_step)
                     downgraded_power.diesize = downgraded_power.diesize-2
                 d10_minus_powers = [d for d in self.power_dice if d.diesize < 12]
                 d10_minus_powers.remove(downgraded_power)
@@ -8627,7 +8643,7 @@ class Hero:
                     upgraded_power = d10_minus_powers[entry_index]
                     print("Upgrading " + str(upgraded_power) + " by one size (d" + \
                           str(upgraded_power.diesize+2) + ").")
-                    upgraded_power.SetPrevious(this_step)
+                    upgraded_power.SetPrevious(bonus_step)
                     upgraded_power.diesize = upgraded_power.diesize + 2
             elif ps_bonus == 7:
                 # Unknown: Gain a d8 Social Quality.
@@ -8640,7 +8656,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(Category(0,3),
                               [8],
-                              stepnum=this_step,
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8656,7 +8672,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(power_triplets,
                               [6],
-                              stepnum=this_step,
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9997,7 +10013,7 @@ class Hero:
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
                     arc_zone_abilities = [x for x in self.abilities \
-                                          if x.step == this_step and x.zone == zone]
+                                          if math.floor(x.step) == this_step and x.zone == zone]
                     if len(arc_zone_abilities) > 0:
                         if (zone == 0 and green_unique > 0) or (zone == 1 and yellow_unique > 0):
                             # There's a minimum number of unique Powers/Qualities that need to be
@@ -10053,7 +10069,7 @@ class Hero:
                         category_req = category_required
                     # Make a list of abilities the hero has in this zone from this Archetype
                     arc_zone_abilities = [x for x in self.abilities \
-                                          if x.step == this_step and x.zone == 0]
+                                          if math.floor(x.step) == this_step and x.zone == 0]
 ##                    print("### AddArchetype: len(arc_zone_abilities) for zone=0 is " + \
 ##                          str(len(arc_zone_abilities)))
                     if len(arc_zone_abilities) > 0:
@@ -10108,7 +10124,7 @@ class Hero:
                                      [y.triplet() for y in self.quality_dice]
                     # Make a list of abilities the hero has in this zone from this Archetype
                     arc_zone_abilities = [x for x in self.abilities \
-                                          if x.step == this_step and x.zone == 1]
+                                          if math.floor(x.step) == this_step and x.zone == 1]
                     if len(arc_zone_abilities) > 0:
                         if yellow_unique > 0:
                             # There's a minimum number of unique Powers/Qualities that need to be
@@ -11258,7 +11274,9 @@ class Hero:
                 print("OK! You've chosen the " + your_pn[0] + " Personality.")
             self.SetPrevious(this_step)
             self.personality = pn_index
-            # Start by giving the hero their Roleplaying Quality at d8.
+            # Substep 1: Roleplaying Quality...
+            rpq_step = this_step + 0.1
+            self.SetPrevious(rpq_step)
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
@@ -11268,13 +11286,13 @@ class Hero:
             self.ChoosePQDieSize(0,
                                  [4, 0],
                                  [8],
-                                 stepnum=this_step,
+                                 stepnum=rpq_step,
                                  inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
             #  Psyche and gets no Qualities in Heroic Form(s)
-            matching_dice = [x for x in self.quality_dice if x.step == this_step]
+            matching_dice = [x for x in self.quality_dice if math.floor(x.step) == this_step]
             rpq_die = matching_dice[0]
             dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
             if len(dv_check) > 0:
@@ -11312,19 +11330,21 @@ class Hero:
                         md.quality_dice.append(rpq_die)
 ##                    else:
 ##                        print(notePrefix + md.name + " already has " + rpq_die.flavorname)
-            # Then fill in their status dice and Out Ability.
+            # Substep 2: Status Dice...
+            sd_step = this_step + 0.2
+            self.SetPrevious(sd_step)
             out_options = []
             if has_multiple:
                 self.status_dice = Status(green=your_pn[1][0],
                                           yellow=your_pn[1][1],
                                           red=your_pn[1][2],
                                           ref=-1,
-                                          stepnum=this_step)
+                                          stepnum=sd_step)
                 self.dv_status = Status(green=your_dv_pn[1][0],
                                         yellow=your_dv_pn[1][1],
                                         red=your_dv_pn[1][2],
                                         ref=-1,
-                                        stepnum=this_step)
+                                        stepnum=sd_step)
                 printlong("You get " + str(self.status_dice.array()) + " as Status dice in " + \
                           self.dv_tags[1] + " Form(s), and " + str(self.dv_status.array()) + " in " + \
                           self.dv_tags[0] + " Form(s).", 100)
@@ -11334,7 +11354,7 @@ class Hero:
                     #  refer to the non-base Personality.
                     if form_editing.dv_index == 0:
                         form_editing.status_dice.SetReference(ref=0,
-                                                              stepnum=this_step)
+                                                              stepnum=sd_step)
                 out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
                 if out_options[0] == out_options[1]:
                     del out_options[1]
@@ -11343,9 +11363,12 @@ class Hero:
                                           yellow=your_pn[1][1],
                                           red=your_pn[1][2],
                                           ref=-1,
-                                          stepnum=this_step)
+                                          stepnum=sd_step)
                 print("You get " + str(self.status_dice.array()) + " as Status dice.")
                 out_options = [your_pn[2]]
+            # Substep 3: Out Ability...
+            out_step = this_step + 0.3
+            self.SetPrevious(out_step)
             if out_index in range(len(out_options)):
                 # User already chose which Out Ability to use, probably in ConstructedPersonality()
                 #  or GuidedPersonality()
@@ -11359,14 +11382,21 @@ class Hero:
                     pass_inputs = inputs.pop(0)
             self.ChooseAbility(out_options,
                                3,
-                               stepnum=this_step,
+                               stepnum=out_step,
                                inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            # Add any bonus content, if applicable
+            # Substep 4: Personality Bonus...
+            bonus_step = this_step + 0.4
             your_personalities = [self.personality]
             if has_multiple:
-                your_personalities = [self.dv_personality] + your_personalities
+                your_personalities = [self.dv_personality, self.personality]
+            has_bonus = False
+            for index in your_personalities:
+                if pn_collection[index][3] > 0:
+                    has_bonus = True
+            if has_bonus:
+                self.SetPrevious(bonus_step)
             for i in range(len(your_personalities)):
                 pn_index = your_personalities[i]
                 this_bonus = pn_collection[pn_index][3]
@@ -11422,7 +11452,7 @@ class Hero:
                         #  upgrade them
                         for d in self.power_dice:
                             if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                d.SetPrevious(this_step)
+                                d.SetPrevious(bonus_step)
                                 d.diesize += 2
                                 if len(self.other_forms) > 0:
                                     print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
@@ -11438,7 +11468,7 @@ class Hero:
                                 for d in f.power_dice:
                                     if d.triplet() == upgrade_triplet and \
                                        d.diesize < max(legal_dice):
-                                        d.SetPrevious(this_step)
+                                        d.SetPrevious(bonus_step)
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f.name + ".")
@@ -11447,8 +11477,8 @@ class Hero:
                         for m in self.other_modes:
                             for d in m.power_dice:
                                 if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                    m.SetPrevious(this_step)
-                                    d.SetPrevious(this_step)
+                                    m.SetPrevious(bonus_step)
+                                    d.SetPrevious(bonus_step)
                                     d.diesize += 2
                                     print("Upgraded " + d.flavorname + " to d" + \
                                           str(d.diesize) + " in " + m.name + ".")
@@ -11458,7 +11488,7 @@ class Hero:
                         #  upgrade them
                         for d in self.quality_dice:
                             if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                d.SetPrevious(this_step)
+                                d.SetPrevious(bonus_step)
                                 d.diesize += 2
                                 if len(self.other_forms) > 0:
                                     print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
@@ -11473,7 +11503,7 @@ class Hero:
                                 for d in f.quality_dice:
                                     if d.triplet() == upgrade_triplet and \
                                        d.diesize < max(legal_dice):
-                                        d.SetPrevious(this_step)
+                                        d.SetPrevious(bonus_step)
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
                                               str(d.diesize) + " in " + f[0] + ".")
@@ -11732,17 +11762,15 @@ class Hero:
         else:
             # Count the number of Red Abilities the hero already has from this step. If it's more
             #  than 1, we have a problem.
-            rs_abilities = [a for a in self.abilities if a.step == this_step]
+            rs_abilities = [a for a in self.abilities if math.floor(a.step) == this_step]
             if len(rs_abilities) > 1:
                 print("Error! " + self.hero_name + " already added " + str(len(rs_abilities)) + \
                       " Red Abilities in step " + str(this_step) + ".")
                 slots_remaining = False
                 input()
-            # If this is the normal Red Abilities step, add a fraction to this Ability's step
-            #  number indicating whether it was added first or second (.1 if there are no other
-            #  Abilities from this step yet, .2 if there was another before this, etc.)
-            if this_step == 5:
-                this_step += 0.1*(len(rs_abilities)+1)
+            # This is Substep X, where X is 1 plus the number of existing Red Abilities from this
+            #  step...
+            this_step += 0.1*(len(rs_abilities)+1)
         if slots_remaining:
             # First, determine which Red Abilities are available
             pq_dice = self.power_dice + self.quality_dice
@@ -12744,7 +12772,7 @@ class Hero:
                 print(notePrefix + tracker_close)
         # Add 2 Red Abilities
         print("5. Red Abilities")
-        rs_abilities = [a for a in self.abilities if a.step == 5]
+        rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
         if len(rs_abilities) > 1:
             print(indent + self.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
@@ -12758,7 +12786,7 @@ class Hero:
             self.AddRedAbility(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            rs_abilities = [a for a in self.abilities if a.step == 5]
+            rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
         # Take a Retcon
         print("6. Retcon")
         if self.used_retcon:
@@ -12849,7 +12877,7 @@ class Hero:
                 any_added = 1
             if any_added > 0:
                 stepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
-                                       ") provided:",
+                                       ") added...",
                                        width=width,
                                        prefix=prefix)
                 if step_names[stepnum] == "Background" and self.background != 99:
@@ -13034,11 +13062,14 @@ class Hero:
                 any_modified = 1
             if any_modified > 0:
                 if len(stepText) > 0:
-                    stepText += "\n"
-                stepText +=  split_text("Step " + str(stepnum) + " (" + \
-                                        step_names[stepnum] + ") modified:",
-                                        width=width,
-                                        prefix=prefix)
+                    stepText += "\n" + split_text("... and modified...",
+                                                  width=width,
+                                                  prefix=prefix)
+                else:
+                    stepText += split_text("Step " + str(stepnum) + " (" + \
+                                           step_names[stepnum] + ") modified...",
+                                           width=width,
+                                           prefix=prefix)
                 if len(modified_powers) > 0:
                     stepText += "\n" + split_text("Powers:",
                                                   width=width,
@@ -15646,7 +15677,7 @@ class HeroFrame(Frame):
     def SetFirstIncomplete(self):
         self.firstIncomplete = 99
         if isinstance(self.myHero, Hero):
-            rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
+            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
             self.completeSteps = [isinstance(self.myHero, Hero),
                                   self.myHero.background in range(len(bg_collection)),
                                   self.myHero.power_source in range(len(ps_collection)),
@@ -16031,7 +16062,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.AddHeroRedAbilities: "
         indent = "    "
         print("5. Red Abilities")
-        rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
+        rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         if len(rs_abilities) > 1:
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
@@ -16045,7 +16076,7 @@ class HeroFrame(Frame):
             self.myHero.AddRedAbility(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            rs_abilities = [a for a in self.myHero.abilities if a.step == 5]
+            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         self.UpdateAll(self.myHero)
     def AddHeroRetcon(self, inputs=[]):
         # Take a Retcon
@@ -19149,7 +19180,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getLori()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)

@@ -170,17 +170,17 @@ Complete steps of hero creation are now reversible
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", and get StepDetails to show that?
   Determine substeps...
 .  Background: Qualities, Principle
-   Power Source: ...
+.  Power Source: Powers, Yellow Abilities, Green Abilities, Power Source Bonus
    Archetype: ...
-   Personality: ...
+.  Personality: Roleplaying Quality, Status Dice, Out Ability, Personality Bonus
 .  Red Abilities: Red Ability 1, Red Ability 2
    Retcon: ...
 .  Health: 8, Red die, PQ die, 4 or 1d8
   Use substep numbers in hero creation...
 .  AddBackground
-   AddPowerSource
+.  AddPowerSource
    AddArchetype
-   AddPersonality
+.  AddPersonality
 .  AddRedAbility
    AddRetcon
 .  AddHealth
