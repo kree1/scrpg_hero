@@ -174,7 +174,7 @@ Complete steps of hero creation are now reversible
 .  Archetype: Primary PQ, Secondary PQs, Tertiary PQs, Bonus PQs, Abilities, Auxiliary Sheets, Transition Type, Divided Nature, Principle
 .  Personality: Roleplaying Quality, Status Dice, Out Ability, Personality Bonus
 .  Red Abilities: Red Ability 1, Red Ability 2
-   Retcon: ...
+.  Retcon: Swap 2 Power dice, Swap 2 Quality dice, Change the Power/Quality used in an Ability, Add a d6 Power/Quality from ANY category, Upgrade Red status die by one size, Change one of your Principles to any other Principle, Gain another Red ability
 .  Health: 8, Red die, PQ die, 4 or 1d8
   Use substep numbers in hero creation...
 .  AddBackground
@@ -182,7 +182,7 @@ Complete steps of hero creation are now reversible
 .  AddArchetype
 .  AddPersonality
 .  AddRedAbility
-   AddRetcon
+.  AddRetcon
 .  AddHealth
   Use substep numbers in StepDetails...
  

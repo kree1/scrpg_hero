@@ -57,7 +57,14 @@ substep_names = [[],
                  ["",
                   "First Red Ability",
                   "Second Red Ability"], # Red Ability substeps
-                 [], # Retcon substeps
+                 ["",
+                  "Swap 2 Power dice",
+                  "Swap 2 Quality dice",
+                  "Change the Power/Quality used in an Ability",
+                  "Add a d6 Power or Quality from any category",
+                  "Upgrade Red status die by one size",
+                  "Change one of your Principles to any other Principle",
+                  "Gain another Red Ability"], # Retcon step options
                  ["",
                   "8",
                   "Red die",
@@ -6595,6 +6602,7 @@ class Hero:
         self.dv_tags = ["Civilian", "Heroic"]
         self.min_forms = []
         self.mf_step = 0
+        self.mf_quality = None
         self.personality = 99
         self.dv_personality = 99
         self.dv_status = Status(ref=-1, stepnum=-1)
@@ -10231,7 +10239,8 @@ class Hero:
                                                 width=50)
                     entry_index = decision[0]
                     inputs = decision[1]
-                    max_forms = self.quality_dice[entry_index].diesize
+                    self.mf_quality = self.quality_dice[entry_index]
+                    max_forms = self.mf_quality.diesize
                     if max_forms >= len(min_collection):
                         print("OK! Adding all " + str(len(min_collection)) + \
                               " Minion Forms to " + self.hero_name + "'s Minion Sheet.")
@@ -12002,7 +12011,6 @@ class Hero:
                   " Retcon.")
             input()
         else:
-            self.SetPrevious(this_step)
             step_options = ["Swap 2 Power dice",
                             "Swap 2 Quality dice",
                             "Change the Power/Quality used in an Ability",
@@ -12019,6 +12027,9 @@ class Hero:
             inputs = decision[1]
             step_choice = step_options[entry_index]
             if step_choice == "Swap 2 Power dice":
+                # This is Substep 1...
+                this_step += 0.1
+                self.SetPrevious(this_step)
                 # Modify this to include Powers from other Modes/Forms?
                 # ...
                 swap_indices = [99, 99]
@@ -12068,6 +12079,9 @@ class Hero:
                     print(swap_dice[0].name + " and " + swap_dice[1].name + \
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Swap 2 Quality dice":
+                # This is Substep 2...
+                this_step += 0.2
+                self.SetPrevious(this_step)
                 # Modify this to include Qualities from other Forms?
                 # ...
                 swap_indices = [99, 99]
@@ -12117,6 +12131,9 @@ class Hero:
                     print(swap_dice[0].name + " and " + swap_dice[1].name + \
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Change the Power/Quality used in an Ability":
+                # This is Substep 3...
+                this_step += 0.3
+                self.SetPrevious(this_step)
                 # Choose an Ability to change
                 ability_options = []
                 # Make a list of all the hero's Abilities that use at least one Power/Quality,
@@ -12229,6 +12246,9 @@ class Hero:
                     self.myFrame.UpdateAll()
                 self.used_retcon = True
             elif step_choice == "Add a d6 Power or Quality from any category":
+                # This is Substep 4...
+                this_step += 0.4
+                self.SetPrevious(this_step)
                 # Let the user choose a Power or Quality to add from any category using ChoosePQ
                 power_triplets = AllCategories(1)
                 quality_triplets = AllCategories(0)
@@ -12246,6 +12266,9 @@ class Hero:
                     print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
+                # This is Substep 5...
+                this_step += 0.5
+                self.SetPrevious(this_step)
                 # red_upgrade_sizes: list of individually defined Red status die sizes that can be
                 #  upgraded
                 red_upgrade_sizes = []
@@ -12417,6 +12440,9 @@ class Hero:
                           " Red status die to d" + str(edit_form.status_dice.red) + ".")
                     self.used_retcon = True
             elif step_choice == "Change one of your Principles to any other Principle":
+                # This is Substep 6...
+                this_step += 0.6
+                self.SetPrevious(this_step)
                 # Have the user choose a category to add from...
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
@@ -12468,6 +12494,9 @@ class Hero:
                     print(notePrefix + tracker_close)
                 self.used_retcon = True
             elif step_choice == "Gain another Red Ability":
+                # This is Substep 7...
+                this_step += 0.7
+                self.SetPrevious(this_step)
                 # Let the user add another Red Ability using AddRedAbility
                 if track_inputs:
                     print(notePrefix + tracker_open)
@@ -13012,7 +13041,7 @@ class Hero:
                                                       str(dPrime.array()[x]),
                                                       width=width,
                                                       prefix=secPrefix+indent)
-                if stepnum == self.status_dice.step:
+                if stepnum == math.floor(self.status_dice.step):
                     if self.dv_personality in range(len(pn_collection)):
                         stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
                                                       width=width,
@@ -13027,7 +13056,7 @@ class Hero:
                                                       str(sPrime.array()[x]),
                                                       width=width,
                                                       prefix=secPrefix+indent)
-                if stepnum == self.health_step:
+                if stepnum == math.floor(self.health_step):
                     stepText += "\n" + split_text("Health:",
                                                   width=width,
                                                   prefix=secPrefix)
@@ -13048,7 +13077,10 @@ class Hero:
                             stepText += "\n" + aPrime.details(prefix=secPrefix+indent,
                                                               width=width,
                                                               indented=indented)
-                if stepnum == self.mf_step and len(self.min_forms) > 0:
+                if stepnum == math.floor(self.mf_step) and len(self.min_forms) > 0:
+                    stepText += "\n" + split_text("Minion Form Quality: " + str(self.mf_quality),
+                                                  width=width,
+                                                  prefix=secPrefix)
                     stepText += "\n" + split_text("Minion Forms:",
                                                   width=width,
                                                   prefix=secPrefix)
@@ -13156,7 +13188,7 @@ class Hero:
                                                        indented=indented,
                                                        breaks=1)
                 if self.dv_status.array() != self.status_dice.array() and \
-                   stepnum in self.dv_status.steps_modified:
+                   stepnum in [math.floor(s) for s in self.dv_status.steps_modified]:
                     stepText += "\n" + split_text(self.dv_tags[0] + " Status:",
                                                   width=width,
                                                   prefix=secPrefix)
@@ -13166,7 +13198,7 @@ class Hero:
                                                       str(dPrime.array()[x]),
                                                       width=width,
                                                       prefix=secPrefix+indent)
-                if stepnum in self.status_dice.steps_modified:
+                if stepnum in [math.floor(s) for s in self.status_dice.steps_modified]:
                     if self.dv_personality in range(len(pn_collection)):
                         stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
                                                       width=width,
@@ -19239,7 +19271,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
