@@ -31,13 +31,38 @@ step_names = ["",
               "Retcon",
               "Health"]
 substep_names = [[],
-                 ["Qualities", "Principle"], # Background substeps
-                 ["Powers", "Yellow Abilities", "Green Abilities", "Power Source Bonus"], # Power Source substeps
-                 [], # Archetype substeps
-                 ["Roleplaying Quality", "Status Dice", "Out Ability", "Personality Bonus"], # Personality substeps
-                 ["First Red Ability", "Second Red Ability"], # Red Ability substeps
+                 ["",
+                  "Qualities",
+                  "Principle"], # Background substeps
+                 ["",
+                  "Powers",
+                  "Yellow Abilities",
+                  "Green Abilities",
+                  "Power Source Bonus"], # Power Source substeps
+                 ["",
+                  "Primary Power/Quality",
+                  "Secondary Power(s)/Quality(ies)",
+                  "Tertiary Power(s)/Quality(ies)",
+                  "Bonus Power(s)/Quality(ies)",
+                  "Abilities",
+                  "Auxiliary Sheets",
+                  "Transition Type",
+                  "Divided Nature",
+                  "Principle"], # Archetype substeps
+                 ["",
+                  "Roleplaying Quality",
+                  "Status Dice",
+                  "Out Ability",
+                  "Personality Bonus"], # Personality substeps
+                 ["",
+                  "First Red Ability",
+                  "Second Red Ability"], # Red Ability substeps
                  [], # Retcon substeps
-                 ["8", "Red die", "Power/Quality", "4 or 1d8"]] # Health substeps
+                 ["",
+                  "8",
+                  "Red die",
+                  "Power/Quality",
+                  "4 or 1d8"]] # Health substeps
 
 global clipboard_delay
 clipboard_delay = 150
@@ -9614,7 +9639,8 @@ class Hero:
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
             entry_choice = ' '
             # Add Powers and Qualities from your base Archetype, regardless of modifiers
-            # Start with the primary, if there is one:
+            # Substep 1: Primary Power/Quality...
+            primary_step = this_step + 0.1
             if len(primary_matches) > 0 and primary_alt > 0:
                 # This hero already has at least one of the primary Powers/Qualities for this
                 #  Archetype.
@@ -9655,9 +9681,10 @@ class Hero:
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
                                 pass_inputs = inputs.pop(0)
+                        self.SetPrevious(primary_step)
                         remainders = self.ChoosePQ(primary_options,
                                                    a_dice,
-                                                   stepnum=this_step,
+                                                   stepnum=primary_step,
                                                    inputs=pass_inputs)
                         if track_inputs:
                             print(notePrefix + tracker_close)
@@ -9689,6 +9716,7 @@ class Hero:
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
                         #  one of a_dice.
+                        self.SetPrevious(primary_step)
                         decision = self.ChooseIndex([str(x) for x in a_dice],
                                                     prompt="Choose a new die size for " + \
                                                     str(primary_matches[swap_index]) + ":",
@@ -9696,7 +9724,7 @@ class Hero:
                                                     width=40)
                         a_die_index = decision[0]
                         inputs = decision[1]
-                        primary_matches[swap_index].SetPrevious(this_step)
+                        primary_matches[swap_index].SetPrevious(primary_step)
                         d_temp = a_dice[a_die_index]
                         a_dice[a_die_index] = primary_matches[swap_index].diesize
                         primary_matches[swap_index].diesize = d_temp
@@ -9712,10 +9740,11 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(primary_step)
                 a_dice = self.ChoosePQDieSize(primary_pqs[0][0],
                                               primary_pqs[0][1:],
                                               a_dice,
-                                              stepnum=this_step,
+                                              stepnum=primary_step,
                                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9731,14 +9760,16 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(primary_step)
                 remainders = self.ChoosePQ(primary_options,
                                            a_dice,
-                                           stepnum=this_step,
+                                           stepnum=primary_step,
                                            inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 a_dice = remainders[1]
-            # Then move on to secondary Powers/Qualities, if there are any:
+            # Substep 2: Secondary Powers/Qualities...
+            secondary_step = this_step + 0.2
             if len(secondary_pqs) > 0:
                 # Add 1 of the secondary Powers/Qualities:
                 remainders = []
@@ -9748,9 +9779,10 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(secondary_step)
                 remainders = self.ChoosePQ(secondary_pqs,
                                            a_dice,
-                                           stepnum=this_step,
+                                           stepnum=secondary_step,
                                            inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9758,8 +9790,8 @@ class Hero:
                 entry_choice = ' '
                 # If secondary_count is >1, the user gets to assign any number of dice to
                 #  Powers/Qualities from secondary_pqs, then assign the rest within tertiary_pqs...
-                #  which is the same as saying that each remaining die should be assigned within one
-                #  of those lists.
+                #  which is the same as saying that each remaining die should be assigned within
+                #  either of those lists.
                 if secondary_count > 1 and len(a_dice) > 0:
                     if track_inputs:
                         print(notePrefix + tracker_open)
@@ -9769,12 +9801,13 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.AssignAllPQ(secondary_pqs + tertiary_pqs,
                                      a_dice,
-                                     stepnum=this_step,
+                                     stepnum=secondary_step,
                                      inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     a_dice = []
-            # Finally, if there are dice remaining, assign them to the tertiary Powers/Qualities:
+            # Substep 3: Tertiary Powers/Qualities...
+            tertiary_step = this_step + 0.3
             if len(a_dice) > 0:
                 if track_inputs:
                     print(notePrefix + tracker_open)
@@ -9782,12 +9815,15 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(tertiary_step)
                 self.AssignAllPQ(tertiary_pqs,
                                  a_dice,
-                                 stepnum=this_step,
+                                 stepnum=tertiary_step,
                                  inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+            # Substep 4: Bonus Powers/Qualities...
+            bonus_step = this_step + 0.4
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
             #  the time to choose it.
             if self.arc_bonus_quality in legal_dice:
@@ -9799,9 +9835,10 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(bonus_step)
                 self.ChoosePQ(arc_q_triplets,
                               [self.arc_bonus_quality],
-                              stepnum=step_names.index("Power Source"),
+                              stepnum=bonus_step,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9816,17 +9853,21 @@ class Hero:
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
+                    self.SetPrevious(bonus_step)
                     self.ChoosePQ(Category(1,8),
                                   [10],
-                                  stepnum=this_step,
+                                  stepnum=bonus_step,
                                   inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
-            # Now we start adding Abilities.
+            # Substep 5: Abilities...
+            ability_step = this_step + 0.5
             if self.archetype_modifier == 2:
                 # If the hero is Modular, they get Modular abilities and Modes instead of the
                 #  Abilities from their other Archetype
                 # First, if the hero has fewer than 4 Powers, add d6 Powers until they have 4.
+                if len(self.power_dice) < 4:
+                    self.SetPrevious(bonus_step)
                 while len(self.power_dice) < 4:
                     print(self.hero_name + " has " + str(len(self.power_dice)) + \
                           " of the 4 Power dice they'll need as a Modular hero. Choose a d6 " + \
@@ -9840,11 +9881,12 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.ChoosePQ(power_triplets,
                                   [6],
-                                  stepnum=this_step,
+                                  stepnum=bonus_step,
                                   inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then add the mandatory Abilities for the Modular archetype:
+                self.SetPrevious(ability_step)
                 mandatory_abilities = [a for a in arc_modular[7]]
                 for template in mandatory_abilities:
                     zone = template.zone
@@ -9860,7 +9902,9 @@ class Hero:
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
-                # Then start adding Modes.
+                # Substep 6: Auxiliary Sheets...
+                aux_step = this_step + 0.6
+                self.SetPrevious(aux_step)
                 # First, the user gets to choose whether to add a Powerless Mode.
                 prompt = "You can add a Powerless Mode if there are circumstances where you " + \
                          "could be separated from your power source (like having a Power Suit " + \
@@ -9882,7 +9926,7 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.AddMode(-1,
                                  0,
-                                 stepnum=this_step,
+                                 stepnum=aux_step,
                                  inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -9918,7 +9962,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.AddMode(0,
                              entry_index,
-                             stepnum=this_step,
+                             stepnum=aux_step,
                              inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9962,7 +10006,7 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.AddMode(1,
                                  mode_index,
-                                 stepnum=this_step,
+                                 stepnum=aux_step,
                                  inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -9999,13 +10043,14 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.AddMode(2,
                              entry_index,
-                             stepnum=this_step,
+                             stepnum=aux_step,
                              inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
             else:
                 # As long as the hero isn't Modular, they get the Abilities from their main
                 #  Archetype.
+                self.SetPrevious(ability_step)
                 # Start with the mandatory Abilities for the Archetype, if applicable:
                 for template in mandatory_abilities:
                     zone = template.zone
@@ -10046,7 +10091,7 @@ class Hero:
                     self.ChooseAbility([template],
                                        zone,
                                        triplet_options=legal_triplets,
-                                       stepnum=this_step,
+                                       stepnum=ability_step,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10109,7 +10154,7 @@ class Hero:
                                                          0,
                                                          triplet_options=legal_triplets,
                                                          category_req=category_req,
-                                                         stepnum=this_step,
+                                                         stepnum=ability_step,
                                                          inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10152,13 +10197,16 @@ class Hero:
                     yellow_abilities = self.ChooseAbility(yellow_abilities,
                                                           1,
                                                           triplet_options=legal_triplets,
-                                                          stepnum=this_step,
+                                                          stepnum=ability_step,
                                                           inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
+                # Substep 6: Auxiliary Sheets...
+                aux_step = this_step + 0.6
                 # If the hero is a Form-Changer, create their Forms
                 if self.archetype == 15:
                     # Add 2 Green Forms and 1 Yellow Form.
+                    self.SetPrevious(aux_step)
                     for f_zone in [0,0,1]:
                         if track_inputs:
                             print(notePrefix + tracker_open)
@@ -10167,12 +10215,13 @@ class Hero:
                             if str(inputs[0]) != inputs[0]:
                                 pass_inputs = inputs.pop(0)
                         self.ChooseForm(f_zone,
-                                        stepnum=this_step,
+                                        stepnum=aux_step,
                                         inputs=pass_inputs)
                         if track_inputs:
                             print(notePrefix + tracker_close)
                 # If the hero is a Minion-Maker, select their Minion Forms
                 if self.archetype == 13:
+                    self.SetPrevious(aux_step)
                     entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
                                                 prompt="Choose a Quality to determine the " + \
@@ -10239,17 +10288,21 @@ class Hero:
                                 self.min_forms.append(mf_index)
                                 print("OK! Added " + min_collection[mf_index][0] + " to " + \
                                       self.hero_name + "'s Minion sheet.")
-                        self.mf_step = this_step
-            # Next, add any bonus content:
+                        self.mf_step = aux_step
+            # Some Archetypes modify the set of Powers that can be used for Health...
             if arc_bonus == 1:
                 # Armored: You may use a Materials or Technological Power when determining Health.
                 self.health_pqs += Category(1,4) + Category(1,8)
             elif arc_bonus == 2:
                 # Robot/Cyborg: You may use a Technological Power when determining Health.
                 self.health_pqs += Category(1,8)
-            # Then add the Principle:
+            # Substep 9: Principle...
+            prin_step = this_step + 0.9
             if self.archetype_modifier == 1:
                 # If the hero is Divided, they take some extra steps here
+                # Substep 7: Transition Type...
+                transition_step = this_step + 0.7
+                self.SetPrevious(transition_step)
                 prompt = "As a Divided hero, you have two very different forms, such as a " + \
                          "nonpowered civilian form and a powered heroic form."
                 prompt += "\n" + "The default names for these forms are " + self.dv_tags[0] + \
@@ -10316,11 +10369,13 @@ class Hero:
                 self.ChooseAbility(tr_method[2],
                                    0,
                                    triplet_options=arc_triplets,
-                                   stepnum=this_step,
+                                   stepnum=transition_step,
                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                # Then, choose a build option and create your heroic & civilian forms
+                # Substep 8: Divided Nature...
+                divided_step = this_step + 0.8
+                self.SetPrevious(divided_step)
                 build_options = [a_divided_psyche, a_split_form]
                 bo_prompt = "Choose one as the nature of your divided self:"
                 if self.archetype == 15:
@@ -10340,9 +10395,10 @@ class Hero:
                                                     width=50)
                         entry_index = decision[0]
                         inputs = decision[1]
-                        f.SetPrevious(this_step)
+                        f.SetPrevious(divided_step)
                         f.dv_index = entry_index
-                        f.status_dice = Status(ref=entry_index, stepnum=this_step)
+                        f.status_dice = Status(ref=entry_index,
+                                               stepnum=divided_step)
                         print("OK! " + f.name + " is now marked as a " + \
                               self.dv_tags[f.dv_index] + " Form.")
                     # Now that all Form-Changer Forms have a Divided tag, we can determine whether
@@ -10464,7 +10520,7 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.ChooseAbility([a_divided_psyche],
                                        0,
-                                       stepnum=this_step,
+                                       stepnum=divided_step,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10475,14 +10531,14 @@ class Hero:
                                         0,
                                         4,
                                         flavorname="[Standard Qualities]",
-                                        stepnum=this_step)
+                                        stepnum=divided_step)
                     civilian_form = Form(cv_name,
                                          zone=0,
                                          pqs=[quality_key],
                                          status=Status(ref=0,
-                                                       stepnum=this_step),
+                                                       stepnum=divided_step),
                                          divided=0,
-                                         stepnum=this_step)
+                                         stepnum=divided_step)
                     self.other_forms.append(civilian_form)
                     print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
@@ -10493,14 +10549,14 @@ class Hero:
                                       0,
                                       4,
                                       flavorname="[Standard Powers]",
-                                      stepnum=this_step)
+                                      stepnum=divided_step)
                     heroic_form = Form(hr_name,
                                        zone=0,
                                        pqs=[power_key],
                                        status=Status(ref=1,
-                                                     stepnum=this_step),
+                                                     stepnum=divided_step),
                                        divided=1,
-                                       stepnum=this_step)
+                                       stepnum=divided_step)
                     self.other_forms.append(heroic_form)
                     print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
@@ -10509,7 +10565,7 @@ class Hero:
                         #  Divided Psyche rules...
                         for i in range(len(self.other_forms)):
                             form_editing = self.other_forms[i]
-                            form_editing.SetPrevious(this_step)
+                            form_editing.SetPrevious(divided_step)
                             if form_editing.dv_index == 0:
                                 # This form is Civilian. Remove its Power list.
                                 form_editing.power_dice = []
@@ -10901,6 +10957,7 @@ class Hero:
                         #  Quality lists that just refer back to the base sheet. Edit them to match
                         #  their respective Divided tags instead.
                         for fm in self.other_forms:
+                            fm.SetPrevious(divided_step)
                             if fm.dv_index == 0:
                                 fm.quality_dice = cv_quality_dice
                             elif fm.dv_index == 1:
@@ -10912,9 +10969,9 @@ class Hero:
                                          zone=0,
                                          pqs=cv_power_dice+cv_quality_dice,
                                          status=Status(ref=0,
-                                                       stepnum=this_step),
+                                                       stepnum=divided_step),
                                          divided=0,
-                                         stepnum=this_step)
+                                         stepnum=divided_step)
                     self.other_forms.append(civilian_form)
                     print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
@@ -10923,9 +10980,9 @@ class Hero:
                                        zone=0,
                                        pqs=hr_power_dice+hr_quality_dice,
                                        status=Status(ref=1,
-                                                     stepnum=this_step),
+                                                     stepnum=divided_step),
                                        divided=1,
-                                       stepnum=this_step)
+                                       stepnum=divided_step)
                     self.other_forms.append(heroic_form)
                     print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
@@ -10937,8 +10994,9 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(prin_step)
                 self.ChoosePrinciple(r_category,
-                                     stepnum=this_step,
+                                     stepnum=prin_step,
                                      inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -10951,8 +11009,9 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
+                self.SetPrevious(prin_step)
                 self.ChoosePrinciple(r_category,
-                                     stepnum=this_step,
+                                     stepnum=prin_step,
                                      inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -19180,7 +19239,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getLori()
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)

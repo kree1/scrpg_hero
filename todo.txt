@@ -171,7 +171,7 @@ Complete steps of hero creation are now reversible
   Determine substeps...
 .  Background: Qualities, Principle
 .  Power Source: Powers, Yellow Abilities, Green Abilities, Power Source Bonus
-   Archetype: ...
+.  Archetype: Primary PQ, Secondary PQs, Tertiary PQs, Bonus PQs, Abilities, Auxiliary Sheets, Transition Type, Divided Nature, Principle
 .  Personality: Roleplaying Quality, Status Dice, Out Ability, Personality Bonus
 .  Red Abilities: Red Ability 1, Red Ability 2
    Retcon: ...
@@ -179,7 +179,7 @@ Complete steps of hero creation are now reversible
   Use substep numbers in hero creation...
 .  AddBackground
 .  AddPowerSource
-   AddArchetype
+.  AddArchetype
 .  AddPersonality
 .  AddRedAbility
    AddRetcon
