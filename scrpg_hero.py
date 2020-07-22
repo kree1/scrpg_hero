@@ -1916,22 +1916,25 @@ class Ability:
     def details(self,
                 width=100,
                 prefix="",
-                indented=True):
+                indented=True,
+                base_name=False):
         # Returns a list of the Ability's attributes.
         if indented:
             indent = "    "
         else:
             indent = ""
         if self.zone != 3:
-            # Out Abilities don't get names when displayed like this.
-            # The only time an Out Ability needs a name is when a Divided hero chooses between two
-            #  of them.
             if self.flavorname:
                 firstLine = self.flavorname
             else:
                 firstLine = self.name
+            if base_name and self.name != self.flavorname:
+                firstLine = '"' + firstLine + '"'
             firstLine += " "
         else:
+            # Out Abilities don't get names when displayed like this.
+            # The only time an Out Ability needs a name is when a Divided hero chooses between two
+            #  of them.
             firstLine = ""
         firstLine += "[" + self.type + "]"
         if self.zone in range(len(status_zones)):
@@ -1939,6 +1942,10 @@ class Ability:
         fullText = split_text(firstLine,
                               width=width,
                               prefix=prefix)
+        if base_name and self.name != self.flavorname:
+            fullText += "\n" + split_text("(" + self.name + ")",
+                                          width=width,
+                                          prefix=prefix)
         fullText += "\n" + split_text(self.dispText(),
                                       width=width,
                                       prefix=prefix+indent)
@@ -9028,6 +9035,7 @@ class Hero:
                     prefix="",
                     indented=True,
                     hanging=True,
+                    base_name=False,
                     stepnum=99):
         # Displays the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this form?
@@ -9040,6 +9048,7 @@ class Hero:
                                prefix=prefix,
                                indented=indented,
                                hanging=hanging,
+                               base_name=base_name,
                                stepnum=stepnum))
     def ModeDetails(self,
                     index,
@@ -9048,6 +9057,7 @@ class Hero:
                     prefix="",
                     indented=True,
                     hanging=True,
+                    base_name=False,
                     stepnum=99):
         # Returns a string containing the attributes of the hero's Mode specified by index.
         # codename: should the hero's codename be displayed with this Mode?
@@ -9119,7 +9129,7 @@ class Hero:
                 if stepnum+1 in range(len(step_names)):
                     alt_status = self.dv_status.RetrievePrior(stepnum+0.1)
                 for i in range(len(alt_status.array())):
-                    formString += "\n" + split_text(status_zones[i] + ": " + \
+                    modeString += "\n" + split_text(status_zones[i] + ": " + \
                                                     str(alt_status.array()[i]),
                                                     width=width,
                                                     prefix=prefix+indent)
@@ -9166,7 +9176,8 @@ class Hero:
                     thisAbility = mode.abilities[i].RetrievePrior(stepnum+0.1)
                 modeString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
-                                                         indented=indented)
+                                                         indented=indented,
+                                                         base_name=base_name)
         return modeString
     def DisplayForm(self,
                     index,
@@ -9175,6 +9186,7 @@ class Hero:
                     indented=True,
                     hanging=True,
                     codename=True,
+                    base_name=False,
                     stepnum=99):
         # Displays the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
@@ -9187,6 +9199,7 @@ class Hero:
                                indented=indented,
                                hanging=hanging,
                                codename=codename,
+                               base_name=base_name,
                                stepnum=stepnum))
     def FormDetails(self,
                     index,
@@ -9195,6 +9208,7 @@ class Hero:
                     indented=True,
                     hanging=True,
                     codename=True,
+                    base_name=False,
                     stepnum=99):
         # Returns a string containing the attributes of the hero's Form specified by index.
         # codename: should the hero's codename be displayed with this form?
@@ -9317,7 +9331,8 @@ class Hero:
                     thisAbility = form.abilities[i].RetrievePrior(stepnum+0.1)
                 formString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
-                                                         indented=indented)
+                                                         indented=indented,
+                                                         base_name=base_name)
         return formString
     def ChooseForm(self,
                    zone,
@@ -9906,7 +9921,7 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.ChooseAbility([template],
                                        zone,
-                                       stepnum=this_step,
+                                       stepnum=ability_step,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -12983,6 +12998,7 @@ class Hero:
                                        prefix=prefix)
             for subnum in range(1, len(substep_names[stepnum])):
                 substep = stepnum + 0.1 * subnum
+                substepText = ""
                 step_powers = [d for d in self.power_dice if d.step == substep]
                 step_qualities = [d for d in self.quality_dice if d.step == substep]
                 step_principles = [pri for pri in self.principles if pri.step == substep]
@@ -13001,94 +13017,122 @@ class Hero:
                    (substep == self.mf_step and len(self.min_forms) > 0):
                     any_added = 1
                 if any_added > 0:
-##                    stepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
+##                    substepText += split_text("Step " + str(stepnum) + " (" + step_names[stepnum] + \
 ##                                           ") added...",
 ##                                           width=width,
 ##                                           prefix=prefix)
                     if len(stepText) > 0:
-                        stepText += "\n"
-                    stepText += split_text(substep_names[stepnum][subnum] + ":",
-                                           width=width,
-                                           prefix=secPrefix)
+                        substepText += "\n"
+                    substepText += split_text(substep_names[stepnum][subnum] + ":",
+                                              width=width,
+                                              prefix=secPrefix)
                     if len(step_principles) > 0:
-                        stepText += "\n" + split_text("Principles:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if "Principle" not in substep_names[stepnum][subnum]:
+                            substepText += "\n" + split_text("Principles:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            prinPrefix = secPrefix + indent * 2
+                        else:
+                            prinPrefix = secPrefix + indent
                         for r in step_principles:
                             rPrime = r.RetrievePrior(substep+0.1)
-                            stepText += "\n" + rPrime.details(width=width,
-                                                              prefix=secPrefix+indent*2,
-                                                              green=False,
-                                                              indented=indented,
-                                                              breaks=1)
+                            substepText += "\n" + rPrime.details(width=width,
+                                                                 prefix=prinPrefix,
+                                                                 green=False,
+                                                                 indented=indented,
+                                                                 breaks=1)
                     if len(step_powers) > 0:
-                        stepText += "\n" + split_text("Powers:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if substep_names[stepnum][subnum] == "Powers":
+                            powerPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text("Powers:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            powerPrefix = secPrefix + indent * 2
                         for d in step_powers:
-                            stepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                                                             width=width,
+                                                             prefix=powerPrefix)
                     if len(step_qualities) > 0:
-                        stepText += "\n" + split_text("Qualities:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if substep_names[stepnum][subnum] in ["Qualities", "Roleplaying Quality"]:
+                            qualityPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text("Qualities:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            qualityPrefix = secPrefix + indent * 2
                         for d in step_qualities:
-                            stepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                                                             width=width,
+                                                             prefix=qualityPrefix)
                     if self.dv_status.array() != self.status_dice.array() and \
                        substep == self.dv_status.step:
-                        stepText += "\n" + split_text(self.dv_tags[0] + " Status:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if "Status" in substep_names[stepnum][subnum]:
+                            statusPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text(self.dv_tags[0] + " Status:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            statusPrefix = secPrefix + indent * 2
                         dPrime = self.dv_status.RetrievePrior(substep+0.1)
                         for x in range(len(dPrime.array())):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(dPrime.array()[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                             str(dPrime.array()[x]),
+                                                             width=width,
+                                                             prefix=statusPrefix)
                     if substep == self.status_dice.step:
-                        if self.dv_personality in range(len(pn_collection)):
-                            stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                        if "Status" in substep_names[stepnum][subnum]:
+                            statusPrefix = secPrefix + indent
                         else:
-                            stepText += "\n" + split_text("Status:",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                            if self.dv_personality in range(len(pn_collection)):
+                                substepText += "\n" + split_text(self.dv_tags[1] + " Status:",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                            else:
+                                substepText += "\n" + split_text("Status:",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                            statusPrefix = secPrefix + indent * 2
                         sPrime = self.status_dice.RetrievePrior(substep+0.1)
                         for x in range(len(sPrime.array())):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(sPrime.array()[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                             str(sPrime.array()[x]),
+                                                             width=width,
+                                                             prefix=statusPrefix)
                     for z in range(len(status_zones)):
                         step_zone_abilities = [ab for ab in step_abilities if ab.zone == z]
                         if len(step_zone_abilities) > 0:
-                            stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                            if "ability" in substep_names[stepnum][subnum].lower() or \
+                               "abilities" in substep_names[stepnum][subnum].lower():
+                                abilityPrefix = secPrefix + indent
+                            else:
+                                substepText += "\n" + split_text("Abilities (" + \
+                                                                 status_zones[z] + "):",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                                abilityPrefix = secPrefix + indent * 2
                             for a in step_zone_abilities:
                                 aPrime = a.RetrievePrior(substep+0.1)
-                                stepText += "\n" + aPrime.details(prefix=secPrefix+indent*2,
-                                                                  width=width,
-                                                                  indented=indented)
+                                substepText += "\n" + aPrime.details(prefix=abilityPrefix,
+                                                                     width=width,
+                                                                     indented=indented,
+                                                                     base_name=True)
                     if substep == self.mf_step and len(self.min_forms) > 0:
-                        stepText += "\n" + split_text("Minion Form Quality: " + str(self.mf_quality),
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
-                        stepText += "\n" + split_text("Minion Forms:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Minion Form Quality: " + \
+                                                         str(self.mf_quality),
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Minion Forms:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                         for x in range(len(self.min_forms)):
-                            stepText += "\n" + MinionFormStr(self.min_forms[x],
-                                                             width=width,
-                                                             prefix=secPrefix+indent*2)
+                            substepText += "\n" + MinionFormStr(self.min_forms[x],
+                                                                width=width,
+                                                                prefix=secPrefix+indent*2)
                     if len(step_forms) > 0:
-                        stepText += "\n" + split_text("Forms:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Forms:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                         # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
                         # Divided grants 2 Green Forms, each with no Abilities
                         # To separate the two categories, display relevant Forms with no Abilities
@@ -13096,30 +13140,33 @@ class Hero:
                         for x in range(len(self.other_forms)):
                             if self.other_forms[x] in step_forms and \
                                len(self.other_forms[x].abilities) == 0:
-                                stepText += "\n" + self.FormDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.FormDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
                         for x in range(len(self.other_forms)):
                             if self.other_forms[x] in step_forms and \
                                len(self.other_forms[x].abilities) > 0:
-                                stepText += "\n" + self.FormDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.FormDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
                     if len(step_modes) > 0:
-                        stepText += "\n" + split_text("Modes:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Modes:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                         for x in range(len(self.other_modes)):
                             if self.other_modes[x] in step_modes:
-                                stepText += "\n" + self.ModeDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.ModeDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
                 modified_powers = [d for d in self.power_dice \
                                    if substep in d.steps_modified \
                                    and d not in step_powers]
@@ -13150,81 +13197,104 @@ class Hero:
                     any_modified = 1
                 if any_modified > 0:
                     if len(stepText) > 0:
-                        stepText += "\n" + split_text("... and modified...",
-                                                      width=width,
-                                                      prefix=prefix)
-                    else:
-                        stepText += split_text("Step " + str(stepnum) + " (" + \
-                                               step_names[stepnum] + ") modified...",
-                                               width=width,
-                                               prefix=prefix)
+                        substepText += "\n"
+                    substepText += split_text(substep_names[stepnum][subnum] + " modified...",
+                                              width=width,
+                                              prefix=secPrefix)
                     if len(modified_powers) > 0:
-                        stepText += "\n" + split_text("Powers:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if substep_names[stepnum][subnum] == "Powers":
+                            powerPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text("Powers:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            powerPrefix = secPrefix + indent * 2
                         for d in modified_powers:
-                            stepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                                                             width=width,
+                                                             prefix=powerPrefix)
                     if len(modified_qualities) > 0:
-                        stepText += "\n" + split_text("Qualities:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if substep_names[stepnum][subnum] in ["Qualities", "Roleplaying Quality"]:
+                            qualityPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text("Qualities:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            qualityPrefix = secPrefix + indent * 2
                         for d in modified_qualities:
-                            stepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                                                             width=width,
+                                                             prefix=qualityPrefix)
                     if len(modified_principles) > 0:
-                        stepText += "\n" + split_text("Principles:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if "Principle" not in substep_names[stepnum][subnum]:
+                            substepText += "\n" + split_text("Principles:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            prinPrefix = secPrefix + indent * 2
+                        else:
+                            prinPrefix = secPrefix + indent
                         for pri in modified_principles:
-                            stepText += "\n" + pri.details(width=width,
-                                                           prefix=secPrefix+indent*2,
-                                                           green=False,
-                                                           indented=indented,
-                                                           breaks=1)
+                            substepText += "\n" + pri.details(width=width,
+                                                              prefix=prinPrefix,
+                                                              green=False,
+                                                              indented=indented,
+                                                              breaks=1)
                     if self.dv_status.array() != self.status_dice.array() and \
                        substep in self.dv_status.steps_modified:
-                        stepText += "\n" + split_text(self.dv_tags[0] + " Status:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        if "Status" in substep_names[stepnum][subnum]:
+                            statusPrefix = secPrefix + indent
+                        else:
+                            substepText += "\n" + split_text(self.dv_tags[0] + " Status:",
+                                                             width=width,
+                                                             prefix=secPrefix+indent)
+                            statusPrefix = secPrefix + indent * 2
                         dPrime = self.dv_status.RetrievePrior(substep+0.1)
                         for x in range(len(dPrime.array())):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(dPrime.array()[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                             str(dPrime.array()[x]),
+                                                             width=width,
+                                                             prefix=statusPrefix)
                     if substep in self.status_dice.steps_modified:
-                        if self.dv_personality in range(len(pn_collection)):
-                            stepText += "\n" + split_text(self.dv_tags[1] + " Status:",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                        if "Status" in substep_names[stepnum][subnum]:
+                            statusPrefix = secPrefix + indent
                         else:
-                            stepText += "\n" + split_text("Status:",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                            if self.dv_personality in range(len(pn_collection)):
+                                substepText += "\n" + split_text(self.dv_tags[1] + " Status:",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                            else:
+                                substepText += "\n" + split_text("Status:",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                            statusPrefix = secPrefix + indent * 2
                         sPrime = self.status_dice.RetrievePrior(substep+0.1)
                         for x in range(len(sPrime.array())):
-                            stepText += "\n" + split_text(status_zones[x] + ": " + \
-                                                          str(sPrime.array()[x]),
-                                                          width=width,
-                                                          prefix=secPrefix+indent*2)
+                            substepText += "\n" + split_text(status_zones[x] + ": " + \
+                                                             str(sPrime.array()[x]),
+                                                             width=width,
+                                                             prefix=statusPrefix)
                     for z in range(len(status_zones)):
                         modified_zone_abilities = [ab for ab in modified_abilities if ab.zone == z]
                         if len(modified_zone_abilities) > 0:
-                            stepText += "\n" + split_text("Abilities (" + status_zones[z] + "):",
-                                                          width=width,
-                                                          prefix=secPrefix+indent)
+                            if "ability" in substep_names[stepnum][subnum].lower() or \
+                               "abilities" in substep_names[stepnum][subnum].lower():
+                                abilityPrefix = secPrefix + indent
+                            else:
+                                substepText += "\n" + split_text("Abilities (" + \
+                                                                 status_zones[z] + "):",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent,
+                                                                 base_name=True)
+                                abilityPrefix = secPrefix + indent * 2
                             for a in modified_zone_abilities:
                                 aPrime = a.RetrievePrior(substep+0.1)
-                                stepText += "\n" + aPrime.details(width=width,
-                                                                  prefix=secPrefix+indent*3,
-                                                                  indented=indented)
+                                substepText += "\n" + aPrime.details(width=width,
+                                                                     prefix=abilityPrefix,
+                                                                     indented=indented)
                     if len(modified_forms) > 0:
-                        stepText += "\n" + split_text("Forms:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Forms:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                         # Form-Changer grants 2 Green Forms and 1 Yellow Form, each with 1 Ability
                         # Divided grants 2 Green Forms, each with no Abilities
                         # To separate the two categories, display relevant Forms with no Abilities
@@ -13232,30 +13302,34 @@ class Hero:
                         for x in range(len(self.other_forms)):
                             if self.other_forms[x] in modified_forms and \
                                len(self.other_forms[x].abilities) == 0:
-                                stepText += "\n" + self.FormDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.FormDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
                         for x in range(len(self.other_forms)):
                             if self.other_forms[x] in modified_forms and \
                                len(self.other_forms[x].abilities) > 0:
-                                stepText += "\n" + self.FormDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.FormDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
                     if len(modified_modes) > 0:
-                        stepText += "\n" + split_text("Modes:",
-                                                      width=width,
-                                                      prefix=secPrefix+indent)
+                        substepText += "\n" + split_text("Modes:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
                         for x in range(len(self.other_modes)):
                             if self.other_modes[x] in modified_modes:
-                                stepText += "\n" + self.ModeDetails(x,
-                                                                    codename=False,
-                                                                    width=width,
-                                                                    prefix=secPrefix+indent*2,
-                                                                    stepnum=substep)
+                                substepText += "\n" + self.ModeDetails(x,
+                                                                       codename=False,
+                                                                       width=width,
+                                                                       prefix=secPrefix+indent*2,
+                                                                       base_name=True,
+                                                                       stepnum=substep)
+                stepText += substepText
             if stepnum == self.health_step:
                 stepText += "\n" + split_text("Health:",
                                               width=width,
@@ -19278,7 +19352,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
