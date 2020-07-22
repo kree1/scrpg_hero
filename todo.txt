@@ -175,17 +175,7 @@ Complete steps of hero creation are now reversible
 .  Personality: Roleplaying Quality, Status Dice, Out Ability, Personality Bonus
 .  Red Abilities: Red Ability 1, Red Ability 2
 .  Retcon: Swap 2 Power dice, Swap 2 Quality dice, Change the Power/Quality used in an Ability, Add a d6 Power/Quality from ANY category, Upgrade Red status die by one size, Change one of your Principles to any other Principle, Gain another Red ability
-.  Health: 8, Red die, PQ die, 4 or 1d8
-  Use substep numbers in hero creation...
-.  AddBackground
-.  AddPowerSource
-.  AddArchetype
-.  AddPersonality
-.  AddRedAbility
-.  AddRetcon
-.  AddHealth
-  Use substep numbers in StepDetails...
-   Health...
+.  Health: Start with 8, Red die, Power/Quality, 4 or 1d8
  
 Can we create a context menu?
  Entries...

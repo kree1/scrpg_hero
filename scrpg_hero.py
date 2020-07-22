@@ -66,9 +66,9 @@ substep_names = [[],
                   "Change one of your Principles to any other Principle",
                   "Gain another Red Ability"], # Retcon step options
                  ["",
-                  "8",
-                  "Red die",
-                  "Power/Quality",
+                  "Start with 8",
+                  "Red die size",
+                  "Power/Quality die size",
                   "4 or 1d8"]] # Health substeps
 
 global clipboard_delay
@@ -1928,8 +1928,6 @@ class Ability:
                 firstLine = self.flavorname
             else:
                 firstLine = self.name
-            if base_name and self.name != self.flavorname:
-                firstLine = '"' + firstLine + '"'
             firstLine += " "
         else:
             # Out Abilities don't get names when displayed like this.
@@ -1943,7 +1941,7 @@ class Ability:
                               width=width,
                               prefix=prefix)
         if base_name and self.name != self.flavorname:
-            fullText += "\n" + split_text("(" + self.name + ")",
+            fullText += "\n" + split_text("[" + self.name + "]",
                                           width=width,
                                           prefix=prefix)
         fullText += "\n" + split_text(self.dispText(),
@@ -5337,7 +5335,7 @@ arc_divided = ["Divided",
 # Green Dice- Arc only?:  no
 # Principle Category:     Responsibility
 # Archetype Bonus:        Divided- gains PQs and Abilities from another Archetype, then chooses 
-#                         transition type and build option
+#                         Transition Type and Divided Nature
 arc_modular = ["Modular",
                "You have multiple forms (configurations, fighting styles, etc.) that each " + \
                "give their own advantages and disadvantages.",
@@ -5572,7 +5570,8 @@ mc_yellow = [mt_analysis, mt_bombardment, mt_regeneration, mt_skirmish, mt_stalw
 mc_red = [mt_destroyer, mt_hunter_killer, mt_shield]
 mc_zones = [mc_green, mc_yellow, mc_red, [mt_powerless]]
 
-global tr_controllable, tr_device, tr_merging_possession, tr_collection, tr_width, dv_defaults
+global tr_controllable, tr_device, tr_merging_possession, tr_collection, tr_width, dn_collection
+global dv_defaults
 tr_controllable = ["Controllable Transition",
                    "You change between two different forms through some method that you have " + \
                    "control over at all times. It might be yelling a magic word, or an " + \
@@ -5597,6 +5596,7 @@ tr_uncontrollable = ["Uncontrollable Transition",
                      [a_uncontrolled_transform]]
 tr_collection = [tr_controllable, tr_device, tr_merging_possession, tr_uncontrollable]
 tr_width = 100
+dn_collection = [a_divided_psyche, a_split_form]
 dv_defaults = ["Civilian", "Heroic"]
 
 global min_autonomous, min_burrowing, min_floating, min_pack, min_explosive, min_reinforced
@@ -6509,13 +6509,12 @@ def ArchetypeDetails(index,
                                                     prefix=prefix+indent,
                                                     indented=indented,
                                                     hanging=hanging)
-            # Include the Build Options and the Green Ability associated with Split Form.
-            build_options = [a_divided_psyche, a_split_form]
+            # Include the Divided Natures and the Green Ability associated with Split Form.
             arcText += "\n" * breaks + split_text("Divided Nature (choose 1):",
                                                   width=width,
                                                   prefix=prefix)
-            for i in range(len(build_options)):
-                arcText += "\n" + build_options[i].details(width=width,
+            for i in range(len(dn_collection)):
+                arcText += "\n" + dn_collection[i].details(width=width,
                                                            prefix=prefix+indent)
             # Include the Principle category from archetype[18]
             arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
@@ -6607,6 +6606,8 @@ class Hero:
         self.archetype = 99
         self.archetype_modifier = 99
         self.dv_tags = ["Civilian", "Heroic"]
+        self.dv_transition = 99
+        self.dv_nature = 99
         self.min_forms = []
         self.mf_step = 0
         self.mf_quality = None
@@ -9075,7 +9076,7 @@ class Hero:
             return modeString
         else:
             mode = self.other_modes[index]
-            if stepnum+1 in range(len(step_names)):
+            if stepnum+0.1 > min(range(len(step_names))):
                 mode = mode.RetrievePrior(stepnum+0.1)
             if codename:
                 modeString += split_text(self.hero_name,
@@ -9090,6 +9091,11 @@ class Hero:
                 modeString += split_text(mode.name,
                                          width=width,
                                          prefix=prefix)
+            if base_name and len(mode.abilities) == 1:
+                if mode.name != mode.abilities[0].name + " Mode":
+                    modeString += "\n" + split_text("[" + mode.abilities[0].name + " Mode]",
+                                                    width=width,
+                                                    prefix=prefix)
             if hanging:
                 prefix += "    "
             if mode.power_dice == self.power_dice or mode.std_powers:
@@ -9101,7 +9107,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in mode.power_dice:
-                    if stepnum+1 in range(len(step_names)):
+                    if stepnum+0.1 > min(range(len(step_names))):
                         d = d.RetrievePrior(stepnum+0.1)
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
@@ -9115,7 +9121,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in mode.quality_dice:
-                    if stepnum+1 in range(len(step_names)):
+                    if stepnum+0.1 > min(range(len(step_names))):
                         d = d.RetrievePrior(stepnum+0.1)
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
@@ -9126,7 +9132,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 alt_status = self.dv_status
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     alt_status = self.dv_status.RetrievePrior(stepnum+0.1)
                 for i in range(len(alt_status.array())):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
@@ -9143,7 +9149,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 modeStatus = mode.status_dice
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     modeStatus = mode.status_dice.RetrievePrior(stepnum+0.1)
                 for i in range(len(modeStatus.array())):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
@@ -9172,7 +9178,7 @@ class Hero:
                                                 prefix=prefix)
             for i in range(len(mode.abilities)):
                 thisAbility = mode.abilities[i]
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     thisAbility = mode.abilities[i].RetrievePrior(stepnum+0.1)
                 modeString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
@@ -9225,7 +9231,7 @@ class Hero:
             return ""
         else:
             form = self.other_forms[index]
-            if stepnum+1 in range(len(step_names)):
+            if stepnum+0.1 > min(range(len(step_names))):
                 form = form.RetrievePrior(stepnum+0.1)
             if codename:
                 formString = split_text(self.hero_name,
@@ -9251,6 +9257,11 @@ class Hero:
                 formString += split_text(form.name + " (" + status_zones[form.zone] + " Form)",
                                          width=width,
                                          prefix=prefix)
+            if base_name and len(form.abilities) == 1:
+                if form.name != form.abilities[0].name:
+                    formString += "\n" + split_text("[" + form.abilities[0].name + "]",
+                                                    width=width,
+                                                    prefix=prefix)
             if hanging:
                 prefix += "    "
             form.CheckReference()
@@ -9267,7 +9278,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in form.power_dice:
-                    if stepnum+1 in range(len(step_names)):
+                    if stepnum+0.1 > min(range(len(step_names))):
                         d = d.RetrievePrior(stepnum+0.1)
                     formString += "\n" + split_text(str(d),
                                                     width=width,
@@ -9285,7 +9296,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in form.quality_dice:
-                    if stepnum+1 in range(len(step_names)):
+                    if stepnum+0.1 > min(range(len(step_names))):
                         d = d.RetrievePrior(stepnum+0.1)
                     formString += "\n" + split_text(str(d),
                                                     width=width,
@@ -9297,7 +9308,7 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 alt_status = self.dv_status
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     alt_status = self.dv_status.RetrievePrior(stepnum+0.1)
                 for i in range(len(alt_status.array())):
                     formString += "\n" + split_text(status_zones[i] + ": " + \
@@ -9310,7 +9321,7 @@ class Hero:
                                                 prefix=prefix)
             else:
                 fm_status = form.status_dice
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     fm_status = form.status_dice.RetrievePrior(stepnum+0.1)
                 for i in range(len(form.status_dice.array())):
                     formString += "\n" + split_text(status_zones[i] + ": " + \
@@ -9327,7 +9338,7 @@ class Hero:
                                                 prefix=prefix)
             for i in range(len(form.abilities)):
                 thisAbility = form.abilities[i]
-                if stepnum+1 in range(len(step_names)):
+                if stepnum+0.1 > min(range(len(step_names))):
                     thisAbility = form.abilities[i].RetrievePrior(stepnum+0.1)
                 formString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
@@ -10375,6 +10386,7 @@ class Hero:
                                                   inputs=inputs)
                 entry_index = decision[0]
                 inputs = decision[1]
+                self.dv_transition = entry_index
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
                 # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
@@ -10400,12 +10412,12 @@ class Hero:
                 # Substep 8: Divided Nature...
                 divided_step = this_step + 0.8
                 self.SetPrevious(divided_step)
-                build_options = [a_divided_psyche, a_split_form]
-                bo_prompt = "Choose one as the nature of your divided self:"
+                divided_natures = [a for a in dn_collection]
+                dn_prompt = "Choose one as the nature of your divided self:"
                 if self.archetype == 15:
                     # This hero is a Form-Changer. Any of their Forms that don't currently have a
                     #  Civilian or Heroic tag need to have one assigned BEFORE they can choose a
-                    #  build option.
+                    #  Divided Nature.
                     unassigned_forms = [f for f in self.other_forms \
                                         if f.dv_index not in range(len(self.dv_tags))]
                     for f in unassigned_forms:
@@ -10427,9 +10439,8 @@ class Hero:
                               self.dv_tags[f.dv_index] + " Form.")
                     # Now that all Form-Changer Forms have a Divided tag, we can determine whether
                     #  Split Form is legal
-                    # Unless specific conditions are met, only Divided Psyche is legal for this
-                    #  hero
-                    build_options = [a_divided_psyche]
+                    # Unless specific conditions are met, Split Form is not legal for this hero
+                    divided_natures.remove(a_split_form)
                     # First condition: all Forms, including the base sheet, MUST share at least 2
                     #  Powers
                     # (Since Power die sizes may be different in different Forms, we can't use
@@ -10456,7 +10467,7 @@ class Hero:
                                   self.dv_tags[1])
                             # All Form-Changer Forms are Heroic
                             # Split Form is OK, with the following specifications:
-                            build_options = [a_divided_psyche, a_split_form]
+                            divided_natures = [a_divided_psyche, a_split_form]
                             # Constant Powers must be chosen from the Power IDs common to all
                             #  Forms
                             constant_power_options = common_power_ids
@@ -10467,7 +10478,7 @@ class Hero:
                                   self.dv_tags[0])
                             # All Form-Changer Forms are Civilian
                             # Split Form is OK, with the following specifications:
-                            build_options = [a_divided_psyche, a_split_form]
+                            divided_natures = [a_divided_psyche, a_split_form]
                             # Constant Powers must be chosen from the Power IDs common to all
                             #  Forms
                             constant_power_options = common_power_ids
@@ -10498,43 +10509,43 @@ class Hero:
                                 print(notePrefix + \
                                       "Split Form check: exactly 2 common Powers found")
                                 # Split Form is OK, with the following specifications:
-                                build_options = [a_divided_psyche, a_split_form]
+                                divided_natures.append(a_split_form)
                                 # The 2 Constant Powers are the ones in common_ids
                                 constant_power_options = common_ids
                                 # Other Powers that appear in Heroic Forms are Heroic Powers
                                 # Other Powers that appear in Civilian Forms are Civilian Powers
                                 # Other Powers that appear on the base sheet are assigned by the
                                 #  user
-                if len(build_options) > 1:
-                    if self.archetype == 15 and a_split_form in build_options:
+                if len(divided_natures) > 1:
+                    if self.archetype == 15 and a_split_form in divided_natures:
                         print(notePrefix + "Split Form check passed!")
                     # If both options are valid...
-                    decision = self.ChooseDetailIndex(bo_prompt,
+                    decision = self.ChooseDetailIndex(dn_prompt,
                                                       "Enter a lowercase letter to see a " + \
                                                       "divided nature expanded, or an " + \
                                                       "uppercase letter to select it.",
-                                                      [x.name for x in build_options],
+                                                      [x.name for x in divided_natures],
                                                       [x.details(width=-1,
                                                                  indented=True) \
-                                                       for x in build_options],
+                                                       for x in divided_natures],
                                                       [x.details(width=dispWidth,
                                                                  indented=True) \
-                                                       for x in build_options],
+                                                       for x in divided_natures],
                                                       title="Archetype: Divided - Divided Nature",
                                                       lwidth=30,
                                                       rwidth=100,
                                                       swidth=dispWidth,
-                                                      shellHeader=bo_prompt,
+                                                      shellHeader=dn_prompt,
                                                       inputs=inputs)
                     entry_index = decision[0]
                     inputs = decision[1]
-                    dv_nature = build_options[entry_index]
+                    self.dv_nature = dn_collection.index(divided_natures[entry_index])
                 else:
-                    if self.archetype == 15 and a_split_form not in build_options:
+                    if self.archetype == 15 and a_split_form not in divided_natures:
                         print(notePrefix + "Split Form check failed!")
                     # Otherwise, automatically take the only one that works
-                    dv_nature = build_options[0]
-                if dv_nature == a_divided_psyche:
+                    self.dv_nature = dn_collection.index(divided_natures[0])
+                if dn_collection[self.dv_nature] == a_divided_psyche:
                     # Add the Divided Psyche Green Ability
                     if track_inputs:
                         print(notePrefix + tracker_open)
@@ -10596,7 +10607,7 @@ class Hero:
                             else:
                                 # This form is Heroic. Remove its Quality list.
                                 form_editing.quality_dice = []
-                elif dv_nature == a_split_form:
+                elif dn_collection[self.dv_nature] == a_split_form:
                     # Split Form isn't really an Ability, just a set of instructions to follow
                     #  during this step and the next one
                     if self.archetype == 15:
@@ -11377,10 +11388,7 @@ class Hero:
             #  Psyche and gets no Qualities in Heroic Form(s)
             matching_dice = [x for x in self.quality_dice if math.floor(x.step) == this_step]
             rpq_die = matching_dice[0]
-            dv_check = [a for a in self.abilities if a.name == "Divided Psyche"]
-            if len(dv_check) > 0:
-                dv_ps = dv_check[0]
-##                print(notePrefix + "Divided Psyche found (" + dv_ps.flavorname + ")")
+            if dn_collection.index(a_divided_psyche) == self.dv_nature:
                 # All Civilian Form(s) get this Quality
                 for fm in self.other_forms:
                     fm.CheckReference()
@@ -11515,11 +11523,11 @@ class Hero:
                                             [ex.triplet() for ex in upgrade_pqs]]
                     # Check if the hero has Divided Psyche. If so, their Heroic Form can only use
                     #  Powers, and their Civilian Form can only use Qualities.
-                    dv_ps_matches = [a for a in self.abilities if a.name == "Divided Psyche"]
-                    if len(dv_ps_matches) > 0 and i == 1:
-                        upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
-                    elif len(dv_ps_matches) > 0:
-                        upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 0]
+                    if dn_collection.index(a_divided_psyche) == self.dv_nature:
+                        if i == 1:
+                            upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
+                        else:
+                            upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 0]
                     decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
                                                 prompt=impulsive_prompt,
                                                 inputs=inputs,
@@ -12563,26 +12571,30 @@ class Hero:
             self.SetPrevious(red_step)
             red_options = [self.status_dice.red]
             red_sources = ["base form"]
+            red_objects = [self.status_dice]
             if self.dv_personality in range(len(pn_collection)) and \
                self.status_dice.red != self.dv_status.red:
                 red_options = [self.dv_status.red, self.status_dice.red]
                 red_sources = [str(x) + " Form" for x in self.dv_tags]
+                red_objects = [self.dv_status, self.status_dice]
             for md in self.other_modes:
                 if md.status_dice.reference not in range(len(dv_defaults)) and \
                    md.status_dice.red not in red_options:
                     red_options.append(md.status_dice.red)
                     red_sources.append(md.name)
+                    red_objects.append(md.status_dice)
             for fm in self.other_forms:
                 if fm.status_dice.reference not in range(len(dv_defaults)) and \
                    fm.status_dice.red not in red_options:
                     red_options.append(fm.status_dice.red)
                     red_sources.append(fm.name)
+                    red_objects.append(fm.status_dice)
             red_part = 0
             if len(red_options) == 1:
                 red_report = self.hero_name + "'s only Red status die size is " + \
                              str(red_options[0]) + "."
                 red_part = red_options[0]
-                self.health_status = red_sources[0]
+                self.health_status = red_objects[0]
             else:
                 decision = self.ChooseIndex([str(red_options[i]) + " (" + red_sources[i] + ")" \
                                              for i in range(len(red_options))],
@@ -12596,7 +12608,7 @@ class Hero:
                 red_report = "Using d" + str(red_options[entry_index]) + " from " + \
                              self.hero_name + "'s Red status."
                 red_part = red_options[entry_index]
-                self.health_status = red_sources[entry_index]
+                self.health_status = red_objects[entry_index]
             print("OK! " + red_report)
             # Substep 3: die size of an eligible Power or Quality...
             pq_step = this_step + 0.3
@@ -13011,7 +13023,7 @@ class Hero:
                                  len(step_abilities),
                                  len(step_forms),
                                  len(step_modes)])
-                if substep == self.health_step or \
+                if stepnum == self.health_step or \
                    substep == self.status_dice.step or \
                    substep == self.dv_status.step or \
                    (substep == self.mf_step and len(self.min_forms) > 0):
@@ -13023,9 +13035,43 @@ class Hero:
 ##                                           prefix=prefix)
                     if len(stepText) > 0:
                         substepText += "\n"
-                    substepText += split_text(substep_names[stepnum][subnum] + ":",
-                                              width=width,
-                                              prefix=secPrefix)
+                    if substep_names[stepnum][subnum] == "Divided Nature" and \
+                       self.dv_nature in range(len(dn_collection)):
+                        substepText += split_text(substep_names[stepnum][subnum] + ": " + \
+                                                  dn_collection[self.dv_nature].name,
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    elif substep_names[stepnum][subnum] == "Transition Type" and \
+                         self.dv_transition in range(len(tr_collection)):
+                        substepText += split_text(substep_names[stepnum][subnum] + ": " + \
+                                                  tr_collection[self.dv_transition][0],
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    elif substep_names[stepnum][subnum] == "Red die size" and self.health_status:
+                        substepText += split_text(substep_names[stepnum][subnum] + ": " + \
+                                                  str(self.health_status.red),
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    elif substep_names[stepnum][subnum] == "Start with 8":
+                        substepText += split_text(substep_names[stepnum][subnum],
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    elif substep_names[stepnum][subnum] == "Power/Quality die size" and \
+                         step_names[stepnum] == "Health" and \
+                         self.health_pqdie:
+                        substepText += split_text(substep_names[stepnum][subnum] + ": " + \
+                                                  str(self.health_pqdie),
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    elif substep_names[stepnum][subnum] == "4 or 1d8" and self.health_choice:
+                        substepText += split_text(substep_names[stepnum][subnum] + ": " + \
+                                                  str(self.health_choice),
+                                                  width=width,
+                                                  prefix=secPrefix)
+                    else:
+                        substepText += split_text(substep_names[stepnum][subnum] + ":",
+                                                  width=width,
+                                                  prefix=secPrefix)
                     if len(step_principles) > 0:
                         if "Principle" not in substep_names[stepnum][subnum]:
                             substepText += "\n" + split_text("Principles:",
@@ -13283,14 +13329,14 @@ class Hero:
                                 substepText += "\n" + split_text("Abilities (" + \
                                                                  status_zones[z] + "):",
                                                                  width=width,
-                                                                 prefix=secPrefix+indent,
-                                                                 base_name=True)
+                                                                 prefix=secPrefix+indent)
                                 abilityPrefix = secPrefix + indent * 2
                             for a in modified_zone_abilities:
                                 aPrime = a.RetrievePrior(substep+0.1)
                                 substepText += "\n" + aPrime.details(width=width,
                                                                      prefix=abilityPrefix,
-                                                                     indented=indented)
+                                                                     indented=indented,
+                                                                     base_name=True)
                     if len(modified_forms) > 0:
                         substepText += "\n" + split_text("Forms:",
                                                          width=width,
@@ -13364,6 +13410,18 @@ class Hero:
                        hanging=True):
         # Compiles the output of StepDetails for all steps of hero creation
         stepsText = ""
+        if self.hero_name == "":
+            stepsText += split_text("[unnamed hero]",
+                                    width=width,
+                                    prefix=prefix)
+        else:
+            stepsText += split_text("Hero Name:  " + self.hero_name,
+                                    width=width,
+                                    prefix=prefix)
+        if self.alias != "":
+            stepsText += "\n" + split_text("Alias:      " + self.alias,
+                                           width=width,
+                                           prefix=prefix)
         for i in range(1, len(step_names)):
             nextStepText = self.StepDetails(i,
                                             width=width,
@@ -19352,19 +19410,16 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
-disp_frame = HeroFrame(root, hero=firstHero)
+##firstHero = factory.getJo()
+##disp_frame = HeroFrame(root, hero=firstHero)
+
+# Using a not-yet-constructed hero
+disp_frame = HeroFrame(root)
+
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
 root.lift()
 root.mainloop()
-
-# Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
-##disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
-##root.bind("<Configure>", disp_frame.Resize)
-##root.lift()
-##root.mainloop()
 
 # Testing display/details methods...
 
