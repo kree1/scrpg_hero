@@ -14981,7 +14981,7 @@ class HeroFrame(Frame):
         # leftFrame row 5 deliberately left blank
         # Set up hero Power and Quality widgets (leftFrame rows 6-23, columns 1-10)
         self.pqTitles = [None for i in range(4)]
-        self.pqValues = [[None for i in range(4)] for i in range(len(self.myHeroPowers))]
+        self.pqValues = [[None for i in range(4)] for j in range(len(self.myHeroPowers))]
         self.pqTitleText = ["Powers", "Die", "Qualities", "Die"]
         self.pqRelief = GROOVE
         self.pqSectionWidths = [4, 1]
@@ -15787,6 +15787,8 @@ class HeroFrame(Frame):
             for num in indices:
                 idText += "[" + str(num) + "]"
             print(idText)
+            # First, include options that apply to any widget in a category, regardless of index or
+            #  contents
             if identifier in ["nameTitles", "nameValues"]:
                 # If the widget is associated with the hero's names, give the context menu the
                 #  option to change those names
@@ -15842,6 +15844,52 @@ class HeroFrame(Frame):
                                                             command=lambda revert=nextStep: \
                                                             self.RevertHero(autoStep=revert))
                                     lastStatusStep = nextStep
+            elif identifier in ["pqTitles", "pqValues"]:
+                # If the widget relates to the hero's Power/Quality dice, give the context menu the
+                #  option to rename those dice
+                if max(len(self.myHeroPowers), len(self.myHeroQualities)) > 0:
+                    contextMenu.add_command(label="Rename Powers/Qualities...",
+                                            command=self.RenamePQDice)
+            # Then, include options that rely on identifying the specific widget and the Hero
+            #  attributes behind it. This may overlap with the previous section, so it's in a
+            #  distinct set of if statements.
+            if identifier == "pqValues" and len(indices) == 2 and label.cget("text"):
+                # If the widget is associated with a specific Power/Quality die, give the context
+                #  menu the option to revert to the step of hero creation when that die was added
+                sourceDie = None
+                isPower = 2
+                if indices[0] in range(len(self.pqValues)):
+                    if indices[1] in range(len(self.pqValues[indices[0]])):
+                        # If indices[1] is 0 or 1, this is a Power;
+                        #  if it's 2 or 3, this is a Quality
+                        isPower = 1 - math.floor(indices[1]/2)
+                        listIndex = indices[0]
+                        if isPower:
+                            sourceDie = self.myHeroPowers[listIndex]
+                        else:
+                            sourceDie = self.myHeroQualities[listIndex]
+                if sourceDie:
+                    dieStep = math.floor(sourceDie.step)
+                    self.SetFirstIncomplete()
+                    if self.firstIncomplete > dieStep:
+                        contextMenu.add_command(label="Reset this " + \
+                                                categories_singular[isPower] + " (" + \
+                                                step_names[dieStep] + ")...",
+                                                command=lambda revert=dieStep: \
+                                                self.RevertHero(autoStep=revert))
+                    if len(sourceDie.steps_modified) > 0:
+                        # If the associated Power/Quality die has been modified during hero
+                        #  creation, give the context menu the option to revert to the step(s) when
+                        #  it was modified
+                        lastDieStep = dieStep
+                        for s in sourceDie.steps_modified:
+                            if math.floor(s) != lastDieStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this " + \
+                                                        categories_singular[isPower] + " (" + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        self.RevertHero(autoStep=revert))
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
@@ -19645,7 +19693,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getTalyn()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
