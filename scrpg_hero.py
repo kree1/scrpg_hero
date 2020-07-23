@@ -15788,8 +15788,60 @@ class HeroFrame(Frame):
                 idText += "[" + str(num) + "]"
             print(idText)
             if identifier in ["nameTitles", "nameValues"]:
+                # If the widget is associated with the hero's names, give the context menu the
+                #  option to change those names
                 contextMenu.add_command(label="Rename Hero...",
                                         command=self.RenameHero)
+            elif identifier in ["charTitles", "charValues"]:
+                # If the widget is associated with one of the hero's Characteristics (Background,
+                #  Power Source, Archetype, Personality) and that Characteristic's step of hero
+                #  creation is complete, give the context menu the option to reset to that step
+                charStep = indices[0] + 1
+                charStepName = step_names[charStep]
+                self.SetFirstIncomplete()
+##                print(notePrefix + "firstIncomplete: " + str(self.firstIncomplete) + \
+##                      ", charStep: " + str(charStep))
+                if self.firstIncomplete > charStep:
+                    contextMenu.add_command(label="Reset " + charStepName + "...",
+                                            command=lambda revert=charStep: \
+                                            self.RevertHero(autoStep=revert))
+            elif identifier in ["healthTitle", "healthValues"]:
+                # If the widget is associated with the hero's Health and the hero has completed a
+                #  step of hero creation that gave them Health values, give the context menu the
+                #  option to reset to that step
+                if isinstance(self.myHero, Hero):
+                    healthStep = math.floor(self.myHero.health_step)
+                    self.SetFirstIncomplete()
+                    if self.firstIncomplete > healthStep:
+                        contextMenu.add_command(label="Reset " + step_names[healthStep] + "...",
+                                                command=lambda revert=healthStep: \
+                                                self.RevertHero(autoStep=revert))
+            elif identifier in ["statusTitle", "statusValues"]:
+                # If the widget is associated with the hero's Status dice and the hero has
+                #  a set of Status dice, give the context menu the option to reset to the step of
+                #  hero creation that gave them those dice
+                if isinstance(self.myHero, Hero):
+                    if isinstance(self.myHero.status_dice, Status):
+                        statusStep = math.floor(self.myHero.status_dice.step)
+                        self.SetFirstIncomplete()
+                        if self.firstIncomplete > statusStep:
+                            contextMenu.add_command(label="Reset Status (" + \
+                                                    step_names[statusStep] + ")...",
+                                                    command=lambda revert=statusStep: \
+                                                    self.RevertHero(autoStep=revert))
+                        # If the hero's Status dice have been edited since they were added, give
+                        #  the context menu the option to revert them to their previous state(s)
+                        #  as well
+                        if len(self.myHero.status_dice.steps_modified) > 0:
+                            lastStatusStep = statusStep
+                            for s in self.myHero.status_dice.steps_modified:
+                                if math.floor(s) != lastStatusStep:
+                                    nextStep = math.floor(s)
+                                    contextMenu.add_command(label="Revert to previous Status (" + \
+                                                            step_names[nextStep] + ")...",
+                                                            command=lambda revert=nextStep: \
+                                                            self.RevertHero(autoStep=revert))
+                                    lastStatusStep = nextStep
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
@@ -16095,6 +16147,8 @@ class HeroFrame(Frame):
                                   self.myHero.health_zones != [0,0,0]]
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
+        else:
+            self.firstIncomplete = 0
     def SetFlex(self):
         notePrefix = "### HeroFrame.SetFlex: "
         # Make subframe contents stretch/squish...
@@ -17016,7 +17070,8 @@ class HeroFrame(Frame):
             heroFile.close()
         else:
             messagebox.showerror("Error", "You haven't created a hero yet!")
-    def RevertHero(self):
+    def RevertHero(self,
+                   autoStep=99):
         notePrefix = "### HeroFrame.RevertHero: "
         self.SetFirstIncomplete()
         # firstIncomplete == 99: myHero isn't a Hero object, no action needed
@@ -17028,17 +17083,20 @@ class HeroFrame(Frame):
             lastStep = self.firstIncomplete
             if False not in self.completeSteps:
                 lastStep = len(step_names)
-            stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
-            stepOptions = ["0: Clear ALL hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
-            revertPrompt = "Choose a step of hero creation to redo from:"
-            stepChoice = IntVar(self, 1)
-            question = SelectWindow(self,
-                                    revertPrompt,
-                                    stepOptions,
-                                    var=stepChoice,
-                                    title="Revert Hero",
-                                    width=40)
-            firstRedo = stepChoice.get()
+            if autoStep in range(1, lastStep):
+                firstRedo = autoStep
+            else:
+                stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
+                stepOptions = ["0: Clear ALL hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
+                revertPrompt = "Choose a step of hero creation to redo from:"
+                stepChoice = IntVar(self, 1)
+                question = SelectWindow(self,
+                                        revertPrompt,
+                                        stepOptions,
+                                        var=stepChoice,
+                                        title="Revert Hero",
+                                        width=40)
+                firstRedo = stepChoice.get()
             if firstRedo in range(1, lastStep):
                 # User selected a step to redo from
 ##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
@@ -19587,11 +19645,11 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getJo()
-##disp_frame = HeroFrame(root, hero=firstHero)
+firstHero = factory.getJo()
+disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
-disp_frame = HeroFrame(root)
+##disp_frame = HeroFrame(root)
 
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)

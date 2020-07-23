@@ -184,18 +184,17 @@ Can we create a context menu?
   Redo from Step (any widget associated with a hero name field, Power, Quality, Ability, Form, Mode, Status, or Health field)
  Behavior...
   HeroFrame...
-   nameTitles
+   nameTitles/nameValues
 .   "Rename Hero" -> self.RenameHero
-   nameValues
-.   "Rename Hero" -> self.RenameHero
-   charTitles
-   charValues
+   charTitles/charValues
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    pqTitles
    pqValues
-   statusTitle
-   statusValues
-   healthTitle
-   healthValues
+   statusTitle/statusValues
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+.	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+   healthTitle/healthValues
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    prinTitles
    prinSectionTitles
    prinSectionValues
