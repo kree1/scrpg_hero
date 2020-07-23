@@ -14911,6 +14911,16 @@ class HeroFrame(Frame):
                                     sticky=self.nameGlue)
             self.nameValues[i].bind("<Double-1>",
                                     self.ClipboardCopy)
+            self.nameTitles[i].bind("<Button-3>",
+                                    lambda event, myID="nameTitles", myIndex=[i] : \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
+            self.nameValues[i].bind("<Button-3>",
+                                    lambda event, myID="nameValues", myIndex=[i] : \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
         # Set up hero Characteristic widgets (leftFrame, rows 1-4, columns 1-16)
         self.charTitleText = ["Background:", "Power Source:", "Archetype:", "Personality:"]
         self.charTitles = [None for i in range(4)]
@@ -14958,6 +14968,16 @@ class HeroFrame(Frame):
                                     sticky=self.charGlue)
             self.charValues[i].bind("<Double-1>",
                                     self.ClipboardCopy)
+            self.charTitles[i].bind("<Button-3>",
+                                    lambda event, myID="charTitles", myIndex=[i]: \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
+            self.charValues[i].bind("<Button-3>",
+                                    lambda event, myID="charValues", myIndex=[i]: \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
         # leftFrame row 5 deliberately left blank
         # Set up hero Power and Quality widgets (leftFrame rows 6-23, columns 1-10)
         self.pqTitles = [None for i in range(4)]
@@ -14992,6 +15012,11 @@ class HeroFrame(Frame):
                                   rowspan=self.pqHeight,
                                   columnspan=groupWidth,
                                   sticky=self.pqGlue)
+            self.pqTitles[i].bind("<Button-3>",
+                                  lambda event, myID="pqTitles", myIndex=[i]: \
+                                  self.LaunchContextMenu(event,
+                                                         identifier=myID,
+                                                         indices=myIndex))
             for j in range(len(self.myHeroPowers)):
                 self.pqValues[j][i] = Label(self.leftFrame,
                                             background="white",
@@ -15008,6 +15033,11 @@ class HeroFrame(Frame):
                                          sticky=self.pqGlue)
                 self.pqValues[j][i].bind("<Double-1>",
                                          self.ClipboardCopy)
+                self.pqValues[j][i].bind("<Button-3>",
+                                         lambda event, myID="pqValues", myIndex=[j,i]: \
+                                         self.LaunchContextMenu(event,
+                                                                identifier=myID,
+                                                                indices=myIndex))
         # Set up hero Status die widgets (leftFrame rows 6-23, columns 11-13)
         self.statusTitleRow = self.firstPQRow
         self.firstStatusCol = 11
@@ -15028,6 +15058,10 @@ class HeroFrame(Frame):
                               rowspan=self.statusTitleHeight,
                               columnspan=self.statusWidth,
                               sticky=self.statusGlue)
+        self.statusTitle.bind("<Button-3>",
+                              lambda event, myID="statusTitle": \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID))
         self.statusValues = [None for i in range(3)]
         self.firstStatusRow = self.statusTitleRow + self.statusTitleHeight + 1
         self.statusHeight = 5
@@ -15047,6 +15081,11 @@ class HeroFrame(Frame):
                                       sticky=self.statusGlue)
             self.statusValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
+            self.statusValues[i].bind("<Button-3>",
+                                      lambda event, myID="statusValues", myIndex=[i]: \
+                                      self.LaunchContextMenu(event,
+                                                             identifier=myID,
+                                                             indices=myIndex))
         # Set up hero Health widgets (leftFrame rows 6-23, columns 15-16)
         self.healthTitleRow = self.firstPQRow
         self.healthTitleCol = 15
@@ -15065,6 +15104,10 @@ class HeroFrame(Frame):
                               rowspan=self.healthTitleHeight,
                               columnspan=self.healthWidth,
                               sticky=self.healthGlue)
+        self.healthTitle.bind("<Button-3>",
+                              lambda event, myID="healthTitle": \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID))
         self.healthValues = [None for i in range(3)]
         self.firstHealthRow = self.healthTitleRow + self.healthTitleHeight + 1
         self.firstHealthCol = 15
@@ -15086,6 +15129,11 @@ class HeroFrame(Frame):
                                       sticky=self.healthGlue)
             self.healthValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
+            self.healthValues[i].bind("<Button-3>",
+                                      lambda event, myID="healthValues", myIndex=[i]: \
+                                      self.LaunchContextMenu(event,
+                                                             identifier=myID,
+                                                             indices=myIndex))
         # leftFrame row 24 intentionally left blank
         # Set up hero Principle widgets (leftFrame rows 25-32, columns 1-16)
         self.prinSectionNames = ["During Roleplaying", "Minor Twist", "Major Twist"]
@@ -15122,6 +15170,11 @@ class HeroFrame(Frame):
                                     sticky=self.prinGlue)
             self.prinTitles[i].bind("<Double-1>",
                                     self.ClipboardCopy)
+            self.prinTitles[i].bind("<Button-3>",
+                                    lambda event, myID="prinTitles", myIndex=[i]: \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
             for j in range(len(self.prinSectionTitles[i])):
                 titleRow = self.firstPrinRow + self.prinTitleHeight + \
                            j*(self.prinSecTitleHeight + self.prinSectionHeight)
@@ -15139,6 +15192,13 @@ class HeroFrame(Frame):
                                                   rowspan=self.prinSecTitleHeight,
                                                   columnspan=self.prinWidth,
                                                   sticky=self.prinGlue)
+                self.prinSectionTitles[i][j].bind("<Button-3>",
+                                                  lambda event,
+                                                  myID="prinSectionTitles",
+                                                  myIndex=[i,j]: \
+                                                  self.LaunchContextMenu(event,
+                                                                         identifier=myID,
+                                                                         indices=myIndex))
                 self.prinSectionValues[i][j] = Label(self.leftFrame,
                                                      background="white",
                                                      activebackground=self.copyBG,
@@ -15153,6 +15213,13 @@ class HeroFrame(Frame):
                                                   sticky=self.prinGlue)
                 self.prinSectionValues[i][j].bind("<Double-1>",
                                                   self.ClipboardCopy)
+                self.prinSectionValues[i][j].bind("<Button-3>",
+                                                  lambda event,
+                                                  myID="prinSectionValues",
+                                                  myIndex=[i,j]: \
+                                                  self.LaunchContextMenu(event,
+                                                                         identifier=myID,
+                                                                         indices=myIndex))
         # Set up hero Ability widgets (rightFrame rows 1-17, columns 1-16)
         # z: zone index (green, yellow, red, out)
         # a: ability index within a zone
@@ -15187,6 +15254,11 @@ class HeroFrame(Frame):
                                        rowspan=self.abilityTitleHeight,
                                        columnspan=self.abilitySectionWidths[s],
                                        sticky=self.abilityGlue)
+            self.abilityTitles[s].bind("<Button-3>",
+                                       lambda event, myID="abilityTitles", myIndex=[s]: \
+                                       self.LaunchContextMenu(event,
+                                                              identifier=myID,
+                                                              indices=myIndex))
         # Principle Abilities start after Green Abilities
         prinRow = self.abilityTitleRow + self.abilityTitleHeight + len(self.myZoneAbilities[0])
         prinHeight = len(self.myPrinAbilities)
@@ -15210,6 +15282,11 @@ class HeroFrame(Frame):
                                                   sticky=self.abilityGlue)
                 self.prinAbilityValues[a][s].bind("<Double-1>",
                                                   self.ClipboardCopy)
+                self.prinAbilityValues[a][s].bind("<Button-3>",
+                                                  lambda event, myID="prinAbilityValues", myIndex=[a,s]: \
+                                                  self.LaunchContextMenu(event,
+                                                                         identifier=myID,
+                                                                         indices=myIndex))
         thisRow = self.abilityTitleRow + self.abilityTitleHeight
         for z in range(len(self.myZoneAbilities)):
             if z == 1:
@@ -15232,6 +15309,13 @@ class HeroFrame(Frame):
                                                          sticky=self.abilityGlue)
                     self.zoneAbilityValues[z][a][s].bind("<Double-1>",
                                                          self.ClipboardCopy)
+                    self.zoneAbilityValues[z][a][s].bind("<Button-3>",
+                                                         lambda event,
+                                                         myID="zoneAbilityValues",
+                                                         myIndex=[z,a,s]: \
+                                                         self.LaunchContextMenu(event,
+                                                                                identifier=myID,
+                                                                                indices=myIndex))
                 thisRow += 1
         rowsNeeded = 1
         self.outAbilityValue = Label(self.rightFrame,
@@ -15248,6 +15332,10 @@ class HeroFrame(Frame):
                                   sticky=self.abilityGlue)
         self.outAbilityValue.bind("<Double-1>",
                                   self.ClipboardCopy)
+        self.outAbilityValue.bind("<Button-3>",
+                                  lambda event, myID="outAbilityValue": \
+                                  self.LaunchContextMenu(event,
+                                                         identifier=myID))
         self.reliefOptions = [SUNKEN, RAISED, GROOVE, RIDGE, FLAT]
         self.reliefIndex = 4
         # Set up buttons (buttonFrame rows 1-*, columns 1-8)
@@ -15305,6 +15393,11 @@ class HeroFrame(Frame):
                                     rowspan=self.buttonHeight,
                                     columnspan=self.buttonWidth,
                                     sticky=N+E+S+W)
+            self.auxButtons[i].bind("<Button-3>",
+                                    lambda event, myID="auxButtons", myIndex=[i]: \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID,
+                                                           indices=myIndex))
             # If this button isn't relevant to this hero, hide it
             if self.myAuxCounts[i] == 0:
                 self.auxButtons[i].grid_remove()
@@ -15332,6 +15425,11 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth,
                               sticky=N+E+S+W)
+        self.printButton.bind("<Button-3>",
+                              lambda event, myID="textButtons", myIndex=[len(self.textButtons)]: \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID,
+                                                     indices=myIndex))
         self.textButtons.append(self.printButton)
         prevButtonRows += 1
         self.processButton = Button(self.buttonFrame,
@@ -15349,6 +15447,11 @@ class HeroFrame(Frame):
                                 rowspan=self.buttonHeight,
                                 columnspan=self.buttonWidth,
                                 sticky=N+E+S+W)
+        self.processButton.bind("<Button-3>",
+                                lambda event, myID="textButtons", myIndex=[len(self.textButtons)]: \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID,
+                                                       indices=myIndex))
         self.textButtons.append(self.processButton)
         prevButtonRows += 1
         self.saveButton = Button(self.buttonFrame,
@@ -15366,6 +15469,11 @@ class HeroFrame(Frame):
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth,
                              sticky=N+E+S+W)
+        self.saveButton.bind("<Button-3>",
+                             lambda event, myID="textButtons", myIndex=[len(self.textButtons)]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
         self.textButtons.append(self.saveButton)
         prevButtonRows += 1
         # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
@@ -15399,6 +15507,10 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.buttonWidth,
                               sticky=N+E+S+W)
+        self.resetButton.bind("<Button-3>",
+                              lambda event, myID="resetButton": \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID))
         prevButtonRows += 1
         self.stepButtons[0] = Button(self.buttonFrame,
                                      background=self.buttonColors[2],
@@ -15417,6 +15529,11 @@ class HeroFrame(Frame):
                                  rowspan=self.buttonHeight,
                                  columnspan=self.buttonWidth,
                                  sticky=N+E+S+W)
+        self.stepButtons[0].bind("<Button-3>",
+                                 lambda event, myID="stepButtons", myIndex=[0]: \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID,
+                                                        indices=myIndex))
         prevButtonRows += 1
         # stepButtons 1-7 all display in the same place- for now, we'll only be seeing one of them
         #  at a time
@@ -15438,6 +15555,11 @@ class HeroFrame(Frame):
                                      rowspan=self.buttonHeight,
                                      columnspan=self.buttonWidth,
                                      sticky=N+E+S+W)
+            self.stepButtons[i].bind("<Button-3>",
+                                     lambda event, myID="stepButtons", myIndex=[i]: \
+                                     self.LaunchContextMenu(event,
+                                                            identifier=myID,
+                                                            indices=myIndex))
         prevButtonRows += 1
         # Buttons for switching to another hero (for demonstration purposes) go in the following
         #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
@@ -15473,6 +15595,11 @@ class HeroFrame(Frame):
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth,
                              sticky=N+E+S+W)
+        self.backButton.bind("<Button-3>",
+                             lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
         self.demoButtons.append(self.backButton)
         self.forwardButton = Button(self.buttonFrame,
                                     background=self.demoColors[0],
@@ -15489,6 +15616,11 @@ class HeroFrame(Frame):
                                 rowspan=self.buttonHeight,
                                 columnspan=self.buttonWidth,
                                 sticky=N+E+S+W)
+        self.forwardButton.bind("<Button-3>",
+                                lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID,
+                                                       indices=myIndex))
         self.demoButtons.append(self.forwardButton)
         prevButtonRows += 1
         # If necessary, additional buttons go below these
@@ -15508,6 +15640,11 @@ class HeroFrame(Frame):
                              rowspan=self.buttonHeight,
                              columnspan=self.buttonWidth,
                              sticky=N+E+S+W)
+        self.fontButton.bind("<Button-3>",
+                             lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
         self.demoButtons.append(self.fontButton)
         self.miniButtonWidth = 2
         buttonCol2B = secondBFCol + self.miniButtonWidth
@@ -15526,6 +15663,11 @@ class HeroFrame(Frame):
                               rowspan=self.buttonHeight,
                               columnspan=self.miniButtonWidth,
                               sticky=N+E+S+W)
+        self.fPlusButton.bind("<Button-3>",
+                              lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID,
+                                                     indices=myIndex))
         self.demoButtons.append(self.fPlusButton)
         self.fMinusButton = Button(self.buttonFrame,
                                    background=self.demoColors[0],
@@ -15542,6 +15684,11 @@ class HeroFrame(Frame):
                                rowspan=self.buttonHeight,
                                columnspan=self.miniButtonWidth,
                                sticky=N+E+S+W)
+        self.fMinusButton.bind("<Button-3>",
+                               lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
+                               self.LaunchContextMenu(event,
+                                                      identifier=myID,
+                                                      indices=myIndex))
         self.demoButtons.append(self.fMinusButton)
         prevButtonRows += 1
         # Button for updating relief option (for design purposes)
@@ -15586,7 +15733,8 @@ class HeroFrame(Frame):
                 self.prinSectionValues[i][j].config(relief=newRelief)
                 self.prinSectionValues[i][j].update_idletasks()
         self.reliefButton.config(text=str(newRelief))
-    def SwitchFont(self, increment=1):
+    def SwitchFont(self,
+                   increment=1):
         notePrefix = "### HeroFrame.SwitchFont: "
         self.fontIndex = (self.fontIndex + increment) % len(self.dispFonts)
         self.currentFont.config(family=self.dispFonts[self.fontIndex].cget("family"),
@@ -15616,7 +15764,36 @@ class HeroFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
-    def SwitchHero(self, update=1):
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### HeroFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### HeroFrame.LaunchContextMenu: "
+        contextMenu = Menu(self, tearoff=0)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idText = str(identifier)
+            for num in indices:
+                idText += "[" + str(num) + "]"
+            print(idText)
+            if identifier in ["nameTitles", "nameValues"]:
+                contextMenu.add_command(label="Rename Hero...",
+                                        command=self.RenameHero)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
+    def SwitchHero(self,
+                   update=1):
         self.sampleIndex = -1
         if self.myHeroNames[0] in factory.codenames:
             self.sampleIndex = factory.codenames.index(self.myHeroNames[0])

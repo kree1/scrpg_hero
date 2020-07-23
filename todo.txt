@@ -181,7 +181,32 @@ Can we create a context menu?
  Entries...
   Copy Text (any widget that has text)
   Edit Name (any widget associated with a hero name field, Power, Quality, Ability, Form, or Mode)
-  Redo from Step (any widget associated with a hero name field, Power, Quality, Ability, Form, or Mode)
+  Redo from Step (any widget associated with a hero name field, Power, Quality, Ability, Form, Mode, Status, or Health field)
+ Behavior...
+  HeroFrame...
+   nameTitles
+.   "Rename Hero" -> self.RenameHero
+   nameValues
+.   "Rename Hero" -> self.RenameHero
+   charTitles
+   charValues
+   pqTitles
+   pqValues
+   statusTitle
+   statusValues
+   healthTitle
+   healthValues
+   prinTitles
+   prinSectionTitles
+   prinSectionValues
+   abilityTitles
+   prinAbilityValues
+   zoneAbilityValues
+   outAbilityValue
+   auxButtons
+   textButtons
+   stepButtons
+   demoButtons
   
 Let EditNames rename...
 .	Abilities
