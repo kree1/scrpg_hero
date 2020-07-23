@@ -15776,6 +15776,7 @@ class HeroFrame(Frame):
                           indices=[]):
         notePrefix = "### HeroFrame.LaunchContextMenu: "
         contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.currentFont)
         label = event.widget
         # If the widget has text, give the context menu the option to copy that text
         if label.cget("text"):
@@ -15837,7 +15838,8 @@ class HeroFrame(Frame):
                         if len(self.myHero.status_dice.steps_modified) > 0:
                             lastStatusStep = statusStep
                             for s in self.myHero.status_dice.steps_modified:
-                                if math.floor(s) != lastStatusStep:
+                                if self.firstIncomplete > math.floor(s) and \
+                                   math.floor(s) != lastStatusStep:
                                     nextStep = math.floor(s)
                                     contextMenu.add_command(label="Revert to previous Status (" + \
                                                             step_names[nextStep] + ")...",
@@ -15883,10 +15885,41 @@ class HeroFrame(Frame):
                         #  it was modified
                         lastDieStep = dieStep
                         for s in sourceDie.steps_modified:
-                            if math.floor(s) != lastDieStep:
+                            if self.firstIncomplete > math.floor(s) and \
+                               math.floor(s) != lastDieStep:
                                 nextStep = math.floor(s)
                                 contextMenu.add_command(label="Revert edit to this " + \
                                                         categories_singular[isPower] + " (" + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        self.RevertHero(autoStep=revert))
+            elif identifier in ["prinTitles", "prinSectionTitles", "prinSectionValues"] and \
+                 len(indices) > 0:
+                # If the widget is associated with a specific Principle, give the context menu the
+                #  option to revert to the step of hero creation when that Principle was added
+                sourcePrinciple = None
+                if indices[0] in range(len(self.prinTitles)):
+                    prinIndex = indices[0]
+                    if prinIndex in range(len(self.myHeroPrinciples)):
+                        sourcePrinciple = self.myHeroPrinciples[prinIndex]
+                if isinstance(sourcePrinciple, Principle):
+                    prinStep = math.floor(sourcePrinciple.step)
+                    self.SetFirstIncomplete()
+                    if self.firstIncomplete > prinStep:
+                        contextMenu.add_command(label="Reset this Principle (" + \
+                                                step_names[prinStep] + ")...",
+                                                command=lambda revert=prinStep: \
+                                                self.RevertHero(autoStep=revert))
+                    if len(sourcePrinciple.steps_modified) > 0:
+                        # If the associated Principle has been modified during hero creation, give
+                        #  the context menu the option to revert to the step(s) when it was
+                        #  modified
+                        lastPrinStep = prinStep
+                        for s in sourcePrinciple.steps_modified:
+                            if self.firstIncomplete > math.floor(s) and \
+                               math.floor(s) != lastPrinStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this Principle (" + \
                                                         step_names[nextStep] + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
@@ -19693,7 +19726,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getTalyn()
+firstHero = factory.getCham()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
