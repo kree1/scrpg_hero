@@ -203,13 +203,27 @@ Can we create a context menu?
 .   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
 .	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    abilityTitles
+.   if the hero has >0 Abilities, "Rename Abilities" -> self.RenameAbilities
    prinAbilityValues
+.   if the hero has >0 Abilities, "Rename Abilities" -> self.RenameAbilities
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+.	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    zoneAbilityValues
+.   if the hero has >0 Abilities, "Rename Abilities" -> self.RenameAbilities
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+.	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    outAbilityValue
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+.	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    auxButtons
+.   if the hero has >0 [Modes/Forms], "Rename [Modes/Forms]" -> [self.RenameModes/self.RenameForms]
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
+.	if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: self.RevertHero(autoStep=revert)
    textButtons
    stepButtons
    demoButtons
+   
+self.auxWords = ["Modes", "Forms", "Minion Forms"]
   
 Let EditNames rename...
 .	Abilities

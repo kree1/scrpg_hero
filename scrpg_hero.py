@@ -11398,6 +11398,7 @@ class Hero:
                        not fm.std_qualities:
 ##                        print(notePrefix + fm.name + " is " + self.dv_tags[fm.dv_index] + \
 ##                              ", adding " + rpq_die.flavorname)
+                        fm.SetPrevious(rpq_step)
                         fm.quality_dice.append(rpq_die)
 ##                    elif fm.dv_index != 0:
 ##                        print(notePrefix + fm.name + " is " + self.dv_tags[fm.dv_index])
@@ -11408,10 +11409,12 @@ class Hero:
             else:
 ##                print(notePrefix + "Divided Psyche not found")
                 # All Form(s) and Mode(s) get this Quality
-                # This doesn't count as editing them, since they refer back to the base sheet for it
+                # This doesn't count as editing them, >> IF << they refer back to the base sheet
+                #  for it
                 for fm in self.other_forms:
                     if rpq_die not in fm.quality_dice and not fm.std_qualities:
 ##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
+                        fm.SetPrevious(rpq_step)
                         fm.quality_dice.append(rpq_die)
 ##                    else:
 ##                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
@@ -11444,6 +11447,7 @@ class Hero:
                     # If this Form isn't the same dv_tag as the base form, make its status dice
                     #  refer to the non-base Personality.
                     if form_editing.dv_index == 0:
+                        form_editing.SetPrevious(sd_step)
                         form_editing.status_dice.SetReference(ref=0,
                                                               stepnum=sd_step)
                 out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
@@ -13113,13 +13117,10 @@ class Hero:
                                                              prefix=qualityPrefix)
                     if self.dv_status.array() != self.status_dice.array() and \
                        substep == self.dv_status.step:
-                        if "Status" in substep_names[stepnum][subnum]:
-                            statusPrefix = secPrefix + indent
-                        else:
-                            substepText += "\n" + split_text(self.dv_tags[0] + " Status:",
-                                                             width=width,
-                                                             prefix=secPrefix+indent)
-                            statusPrefix = secPrefix + indent * 2
+                        substepText += "\n" + split_text(self.dv_tags[0] + " Status:",
+                                                         width=width,
+                                                         prefix=secPrefix+indent)
+                        statusPrefix = secPrefix + indent * 2
                         dPrime = self.dv_status.RetrievePrior(substep+0.1)
                         for x in range(len(dPrime.array())):
                             substepText += "\n" + split_text(status_zones[x] + ": " + \
@@ -13128,7 +13129,13 @@ class Hero:
                                                              prefix=statusPrefix)
                     if substep == self.status_dice.step:
                         if "Status" in substep_names[stepnum][subnum]:
-                            statusPrefix = secPrefix + indent
+                            if self.dv_personality in range(len(pn_collection)):
+                                substepText += "\n" + split_text(self.dv_tags[1] + " Status:",
+                                                                 width=width,
+                                                                 prefix=secPrefix+indent)
+                                statusPrefix = secPrefix + indent * 2
+                            else:
+                                statusPrefix = secPrefix + indent
                         else:
                             if self.dv_personality in range(len(pn_collection)):
                                 substepText += "\n" + split_text(self.dv_tags[1] + " Status:",
@@ -15775,6 +15782,7 @@ class HeroFrame(Frame):
                           identifier="",
                           indices=[]):
         notePrefix = "### HeroFrame.LaunchContextMenu: "
+        self.SetFirstIncomplete()
         contextMenu = Menu(self, tearoff=0)
         contextMenu.config(font=self.currentFont)
         label = event.widget
@@ -15787,7 +15795,7 @@ class HeroFrame(Frame):
             idText = str(identifier)
             for num in indices:
                 idText += "[" + str(num) + "]"
-            print(idText)
+            print(notePrefix + idText)
             # First, include options that apply to any widget in a category, regardless of index or
             #  contents
             if identifier in ["nameTitles", "nameValues"]:
@@ -15800,12 +15808,9 @@ class HeroFrame(Frame):
                 #  Power Source, Archetype, Personality) and that Characteristic's step of hero
                 #  creation is complete, give the context menu the option to reset to that step
                 charStep = indices[0] + 1
-                charStepName = step_names[charStep]
-                self.SetFirstIncomplete()
-##                print(notePrefix + "firstIncomplete: " + str(self.firstIncomplete) + \
-##                      ", charStep: " + str(charStep))
                 if self.firstIncomplete > charStep:
-                    contextMenu.add_command(label="Reset " + charStepName + "...",
+                    contextMenu.add_command(label="Reset Step " + str(charStep) + ": " + \
+                                            step_names[charStep] + "...",
                                             command=lambda revert=charStep: \
                                             self.RevertHero(autoStep=revert))
             elif identifier in ["healthTitle", "healthValues"]:
@@ -15814,9 +15819,9 @@ class HeroFrame(Frame):
                 #  option to reset to that step
                 if isinstance(self.myHero, Hero):
                     healthStep = math.floor(self.myHero.health_step)
-                    self.SetFirstIncomplete()
                     if self.firstIncomplete > healthStep:
-                        contextMenu.add_command(label="Reset " + step_names[healthStep] + "...",
+                        contextMenu.add_command(label="Reset Step " + str(charStep) + ": " + \
+                                                step_names[healthStep] + "...",
                                                 command=lambda revert=healthStep: \
                                                 self.RevertHero(autoStep=revert))
             elif identifier in ["statusTitle", "statusValues"]:
@@ -15826,9 +15831,9 @@ class HeroFrame(Frame):
                 if isinstance(self.myHero, Hero):
                     if isinstance(self.myHero.status_dice, Status):
                         statusStep = math.floor(self.myHero.status_dice.step)
-                        self.SetFirstIncomplete()
                         if self.firstIncomplete > statusStep:
-                            contextMenu.add_command(label="Reset Status (" + \
+                            contextMenu.add_command(label="Reset Status (Step " + \
+                                                    str(status_step) + ": " + \
                                                     step_names[statusStep] + ")...",
                                                     command=lambda revert=statusStep: \
                                                     self.RevertHero(autoStep=revert))
@@ -15841,7 +15846,8 @@ class HeroFrame(Frame):
                                 if self.firstIncomplete > math.floor(s) and \
                                    math.floor(s) != lastStatusStep:
                                     nextStep = math.floor(s)
-                                    contextMenu.add_command(label="Revert to previous Status (" + \
+                                    contextMenu.add_command(label="Revert edit to Status " + \
+                                                            "(Step " + str(nextStep) + ": " + \
                                                             step_names[nextStep] + ")...",
                                                             command=lambda revert=nextStep: \
                                                             self.RevertHero(autoStep=revert))
@@ -15849,9 +15855,18 @@ class HeroFrame(Frame):
             elif identifier in ["pqTitles", "pqValues"]:
                 # If the widget relates to the hero's Power/Quality dice, give the context menu the
                 #  option to rename those dice
-                if max(len(self.myHeroPowers), len(self.myHeroQualities)) > 0:
+                if max(len([x for x in self.myHeroPowers if isinstance(x, PQDie)]),
+                       len([x for x in self.myHeroQualities if isinstance(x, PQDie)])) > 0:
                     contextMenu.add_command(label="Rename Powers/Qualities...",
                                             command=self.RenamePQDice)
+            elif identifier in ["abilityTitles", "zoneAbilityValues"]:
+                # If the widget relates to the hero's Abilities and the hero has at least one
+                #  non-Principle Ability, give the context menu the option to rename Abilities
+                maxAbilityCount = max([len([a for a in aList if isinstance(a, Ability)]) \
+                                       for aList in self.myZoneAbilities])
+                if maxAbilityCount > 0:
+                    contextMenu.add_command(label="Rename Abilities...",
+                                            command=self.RenameAbilities)
             # Then, include options that rely on identifying the specific widget and the Hero
             #  attributes behind it. This may overlap with the previous section, so it's in a
             #  distinct set of if statements.
@@ -15872,11 +15887,10 @@ class HeroFrame(Frame):
                             sourceDie = self.myHeroQualities[listIndex]
                 if sourceDie:
                     dieStep = math.floor(sourceDie.step)
-                    self.SetFirstIncomplete()
                     if self.firstIncomplete > dieStep:
                         contextMenu.add_command(label="Reset this " + \
-                                                categories_singular[isPower] + " (" + \
-                                                step_names[dieStep] + ")...",
+                                                categories_singular[isPower] + " (Step " + \
+                                                str(dieStep) + ": " + step_names[dieStep] + ")...",
                                                 command=lambda revert=dieStep: \
                                                 self.RevertHero(autoStep=revert))
                     if len(sourceDie.steps_modified) > 0:
@@ -15889,11 +15903,16 @@ class HeroFrame(Frame):
                                math.floor(s) != lastDieStep:
                                 nextStep = math.floor(s)
                                 contextMenu.add_command(label="Revert edit to this " + \
-                                                        categories_singular[isPower] + " (" + \
+                                                        categories_singular[isPower] + \
+                                                        " (Step " + str(nextStep) + ": " + \
                                                         step_names[nextStep] + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
-            elif identifier in ["prinTitles", "prinSectionTitles", "prinSectionValues"] and \
+                                lastDieStep = nextStep
+            elif identifier in ["prinTitles",
+                                "prinSectionTitles",
+                                "prinSectionValues",
+                                "prinAbilityValues"] and \
                  len(indices) > 0:
                 # If the widget is associated with a specific Principle, give the context menu the
                 #  option to revert to the step of hero creation when that Principle was added
@@ -15904,10 +15923,10 @@ class HeroFrame(Frame):
                         sourcePrinciple = self.myHeroPrinciples[prinIndex]
                 if isinstance(sourcePrinciple, Principle):
                     prinStep = math.floor(sourcePrinciple.step)
-                    self.SetFirstIncomplete()
                     if self.firstIncomplete > prinStep:
-                        contextMenu.add_command(label="Reset this Principle (" + \
-                                                step_names[prinStep] + ")...",
+                        contextMenu.add_command(label="Reset this Principle (Step " + \
+                                                str(prinStep) + ": " + step_names[prinStep] + \
+                                                ")...",
                                                 command=lambda revert=prinStep: \
                                                 self.RevertHero(autoStep=revert))
                     if len(sourcePrinciple.steps_modified) > 0:
@@ -15919,10 +15938,139 @@ class HeroFrame(Frame):
                             if self.firstIncomplete > math.floor(s) and \
                                math.floor(s) != lastPrinStep:
                                 nextStep = math.floor(s)
-                                contextMenu.add_command(label="Revert edit to this Principle (" + \
+                                contextMenu.add_command(label="Revert edit to this Principle " + \
+                                                        "(Step " + str(nextStep) + ": " + \
                                                         step_names[nextStep] + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
+                                lastPrinStep = nextStep
+            elif (identifier == "zoneAbilityValues" and len(indices) > 2) or \
+                 identifier == "outAbilityValue":
+                # If the widget is associated with a specific Ability, give the context menu the
+                #  option to revert to the step of hero creation when that Ability was added
+                sourceAbility = None
+                if identifier == "outAbilityValue":
+                    sourceAbility = self.myOutAbility
+                elif identifier == "zoneAbilityValues":
+                    if indices[0] in range(len(self.myZoneAbilities)):
+                        if indices[1] in range(len(self.myZoneAbilities[indices[0]])):
+                            sourceAbility = self.myZoneAbilities[indices[0]][indices[1]]
+                if isinstance(sourceAbility, Ability):
+                    abilityStep = math.floor(sourceAbility.step)
+                    if self.firstIncomplete > abilityStep:
+                        contextMenu.add_command(label="Reset this Ability (Step " + \
+                                                str(abilityStep) + ": " + \
+                                                step_names[abilityStep] + ")...",
+                                                command=lambda revert=abilityStep: \
+                                                self.RevertHero(autoStep=revert))
+                    if len(sourceAbility.steps_modified) > 0:
+                        # If the associated Ability has been modified during hero creation, give
+                        #  the context menu the option to revert to the step(s) when it was
+                        #  modified
+                        lastAbilityStep = abilityStep
+                        for s in sourceAbility.steps_modified:
+                            if self.firstIncomplete > math.floor(s) and \
+                               math.floor(s) != lastAbilityStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this Ability " + \
+                                                        "(Step " + str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        self.RevertHero(autoStep=revert))
+                                lastAbilityStep = nextStep
+            elif identifier == "auxButtons" and len(indices) > 0:
+                # If the widget is associated with an auxiliary sheet, give the context menu the
+                #  option to rename or revert the contents of that sheet
+                if indices[0] == 0 and self.myAuxCounts[0] > 0:
+                    # This is the View Modes button and the hero has at least one Mode
+##                    print(notePrefix + "activated from " + self.auxWords[0] + " button")
+                    # Give the context menu the option to rename Modes
+                    contextMenu.add_command(label="Rename " + self.auxWords[0] + "...",
+                                            command=self.RenameModes)
+                    # Find the earliest step a Mode was added
+                    modeStep = math.floor(self.myHero.other_modes[0].step)
+                    # Make a list of later steps when a Mode was added or edited
+                    modeEditSteps = []
+                    for md in self.myHero.other_modes:
+                        thisModeSource = math.floor(md.step)
+                        if thisModeSource < modeStep:
+                            if modeStep not in modeEditSteps:
+                                modeEditSteps.append(modeStep)
+                            modeStep = thisModeSource
+                        for s in md.steps_modified:
+                            if math.floor(s) not in modeEditSteps:
+                                modeEditSteps.append(math.floor(s))
+                    if self.firstIncomplete > modeStep:
+                        # Give the context menu the option to revert to the step when the first
+                        #  Mode was added
+                        contextMenu.add_command(label="Reset all " + self.auxWords[0] + \
+                                                " (Step " + str(modeStep) + ": " + \
+                                                step_names[modeStep] + ")...",
+                                                command=lambda revert=modeStep: \
+                                                self.RevertHero(autoStep=revert))
+                        lastModeStep = modeStep
+                        modeEditSteps.sort()
+                        for s in modeEditSteps:
+                            if math.floor(s) != lastModeStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to " + \
+                                                        self.auxWords[0] + " (Step " + \
+                                                        str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        self.RevertHero(autoStep=revert))
+                                lastModeStep = nextStep
+                elif indices[0] == 1 and self.myAuxCounts[1] > 0:
+                    # This is the View Forms button and the hero has at least one Form
+##                    print(notePrefix + "activated from " + self.auxWords[1] + " button")
+                    # Give the context menu the option to rename Modes
+                    contextMenu.add_command(label="Rename " + self.auxWords[1] + "...",
+                                            command=self.RenameForms)
+                    # Find the earliest step a Form was added
+                    formStep = math.floor(self.myHero.other_forms[0].step)
+                    # Make a list of later steps when a Form was added or edited
+                    formEditSteps = []
+                    for fm in self.myHero.other_forms:
+                        thisFormSource = math.floor(fm.step)
+                        if thisFormSource < formStep:
+                            if formStep not in formEditSteps:
+                                formEditSteps.append(formStep)
+                            formStep = thisFormSource
+                        for s in fm.steps_modified:
+                            if math.floor(s) not in formEditSteps:
+                                formEditSteps.append(math.floor(s))
+                    if self.firstIncomplete > formStep:
+                        # Give the context menu the option to revert to the step when the first
+                        #  Form was added
+                        contextMenu.add_command(label="Reset all " + self.auxWords[1] + \
+                                                " (Step " + str(formStep) + ": " + \
+                                                step_names[formStep] + ")...",
+                                                command=lambda revert=formStep: \
+                                                self.RevertHero(autoStep=revert))
+                        lastFormStep = formStep
+                        formEditSteps.sort()
+                        for s in formEditSteps:
+                            if math.floor(s) != lastFormStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to " + \
+                                                        self.auxWords[1] + " (Step " + \
+                                                        str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        self.RevertHero(autoStep=revert))
+                                lastFormStep = nextStep
+                elif indices[0] == 2 and self.myAuxCounts[2] > 0:
+                    # This is the View Minion Forms button and the hero has at least one Minion
+                    #  Form
+##                    print(notePrefix + "activated from " + self.auxWords[2] + " button")
+                    minionStep = math.floor(self.myHero.mf_step)
+                    if minionStep in range(1,len(step_names)):
+                        if self.firstIncomplete > minionStep:
+                            contextMenu.add_command(label="Reset " + self.auxWords[2] + \
+                                                    " (Step " + str(minionStep) + ": " + \
+                                                    step_names[minionStep] + ")...",
+                                                    command=lambda revert=minionStep: \
+                                                    self.RevertHero(autoStep=revert))
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
@@ -19726,7 +19874,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getCham()
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
