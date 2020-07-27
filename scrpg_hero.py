@@ -8922,14 +8922,9 @@ class Hero:
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
-            mp_die = PQDie(entry_die.ispower,
-                           entry_die.category,
-                           entry_die.index,
-                           die_size,
-                           flavorname=entry_die.flavorname,
-                           stepnum=entry_die.step)
-            mp_die.prev_version = entry_die.copy()
-            mp_die.steps_modified.append(this_step)
+            mp_die = entry_die.copy()
+            mp_die.SetPrevious(this_step)
+            mp_die.diesize = die_size
             print(str(mp_die) + " added to " + t_name + ".")
             mode_power_dice.append(mp_die)
         # For each modifier in t_die_mods, prompt the user to choose a Power to add with that
@@ -15795,7 +15790,7 @@ class HeroFrame(Frame):
             idText = str(identifier)
             for num in indices:
                 idText += "[" + str(num) + "]"
-            print(notePrefix + idText)
+##            print(notePrefix + idText)
             # First, include options that apply to any widget in a category, regardless of index or
             #  contents
             if identifier in ["nameTitles", "nameValues"]:
@@ -16071,7 +16066,6 @@ class HeroFrame(Frame):
                                                     step_names[minionStep] + ")...",
                                                     command=lambda revert=minionStep: \
                                                     self.RevertHero(autoStep=revert))
-        # ...
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
                    update=1):
@@ -16896,7 +16890,6 @@ class HeroFrame(Frame):
                             if isinstance(self.myHero.other_modes[i], Mode)]
             if len(mode_options) > 0:
                 rename_options.append(mode_section)
-            # ...
         # Once the list is complete, figure out which option to use
         rename_selection = ""
         if len(rename_options) == 2:
@@ -17200,7 +17193,6 @@ class HeroFrame(Frame):
             while len(pqdie_ids) > 0 and pqdie_choice.get() != 0:
                 prompt = "Choose one of " + self.myHero.hero_name + "'s " + \
                          categories_plural[option_category] + " to rename:"
-                # ...
                 text_options = ["None"]
                 for i in range(len(pqdie_ids)):
                     note_txt = pqdie_ids[i][1]
@@ -17284,7 +17276,6 @@ class HeroFrame(Frame):
                                    ab.flavordice[i] in ["", edit_id[1]]:
                                     ab.flavordice[i] = new_name.get()
                                     changed = True
-                        # ...
                         # If something on the base sheet was renamed, update appearance
                         if changed:
                             self.UpdateAll(self.myHero)
@@ -17866,6 +17857,7 @@ class ModeFrame(Frame):
         contextMenu.config(font=self.dispFont)
         label = event.widget
         sourceMode = None
+        sourcePower = None
         isPowerHeader = False
         isAbilityHeader = False
         # If the widget has text, give the context menu the option to copy that text
@@ -17877,7 +17869,7 @@ class ModeFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
+##            print(notePrefix + idString)
             if identifier == "mySectionHeaders" and len(indices) > 1:
                 if indices[1] <= 1:
                     isPowerHeader = True
@@ -17896,6 +17888,24 @@ class ModeFrame(Frame):
                 if len(indices) > 0:
                     if indices[0] in range(self.myModeCount):
                         sourceMode = self.myHero.other_modes[indices[0]]
+            if identifier == "myPowerValues" or isPowerHeader:
+                # If the widget is associated with Powers, give the context menu the option to
+                #  rename Powers (and/or Qualities)
+                contextMenu.add_command(label="Rename Powers...",
+                                        command=myHeroFrame.RenamePQDice)
+            if identifier == "myPowerValues" and isinstance(sourceMode, Mode) and len(indices) > 2:
+                sourceMode.CheckReference()
+                if sourceMode.std_powers:
+                    if indices[1] in range(len(self.myHero.power_dice)):
+                        sourcePower = self.myHero.power_dice[indices[1]]
+                else:
+                    if indices[1] in range(len(sourceMode.power_dice)):
+                        sourcePower = sourceMode.power_dice[indices[1]]
+            if identifier == "myAbilityValues" or isAbilityHeader:
+                # If the widget is associated with Abilities, give the context menu the option to
+                #  rename Abilities
+                contextMenu.add_command(label="Rename Abilities...",
+                                        command=myHeroFrame.RenameAbilities)
             if isinstance(sourceMode, Mode):
                 # If the widget is associated with a specific Mode, give the context menu the
                 #  option to revert to the step of hero creation when that Mode was added
@@ -17916,16 +17926,27 @@ class ModeFrame(Frame):
                                                     command=lambda revert=nextStep: \
                                                     myHeroFrame.RevertHero(autoStep=revert))
                             lastModeStep = nextStep
-            if identifier == "myPowerValues" or isPowerHeader:
-                # If the widget is associated with Powers, give the context menu the option to
-                #  rename Powers (and/or Qualities)
-                contextMenu.add_command(label="Rename Powers...",
-                                        command=myHeroFrame.RenamePQDice)
-            if identifier == "myAbilityValues" or isAbilityHeader:
-                # If the widget is associated with Abilities, give the context menu the option to
-                #  rename Abilities
-                contextMenu.add_command(label="Rename Abilities...",
-                                        command=myHeroFrame.RenameAbilities)
+            if isinstance(sourcePower, PQDie):
+                # If the widget is associated with a specific Power, give the context menu the
+                #  option to revert to the step of hero creation when that Power was added
+                powerStep = math.floor(sourcePower.step)
+                contextMenu.add_command(label="Reset this Power (Step " + str(powerStep) + \
+                                        ": " + step_names[powerStep] + ")...",
+                                        command=lambda revert=powerStep: \
+                                        myHeroFrame.RevertHero(autoStep=revert))
+                if len(sourcePower.steps_modified) > 0:
+                    # If this Power has been modified during hero creation, give the context menu
+                    #  the option to revert to the step(s) when it was modified
+                    lastPowerStep = powerStep
+                    for s in sourcePower.steps_modified:
+                        if math.floor(s) != lastPowerStep:
+                            nextStep = math.floor(s)
+                            contextMenu.add_command(label="Revert edit to this Power (Step " + \
+                                                    str(nextStep) + ": " + step_names[nextStep] + \
+                                                    ")...",
+                                                    command=lambda revert=nextStep: \
+                                                    myHeroFrame.RevertHero(autoStep=revert))
+                            lastPowerStep = nextStep
             if identifier == "myAbilityValues" and len(indices) > 0:
                 # If the widget is associated with a specific Ability, give the context menu the
                 #  option to revert to the step of hero creation when that Ability was added
@@ -17954,7 +17975,6 @@ class ModeFrame(Frame):
                                                         command=lambda revert=nextStep: \
                                                         myHeroFrame.RevertHero(autoStep=revert))
                                 lastAbilityStep = nextStep
-        # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
@@ -18367,7 +18387,7 @@ class MinionFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
+##            print(notePrefix + idString)
             if identifier in ["myMinionFormRules",
                               "myMinionFormTitle",
                               "myMinionFormHeaders",
@@ -18385,7 +18405,6 @@ class MinionFrame(Frame):
                                             ": " + step_names[minionStep] + ")...",
                                             command=lambda revert=minionStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
-        # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
@@ -18780,7 +18799,7 @@ class FormFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
+##            print(notePrefix + idString)
             sourceForm = None
             isPQHeader = False
             isAbilityHeader = False
@@ -18802,6 +18821,16 @@ class FormFrame(Frame):
                 if len(indices) > 0:
                     if indices[0] in range(len(self.myFormInfo)):
                         sourceFormIndex = indices[0]
+            if identifier == "myPQDice" or isPQHeader:
+                # If the widget is associated with Power/Quality dice, give the context menu the
+                #  option to rename Powers and/or Qualities
+                contextMenu.add_command(label="Rename Powers/Qualities...",
+                                        command=myHeroFrame.RenamePQDice)
+            if identifier == "myAbilities" or isAbilityHeader:
+                # If the widget is associated with Abilities, give the context menu the option to
+                #  rename Abilities
+                contextMenu.add_command(label="Rename Abilities...",
+                                        command=myHeroFrame.RenameAbilities)
             if sourceFormIndex in range(len(self.myFormInfo)):
                 sourceFormName = self.myFormInfo[sourceFormIndex][0]
                 for fm in self.myHero.other_forms:
@@ -18829,17 +18858,47 @@ class FormFrame(Frame):
                                                             ")...",
                                                             command=lambda revert=nextStep: \
                                                             myHeroFrame.RevertHero(autoStep=revert))
-                                    lastModeStep = nextStep
-            if identifier == "myPQDice" or isPQHeader:
-                # If the widget is associated with Power/Quality dice, give the context menu the
-                #  option to rename Powers and/or Qualities
-                contextMenu.add_command(label="Rename Powers/Qualities...",
-                                        command=myHeroFrame.RenamePQDice)
-            if identifier == "myAbilities" or isAbilityHeader:
-                # If the widget is associated with Abilities, give the context menu the option to
-                #  rename Abilities
-                contextMenu.add_command(label="Rename Abilities...",
-                                        command=myHeroFrame.RenameAbilities)
+                                    lastFormStep = nextStep
+            if identifier == "myPQDice" and len(indices) > 2 and isinstance(sourceForm, Form):
+                # If the widget is associated with a specific Power/Quality die, give the context
+                #  menu the option to revert to the step of hero creation when that die was added
+                sourceForm.CheckReference()
+                if indices[0] in range(len(self.myFormInfo)):
+                    # The source die is a Power if indices[1] >= 2, otherwise it's a Quality
+                    ispower = 1 - math.floor(indices[1]/2)
+                    if ispower:
+                        if sourceForm.std_powers:
+                            if indices[2] in range(len(self.myHero.power_dice)):
+                                sourcePQ = self.myHero.power_dice[indices[2]]
+                        else:
+                            if indices[2] in range(len(sourceForm.power_dice)):
+                                sourcePQ = sourceForm.power_dice[indices[2]]
+                    else:
+                        if sourceForm.std_qualities:
+                            if indices[2] in range(len(self.myHero.quality_dice)):
+                                sourcePQ = self.myHero.quality_dice[indices[2]]
+                        else:
+                            if indices[2] in range(len(sourceForm.quality_dice)):
+                                sourcePQ = sourceForm.quality_dice[indices[2]]
+                if isinstance(sourcePQ, PQDie):
+                    pqStep = math.floor(sourcePQ.step)
+                    contextMenu.add_command(label="Reset this " + \
+                                            categories_singular[sourcePQ.ispower] + " (Step " + \
+                                            str(pqStep) + ": " + step_names[pqStep] + ")...",
+                                            command=lambda revert=pqStep: \
+                                            myHeroFrame.RevertHero(autoStep=revert))
+                    if len(sourcePQ.steps_modified) > 0:
+                        lastPQStep = pqStep
+                        for s in sourcePQ.steps_modified:
+                            if math.floor(s) != lastPQStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this " + \
+                                                        categories_singular[sourcePQ.ispower] + \
+                                                        " (Step " + str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        myHeroFrame.RevertHero(autoStep=revert))
+                                lastPQStep = nextStep
             if identifier == "myAbilities" and len(indices) > 1:
                 # If the widget is associated with a specific Ability, give the context menu the
                 #  option to revert to the step of hero creation when that Ability was added
@@ -18869,7 +18928,6 @@ class FormFrame(Frame):
                                                         command=lambda revert=nextStep: \
                                                         myHeroFrame.RevertHero(autoStep=revert))
                                 lastAbilityStep = nextStep
-        # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
@@ -19178,8 +19236,7 @@ class SelectFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### SelectFrame.finish: "
@@ -19385,8 +19442,7 @@ class EntryFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
@@ -19706,8 +19762,7 @@ class ExpandFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
@@ -19963,8 +20018,7 @@ class SwapFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### SwapFrame.finish: "
@@ -20180,8 +20234,7 @@ class PrincipleFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### PrincipleFrame.finish: "
@@ -20521,8 +20574,7 @@ class AssignFrame(Frame):
             idString = str(identifier)
             for x in indices:
                 idString += "[" + str(x) + "]"
-            print(notePrefix + idString)
-        # ...
+##            print(notePrefix + idString)
         contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### AssignFrame.finish: "
@@ -20574,11 +20626,11 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
-disp_frame = HeroFrame(root, hero=firstHero)
+##firstHero = factory.getJo()
+##disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
+disp_frame = HeroFrame(root)
 
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
