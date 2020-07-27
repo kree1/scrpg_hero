@@ -6722,7 +6722,7 @@ class Hero:
             # A more complicated question with a GUI available and no text inputs? Use a
             #  SelectWindow to give the user a list of options to pick from
             answer = IntVar()
-            question = SelectWindow(self.myWindow,
+            question = SelectWindow(self.myFrame,
                                     prompt=prompt,
                                     options=print_options,
                                     var=answer,
@@ -6803,7 +6803,7 @@ class Hero:
             #  user
 ##            print("Using EntryWindow")
             answer = StringVar(self.myFrame, default)
-            question = EntryWindow(self.myWindow,
+            question = EntryWindow(self.myFrame,
                                    prompt=prompt,
                                    var=answer,
                                    title=title)
@@ -6855,7 +6855,7 @@ class Hero:
         if self.UseGUI(inputs):
             # Create an ExpandWindow to communicate with the user
             answer = IntVar()
-            question = ExpandWindow(self.myWindow,
+            question = ExpandWindow(self.myFrame,
                                     guiPrompt,
                                     options,
                                     guiDetails,
@@ -7184,7 +7184,7 @@ class Hero:
                         details[i] = split_text(this_section,
                                                 width=dispWidth)
                     answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
+                    question = ExpandWindow(self.myFrame,
                                             dice_report + "\n" + \
                                             options_report + "\n" + \
                                             choice_request,
@@ -7324,7 +7324,7 @@ class Hero:
                                      breaks=2,
                                      indented=False,
                                      hanging=False) for x in self.principles]
-                question = ExpandWindow(self.myWindow,
+                question = ExpandWindow(self.myFrame,
                                         "Choose a Principle to replace: ",
                                         options,
                                         details,
@@ -7502,7 +7502,7 @@ class Hero:
                     minorVar = StringVar()
                     majorVar = StringVar()
                     greenVar = StringVar()
-                    prinModifier = PrincipleWindow(self.myWindow,
+                    prinModifier = PrincipleWindow(self.myFrame,
                                                    ri,
                                                    titleVar,
                                                    roleplayingVar,
@@ -7785,7 +7785,7 @@ class Hero:
 ##                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
 ##                if rerolls > 0:
 ##                    options += ["REROLL"]
-##                question = ExpandWindow(self.myWindow,
+##                question = ExpandWindow(self.myFrame,
 ##                                        roll_report + "\nChoose one:",
 ##                                        options,
 ##                                        [BackgroundDetails(x,
@@ -8100,7 +8100,7 @@ class Hero:
                             if j in range(this_length-1):
                                 details[i] += "\n"
                     answer = IntVar()
-                    question = ExpandWindow(self.myWindow,
+                    question = ExpandWindow(self.myFrame,
                                             options_report + "\n" + choice_request,
                                             section_list,
                                             details,
@@ -9426,7 +9426,7 @@ class Hero:
                     answer0 = IntVar()
                     answer1 = IntVar()
                     prompt = "Choose 2 Power dice to swap:"
-                    question = SwapWindow(self.myWindow,
+                    question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in form_power_dice],
                                           answer0,
@@ -10280,7 +10280,7 @@ class Hero:
                                 # Use AssignWindow to choose any number of minion forms at once
                                 result = StringVar(self.myFrame)
                                 remaining = max_forms - len(self.min_forms)
-                                questions = AssignWindow(self.myWindow,
+                                questions = AssignWindow(self.myFrame,
                                                          "Choose exactly " + str(remaining) + \
                                                          " Minion Forms to add...",
                                                          ["Add", "Don't Add"],
@@ -10646,7 +10646,7 @@ class Hero:
                                              " to have access to in both " + self.dv_tags[0] + \
                                              " and " + self.dv_tags[1] + " Forms:"
                                     title = "Archetype Selection: Divided:Form-Changer"
-                                    question = SwapWindow(self.myWindow,
+                                    question = SwapWindow(self.myFrame,
                                                           prompt,
                                                           [x[1] for x in constant_power_options],
                                                           answer0,
@@ -10759,7 +10759,7 @@ class Hero:
                             if self.UseGUI(inputs):
                                 # Use an AssignWindow to assign the remaining Power IDs
                                 result = StringVar(self.myFrame)
-                                questions = AssignWindow(self.myWindow,
+                                questions = AssignWindow(self.myFrame,
                                                          assign_prompt + "Assign " + \
                                                          self.hero_name + \
                                                          "'s remaining Powers to one of " + \
@@ -10823,7 +10823,7 @@ class Hero:
                                          " to have access to in both " + self.dv_tags[0] + \
                                          " and " + self.dv_tags[1] + " Forms:"
                                 title = "Archetype Selection: Divided"
-                                question = SwapWindow(self.myWindow,
+                                question = SwapWindow(self.myFrame,
                                                       prompt,
                                                       [str(x) for x in unassigned_powers],
                                                       answer0,
@@ -10857,7 +10857,7 @@ class Hero:
                             if self.UseGUI(inputs):
                                 # Use an AssignWindow to assign the remaining dice
                                 result = StringVar(self.myFrame)
-                                questions = AssignWindow(self.myWindow,
+                                questions = AssignWindow(self.myFrame,
                                                          "Assign " + self.hero_name + \
                                                          "'s remaining Powers to " + \
                                                          "one of " + \
@@ -10915,7 +10915,7 @@ class Hero:
                                      " to have access to in both " + self.dv_tags[0] + \
                                      " and " + self.dv_tags[1] + " Forms:"
                             title = "Archetype Selection: Divided"
-                            question = SwapWindow(self.myWindow,
+                            question = SwapWindow(self.myFrame,
                                                   prompt,
                                                   [str(x) for x in unassigned_qualities],
                                                   answer0,
@@ -10947,7 +10947,7 @@ class Hero:
                         if self.UseGUI(inputs):
                             # Use an AssignWindow to assign the remaining dice
                             result = StringVar(self.myFrame)
-                            questions = AssignWindow(self.myWindow,
+                            questions = AssignWindow(self.myFrame,
                                                      "Assign " + self.hero_name + \
                                                      "'s remaining Qualities to " + \
                                                      "one of " + \
@@ -11952,7 +11952,7 @@ class Hero:
                     for rt in ra_sublists[i]:
                         details[i] += "\n" + rt.details(width=-1,
                                                         indented=True)
-                question = ExpandWindow(self.myWindow,
+                question = ExpandWindow(self.myFrame,
                                         "Choose a category to gain a Red Ability from:",
                                         sublist_strings,
                                         details,
@@ -12067,7 +12067,7 @@ class Hero:
                     prompt = "Choose 2 different Power dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
-                    question = SwapWindow(self.myWindow,
+                    question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in self.power_dice],
                                           answer0,
@@ -12119,7 +12119,7 @@ class Hero:
                     prompt = "Choose 2 different Quality dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
-                    question = SwapWindow(self.myWindow,
+                    question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in self.quality_dice],
                                           answer0,
@@ -12480,7 +12480,7 @@ class Hero:
                     for i in range(len(rc_names)):
                         for j in range(len(rc_master[i])):
                             details[i] += "\nPrinciple of " + rc_master[i][j][0]
-                    question = ExpandWindow(self.myWindow,
+                    question = ExpandWindow(self.myFrame,
                                             "Choose a Principle category:",
                                             options,
                                             details,
@@ -16881,7 +16881,7 @@ class HeroFrame(Frame):
             result = IntVar(self)
             prompt = "What would you like to rename?"
             title = "Edit Hero"
-            question = SelectWindow(self.myParent,
+            question = SelectWindow(self,
                                     prompt,
                                     rename_options,
                                     var=result,
@@ -16907,7 +16907,7 @@ class HeroFrame(Frame):
         prompt = "Enter a codename for this hero.\n(Feel free to use a placeholder; you can " + \
                  "change this at any time.)"
         textVar = StringVar(self, self.myHero.hero_name)
-        question = EntryWindow(self.myParent,
+        question = EntryWindow(self,
                                prompt,
                                textVar,
                                title="Hero Creation")
@@ -16918,7 +16918,7 @@ class HeroFrame(Frame):
         prompt = "Enter a civilian name for " + self.myHero.hero_name + ".\n(Feel free to use " + \
                  "a placeholder; you can change this at any time.)"
         textVar = StringVar(self, self.myHero.alias)
-        question = EntryWindow(self.myParent,
+        question = EntryWindow(self,
                                prompt,
                                textVar,
                                title="Hero Creation")
@@ -16930,7 +16930,7 @@ class HeroFrame(Frame):
         pronoun_choice = IntVar(self, self.myHero.pronoun_set)
         prompt = "Which pronouns should be used for " + self.myHero.hero_name + "?\n(You can " + \
                  "change this at any time.)"
-        question = SelectWindow(self.myParent,
+        question = SelectWindow(self,
                                 prompt,
                                 pronoun_options,
                                 pronoun_choice,
@@ -16961,7 +16961,7 @@ class HeroFrame(Frame):
                           [a.details(width=-1,
                                      indented=True) for a in ability_options]
                 ability_choice.set(0)
-                question = ExpandWindow(self.myParent,
+                question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
@@ -16977,7 +16977,7 @@ class HeroFrame(Frame):
                     rename_prompt = edit_ability.details(width=-1,
                                                          indented=True)
                     rename_prompt += "\n\nEnter a new name for this Ability:"
-                    entry = EntryWindow(self.myParent,
+                    entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
@@ -17001,7 +17001,7 @@ class HeroFrame(Frame):
                                                    width=-1,
                                                    hanging=False) for i in mode_options]
                 mode_choice.set(0)
-                question = ExpandWindow(self.myParent,
+                question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
@@ -17020,7 +17020,7 @@ class HeroFrame(Frame):
                                                             width=-1,
                                                             hanging=False)
                     rename_prompt += "\n\nEnter a new name for this Mode:"
-                    entry = EntryWindow(self.myParent,
+                    entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
@@ -17053,7 +17053,7 @@ class HeroFrame(Frame):
                                                    width=-1,
                                                    hanging=False) for i in form_options]
                 form_choice.set(0)
-                question = ExpandWindow(self.myParent,
+                question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
@@ -17095,7 +17095,7 @@ class HeroFrame(Frame):
                                                                 width=-1,
                                                                 hanging=False)
                         rename_prompt += "\n\nEnter a new name for this Form:"
-                    entry = EntryWindow(self.myParent,
+                    entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
@@ -17167,7 +17167,7 @@ class HeroFrame(Frame):
                         note_txt += " (" + pqdie_ids[i][2] + ")"
                     text_options.append(note_txt)
                 pqdie_choice.set(0)
-                question = SelectWindow(self.myParent,
+                question = SelectWindow(self,
                                         prompt,
                                         text_options,
                                         var=pqdie_choice,
@@ -17181,7 +17181,7 @@ class HeroFrame(Frame):
                     edit_category = DieCategory([edit_id[0]])
                     rename_prompt = "Enter a new name for " + self.myHero.hero_name + "'s " + \
                                     edit_id[1] + " " + categories_singular[edit_category] + ":"
-                    entry = EntryWindow(self.myParent,
+                    entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
                                         title="Edit Hero")
@@ -17264,7 +17264,7 @@ class HeroFrame(Frame):
                        "Hero creation process (what you did at each step)",
                        "Both"]
             answer = IntVar()
-            question = SelectWindow(self.myParent,
+            question = SelectWindow(self,
                                     "What information about this hero would you like to save?",
                                     options,
                                     var=answer,
@@ -17283,7 +17283,7 @@ class HeroFrame(Frame):
                      "name a .txt file that already exists " + \
                      "in this folder. It WILL be overwritten."
             textVar = StringVar(self, self.myHero.hero_name)
-            question = EntryWindow(self.myParent,
+            question = EntryWindow(self,
                                    prompt,
                                    textVar,
                                    title="Save Hero")
@@ -17499,6 +17499,13 @@ class ModeFrame(Frame):
                                                     text=self.sectionTitles[j],
                                                     width=self.sectionWidths[j]*self.columnWidth,
                                                     font=self.dispFont)
+                self.mySectionHeaders[i][j].bind("<Button-3>",
+                                                 lambda event, \
+                                                 myID="mySectionHeaders", \
+                                                 myIndex=[i,j]: \
+                                                 self.LaunchContextMenu(event,
+                                                                        identifier=myID,
+                                                                        indices=myIndex))
                 if printing:
                     print(notePrefix + self.sectionTitles[j] + " label is the size of " + \
                           str(self.powerHeight) + " rows and " + str(self.sectionWidths[j]) + \
@@ -17520,6 +17527,11 @@ class ModeFrame(Frame):
                                        sticky=self.headerGlue)
             self.myModeHeaders[i].bind("<Double-1>",
                                        self.ClipboardCopy)
+            self.myModeHeaders[i].bind("<Button-3>",
+                                       lambda event, myID="myModeHeaders", myIndex=[i]: \
+                                       self.LaunchContextMenu(event,
+                                                              identifier=myID,
+                                                              indices=myIndex))
             if printing:
                 print(notePrefix + self.myModeNames[i] + " header starts at row " + str(topRow) + \
                       ", column " + str(firstCol) + " and takes up " + str(self.headerHeight) + \
@@ -17570,6 +17582,12 @@ class ModeFrame(Frame):
                                                      sticky=self.powerGlue)
                     self.myPowerValues[i][j][k].bind("<Double-1>",
                                                      self.ClipboardCopy)
+                    self.myPowerValues[i][j][k].bind("<Button-3>",
+                                                     lambda event, myID="myPowerValues", \
+                                                     myIndex=[i,j,k]: \
+                                                     self.LaunchContextMenu(event,
+                                                                            identifier=myID,
+                                                                            indices=myIndex))
                     if printing:
                         print(notePrefix + self.myPowerValues[i][j][k]["text"] + \
                               " label starts at row " + str(topRow+leftHeight) + ", column " + \
@@ -17596,6 +17614,11 @@ class ModeFrame(Frame):
                                       sticky=self.rulesGlue)
             self.myRuleValues[i].bind("<Double-1>",
                                       self.ClipboardCopy)
+            self.myRuleValues[i].bind("<Button-3>",
+                                      lambda event, myID="myRuleValues", myIndex=[i]: \
+                                      self.LaunchContextMenu(event,
+                                                             identifier=myID,
+                                                             indices=myIndex))
             if printing:
                 print(notePrefix + self.myModeNames[i] + " rules label starts at row " + \
                       str(topRow+rightHeight) + ", column " + \
@@ -17646,6 +17669,12 @@ class ModeFrame(Frame):
                                                 sticky=self.abilityGlue)
                 self.myAbilityValues[i][j].bind("<Double-1>",
                                                 self.ClipboardCopy)
+                self.myAbilityValues[i][j].bind("<Button-3>",
+                                                lambda event, myID="myAbilityValues", \
+                                                myIndex=[i,j]: \
+                                                self.LaunchContextMenu(event,
+                                                                       identifier=myID,
+                                                                       indices=myIndex))
                 if printing:
                     print(notePrefix + self.myAbilityValues[i][j]["text"] + \
                           " label starts at row " + str(topRow+rightHeight) + ", column " + \
@@ -17674,7 +17703,7 @@ class ModeFrame(Frame):
             if leftHeight != rightHeight:
                 self.myColumnBuffers[i] = Label(self,
                                                 background=modeColor,
-                                                text=" ",
+                                                text="",
                                                 width=cBufferWidth*self.columnWidth,
                                                 height=cBufferHeight*self.rowHeight,
                                                 font=self.dispFont)
@@ -17683,6 +17712,11 @@ class ModeFrame(Frame):
                                              rowspan=cBufferHeight,
                                              columnspan=cBufferWidth,
                                              sticky=cBufferGlue)
+                self.myColumnBuffers[i].bind("<Button-3>",
+                                             lambda event, myID="myColumnBuffers", myIndex=[i]: \
+                                             self.LaunchContextMenu(event,
+                                                                    identifier=myID,
+                                                                    indices=myIndex))
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " column buffer starts at row " + \
                           str(cBufferRow) + ", column " + str(cBufferCol) + " and takes up " + \
@@ -17697,7 +17731,7 @@ class ModeFrame(Frame):
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " bufferRow=" + str(bufferRow))
                 self.myBuffers[i] = Label(self,
-                                          text=" ",
+                                          text="",
                                           width=sum(self.sectionWidths)*self.columnWidth,
                                           height=self.bufferHeight*self.rowHeight,
                                           font=self.dispFont)
@@ -17706,6 +17740,11 @@ class ModeFrame(Frame):
                                        rowspan=self.bufferHeight,
                                        columnspan=sum(self.sectionWidths),
                                        sticky=N+E+S+W)
+                self.myBuffers[i].bind("<Button-3>",
+                                       lambda event, myID="myBuffers", myIndex=[i]: \
+                                       self.LaunchContextMenu(event,
+                                                              identifier=myID,
+                                                              indices=myIndex))
                 if printing:
                     print(notePrefix + self.myModeNames[i] + " buffer starts at row " + \
                           str(bufferRow) + ", column " + str(firstCol) + " and takes up " + \
@@ -17750,6 +17789,61 @@ class ModeFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### ModeFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### ModeFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.dispFont)
+        label = event.widget
+        isPowerHeader = False
+        isAbilityHeader = False
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+            if identifier == "mySectionHeaders" and len(indices) > 1:
+                if indices[1] <= 1:
+                    isPowerHeader = True
+                else:
+                    isAbilityHeader = True
+            if identifier in ["mySectionHeaders",
+                              "myModeHeaders",
+                              "myPowerValues",
+                              "myRuleValues",
+                              "myAbilityValues",
+                              "myColumnBuffers"]:
+                # If the widget is associated with any Mode, give the context menu the option to
+                #  rename Modes
+                contextMenu.add_command(label="Rename Modes...",
+                                        command=myHeroFrame.RenameModes)
+            if identifier == "myPowerValues" or isPowerHeader:
+                # If the widget is associated with Powers, give the context menu the option to
+                #  rename Powers (and/or Qualities)
+                contextMenu.add_command(label="Rename Powers...",
+                                        command=myHeroFrame.RenamePQDice)
+            if identifier == "myAbilityValues" or isAbilityHeader:
+                # If the widget is associated with Abilities, give the context menu the option to
+                #  rename Abilities
+                contextMenu.add_command(label="Rename Abilities...",
+                                        command=myHeroFrame.RenameAbilities)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
         notePrefix = "### ModeFrame.SetHero: "
@@ -17938,6 +18032,10 @@ class MinionFrame(Frame):
                                     sticky=self.rulesGlue)
         self.myMinionSizeRules.bind("<Double-1>",
                                     self.ClipboardCopy)
+        self.myMinionSizeRules.bind("<Button-3>",
+                                    lambda event, myID="myMinionSizeRules": \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID))
         # Display Minion Sizes title in columns 1-4 of row 3
         self.myMinionSizeTitle = Label(self,
                                        background=self.titleBG,
@@ -17952,6 +18050,10 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
+        self.myMinionSizeTitle.bind("<Button-3>",
+                                    lambda event, myID="myMinionSizeTitle": \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID))
         # Display minion size column headers in row 4
         self.myMinionSizeHeaders = [None for i in self.sizeHeaders]
         for i in range(len(self.myMinionSizeHeaders)):
@@ -17969,6 +18071,12 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.sizeWidths[i],
                                              sticky=self.headerGlue)
+            self.myMinionSizeHeaders[i].bind("<Button-3>",
+                                             lambda event, myID="myMinionSizeHeaders", \
+                                             myIndex=[i]: \
+                                             self.LaunchContextMenu(event,
+                                                                    identifier=myID,
+                                                                    indices=myIndex))
         # Display minion size column entries in rows 5-9
         self.myMinionSizeEntries = [[None for i in range(len(self.sizeText[0]))] \
                                     for j in range(len(self.sizeText))]
@@ -17991,6 +18099,12 @@ class MinionFrame(Frame):
                                                     sticky=self.tableGlue)
                 self.myMinionSizeEntries[c][r].bind("<Double-1>",
                                                     self.ClipboardCopy)
+                self.myMinionSizeEntries[c][r].bind("<Button-3>",
+                                                    lambda event, myID="myMinionSizeEntries", \
+                                                    myIndex=[c,r]: \
+                                                    self.LaunchContextMenu(event,
+                                                                           identifier=myID,
+                                                                           indices=myIndex))
         # Insert buffer between rows 9 and 12?
         # ...
         # Display minion form rules in columns 1-16 of row 12
@@ -18010,6 +18124,10 @@ class MinionFrame(Frame):
                                     sticky=self.rulesGlue)
         self.myMinionFormRules.bind("<Double-1>",
                                     self.ClipboardCopy)
+        self.myMinionFormRules.bind("<Button-3>",
+                                    lambda event, myID="myMinionFormRules": \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID))
         # Display Minion Forms title in columns 1-4 of row 13
         self.myMinionFormTitle = Label(self,
                                        background=self.titleBG,
@@ -18024,6 +18142,10 @@ class MinionFrame(Frame):
                                     rowspan=1,
                                     columnspan=sum(self.formWidths[0:2]),
                                     sticky=self.titleGlue)
+        self.myMinionFormTitle.bind("<Button-3>",
+                                    lambda event, myID="myMinionFormTitle": \
+                                    self.LaunchContextMenu(event,
+                                                           identifier=myID))
         # Display minion form column headers in row 14
         self.myMinionFormHeaders = [None for i in self.formHeaders]
         for i in range(len(self.myMinionFormHeaders)):
@@ -18041,6 +18163,12 @@ class MinionFrame(Frame):
                                              rowspan=1,
                                              columnspan=self.formWidths[i],
                                              sticky=self.headerGlue)
+            self.myMinionFormHeaders[i].bind("<Button-3>",
+                                             lambda event, myID="myMinionFormHeaders", \
+                                             myIndex=[i]: \
+                                             self.LaunchContextMenu(event,
+                                                                    identifier=myID,
+                                                                    indices=myIndex))
         # Display minion form column entries in rows 15-[14+self.myMinionCount]
         self.myMinionFormEntries = [[None,None,None] for i in range(self.myMinionCount)]
         for r in range(self.myMinionCount):
@@ -18062,6 +18190,12 @@ class MinionFrame(Frame):
                                                     sticky=self.tableGlue)
                 self.myMinionFormEntries[r][c].bind("<Double-1>",
                                                     self.ClipboardCopy)
+                self.myMinionFormEntries[r][c].bind("<Button-3>",
+                                                    lambda event, myID="myMinionFormEntries", \
+                                                    myIndex=[r,c]: \
+                                                    self.LaunchContextMenu(event,
+                                                                           identifier=myID,
+                                                                           indices=myIndex))
         # Set initial wraplength for all text widgets
         self.resize()
         # Make contents stretch/squish
@@ -18096,8 +18230,37 @@ class MinionFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### MinionFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### MinionFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.dispFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
+        notePrefix = "### MinionFrame.SetHero: "
         if isinstance(hero, Hero):
             self.myHero = hero
             self.myMinionCount = len(self.myHero.min_forms)
@@ -18275,6 +18438,11 @@ class FormFrame(Frame):
                                      sticky=self.rulesGlue)
             self.myFormNames[i].bind("<Double-1>",
                                      self.ClipboardCopy)
+            self.myFormNames[i].bind("<Button-3>",
+                                     lambda event, myID="myFormNames", myIndex=[i]: \
+                                     self.LaunchContextMenu(event,
+                                                            identifier=myID,
+                                                            indices=myIndex))
             # Display Power, Quality, and Status headers across columns 1-12 of the second row
             for j in range(5):
                 self.myHeaders[i][j] = Label(self,
@@ -18290,6 +18458,11 @@ class FormFrame(Frame):
                                           rowspan=1,
                                           columnspan=self.upperWidths[j],
                                           sticky=self.diceGlue)
+                self.myHeaders[i][j].bind("<Button-3>",
+                                          lambda event, myID="myHeaders", myIndex=[i,j]: \
+                                          self.LaunchContextMenu(event,
+                                                                 identifier=myID,
+                                                                 indices=myIndex))
             # Display status dice across columns 11-12 of the third through fifth rows
             for j in range(len(self.zoneColors)):
                 self.myStatusDice[i][j] = Label(self,
@@ -18309,6 +18482,11 @@ class FormFrame(Frame):
                                              sticky=self.diceGlue)
                 self.myStatusDice[i][j].bind("<Double-1>",
                                              self.ClipboardCopy)
+                self.myStatusDice[i][j].bind("<Button-3>",
+                                             lambda event, myID="myStatusDice", myIndex=[i,j]: \
+                                             self.LaunchContextMenu(event,
+                                                                    identifier=myID,
+                                                                    indices=myIndex))
             # Display Power and Quality dice across columns 1-10 of the third through
             #  [2+max(len(powers),len(qualities))]th rows
             pqHeights = [1 for x in range(8)]
@@ -18343,6 +18521,11 @@ class FormFrame(Frame):
                                                 sticky=self.diceGlue)
                     self.myPQDice[i][j][k].bind("<Double-1>",
                                                 self.ClipboardCopy)
+                    self.myPQDice[i][j][k].bind("<Button-3>",
+                                                lambda event, myID="myPQDice", myIndex=[i,j,k]: \
+                                                self.LaunchContextMenu(event,
+                                                                       identifier=myID,
+                                                                       indices=myIndex))
             # If thisForm has associated Abilities...
             if len(thisForm[5]) > 0:
                 # Display Ability headers across columns 13-28 of the fifth row
@@ -18360,6 +18543,11 @@ class FormFrame(Frame):
                                               rowspan=1,
                                               columnspan=self.lowerWidths[j],
                                               sticky=self.titleGlue)
+                    self.myHeaders[i][j].bind("<Button-3>",
+                                              lambda event, myID="myHeaders", myIndex=[i,j]: \
+                                              self.LaunchContextMenu(event,
+                                                                     identifier=myID,
+                                                                     indices=myIndex))
                 thisRow = firstRow + 5
                 # For each Ability associated with this form...
                 for j in range(len(thisForm[5])):
@@ -18394,6 +18582,12 @@ class FormFrame(Frame):
                                                        sticky=self.abilityGlue)
                         self.myAbilities[i][j][k].bind("<Double-1>",
                                                        self.ClipboardCopy)
+                        self.myAbilities[i][j][k].bind("<Button-3>",
+                                                       lambda event, myID="myAbilities", \
+                                                       myIndex=[i,j,k]: \
+                                                       self.LaunchContextMenu(event,
+                                                                              identifier=myID,
+                                                                              indices=myIndex))
                     thisRow += abilityHeight
             firstRow += max(leftHeight, centerHeight, rightHeight) + 1
         # Set initial wraplength for all text widgets
@@ -18432,6 +18626,34 @@ class FormFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### FormFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### FormFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.dispFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
         # Sets all hero attributes
         if isinstance(hero, Hero):
@@ -18608,6 +18830,10 @@ class SelectFrame(Frame):
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
+        self.myPromptLabel.bind("<Button-3>",
+                                lambda event, myID="myPromptLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         self.myOptionMenu = OptionMenu(self,
                                        self.myString,
                                        *self.myOptions)
@@ -18625,6 +18851,10 @@ class SelectFrame(Frame):
                                rowspan=1,
                                columnspan=3,
                                sticky=E+W)
+        self.myOptionMenu.bind("<Button-3>",
+                               lambda event, myID="myOptionMenu": \
+                               self.LaunchContextMenu(event,
+                                                      identifier=myID))
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
                                  background=self.normalBG,
@@ -18640,6 +18870,10 @@ class SelectFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         # Bind up/down arrow keys to change selection
@@ -18702,6 +18936,34 @@ class SelectFrame(Frame):
                 self.myPromptLabel.after(clipboard_delay,
                                          lambda arg1=NORMAL : \
                                          self.myPromptLabel.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### SelectFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### SelectFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### SelectFrame.finish: "
         if len(self.myOptions) > 0:
@@ -18800,6 +19062,10 @@ class EntryFrame(Frame):
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
+        self.myPromptLabel.bind("<Button-3>",
+                                lambda event, myID="myPromptLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         # Create Entry widget
         self.myTextEntry = Entry(self,
                                  justify=LEFT,
@@ -18810,6 +19076,10 @@ class EntryFrame(Frame):
                               rowspan=1,
                               columnspan=3,
                               sticky=N+E+S+W)
+        self.myTextEntry.bind("<Button-3>",
+                              lambda event, myID="myTextEntry": \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID))
         # Select all text
         self.myTextEntry.select_range(0,"end")
         self.myOKButton = Button(self,
@@ -18826,6 +19096,10 @@ class EntryFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.myTextEntry.bind("<Return>", self.finish)
@@ -18869,6 +19143,34 @@ class EntryFrame(Frame):
                 self.myPromptLabel.after(clipboard_delay,
                                          lambda arg1=NORMAL : \
                                          self.myPromptLabel.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### EntryFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### EntryFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### EntryFrame.finish: "
         if self.myText.get():
@@ -18991,6 +19293,10 @@ class ExpandFrame(Frame):
                                 sticky=E+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
+        self.myPromptLabel.bind("<Button-3>",
+                                lambda event, myID="myPromptLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         self.myOptionMenu = OptionMenu(self.myLeftFrame,
                                        self.myString,
                                        *self.myOptions,
@@ -19009,6 +19315,10 @@ class ExpandFrame(Frame):
                                rowspan=1,
                                columnspan=3,
                                sticky=E+W)
+        self.myOptionMenu.bind("<Button-3>",
+                               lambda event, myID="myOptionMenu": \
+                               self.LaunchContextMenu(event,
+                                                      identifier=myID))
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self.myLeftFrame,
                                  background=self.normalBG,
@@ -19024,6 +19334,10 @@ class ExpandFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=E+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         self.myBufferLabel = Label(self.myLeftFrame,
                                    background=self.normalBG,
                                    anchor=W,
@@ -19034,6 +19348,10 @@ class ExpandFrame(Frame):
                                 rowspan=1,
                                 columnspan=3,
                                 sticky=N+E+S+W)
+        self.myBufferLabel.bind("<Button-3>",
+                                lambda event, myID="myBufferLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         self.myLeftFrame.update_idletasks()
         (numLeftCols, numLeftRows) = self.myLeftFrame.grid_size()
         # Make myLeftFrame contents stretch/squish (horizontal only!)
@@ -19070,6 +19388,12 @@ class ExpandFrame(Frame):
                                 rowspan=2,
                                 columnspan=1,
                                 sticky=N+E+S+W)
+        self.myDetailLabel.bind("<Double-1>",
+                                self.ClipboardCopy)
+        self.myDetailLabel.bind("<Button-3>",
+                                lambda event, myID="myDetailLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
@@ -19085,8 +19409,6 @@ class ExpandFrame(Frame):
                 self.columnconfigure(col, weight=1)
             else:
                 self.columnconfigure(col, weight=0)
-        self.myDetailLabel.bind("<Double-1>",
-                                self.ClipboardCopy)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
         self.bind("<Up>", self.prevoption)
@@ -19142,6 +19464,34 @@ class ExpandFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### ExpandFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### ExpandFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### ExpandFrame.finish: "
         if len(self.myOptions) > 0:
@@ -19254,6 +19604,10 @@ class SwapFrame(Frame):
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
+        self.myPromptLabel.bind("<Button-3>",
+                                lambda event, myID="myPromptLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         self.myOptionMenus = [None for x in range(2)]
         for i in range(len(self.myOptionMenus)):
             self.myAnswers[i].set(self.myOptions[i])
@@ -19276,6 +19630,11 @@ class SwapFrame(Frame):
                                        rowspan=1,
                                        columnspan=3,
                                        sticky=E+W)
+            self.myOptionMenus[i].bind("<Button-3>",
+                                       lambda event, myID="myOptionMenus", myIndex=[i]: \
+                                       self.LaunchContextMenu(event,
+                                                              identifier=myID,
+                                                              indices=myIndex))
         optionCols = [c for c in range(1,1+3)]
         self.myOKButton = Button(self,
                                  background=self.normalBG,
@@ -19291,6 +19650,10 @@ class SwapFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
@@ -19358,6 +19721,34 @@ class SwapFrame(Frame):
                 self.myPromptLabel.after(clipboard_delay,
                                          lambda arg1=NORMAL : \
                                          self.myPromptLabel.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### SwapFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### SwapFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### SwapFrame.finish: "
         if len(self.myOptions) > 0:
@@ -19480,6 +19871,11 @@ class PrincipleFrame(Frame):
             self.mySectionLabels[i].grid(row=i+1,
                                          column=1,
                                          sticky=N+E+S+W)
+            self.mySectionLabels[i].bind("<Button-3>",
+                                         lambda event, myID="mySectionLabels", myIndex=[i]: \
+                                         self.LaunchContextMenu(event,
+                                                                identifier=myID,
+                                                                indices=myIndex))
             self.mySectionEntries[i] = Entry(self,
                                              justify=LEFT,
                                              textvariable=self.prinSectionVars[i],
@@ -19489,6 +19885,11 @@ class PrincipleFrame(Frame):
                                           column=2,
                                           columnspan=4,
                                           sticky=N+E+S+W)
+            self.mySectionEntries[i].bind("<Button-3>",
+                                          lambda event, myID="mySectionEntries", myIndex=[i]: \
+                                          self.LaunchContextMenu(event,
+                                                                 identifier=myID,
+                                                                 indices=myIndex))
         promptCols = [1]
         self.myOKButton = Button(self,
                                  anchor=CENTER,
@@ -19500,6 +19901,10 @@ class PrincipleFrame(Frame):
         self.myOKButton.grid(row=len(self.prinSectionNames)+1,
                              column=3,
                              sticky=N+E+S+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
@@ -19533,6 +19938,34 @@ class PrincipleFrame(Frame):
         promptWidth = self.mySectionLabels[0].winfo_width()
         for i in range(len(self.mySectionLabels)):
             self.mySectionLabels[i].config(wraplength=promptWidth-self.myMargin)
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### PrincipleFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### PrincipleFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### PrincipleFrame.finish: "
         complete = True
@@ -19694,6 +20127,10 @@ class AssignFrame(Frame):
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
+        self.myPromptLabel.bind("<Button-3>",
+                                lambda event, myID="myPromptLabel": \
+                                self.LaunchContextMenu(event,
+                                                       identifier=myID))
         # Each of myItems gets its own label...
         self.myItemLabels = [None for y in range(len(self.myItems))]
         #... and its own set of radio buttons, one for each category
@@ -19718,6 +20155,11 @@ class AssignFrame(Frame):
                                       sticky=N+E+S+W)
             self.myItemLabels[i].bind("<Double-1>",
                                       self.ClipboardCopy)
+            self.myItemLabels[i].bind("<Button-3>",
+                                      lambda event, myID="myItemLabels", myIndex=[i]: \
+                                      self.LaunchContextMenu(event,
+                                                             identifier=myID,
+                                                             indices=myIndex))
             if self.myDefault in range(len(self.myCategories)):
                 self.myAssignments[i].set(self.myDefault)
             for j in range(len(self.myCategories)):
@@ -19738,6 +20180,11 @@ class AssignFrame(Frame):
                                                rowspan=1,
                                                columnspan=1,
                                                sticky=N+E+S+W)
+                self.myRadioButtons[i][j].bind("<Button-3>",
+                                               lambda event, myID="myRadioButtons", myIndex=[i,j]: \
+                                               self.LaunchContextMenu(event,
+                                                                      identifier=myID,
+                                                                      indices=myIndex))
         self.myCountLabel = Label(self,
                                   background=self.normalBG,
                                   anchor=SE,
@@ -19749,6 +20196,10 @@ class AssignFrame(Frame):
                                rowspan=1,
                                columnspan=1,
                                sticky=N+E+S+W)
+        self.myCountLabel.bind("<Button-3>",
+                               lambda event, myID="myCountLabel": \
+                               self.LaunchContextMenu(event,
+                                                      identifier=myID))
         self.myOKButton = Button(self,
                                  background=self.normalBG,
                                  activebackground=self.clickedBG,
@@ -19762,6 +20213,10 @@ class AssignFrame(Frame):
                              rowspan=1,
                              columnspan=1,
                              sticky=N+E+S+W)
+        self.myOKButton.bind("<Button-3>",
+                             lambda event, myID="myOKButton": \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID))
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
@@ -19824,6 +20279,34 @@ class AssignFrame(Frame):
             if label.cget("activebackground"):
                 label.config(state=ACTIVE)
                 label.after(clipboard_delay, lambda arg1=NORMAL : label.config(state=arg1))
+    def ClipboardWrite(self,
+                       text=""):
+        notePrefix = "### AssignFrame.ClipboardWrite: "
+        if text:
+            self.clipboard_clear()
+            self.clipboard_append(text)
+    def LaunchContextMenu(self,
+                          event=None,
+                          identifier="",
+                          indices=[]):
+        notePrefix = "### AssignFrame.LaunchContextMenu: "
+        myHeroFrame = self.myParent.parent
+        myHeroFrame.SetFirstIncomplete()
+        contextMenu = Menu(self, tearoff=0)
+        contextMenu.config(font=self.myFont)
+        label = event.widget
+        # If the widget has text, give the context menu the option to copy that text
+        if label.cget("text"):
+            flatText = label.cget("text").replace("\n","")
+            contextMenu.add_command(label="Copy Text",
+                                    command=lambda arg1=flatText : self.ClipboardWrite(arg1))
+        if identifier:
+            idString = str(identifier)
+            for x in indices:
+                idString += "[" + str(x) + "]"
+            print(notePrefix + idString)
+        # ...
+        contextMenu.post(event.x_root, event.y_root)
     def finish(self, *args):
         notePrefix = "### AssignFrame.finish: "
         complete = True
