@@ -16321,11 +16321,14 @@ class HeroFrame(Frame):
         self.SetFlex()
         # Reopen any specified auxiliary windows
         if restore == 0:
-            self.LaunchModeWindow()
+            if self.myAuxCounts[restore] > 0:
+                self.LaunchModeWindow()
         if restore == 1:
-            self.LaunchMinionWindow()
+            if self.myAuxCounts[restore] > 0:
+                self.LaunchMinionWindow()
         if restore == 2:
-            self.LaunchFormWindow()
+            if self.myAuxCounts[restore] > 0:
+                self.LaunchFormWindow()
     def ShowSingleStep(self):
         notePrefix = "HeroFrame.ShowSingleStep: "
         # Hide all creation step buttons by default
@@ -16541,6 +16544,7 @@ class HeroFrame(Frame):
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
+        paused = self.PauseAuxWindows()
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("1. Background")
@@ -16580,13 +16584,15 @@ class HeroFrame(Frame):
                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            self.UpdateAll(self.myHero)
+            self.UpdateAll(self.myHero,
+                           restore=paused)
     def AddHeroPowerSource(self, inputs=[]):
         # Walk the user through adding a Power Source to their hero.
         notePrefix = "### HeroFrame.AddHeroPowerSource: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
+        paused = self.PauseAuxWindows()
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("2. Power Source")
@@ -16625,13 +16631,15 @@ class HeroFrame(Frame):
             self.myHero.AddPowerSource(ps_index, inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            self.UpdateAll(self.myHero)
+            self.UpdateAll(self.myHero,
+                           restore=paused)
     def AddHeroArchetype(self, inputs=[]):
         # Walk the user through adding an Archetype to their hero.
         notePrefix = "### HeroFrame.AddHeroArchetype: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
+        paused = self.PauseAuxWindows()
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("3. Archetype")
@@ -16674,13 +16682,15 @@ class HeroFrame(Frame):
                                      inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            self.UpdateAll(self.myHero)
+            self.UpdateAll(self.myHero,
+                           restore=paused)
     def AddHeroPersonality(self, inputs=[]):
         # Walks the user through adding a Personality (or Personalities) to their hero.
         notePrefix = "### HeroFrame.AddHeroPersonality: "
         indent = "    "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
+        paused = self.PauseAuxWindows()
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("4. Personality")
@@ -16754,11 +16764,13 @@ class HeroFrame(Frame):
                                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def AddHeroRedAbilities(self, inputs=[]):
         # Add 2 Red Abilities
         notePrefix = "### HeroFrame.AddHeroRedAbilities: "
         indent = "    "
+        paused = self.PauseAuxWindows()
         print("5. Red Abilities")
         rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         if len(rs_abilities) > 1:
@@ -16775,11 +16787,13 @@ class HeroFrame(Frame):
             if track_inputs:
                 print(notePrefix + tracker_close)
             rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
-        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def AddHeroRetcon(self, inputs=[]):
         # Take a Retcon
         notePrefix = "### HeroFrame.AddHeroRetcon: "
         indent = "    "
+        paused = self.PauseAuxWindows()
         print("6. Retcon")
         if self.myHero.used_retcon:
             print(indent + self.myHero.hero_name + " already used " + \
@@ -16794,11 +16808,13 @@ class HeroFrame(Frame):
             self.myHero.AddRetcon(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
         # Determine Max Health
         notePrefix = "### HeroFrame.AddHeroHealth: "
         indent = "    "
+        paused = self.PauseAuxWindows()
         print("7. Health")
         if self.myHero.health_zones != [0,0,0]:
             print(indent + self.myHero.hero_name + " already has maximum Health (" + \
@@ -16815,10 +16831,12 @@ class HeroFrame(Frame):
             if track_inputs:
                 print(notePrefix + tracker_close)
         print("Done!")
-        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenameAny(self):
         # Let the user choose from among a list of hero attributes to rename
         notePrefix = "### HeroFrame.RenameAny: "
+        paused = self.PauseAuxWindows()
         # Make a list of attributes that can be renamed
         rename_options = ["None"]
         # The character can always be renamed
@@ -16906,6 +16924,8 @@ class HeroFrame(Frame):
             self.RenameForms()
         elif rename_selection == mode_section:
             self.RenameModes()
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenameHero(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
         notePrefix = "### HeroFrame.RenameHero: "
@@ -17339,6 +17359,7 @@ class HeroFrame(Frame):
     def RevertHero(self,
                    autoStep=99):
         notePrefix = "### HeroFrame.RevertHero: "
+        paused = self.PauseAuxWindows()
         self.SetFirstIncomplete()
         # firstIncomplete == 99: myHero isn't a Hero object, no action needed
         # firstIncomplete == 0: myHero hasn't finished any creation steps, no action needed
@@ -17383,6 +17404,8 @@ class HeroFrame(Frame):
                 # User selected to revert to a blank hero
                 print(notePrefix + stepOptions[firstRedo] + " selected")
                 self.Empty(buttonPressed=True)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
                 
 class SubWindow(Toplevel):
     # A class for subordinate windows
@@ -18293,6 +18316,23 @@ class MinionFrame(Frame):
             for x in indices:
                 idString += "[" + str(x) + "]"
             print(notePrefix + idString)
+            if identifier in ["myMinionFormRules",
+                              "myMinionFormTitle",
+                              "myMinionFormHeaders",
+                              "myMinionFormEntries"]:
+                # If the widget is associated with minion forms, and the hero has completed the
+                #  creation step that assigned their minion forms, give the context menu the option
+                #  to revert to that step
+                minionsComplete = False
+                if isinstance(self.myHero, Hero):
+                    if myHeroFrame.firstIncomplete > self.myHero.mf_step:
+                        minionsComplete = True
+                if minionsComplete:
+                    minionStep = math.floor(self.myHero.mf_step)
+                    contextMenu.add_command(label="Reset Minion Forms (Step " + str(minionStep) + \
+                                            ": " + step_names[minionStep] + ")...",
+                                            command=lambda revert=minionStep: \
+                                            myHeroFrame.RevertHero(autoStep=revert))
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
@@ -20421,7 +20461,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getKim()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
