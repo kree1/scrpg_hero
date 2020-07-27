@@ -15820,7 +15820,7 @@ class HeroFrame(Frame):
                 if isinstance(self.myHero, Hero):
                     healthStep = math.floor(self.myHero.health_step)
                     if self.firstIncomplete > healthStep:
-                        contextMenu.add_command(label="Reset Step " + str(charStep) + ": " + \
+                        contextMenu.add_command(label="Reset Step " + str(healthStep) + ": " + \
                                                 step_names[healthStep] + "...",
                                                 command=lambda revert=healthStep: \
                                                 self.RevertHero(autoStep=revert))
@@ -15833,7 +15833,7 @@ class HeroFrame(Frame):
                         statusStep = math.floor(self.myHero.status_dice.step)
                         if self.firstIncomplete > statusStep:
                             contextMenu.add_command(label="Reset Status (Step " + \
-                                                    str(status_step) + ": " + \
+                                                    str(statusStep) + ": " + \
                                                     step_names[statusStep] + ")...",
                                                     command=lambda revert=statusStep: \
                                                     self.RevertHero(autoStep=revert))
@@ -17865,6 +17865,7 @@ class ModeFrame(Frame):
         contextMenu = Menu(self, tearoff=0)
         contextMenu.config(font=self.dispFont)
         label = event.widget
+        sourceMode = None
         isPowerHeader = False
         isAbilityHeader = False
         # If the widget has text, give the context menu the option to copy that text
@@ -17892,6 +17893,29 @@ class ModeFrame(Frame):
                 #  rename Modes
                 contextMenu.add_command(label="Rename Modes...",
                                         command=myHeroFrame.RenameModes)
+                if len(indices) > 0:
+                    if indices[0] in range(self.myModeCount):
+                        sourceMode = self.myHero.other_modes[indices[0]]
+            if isinstance(sourceMode, Mode):
+                # If the widget is associated with a specific Mode, give the context menu the
+                #  option to revert to the step of hero creation when that Mode was added
+                modeStep = math.floor(sourceMode.step)
+                if myHeroFrame.firstIncomplete > modeStep:
+                    contextMenu.add_command(label="Reset this Mode (Step " + str(modeStep) + \
+                                            ": " + step_names[modeStep] + ")...",
+                                            command=lambda revert=modeStep: \
+                                            myHeroFrame.RevertHero(autoStep=revert))
+                if len(sourceMode.steps_modified) > 0:
+                    lastModeStep = modeStep
+                    for s in sourceMode.steps_modified:
+                        if math.floor(s) != lastModeStep:
+                            nextStep = math.floor(s)
+                            contextMenu.add_command(label="Revert edit to this Mode (Step " + \
+                                                    str(nextStep) + ": " + step_names[nextStep] + \
+                                                    ")...",
+                                                    command=lambda revert=nextStep: \
+                                                    myHeroFrame.RevertHero(autoStep=revert))
+                            lastModeStep = nextStep
             if identifier == "myPowerValues" or isPowerHeader:
                 # If the widget is associated with Powers, give the context menu the option to
                 #  rename Powers (and/or Qualities)
@@ -17902,6 +17926,34 @@ class ModeFrame(Frame):
                 #  rename Abilities
                 contextMenu.add_command(label="Rename Abilities...",
                                         command=myHeroFrame.RenameAbilities)
+            if identifier == "myAbilityValues" and len(indices) > 0:
+                # If the widget is associated with a specific Ability, give the context menu the
+                #  option to revert to the step of hero creation when that Ability was added
+                sourceAbility = None
+                if indices[0] in range(len(self.myModeAbilities)):
+                    sourceAbility = self.myModeAbilities[indices[0]]
+                if isinstance(sourceAbility, Ability):
+                    abilityStep = math.floor(sourceAbility.step)
+                    contextMenu.add_command(label="Reset this Ability (Step " + \
+                                            str(abilityStep) + ": " + step_names[abilityStep] + \
+                                            ")...",
+                                            command=lambda revert=abilityStep: \
+                                            myHeroFrame.RevertHero(autoStep=revert))
+                    if len(sourceAbility.steps_modified) > 0:
+                        # If the associated Ability has been modified during hero creation, give
+                        #  the context menu the option to revert to the step(s) when it was
+                        #  modified
+                        lastAbilityStep = abilityStep
+                        for s in sourceAbility.steps_modified:
+                            if myHeroFrame.firstIncomplete > math.floor(s) and \
+                               math.floor(s) != lastAbilityStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this Ability " + \
+                                                        "(Step " + str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        myHeroFrame.RevertHero(autoStep=revert))
+                                lastAbilityStep = nextStep
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
@@ -18729,6 +18781,7 @@ class FormFrame(Frame):
             for x in indices:
                 idString += "[" + str(x) + "]"
             print(notePrefix + idString)
+            sourceForm = None
             isPQHeader = False
             isAbilityHeader = False
             if identifier == "myHeaders" and len(indices) > 1:
@@ -18736,6 +18789,7 @@ class FormFrame(Frame):
                     isPQHeader = True
                 else:
                     isAbilityHeader = True
+            sourceFormIndex = -1
             if identifier in ["myFormNames",
                               "myHeaders",
                               "myStatusDice",
@@ -18745,6 +18799,37 @@ class FormFrame(Frame):
                 #  rename Forms
                 contextMenu.add_command(label="Rename Forms...",
                                         command=myHeroFrame.RenameForms)
+                if len(indices) > 0:
+                    if indices[0] in range(len(self.myFormInfo)):
+                        sourceFormIndex = indices[0]
+            if sourceFormIndex in range(len(self.myFormInfo)):
+                sourceFormName = self.myFormInfo[sourceFormIndex][0]
+                for fm in self.myHero.other_forms:
+                    if fm.name == sourceFormName:
+                        sourceForm = fm
+                if isinstance(sourceForm, Form):
+                    # If the widget is associated with a specific Form, give the context menu the
+                    #  option to revert to the step of hero creation when that Form was added
+                    formStep = math.floor(sourceForm.step)
+                    if myHeroFrame.firstIncomplete > formStep:
+                        contextMenu.add_command(label="Reset this Form (Step " + str(formStep) + \
+                                                ": " + step_names[formStep] + ")...",
+                                                command=lambda revert=formStep: \
+                                                myHeroFrame.RevertHero(autoStep=revert))
+                        lastFormStep = formStep
+                        if len(sourceForm.steps_modified) > 0:
+                            # If the associated Form has been modified, give the context menu the
+                            #  option to revert to the step(s) when it was modified
+                            for s in sourceForm.steps_modified:
+                                if math.floor(s) != lastFormStep:
+                                    nextStep = math.floor(s)
+                                    contextMenu.add_command(label="Revert edit to this Form " + \
+                                                            "(Step " + str(nextStep) + \
+                                                            ": " + step_names[nextStep] + \
+                                                            ")...",
+                                                            command=lambda revert=nextStep: \
+                                                            myHeroFrame.RevertHero(autoStep=revert))
+                                    lastModeStep = nextStep
             if identifier == "myPQDice" or isPQHeader:
                 # If the widget is associated with Power/Quality dice, give the context menu the
                 #  option to rename Powers and/or Qualities
@@ -18755,7 +18840,35 @@ class FormFrame(Frame):
                 #  rename Abilities
                 contextMenu.add_command(label="Rename Abilities...",
                                         command=myHeroFrame.RenameAbilities)
-            
+            if identifier == "myAbilities" and len(indices) > 1:
+                # If the widget is associated with a specific Ability, give the context menu the
+                #  option to revert to the step of hero creation when that Ability was added
+                sourceAbility = None
+                if indices[0] in range(len(self.myFormInfo)):
+                    if indices[1] in range(len(self.myFormInfo[indices[0]][5])):
+                        sourceAbility = self.myFormInfo[indices[0]][5][indices[1]]
+                if isinstance(sourceAbility, Ability):
+                    abilityStep = math.floor(sourceAbility.step)
+                    contextMenu.add_command(label="Reset this Ability (Step " + \
+                                            str(abilityStep) + ": " + step_names[abilityStep] + \
+                                            ")...",
+                                            command=lambda revert=abilityStep: \
+                                            myHeroFrame.RevertHero(autoStep=revert))
+                    if len(sourceAbility.steps_modified) > 0:
+                        # If the associated Ability has been modified during hero creation, give
+                        #  the context menu the option to revert to the step(s) when it was
+                        #  modified
+                        lastAbilityStep = abilityStep
+                        for s in sourceAbility.steps_modified:
+                            if myHeroFrame.firstIncomplete > math.floor(s) and \
+                               math.floor(s) != lastAbilityStep:
+                                nextStep = math.floor(s)
+                                contextMenu.add_command(label="Revert edit to this Ability " + \
+                                                        "(Step " + str(nextStep) + ": " + \
+                                                        step_names[nextStep] + ")...",
+                                                        command=lambda revert=nextStep: \
+                                                        myHeroFrame.RevertHero(autoStep=revert))
+                                lastAbilityStep = nextStep
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
@@ -20461,7 +20574,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKim()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

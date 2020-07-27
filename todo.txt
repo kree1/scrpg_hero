@@ -226,28 +226,28 @@ Can we create a context menu?
    if widget.cget("text")
 .   "Copy Text" -> lambda arg1=flatText: self.ClipboardWrite(arg1)
 .  if the widget is associated with a Mode, "Rename Modes" -> myHeroFrame.RenameModes
-    if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
-    if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
 .  if the widget is associated with Powers, "Rename Powers" -> myHeroFrame.RenamePQDice
     if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
     if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
 .  if the widget is associated with Abilities, "Rename Abilities" -> myHeroFrame.RenameAbilities
-    if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
-    if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
   MinionFrame...
 .  if widget.cget("text"), "Copy Text" -> lambda arg1=flatText: self.ClipboardWrite(arg1)
 .  if minion form step is complete, "Reset Minion Forms ([step])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
   FormFrame...
 .  if widget.cget("text"), "Copy Text" -> lambda arg1=flatText: self.ClipboardWrite(arg1)
 .  if the widget is associated with a Form, "Rename Forms" -> myHeroFrame.RenameForms
-    if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
-    if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
 .  if the widget is associated with Powers/Qualities, "Rename Powers/Qualities" -> myHeroFrame.RenamePQDice
     if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
     if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
 .  if the widget is associated with Abilities, "Rename Abilities" -> myHeroFrame.RenameAbilities
-    if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
-    if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if relevant step is complete, "Reset [step name]" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
+.   if modifications have been made, "Revert to previous ([step name])" -> lambda revert=[step number]: myHeroFrame.RevertHero(autoStep=revert)
   SelectFrame...
 .  if widget.cget("text"), "Copy Text" -> lambda arg1=flatText: self.ClipboardWrite(arg1)
   EntryFrame...
