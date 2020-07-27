@@ -16233,7 +16233,8 @@ class HeroFrame(Frame):
                                 len(self.myHero.min_forms)]
     def UpdateAll(self,
                   hero=None,
-                  internal=False):
+                  internal=False,
+                  restore=-1):
         # Reads all hero attributes and updates display with new information
         self.SetHero(hero)
         notePrefix = "### HeroFrame.UpdateAll: "
@@ -16318,6 +16319,13 @@ class HeroFrame(Frame):
         self.currentDispWidth = self.winfo_width()
         self.Resize(internal=internal)
         self.SetFlex()
+        # Reopen any specified auxiliary windows
+        if restore == 0:
+            self.LaunchModeWindow()
+        if restore == 1:
+            self.LaunchMinionWindow()
+        if restore == 2:
+            self.LaunchFormWindow()
     def ShowSingleStep(self):
         notePrefix = "HeroFrame.ShowSingleStep: "
         # Hide all creation step buttons by default
@@ -16901,6 +16909,7 @@ class HeroFrame(Frame):
     def RenameHero(self, inputs=[]):
         # Let the user edit the hero's codename, civilian name, and pronouns
         notePrefix = "### HeroFrame.RenameHero: "
+        paused = self.PauseAuxWindows()
         indent = "    "
         if not isinstance(self.myHero, Hero):
             self.SetHero(Hero())
@@ -16938,11 +16947,12 @@ class HeroFrame(Frame):
                                 width=40)
         changed = (self.myHero.pronoun_set != pronoun_choice.get())
         self.myHero.pronoun_set = pronoun_choice.get()
-        if changed:
-            self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenameAbilities(self):
         # Let the user edit the names of the hero's Green, Yellow, & Red Abilities
         notePrefix = "### HeroFrame.RenameAbilities: "
+        paused = self.PauseAuxWindows()
         if isinstance(self.myHero, Hero):
             ability_options = [a for a in self.myHero.abilities \
                                if a.zone != 3 and not a.name.startswith("Principle of ")]
@@ -16985,9 +16995,12 @@ class HeroFrame(Frame):
                     edit_ability.flavorname = new_name.get()
                     if changed:
                         self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenameModes(self):
         # Let the user edit the names of the hero's alternate Modes
         notePrefix = "### HeroFrame.RenameModes: "
+        paused = self.PauseAuxWindows()
         if isinstance(self.myHero, Hero):
             mode_options = [i for i in range(len(self.myHero.other_modes)) \
                             if isinstance(self.myHero.other_modes[i], Mode)]
@@ -17037,9 +17050,13 @@ class HeroFrame(Frame):
                                              message=error_text)
                     else:
                         edit_mode.name = new_name.get()
+                        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenameForms(self):
         # Let the user edit the names of the hero's alternate Forms
         notePrefix = "### HeroFrame.RenameForms: "
+        paused = self.PauseAuxWindows()
         if isinstance(self.myHero, Hero):
             form_options = [i for i in range(len(self.myHero.other_forms)) \
                             if isinstance(self.myHero.other_forms[i], Form)]
@@ -17124,9 +17141,13 @@ class HeroFrame(Frame):
                                 new_name.set(new_name.get() + " Form")
                             self.myHero.dv_tags[is_divided] = new_tag
                         edit_form.name = new_name.get()
+                        self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
     def RenamePQDice(self):
         # Let the user edit the names of the hero's Power/Quality dice
         notePrefix = "### HeroFrame.RenamePQDice: "
+        paused = self.PauseAuxWindows()
         if isinstance(self.myHero, Hero):
             pqdie_ids = [[d.triplet(), d.flavorname, ""] for d in \
                          self.myHero.power_dice + self.myHero.quality_dice]
@@ -17247,6 +17268,22 @@ class HeroFrame(Frame):
                         # If something on the base sheet was renamed, update appearance
                         if changed:
                             self.UpdateAll(self.myHero)
+        self.UpdateAll(self.myHero,
+                       restore=paused)
+    def PauseAuxWindows(self):
+        # Before making any changes, determine if we have auxiliary windows open, and close them
+        closed = -1
+        for w in self.winfo_children():
+            if isinstance(w, ModeWindow):
+                closed = 0
+                w.cancel()
+            elif isinstance(w, MinionWindow):
+                closed = 1
+                w.cancel()
+            elif isinstance(w, FormWindow):
+                closed = 2
+                w.cancel()
+        return closed
     def DisplayHeroSteps(self, inputs=[]):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
@@ -17316,7 +17353,8 @@ class HeroFrame(Frame):
                 firstRedo = autoStep
             else:
                 stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
-                stepOptions = ["0: Clear ALL hero data"] + stepOptions + ["Cancel (leave hero as-is)"]
+                stepOptions = ["0: Clear ALL hero data"] + stepOptions + \
+                              ["Cancel (leave hero as-is)"]
                 revertPrompt = "Choose a step of hero creation to redo from:"
                 stepChoice = IntVar(self, 1)
                 question = SelectWindow(self,
@@ -17345,8 +17383,7 @@ class HeroFrame(Frame):
                 # User selected to revert to a blank hero
                 print(notePrefix + stepOptions[firstRedo] + " selected")
                 self.Empty(buttonPressed=True)
-            # ...
-
+                
 class SubWindow(Toplevel):
     # A class for subordinate windows
     def __init__(self, parent, title=None):
@@ -18652,6 +18689,33 @@ class FormFrame(Frame):
             for x in indices:
                 idString += "[" + str(x) + "]"
             print(notePrefix + idString)
+            isPQHeader = False
+            isAbilityHeader = False
+            if identifier == "myHeaders" and len(indices) > 1:
+                if indices[1] < 5:
+                    isPQHeader = True
+                else:
+                    isAbilityHeader = True
+            if identifier in ["myFormNames",
+                              "myHeaders",
+                              "myStatusDice",
+                              "myPQDice",
+                              "myAbilities"]:
+                # If the widget is associated with a Form, give the context menu the option to
+                #  rename Forms
+                contextMenu.add_command(label="Rename Forms...",
+                                        command=myHeroFrame.RenameForms)
+            if identifier == "myPQDice" or isPQHeader:
+                # If the widget is associated with Power/Quality dice, give the context menu the
+                #  option to rename Powers and/or Qualities
+                contextMenu.add_command(label="Rename Powers/Qualities...",
+                                        command=myHeroFrame.RenamePQDice)
+            if identifier == "myAbilities" or isAbilityHeader:
+                # If the widget is associated with Abilities, give the context menu the option to
+                #  rename Abilities
+                contextMenu.add_command(label="Rename Abilities...",
+                                        command=myHeroFrame.RenameAbilities)
+            
         # ...
         contextMenu.post(event.x_root, event.y_root)
     def SetHero(self, hero=None):
