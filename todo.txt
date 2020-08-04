@@ -176,17 +176,29 @@ Complete steps of hero creation are now reversible
 	PrincipleFrame
 	AssignFrame
    Hitting "Cancel" or the X button would need to send a message back to the Hero
-    Hero.__init__: proceed = IntVar(1)
-	Hero.copy: mirror.proceed.set(self.proceed.get())
-	Pass proceed to all data entry windows
-	Windows set proceed to 0 if they're canceled
+.	Hero.__init__: self.proceed = 1
+.	Hero.copy: mirror.proceed = self.proceed
+	Pass proceed to all data entry windows as success; windows set success to 0 if they're canceled
 	 SelectFrame
+.	  accepts success
+	  sets success
 	 EntryFrame
+.	  accepts success
+	  sets success
 	 ExpandFrame
+.	  accepts success
+	  sets success
 	 SwapFrame
+.	  accepts success
+	  sets success
 	 PrincipleFrame
+.	  accepts success
+	  sets success
 	 AssignFrame
-	After a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it checks proceed- if it's 0, cancel everything, revert to the last previous version, and set proceed to 1
+.	  accepts success
+	  sets success
+.	When a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it passes success=IntVar(self.myFrame, 1)
+	After a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it sets self.proceed to the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
 	 AddPQDie
 	 ChoosePQDieSize
 	 ChoosePQ

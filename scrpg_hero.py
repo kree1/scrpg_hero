@@ -6624,6 +6624,7 @@ class Hero:
         self.health_status = None
         self.health_pqdie = None
         self.health_choice = None
+        self.proceed = 1
         self.myFrame = None
         self.myWindow = None
         self.steps_modified = []
@@ -6656,6 +6657,10 @@ class Hero:
         mirror.other_forms = [x.copy() for x in self.other_forms]
         mirror.health_pqs = [x for x in self.health_pqs]
         mirror.health_step = self.health_step
+        mirror.health_status = self.health_status
+        mirror.health_pqdie = self.health_pqdie
+        mirror.health_choice = self.health_choice
+        mirror.proceed = self.proceed
         mirror.steps_modified = [x for x in self.steps_modified]
         if self.prev_version:
             mirror.prev_version = self.prev_version.copy()
@@ -6722,11 +6727,13 @@ class Hero:
             # A more complicated question with a GUI available and no text inputs? Use a
             #  SelectWindow to give the user a list of options to pick from
             answer = IntVar()
+            success = IntVar(self.myFrame, 1)
             question = SelectWindow(self.myFrame,
                                     prompt=prompt,
                                     options=print_options,
                                     var=answer,
                                     title=title,
+                                    success=success,
                                     width=width)
             return [answer.get(), inputs]
         else:
@@ -6803,10 +6810,12 @@ class Hero:
             #  user
 ##            print("Using EntryWindow")
             answer = StringVar(self.myFrame, default)
+            success = IntVar(self.myFrame, 1)
             question = EntryWindow(self.myFrame,
                                    prompt=prompt,
                                    var=answer,
-                                   title=title)
+                                   title=title,
+                                   success=success)
             entry_line = answer.get()
         else:
             print(split_text(prompt,
@@ -6855,12 +6864,14 @@ class Hero:
         if self.UseGUI(inputs):
             # Create an ExpandWindow to communicate with the user
             answer = IntVar()
+            success = IntVar(self.myFrame, 1)
             question = ExpandWindow(self.myFrame,
                                     guiPrompt,
                                     options,
                                     guiDetails,
                                     var=answer,
                                     title=title,
+                                    success=success,
                                     lwidth=lwidth,
                                     rwidth=rwidth)
             entry_index = answer.get()
@@ -7184,6 +7195,7 @@ class Hero:
                         details[i] = split_text(this_section,
                                                 width=dispWidth)
                     answer = IntVar()
+                    success = IntVar(self.myFrame, 1)
                     question = ExpandWindow(self.myFrame,
                                             dice_report + "\n" + \
                                             options_report + "\n" + \
@@ -7192,6 +7204,7 @@ class Hero:
                                             details,
                                             var=answer,
                                             title=print_type + " Selection",
+                                            success=success,
                                             lwidth=50,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
@@ -7324,12 +7337,14 @@ class Hero:
                                      breaks=2,
                                      indented=False,
                                      hanging=False) for x in self.principles]
+                success = IntVar(self.myFrame, 1)
                 question = ExpandWindow(self.myFrame,
                                         "Choose a Principle to replace: ",
                                         options,
                                         details,
                                         var=answer,
                                         title="Principle Selection",
+                                        success=success,
                                         lwidth=30,
                                         rwidth=dispWidth)
                 entry_index = answer.get()
@@ -7502,6 +7517,7 @@ class Hero:
                     minorVar = StringVar()
                     majorVar = StringVar()
                     greenVar = StringVar()
+                    success = IntVar(self.myFrame, 1)
                     prinModifier = PrincipleWindow(self.myFrame,
                                                    ri,
                                                    titleVar,
@@ -7510,6 +7526,7 @@ class Hero:
                                                    majorVar,
                                                    greenVar,
                                                    title="Customize " + str(ri),
+                                                   success=success,
                                                    width=dispWidth)
                     entry_title = titleVar.get()
                     entry_roleplaying = roleplayingVar.get()
@@ -7779,51 +7796,6 @@ class Hero:
                                               inputs=inputs)
             entry_index = decision[0]
             inputs = decision[1]
-##            if self.UseGUI(inputs):
-##                # Create an ExpandWindow to ask the user to choose
-##                answer = IntVar()
-##                options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
-##                if rerolls > 0:
-##                    options += ["REROLL"]
-##                question = ExpandWindow(self.myFrame,
-##                                        roll_report + "\nChoose one:",
-##                                        options,
-##                                        [BackgroundDetails(x,
-##                                                           width=-1,
-##                                                           breaks=2,
-##                                                           indented=True,
-##                                                           grid=False) for x in bg_indices],
-##                                        var=answer,
-##                                        title="Background Selection",
-##                                        lwidth=30,
-##                                        rwidth=bg_width)
-##                entry_index = answer.get()
-##            else:
-##                print(roll_report)
-##                for i in range(len(entry_options)-rerolls):
-##                    print("    " + entry_options[i] + ": " + bg_collection[bg_indices[i]][0] + \
-##                          " (" + str(bg_options[i]) + ")")
-##                if rerolls > 0:
-##                    print("    " + entry_options[len(entry_options)-1] + ": REROLL")
-##                while entry_choice not in entry_options:
-##                    if len(inputs) > 0:
-##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-##                              "uppercase letter to select it.")
-##                        print("> " + str(inputs[0]))
-##                        entry_choice = inputs.pop(0)[0]
-##                    else:
-##                        print("Enter a lowercase letter to see a Background expanded, or an " + \
-##                              "uppercase letter to select it.")
-##                        line_prompt = ""
-##                        if track_inputs:
-##                            line_prompt += "> "
-##                        entry_choice = input(line_prompt)[0]
-##                    if entry_choice.upper() in entry_options[:-1] and \
-##                       entry_choice not in entry_options:
-##                        entry_index = entry_options.find(entry_choice.upper())
-##                        DisplayBackground(bg_indices[entry_index],
-##                                          width=100)
-##                entry_index = entry_options.find(entry_choice)
             # Now we have a commitment to a valid choice from the list.
             if entry_index == len(bg_options):
                 # User selected to reroll.
@@ -8100,12 +8072,14 @@ class Hero:
                             if j in range(this_length-1):
                                 details[i] += "\n"
                     answer = IntVar()
+                    success = IntVar(self.myFrame, 1)
                     question = ExpandWindow(self.myFrame,
                                             options_report + "\n" + choice_request,
                                             section_list,
                                             details,
                                             var=answer,
                                             title="Ability Selection",
+                                            success=success,
                                             lwidth=40,
                                             rwidth=a_width)
                     entry_index = answer.get()
@@ -9421,12 +9395,14 @@ class Hero:
                     answer0 = IntVar()
                     answer1 = IntVar()
                     prompt = "Choose 2 Power dice to swap:"
+                    success = IntVar(self.myFrame, 1)
                     question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in form_power_dice],
                                           answer0,
                                           answer1,
                                           title=title,
+                                          success=success,
                                           width=dispWidth)
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
@@ -10275,6 +10251,7 @@ class Hero:
                                 # Use AssignWindow to choose any number of minion forms at once
                                 result = StringVar(self.myFrame)
                                 remaining = max_forms - len(self.min_forms)
+                                success = IntVar(self.myFrame, 1)
                                 questions = AssignWindow(self.myFrame,
                                                          "Choose exactly " + str(remaining) + \
                                                          " Minion Forms to add...",
@@ -10285,6 +10262,7 @@ class Hero:
                                                           min_indices],
                                                          result,
                                                          default=1,
+                                                         success=success,
                                                          rwidth=10,
                                                          firstMin=remaining,
                                                          firstMax=remaining,
@@ -10641,12 +10619,14 @@ class Hero:
                                              " to have access to in both " + self.dv_tags[0] + \
                                              " and " + self.dv_tags[1] + " Forms:"
                                     title = "Archetype Selection: Divided:Form-Changer"
+                                    success = IntVar(self.myFrame, 1)
                                     question = SwapWindow(self.myFrame,
                                                           prompt,
                                                           [x[1] for x in constant_power_options],
                                                           answer0,
                                                           answer1,
                                                           title=title,
+                                                          success=success,
                                                           width=dispWidth)
                                     constantIndices = [answer0.get(), answer1.get()]
                                     # Move corresponding power IDs from options to constant,
@@ -10754,6 +10734,7 @@ class Hero:
                             if self.UseGUI(inputs):
                                 # Use an AssignWindow to assign the remaining Power IDs
                                 result = StringVar(self.myFrame)
+                                success = IntVar(self.myFrame, 1)
                                 questions = AssignWindow(self.myFrame,
                                                          assign_prompt + "Assign " + \
                                                          self.hero_name + \
@@ -10764,6 +10745,7 @@ class Hero:
                                                          [x[1] for x in unassigned_power_ids],
                                                          result,
                                                          title="Archetype Selection: Divided",
+                                                         success=success,
                                                          width=50)
                                 answer = result.get()
                                 for i in range(len(unassigned_power_ids)):
@@ -10818,12 +10800,14 @@ class Hero:
                                          " to have access to in both " + self.dv_tags[0] + \
                                          " and " + self.dv_tags[1] + " Forms:"
                                 title = "Archetype Selection: Divided"
+                                success = IntVar(self.myFrame, 1)
                                 question = SwapWindow(self.myFrame,
                                                       prompt,
                                                       [str(x) for x in unassigned_powers],
                                                       answer0,
                                                       answer1,
                                                       title=title,
+                                                      success=success,
                                                       width=dispWidth)
                                 constantIndices = [answer0.get(), answer1.get()]
                                 # Move corresponding power dice from unassigned to constant,
@@ -10852,6 +10836,7 @@ class Hero:
                             if self.UseGUI(inputs):
                                 # Use an AssignWindow to assign the remaining dice
                                 result = StringVar(self.myFrame)
+                                success = IntVar(self.myFrame, 1)
                                 questions = AssignWindow(self.myFrame,
                                                          "Assign " + self.hero_name + \
                                                          "'s remaining Powers to " + \
@@ -10861,7 +10846,8 @@ class Hero:
                                                          self.dv_tags,
                                                          [str(x) for x in unassigned_powers],
                                                          result,
-                                                         title="Archetype Selection: Divided")
+                                                         title="Archetype Selection: Divided",
+                                                         success=success)
                                 answer = result.get()
                                 for i in range(len(unassigned_powers)):
                                     if answer[i] == string.ascii_uppercase[0]:
@@ -10910,12 +10896,14 @@ class Hero:
                                      " to have access to in both " + self.dv_tags[0] + \
                                      " and " + self.dv_tags[1] + " Forms:"
                             title = "Archetype Selection: Divided"
+                            success = IntVar(self.myFrame, 1)
                             question = SwapWindow(self.myFrame,
                                                   prompt,
                                                   [str(x) for x in unassigned_qualities],
                                                   answer0,
                                                   answer1,
                                                   title=title,
+                                                  success=success,
                                                   width=dispWidth)
                             constantIndices = [answer0.get(), answer1.get()]
                             # Move corresponding quality dice from unassigned to constant,
@@ -10942,6 +10930,7 @@ class Hero:
                         if self.UseGUI(inputs):
                             # Use an AssignWindow to assign the remaining dice
                             result = StringVar(self.myFrame)
+                            success = IntVar(self.myFrame, 1)
                             questions = AssignWindow(self.myFrame,
                                                      "Assign " + self.hero_name + \
                                                      "'s remaining Qualities to " + \
@@ -10951,7 +10940,8 @@ class Hero:
                                                      self.dv_tags,
                                                      [str(x) for x in unassigned_qualities],
                                                      result,
-                                                     title="Archetype Selection: Divided")
+                                                     title="Archetype Selection: Divided",
+                                                     success=success)
                             answer = result.get()
                             for i in range(len(unassigned_qualities)):
                                 if answer[i] == string.ascii_uppercase[0]:
@@ -11947,12 +11937,14 @@ class Hero:
                     for rt in ra_sublists[i]:
                         details[i] += "\n" + rt.details(width=-1,
                                                         indented=True)
+                success = IntVar(self.myFrame, 1)
                 question = ExpandWindow(self.myFrame,
                                         "Choose a category to gain a Red Ability from:",
                                         sublist_strings,
                                         details,
                                         var=answer,
                                         title="Red Ability Selection",
+                                        success=success,
                                         lwidth=35,
                                         rwidth=100)
                 entry_index = answer.get()
@@ -12062,11 +12054,13 @@ class Hero:
                     prompt = "Choose 2 different Power dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
+                    success = IntVar(self.myFrame, 1)
                     question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in self.power_dice],
                                           answer0,
                                           answer1,
+                                          success=success,
                                           width=dispWidth)
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
@@ -12114,11 +12108,13 @@ class Hero:
                     prompt = "Choose 2 different Quality dice to swap:"
                     answer0 = IntVar()
                     answer1 = IntVar()
+                    success = IntVar(self.myFrame, 1)
                     question = SwapWindow(self.myFrame,
                                           prompt,
                                           [str(x) for x in self.quality_dice],
                                           answer0,
                                           answer1,
+                                          success=success,
                                           width=dispWidth)
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
@@ -12475,12 +12471,14 @@ class Hero:
                     for i in range(len(rc_names)):
                         for j in range(len(rc_master[i])):
                             details[i] += "\nPrinciple of " + rc_master[i][j][0]
+                    success = IntVar(self.myFrame, 1)
                     question = ExpandWindow(self.myFrame,
                                             "Choose a Principle category:",
                                             options,
                                             details,
                                             var=answer,
                                             title="Retcon: Change a Principle",
+                                            success=success,
                                             lwidth=25,
                                             rwidth=dispWidth)
                     entry_index = answer.get()
@@ -19019,6 +19017,7 @@ class SelectWindow(SubWindow):
                  options,
                  var=None,
                  title=None,
+                 success=None,
                  width=40):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = prompt
@@ -19031,6 +19030,7 @@ class SelectWindow(SubWindow):
                                          self.myPrompt,
                                          self.myOptions,
                                          self.myVariable,
+                                         success=success,
                                          width=width,
                                          titleWidth=len(str(title)))
         # Make the contents stretchable/squishable
@@ -19067,6 +19067,7 @@ class SelectFrame(Frame):
                  print_options,
                  destination,
                  printing=False,
+                 success=None,
                  width=40,
                  titleWidth=-1):
         notePrefix = "### SelectFrame.__init__: "
@@ -19090,6 +19091,10 @@ class SelectFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SelectFrame Display Font")
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         self.myPromptLabel = Label(self,
                                    background=self.normalBG,
                                    activebackground=self.copyBG,
@@ -19264,6 +19269,7 @@ class EntryWindow(SubWindow):
                  prompt,
                  var=None,
                  title="",
+                 success=None,
                  width=60):
         SubWindow.__init__(self, parent, title)
         self.myPrompt = prompt
@@ -19274,6 +19280,7 @@ class EntryWindow(SubWindow):
         self.myEntryFrame = EntryFrame(self,
                                        self.myPrompt,
                                        self.myVariable,
+                                       success=success,
                                        width=width,
                                        titleWidth=len(str(title)))
         # Make the contents stretchable/squishable
@@ -19299,6 +19306,7 @@ class EntryFrame(Frame):
                  prompt,
                  destination,
                  printing=False,
+                 success=None,
                  width=60,
                  titleWidth=-1):
         notePrefix = "### EntryFrame.__init__: "
@@ -19321,6 +19329,10 @@ class EntryFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="EntryFrame Display Font")
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         self.myPromptLabel = Label(self,
                                    background=self.normalBG,
                                    activebackground=self.copyBG,
@@ -19464,6 +19476,7 @@ class ExpandWindow(SubWindow):
                  details,
                  var=None,
                  title=None,
+                 success=None,
                  lwidth=40,
                  rwidth=100):
         SubWindow.__init__(self, parent, str(title))
@@ -19479,6 +19492,7 @@ class ExpandWindow(SubWindow):
                                          self.myOptions,
                                          self.myDetails,
                                          self.myVariable,
+                                         success=success,
                                          lwidth=lwidth,
                                          rwidth=rwidth)
         # Make the contents stretchable/squishable
@@ -19511,6 +19525,7 @@ class ExpandFrame(Frame):
                  print_options,
                  expand_options,
                  destination,
+                 success=None,
                  lwidth=40,
                  rwidth=100,
                  printing=False):
@@ -19540,6 +19555,10 @@ class ExpandFrame(Frame):
                                             size=9,
                                             name="ExpandFrame Display Font")
         self.myDetails = [str(x) for x in expand_options]
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         self.myLeftFrame = Frame(self,
                                  background=self.normalBG,
                                  width=self.myPromptWidth,
@@ -19792,6 +19811,7 @@ class SwapWindow(SubWindow):
                  var0,
                  var1,
                  title=None,
+                 success=None,
                  width=100):
         SubWindow.__init__(self, parent, str(title))
         self.myPrompt = str(prompt)
@@ -19809,6 +19829,7 @@ class SwapWindow(SubWindow):
                                      self.myPrompt,
                                      self.myOptions,
                                      self.myVariables,
+                                     success=success,
                                      width=width,
                                      titleWidth=len(str(title)))
         # Make the contents stretchable/squishable
@@ -19837,6 +19858,7 @@ class SwapFrame(Frame):
                  prompt,
                  options,
                  destinations,
+                 success=None,
                  width=100,
                  titleWidth=-1,
                  printing=False):
@@ -19861,6 +19883,10 @@ class SwapFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="SwapFrame Display Font")
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         self.myPromptLabel = Label(self,
                                    background=self.normalBG,
                                    activebackground=self.copyBG,
@@ -20056,6 +20082,7 @@ class PrincipleWindow(SubWindow):
                  minorVar,
                  majorVar,
                  greenVar,
+                 success=None,
                  title=None,
                  width=100):
         SubWindow.__init__(self, parent, str(title))
@@ -20070,6 +20097,7 @@ class PrincipleWindow(SubWindow):
                                                minorVar,
                                                majorVar,
                                                greenVar,
+                                               success=success,
                                                width=width,
                                                titleWidth=len(str(title)))
         self.rowconfigure(0, weight=1)
@@ -20095,6 +20123,7 @@ class PrincipleFrame(Frame):
                  minorVar,
                  majorVar,
                  greenVar,
+                 success=None,
                  width=100,
                  titleWidth=-1):
         notePrefix = "### PrincipleFrame.__init__: "
@@ -20129,6 +20158,10 @@ class PrincipleFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="PrincipleFrame Display Font")
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         self.mySectionLabels = [None for i in range(len(self.prinSectionNames))]
         self.mySectionEntries = [None for i in range(len(self.prinSectionNames))]
         for i in range(len(self.prinSectionNames)):
@@ -20271,6 +20304,7 @@ class AssignWindow(SubWindow):
                  items,
                  destination,
                  default=-1,
+                 success=None,
                  lwidth=40,
                  rwidth=20,
                  firstMin=-1,
@@ -20285,6 +20319,7 @@ class AssignWindow(SubWindow):
                                          items=items,
                                          destination=destination,
                                          default=default,
+                                         success=success,
                                          lwidth=lwidth,
                                          rwidth=rwidth,
                                          firstMin=firstMin,
@@ -20323,6 +20358,7 @@ class AssignFrame(Frame):
                  items,
                  destination,
                  default=-1,
+                 success=None,
                  lwidth=40,
                  rwidth=20,
                  firstMin=-1,
@@ -20381,6 +20417,10 @@ class AssignFrame(Frame):
             self.myFont = tkinter.font.Font(family="Arial",
                                             size=9,
                                             name="AssignFrame Display Font")
+        if success == None:
+            self.mySuccess = IntVar(self, 1)
+        else:
+            self.mySuccess = success
         # myPromptLabel goes across the full first row
         self.myPromptLabel = Label(self,
                                    background=self.normalBG,
@@ -20626,11 +20666,11 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-##firstHero = factory.getJo()
-##disp_frame = HeroFrame(root, hero=firstHero)
+firstHero = factory.getKnockout(step=0)
+disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
-disp_frame = HeroFrame(root)
+##disp_frame = HeroFrame(root)
 
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
