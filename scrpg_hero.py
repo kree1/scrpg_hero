@@ -6735,6 +6735,8 @@ class Hero:
                                     title=title,
                                     success=success,
                                     width=width)
+            print(notePrefix + "success = " + str(success.get()))
+            self.proceed = success.get()
             return [answer.get(), inputs]
         else:
             # There's no GUI for this hero, or the user's inputs have been specified ahead of time?
@@ -6816,6 +6818,8 @@ class Hero:
                                    var=answer,
                                    title=title,
                                    success=success)
+            print(notePrefix + "success = " + str(success.get()))
+            self.proceed = success.get()
             entry_line = answer.get()
         else:
             print(split_text(prompt,
@@ -6874,6 +6878,8 @@ class Hero:
                                     success=success,
                                     lwidth=lwidth,
                                     rwidth=rwidth)
+            print(notePrefix + "success = " + str(success.get()))
+            self.proceed = success.get()
             entry_index = answer.get()
         else:
             # Use the text shell to communicate with the user
@@ -7207,6 +7213,8 @@ class Hero:
                                             success=success,
                                             lwidth=50,
                                             rwidth=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:sections]
@@ -7347,6 +7355,8 @@ class Hero:
                                         success=success,
                                         lwidth=30,
                                         rwidth=dispWidth)
+                print(notePrefix + "success = " + str(success.get()))
+                self.proceed = success.get()
                 entry_index = answer.get()
             else:
                 print(self.hero_name + " already has 2 Principles: ")
@@ -7528,6 +7538,8 @@ class Hero:
                                                    title="Customize " + str(ri),
                                                    success=success,
                                                    width=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     entry_title = titleVar.get()
                     entry_roleplaying = roleplayingVar.get()
                     entry_minor = minorVar.get()
@@ -8082,6 +8094,8 @@ class Hero:
                                             success=success,
                                             lwidth=40,
                                             rwidth=a_width)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     entry_index = answer.get()
                 else:
                     print(options_report)
@@ -9404,6 +9418,8 @@ class Hero:
                                           title=title,
                                           success=success,
                                           width=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     entry_options = string.ascii_uppercase[0:len(form_power_dice)]
@@ -10268,6 +10284,8 @@ class Hero:
                                                          firstMax=remaining,
                                                          counter=True,
                                                          title="Archetype Selection: Minion-Maker")
+                                print(notePrefix + "success = " + str(success.get()))
+                                self.proceed = success.get()
                                 answers = result.get()
                                 self.min_forms += [min_indices[i] \
                                                    for i in range(len(min_indices)) \
@@ -10330,6 +10348,8 @@ class Hero:
                                                   inputs=inputs,
                                                   title="Archetype Selection: Divided")
                         self.dv_tags[i] = decision[0]
+                        if self.dv_tags[i].islower():
+                            self.dv_tags[i] = self.dv_tags[i].capitalize()
                         inputs = decision[1]
                         if len(self.dv_tags[i]) == 0:
                             self.dv_tags[i] = dv_defaults[i]
@@ -10628,6 +10648,8 @@ class Hero:
                                                           title=title,
                                                           success=success,
                                                           width=dispWidth)
+                                    print(notePrefix + "success = " + str(success.get()))
+                                    self.proceed = success.get()
                                     constantIndices = [answer0.get(), answer1.get()]
                                     # Move corresponding power IDs from options to constant,
                                     #  removing them in descending order so the indices don't
@@ -10747,6 +10769,8 @@ class Hero:
                                                          title="Archetype Selection: Divided",
                                                          success=success,
                                                          width=50)
+                                print(notePrefix + "success = " + str(success.get()))
+                                self.proceed = success.get()
                                 answer = result.get()
                                 for i in range(len(unassigned_power_ids)):
                                     if answer[i] == string.ascii_uppercase[0]:
@@ -10809,6 +10833,8 @@ class Hero:
                                                       title=title,
                                                       success=success,
                                                       width=dispWidth)
+                                print(notePrefix + "success = " + str(success.get()))
+                                self.proceed = success.get()
                                 constantIndices = [answer0.get(), answer1.get()]
                                 # Move corresponding power dice from unassigned to constant,
                                 #  removing them in descending order so the indices don't change
@@ -10848,6 +10874,8 @@ class Hero:
                                                          result,
                                                          title="Archetype Selection: Divided",
                                                          success=success)
+                                print(notePrefix + "success = " + str(success.get()))
+                                self.proceed = success.get()
                                 answer = result.get()
                                 for i in range(len(unassigned_powers)):
                                     if answer[i] == string.ascii_uppercase[0]:
@@ -10905,6 +10933,8 @@ class Hero:
                                                   title=title,
                                                   success=success,
                                                   width=dispWidth)
+                            print(notePrefix + "success = " + str(success.get()))
+                            self.proceed = success.get()
                             constantIndices = [answer0.get(), answer1.get()]
                             # Move corresponding quality dice from unassigned to constant,
                             #  removing them in descending order so the indices don't change
@@ -10942,6 +10972,8 @@ class Hero:
                                                      result,
                                                      title="Archetype Selection: Divided",
                                                      success=success)
+                            print(notePrefix + "success = " + str(success.get()))
+                            self.proceed = success.get()
                             answer = result.get()
                             for i in range(len(unassigned_qualities)):
                                 if answer[i] == string.ascii_uppercase[0]:
@@ -11947,6 +11979,8 @@ class Hero:
                                         success=success,
                                         lwidth=35,
                                         rwidth=100)
+                print(notePrefix + "success = " + str(success.get()))
+                self.proceed = success.get()
                 entry_index = answer.get()
             else:
                 entry_options = string.ascii_uppercase[0:len(pq_sublists)]
@@ -12062,6 +12096,8 @@ class Hero:
                                           answer1,
                                           success=success,
                                           width=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.power_dice],
@@ -12116,6 +12152,8 @@ class Hero:
                                           answer1,
                                           success=success,
                                           width=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
@@ -12481,6 +12519,8 @@ class Hero:
                                             success=success,
                                             lwidth=25,
                                             rwidth=dispWidth)
+                    print(notePrefix + "success = " + str(success.get()))
+                    self.proceed = success.get()
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:len(rc_master)]
@@ -16898,11 +16938,14 @@ class HeroFrame(Frame):
             result = IntVar(self)
             prompt = "What would you like to rename?"
             title = "Edit Hero"
+            success = IntVar(self, 1)
             question = SelectWindow(self,
                                     prompt,
                                     rename_options,
                                     var=result,
-                                    title=title)
+                                    title=title,
+                                    success=success)
+            print(notePrefix + "success = " + str(success.get()))
             rename_selection = rename_options[result.get()]
         # Now we can follow up on the selected option
         if rename_selection == character_section:
@@ -16927,10 +16970,13 @@ class HeroFrame(Frame):
         prompt = "Enter a codename for this hero.\n(Feel free to use a placeholder; you can " + \
                  "change this at any time.)"
         textVar = StringVar(self, self.myHero.hero_name)
+        success = IntVar(self, 1)
         question = EntryWindow(self,
                                prompt,
                                textVar,
-                               title="Hero Creation")
+                               title="Hero Creation",
+                               success=success)
+        print(notePrefix + "success = " + str(success.get()))
         changed = (self.myHero.hero_name != textVar.get())
         self.myHero.hero_name = textVar.get()
         if changed:
@@ -16938,10 +16984,13 @@ class HeroFrame(Frame):
         prompt = "Enter a civilian name for " + self.myHero.hero_name + ".\n(Feel free to use " + \
                  "a placeholder; you can change this at any time.)"
         textVar = StringVar(self, self.myHero.alias)
+        success = IntVar(self, 1)
         question = EntryWindow(self,
                                prompt,
                                textVar,
-                               title="Hero Creation")
+                               title="Hero Creation",
+                               success=success)
+        print(notePrefix + "success = " + str(success.get()))
         changed = (self.myHero.alias != textVar.get())
         self.myHero.alias = textVar.get()
         if changed:
@@ -16950,12 +16999,15 @@ class HeroFrame(Frame):
         pronoun_choice = IntVar(self, self.myHero.pronoun_set)
         prompt = "Which pronouns should be used for " + self.myHero.hero_name + "?\n(You can " + \
                  "change this at any time.)"
+        success = IntVar(self, 1)
         question = SelectWindow(self,
                                 prompt,
                                 pronoun_options,
                                 pronoun_choice,
                                 title="Hero Creation",
+                                success=success,
                                 width=40)
+        print(notePrefix + "success = " + str(success.get()))
         changed = (self.myHero.pronoun_set != pronoun_choice.get())
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero,
@@ -16982,14 +17034,17 @@ class HeroFrame(Frame):
                           [a.details(width=-1,
                                      indented=True) for a in ability_options]
                 ability_choice.set(0)
+                success = IntVar(self, 1)
                 question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
                                         var=ability_choice,
                                         title="Edit Hero",
+                                        success=success,
                                         lwidth=30,
                                         rwidth=100)
+                print(notePrefix + "success = " + str(success.get()))
                 selection = ability_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected an Ability to edit
@@ -16998,10 +17053,13 @@ class HeroFrame(Frame):
                     rename_prompt = edit_ability.details(width=-1,
                                                          indented=True)
                     rename_prompt += "\n\nEnter a new name for this Ability:"
+                    success = IntVar(self, 1)
                     entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
-                                        title="Edit Hero")
+                                        title="Edit Hero",
+                                        success=success)
+                    print(notePrefix + "success = " + str(success.get()))
                     changed = (new_name.get() != edit_ability.flavorname)
                     edit_ability.flavorname = new_name.get()
                     if changed:
@@ -17025,14 +17083,17 @@ class HeroFrame(Frame):
                                                    width=-1,
                                                    hanging=False) for i in mode_options]
                 mode_choice.set(0)
+                success = IntVar(self, 1)
                 question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
                                         var=mode_choice,
                                         title="Edit Hero",
+                                        success=success,
                                         lwidth=30,
                                         rwidth=100)
+                print(notePrefix + "success = " + str(success.get()))
                 selection = mode_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a Mode to edit
@@ -17044,10 +17105,13 @@ class HeroFrame(Frame):
                                                             width=-1,
                                                             hanging=False)
                     rename_prompt += "\n\nEnter a new name for this Mode:"
+                    success = IntVar(self, 1)
                     entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
-                                        title="Edit Hero")
+                                        title="Edit Hero",
+                                        success=success)
+                    print(notePrefix + "success = " + str(success.get()))
                     # Make sure this name isn't already being used for a different Mode
                     other_names = [self.myHero.other_modes[i].name for i in \
                                    [i for i in mode_options if i != edit_index]]
@@ -17081,14 +17145,17 @@ class HeroFrame(Frame):
                                                    width=-1,
                                                    hanging=False) for i in form_options]
                 form_choice.set(0)
+                success = IntVar(self, 1)
                 question = ExpandWindow(self,
                                         prompt,
                                         text_options,
                                         details,
                                         var=form_choice,
                                         title="Edit Hero",
+                                        success=success,
                                         lwidth=30,
                                         rwidth=100)
+                print(notePrefix + "success = " + str(success.get()))
                 selection = form_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a Form to edit
@@ -17123,10 +17190,13 @@ class HeroFrame(Frame):
                                                                 width=-1,
                                                                 hanging=False)
                         rename_prompt += "\n\nEnter a new name for this Form:"
+                    success = IntVar(self, 1)
                     entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
-                                        title="Edit Hero")
+                                        title="Edit Hero",
+                                        success=success)
+                    print(notePrefix + "success = " + str(success.get()))
                     # Make sure this name isn't already being used for a different Form
                     other_names = [self.myHero.other_forms[i].name for i in \
                                    [i for i in form_options if i != edit_index]]
@@ -17198,12 +17268,15 @@ class HeroFrame(Frame):
                         note_txt += " (" + pqdie_ids[i][2] + ")"
                     text_options.append(note_txt)
                 pqdie_choice.set(0)
+                success = IntVar(self, 1)
                 question = SelectWindow(self,
                                         prompt,
                                         text_options,
                                         var=pqdie_choice,
                                         title="Edit Hero",
+                                        success=success,
                                         width=30)
+                print(notePrefix + "success = " + str(success.get()))
                 selection = pqdie_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a power/quality to edit
@@ -17212,10 +17285,13 @@ class HeroFrame(Frame):
                     edit_category = DieCategory([edit_id[0]])
                     rename_prompt = "Enter a new name for " + self.myHero.hero_name + "'s " + \
                                     edit_id[1] + " " + categories_singular[edit_category] + ":"
+                    success = IntVar(self, 1)
                     entry = EntryWindow(self,
                                         rename_prompt,
                                         var=new_name,
-                                        title="Edit Hero")
+                                        title="Edit Hero",
+                                        success=success)
+                    print(notePrefix + "success = " + str(success.get()))
                     # Make sure the new name isn't the name of a different existing Power/Quality
                     official_names = [MixedPQs([x for x in AllCategories(t=0) if x != edit_id[0]]),
                                       MixedPQs([x for x in AllCategories(t=1) if x != edit_id[0]])]
@@ -17310,11 +17386,17 @@ class HeroFrame(Frame):
                        "Hero creation process (what you did at each step)",
                        "Both"]
             answer = IntVar()
+            success = IntVar(self, 1)
             question = SelectWindow(self,
                                     "What information about this hero would you like to save?",
                                     options,
                                     var=answer,
-                                    title="Save Hero")
+                                    title="Save Hero",
+                                    success=success)
+##            print(notePrefix + "success = " + str(success.get()))
+            if success.get() == 0:
+                # User canceled out; drop everything
+                return
             includeSections = answer.get()
             writeText = ""
             if includeSections == 0:
@@ -17329,10 +17411,16 @@ class HeroFrame(Frame):
                      "name a .txt file that already exists " + \
                      "in this folder. It WILL be overwritten."
             textVar = StringVar(self, self.myHero.hero_name)
+            success = IntVar(self, 1)
             question = EntryWindow(self,
                                    prompt,
                                    textVar,
-                                   title="Save Hero")
+                                   title="Save Hero",
+                                   success=success)
+##            print(notePrefix + "success = " + str(success.get()))
+            if success.get() == 0:
+                # User canceled out; drop everything
+                return
             fname = textVar.get()
             # Remove illegal filename characters, plus .
             for char in '\\/:*?><|.':
@@ -17367,14 +17455,20 @@ class HeroFrame(Frame):
                               ["Cancel (leave hero as-is)"]
                 revertPrompt = "Choose a step of hero creation to redo from:"
                 stepChoice = IntVar(self, 1)
+                success = IntVar(self, 1)
                 question = SelectWindow(self,
                                         revertPrompt,
                                         stepOptions,
                                         var=stepChoice,
                                         title="Revert Hero",
+                                        success=success,
                                         width=40)
+                print(notePrefix + "success = " + str(success.get()))
                 firstRedo = stepChoice.get()
-            if firstRedo in range(1, lastStep):
+            if success.get() == 0:
+                # User canceled out; drop everything
+                return
+            elif firstRedo in range(1, lastStep):
                 # User selected a step to redo from
 ##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
 ##                      ") selected")
@@ -17429,7 +17523,8 @@ class SubWindow(Toplevel):
     def body(self, master):
         pass
     def cancel(self, event=None):
-        # pass focus back to parent window
+        pass
+    def exit(self, event=None):
         self.parent.focus_set()
         self.destroy()
 
@@ -19048,6 +19143,11 @@ class SelectWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.mySelectFrame.renew(event)
+    def cancel(self, event=None):
+        notePrefix = "### SelectWindow.cancel: "
+        self.mySelectFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 # A value used to represent the discrepancy between "number of characters in this title" and
 #  "width (in characters) of a window that will fully display this title"- that is, the width of
@@ -19106,7 +19206,7 @@ class SelectFrame(Frame):
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
-                                columnspan=3,
+                                columnspan=4,
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
@@ -19129,13 +19229,13 @@ class SelectFrame(Frame):
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
-                               columnspan=3,
+                               columnspan=4,
                                sticky=E+W)
         self.myOptionMenu.bind("<Button-3>",
                                lambda event, myID="myOptionMenu": \
                                self.LaunchContextMenu(event,
                                                       identifier=myID))
-        optionCols = [c for c in range(1,1+3)]
+        optionCols = [c for c in range(1,1+4)]
         self.myOKButton = Button(self,
                                  background=self.normalBG,
                                  activebackground=self.clickedBG,
@@ -19154,8 +19254,28 @@ class SelectFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self,
+                                     background=self.normalBG,
+                                     activebackground=self.clickedBG,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     padx=2,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=3,
+                                 column=3,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         # Bind up/down arrow keys to change selection
         self.bind("<Down>", self.nextoption)
         self.bind("<Up>", self.prevoption)
@@ -19256,7 +19376,7 @@ class SelectFrame(Frame):
                 self.myDestination.set(answer)
                 # Destroy this window...
                 if isinstance(self.myParent, SubWindow):
-                    self.myParent.cancel()
+                    self.myParent.exit()
             else:
                 print(notePrefix + "Invalid value of answer (" + str(answer) + ")")
         else:
@@ -19296,6 +19416,10 @@ class EntryWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myEntryFrame.renew(event)
+    def cancel(self, event=None):
+        self.myEntryFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 class EntryFrame(Frame):
     # A frame that asks the user for a line of text and returns the answer.
@@ -19344,7 +19468,7 @@ class EntryFrame(Frame):
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
-                                columnspan=3,
+                                columnspan=4,
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
@@ -19360,7 +19484,7 @@ class EntryFrame(Frame):
         self.myTextEntry.grid(row=2,
                               column=1,
                               rowspan=1,
-                              columnspan=3,
+                              columnspan=4,
                               sticky=N+E+S+W)
         self.myTextEntry.bind("<Button-3>",
                               lambda event, myID="myTextEntry": \
@@ -19386,8 +19510,28 @@ class EntryFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self,
+                                     background=self.normalBG,
+                                     activebackground=self.clickedBG,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     padx=2,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=3,
+                                 column=3,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         self.myTextEntry.bind("<Return>", self.finish)
         (self.numCols, self.numRows) = self.grid_size()
         # Set initial wraplength for all text widgets
@@ -19464,7 +19608,7 @@ class EntryFrame(Frame):
             self.myDestination.set(self.myText.get())
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
-                self.myParent.cancel()
+                self.myParent.exit()
         else:
             print(notePrefix + "No text entered")
 
@@ -19509,6 +19653,10 @@ class ExpandWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myExpandFrame.expand(event)
+    def cancel(self, event=None):
+        self.myExpandFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 class ExpandFrame(Frame):
     # A frame that poses a multiple-choice question to the user and reports the answer. Use if
@@ -19581,7 +19729,7 @@ class ExpandFrame(Frame):
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
-                                columnspan=3,
+                                columnspan=4,
                                 sticky=E+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
@@ -19605,13 +19753,13 @@ class ExpandFrame(Frame):
         self.myOptionMenu.grid(row=2,
                                column=1,
                                rowspan=1,
-                               columnspan=3,
+                               columnspan=4,
                                sticky=E+W)
         self.myOptionMenu.bind("<Button-3>",
                                lambda event, myID="myOptionMenu": \
                                self.LaunchContextMenu(event,
                                                       identifier=myID))
-        optionCols = [c for c in range(1,1+3)]
+        optionCols = [c for c in range(1,1+4)]
         self.myOKButton = Button(self.myLeftFrame,
                                  background=self.normalBG,
                                  activebackground=self.clickedBG,
@@ -19630,6 +19778,24 @@ class ExpandFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self.myLeftFrame,
+                                     background=self.normalBG,
+                                     activebackground=self.clickedBG,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     padx=2,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=3,
+                                 column=3,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=E+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         self.myBufferLabel = Label(self.myLeftFrame,
                                    background=self.normalBG,
                                    anchor=W,
@@ -19703,6 +19869,8 @@ class ExpandFrame(Frame):
                 self.columnconfigure(col, weight=0)
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         self.bind("<Up>", self.prevoption)
         self.bind("<Down>", self.nextoption)
         self.expand()
@@ -19795,7 +19963,7 @@ class ExpandFrame(Frame):
                 self.myDestination.set(self.myAnswer.get())
                 # Destroy this window...
                 if isinstance(self.myParent, SubWindow):
-                    self.myParent.cancel()
+                    self.myParent.exit()
             else:
                 print(notePrefix + "Invalid value at self.myAnswer (" + \
                       str(self.myAnswer.get()) + ")")
@@ -19846,6 +20014,10 @@ class SwapWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.mySwapFrame.resize(event)
+    def cancel(self, event=None):
+        self.mySwapFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 class SwapFrame(Frame):
     # Asks the user to choose 2 different entries from a list, returns the selected indices
@@ -19898,7 +20070,7 @@ class SwapFrame(Frame):
         self.myPromptLabel.grid(row=1,
                                 column=1,
                                 rowspan=1,
-                                columnspan=3,
+                                columnspan=4,
                                 sticky=N+E+S+W)
         self.myPromptLabel.bind("<Double-1>",
                                 self.ClipboardCopy)
@@ -19926,14 +20098,14 @@ class SwapFrame(Frame):
             self.myOptionMenus[i].grid(row=i+2,
                                        column=1,
                                        rowspan=1,
-                                       columnspan=3,
+                                       columnspan=4,
                                        sticky=E+W)
             self.myOptionMenus[i].bind("<Button-3>",
                                        lambda event, myID="myOptionMenus", myIndex=[i]: \
                                        self.LaunchContextMenu(event,
                                                               identifier=myID,
                                                               indices=myIndex))
-        optionCols = [c for c in range(1,1+3)]
+        optionCols = [c for c in range(1,1+4)]
         self.myOKButton = Button(self,
                                  background=self.normalBG,
                                  activebackground=self.clickedBG,
@@ -19952,6 +20124,24 @@ class SwapFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self,
+                                     background=self.normalBG,
+                                     activebackground=self.clickedBG,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     padx=2,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=4,
+                                 column=3,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
         for row in range(0,self.numRows+1):
@@ -19978,6 +20168,8 @@ class SwapFrame(Frame):
 ##                  str(self.columnconfigure(col)['minsize']))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         self.resize()
     def nextoption0(self, event=None):
         if len(self.myOptions) > 1:
@@ -20065,7 +20257,7 @@ class SwapFrame(Frame):
 ##                      " and " + str(self.myDestinations[1].get()))
                 # Destroy this window
                 if isinstance(self.myParent, SubWindow):
-                    self.myParent.cancel()
+                    self.myParent.exit()
             elif self.myDestinations[0].get() == self.myDestinations[1].get():
                 print(notePrefix + "invalid selections (both " + \
                       str(self.myDestinations[0].get()) + ")")
@@ -20113,6 +20305,10 @@ class PrincipleWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myPrincipleFrame.resize(event)
+    def cancel(self, event=None):
+        self.myPrincipleFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 class PrincipleFrame(Frame):
     def __init__(self,
@@ -20187,7 +20383,7 @@ class PrincipleFrame(Frame):
                                              font=self.myFont)
             self.mySectionEntries[i].grid(row=i+1,
                                           column=2,
-                                          columnspan=4,
+                                          columnspan=5,
                                           sticky=N+E+S+W)
             self.mySectionEntries[i].bind("<Button-3>",
                                           lambda event, myID="mySectionEntries", myIndex=[i]: \
@@ -20209,6 +20405,20 @@ class PrincipleFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     padx=2,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=len(self.prinSectionNames)+1,
+                                 column=4,
+                                 sticky=N+E+S+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
@@ -20234,6 +20444,8 @@ class PrincipleFrame(Frame):
             self.columnconfigure(col, minsize=math.ceil(self.maxPromptWidth/len(promptCols)))
         # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         self.resize()
     def resize(self, event=None):
         notePrefix = "### PrincipleFrame.resize: "
@@ -20294,7 +20506,7 @@ class PrincipleFrame(Frame):
             self.myPrinciple.display()
             # Destroy this window
             if isinstance(self.myParent, SubWindow):
-                self.myParent.cancel()
+                self.myParent.exit()
 
 class AssignWindow(SubWindow):
     def __init__(self,
@@ -20339,6 +20551,10 @@ class AssignWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myAssignFrame.renew(event)
+    def cancel(self, event=None):
+        self.myAssignFrame.mySuccess.set(0)
+        self.parent.focus_set()
+        self.destroy()
 
 class AssignFrame(Frame):
     # Presents the user with a list of items that each need to be assigned to one of a number of
@@ -20527,6 +20743,23 @@ class AssignFrame(Frame):
                              lambda event, myID="myOKButton": \
                              self.LaunchContextMenu(event,
                                                     identifier=myID))
+        self.myCancelButton = Button(self,
+                                     background=self.normalBG,
+                                     activebackground=self.clickedBG,
+                                     anchor=CENTER,
+                                     justify=CENTER,
+                                     text="Cancel",
+                                     font=self.myFont,
+                                     command=self.myParent.cancel)
+        self.myCancelButton.grid(row=len(self.myItems)+3,
+                                 column=3,
+                                 rowspan=1,
+                                 columnspan=1,
+                                 sticky=N+E+S+W)
+        self.myCancelButton.bind("<Button-3>",
+                                 lambda event, myID="myCancelButton": \
+                                 self.LaunchContextMenu(event,
+                                                        identifier=myID))
         self.update_idletasks()
         (self.numCols, self.numRows) = self.grid_size()
         # Make contents stretch/squish
@@ -20545,7 +20778,10 @@ class AssignFrame(Frame):
         self.categoryWidths = [self.myFont.measure(txt) for txt in self.myCategories]
         for j in range(len(self.myCategories)):
             self.columnconfigure(j+2, minsize=self.categoryWidths[j]+self.optionMargin)
+        # Bind the Enter key to the same method as the OK button
         self.bind("<Return>", self.finish)
+        # Bind the Escape key to the same method as the Cancel button
+        self.bind("<Escape>", self.myParent.cancel)
         self.renew()
     def renew(self, *args):
         notePrefix = "### AssignFrame.renew: "
@@ -20638,7 +20874,7 @@ class AssignFrame(Frame):
             self.myDestination.set("".join(self.myAnswer))
 ##            print(notePrefix + "returning '" + self.myDestination.get() + "'")
             if isinstance(self.myParent, SubWindow):
-                self.myParent.cancel()
+                self.myParent.exit()
         elif len([x for x in self.myAssignments if x.get() in range(len(self.myCategories))]) < \
              len(self.myItems):
             messagebox.showerror(title="Hero Creation",
@@ -20666,7 +20902,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=0)
+firstHero = factory.getKnockout(step=2)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

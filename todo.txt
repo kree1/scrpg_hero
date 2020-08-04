@@ -169,61 +169,64 @@ Complete steps of hero creation are now reversible
  Can we make this more granular?
   What would it take for the user to be able to stop in the middle of a step?
    Data entry windows would need a "Cancel" button
-	SelectFrame
-	EntryFrame
-	ExpandFrame
-	SwapFrame
-	PrincipleFrame
-	AssignFrame
+.	SelectFrame
+.	EntryFrame
+.	ExpandFrame
+.	SwapFrame
+.	PrincipleFrame
+.	AssignFrame
    Hitting "Cancel" or the X button would need to send a message back to the Hero
 .	Hero.__init__: self.proceed = 1
 .	Hero.copy: mirror.proceed = self.proceed
 	Pass proceed to all data entry windows as success; windows set success to 0 if they're canceled
-	 SelectFrame
+	 SelectWindow/SelectFrame
 .	  accepts success
-	  sets success
-	 EntryFrame
+.	  sets success
+	 EntryWindow/EntryFrame
 .	  accepts success
-	  sets success
-	 ExpandFrame
+.	  sets success
+	 ExpandWindow/ExpandFrame
 .	  accepts success
-	  sets success
-	 SwapFrame
+,	  sets success
+	 SwapWindow/SwapFrame
 .	  accepts success
-	  sets success
-	 PrincipleFrame
+,	  sets success
+	 PrincipleWindow/PrincipleFrame
 .	  accepts success
-	  sets success
-	 AssignFrame
+,	  sets success
+	 AssignWindow/AssignFrame
 .	  accepts success
-	  sets success
-.	When a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it passes success=IntVar(self.myFrame, 1)
-	After a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it sets self.proceed to the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
-	 AddPQDie
-	 ChoosePQDieSize
-	 ChoosePQ
-	 AssignAllPQ
-	 AddPrinciple
-	 ChoosePrinciple
-	 AddBackground
-	 GuidedBackground
-	 ConstructedBackground
-	 AddAbility
-	 ChooseAbility
-	 AddPowerSource
-	 GuidedPowerSource
-	 ConstructedPowerSource
-	 AddMode
-	 ChooseForm
-	 AddArchetype
-	 GuidedArchetype
-	 ConstructedArchetype
-	 AddPersonality
-	 GuidedPersonality
-	 ConstructedPersonality
-	 AddRedAbility
-	 AddRetcon
-	 AddHealth
+,	  sets success
+.	When a Hero/HeroFrame method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it passes success=IntVar(self.myFrame, 1)
+	After a Hero method creates a window explicitly, it sets self.proceed to the value of success
+.	 ChooseIndex
+.	 EnterText
+.	 ChooseDetailIndex
+.	 ChoosePQ
+.	 AddPrinciple
+.	 ChoosePrinciple
+.	 ChooseAbility
+.	 ChooseForm
+.	 AddArchetype
+.	 AddRedAbility
+.	 AddRetcon
+	After a Hero/HeroFrame method gets a choice from the user (explicitly or via method call), it checks the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
+	 ...
+	 AddHeroBackground
+	 AddHeroPowerSource
+	 AddHeroArchetype
+	 AddHeroPersonality
+	 AddHeroRedAbilities
+	 AddHeroRetcon
+	 AddHeroHealth
+	 RenameAny
+	 RenameHero
+	 RenameAbilities
+	 RenameModes
+	 RenameForms
+.	 RenamePQDice (2x)
+.	 SaveTXT (2x)
+.	 RevertHero
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", and get StepDetails to show that?
   Determine substeps...
 .  Background: Qualities, Principle
