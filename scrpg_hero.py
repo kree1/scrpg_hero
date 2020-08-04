@@ -6969,12 +6969,14 @@ class Hero:
                                         prompt="Do you want to give " + \
                                         MixedPQ([ispower, category, index]) + " a new name?",
                                         inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 0:
                 decision = self.EnterText("Enter a new name for " + \
                                           MixedPQ([ispower, category, index]) + ":",
                                           inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 flavorname = decision[0]
                 inputs = decision[1]
         new_die = PQDie(ispower,
@@ -7084,6 +7086,7 @@ class Hero:
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
                                     width=45)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_index = decision[0]
         inputs = decision[1]
         if track_inputs:
@@ -7266,6 +7269,7 @@ class Hero:
                                         inputs=inputs,
                                         title=print_type + " Selection",
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             triplet_choice = print_triplets[entry_index]
@@ -7445,6 +7449,7 @@ class Hero:
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
         #  added
         # inputs: a set of text inputs to use automatically instead of prompting the user
+        # No return value
         notePrefix = "### ChoosePrinciple: "
         dispWidth = 100
         if len(inputs) > 0:
@@ -7485,6 +7490,7 @@ class Hero:
                                               rwidth=ri_width,
                                               swidth=dispWidth,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             ri = r_options[entry_index]
@@ -7496,6 +7502,7 @@ class Hero:
                                         prompt=rename_prompt,
                                         title="Principle Selection",
                                         inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 1:
@@ -7510,6 +7517,7 @@ class Hero:
                                   entry_index,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             else:
@@ -7654,6 +7662,7 @@ class Hero:
                                   entry_green,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
     def AddBackground(self, bg_index, inputs=[]):
@@ -7712,6 +7721,7 @@ class Hero:
                                                       remaining_dice,
                                                       stepnum=quality_step,
                                                       inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # Use AssignAllPQ to have the user assign each remaining die to one of the optional
@@ -7728,6 +7738,7 @@ class Hero:
                              remaining_dice,
                              stepnum=quality_step,
                              inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
             self.RefreshFrame()
@@ -7744,6 +7755,7 @@ class Hero:
             self.ChoosePrinciple(r_category,
                                  stepnum=prin_step,
                                  inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
             print("That's all for your Background! Take " + str(ps_dice) + \
@@ -7781,8 +7793,6 @@ class Hero:
             # To convert to 0-index, subtract 1 from each option.
             bg_indices = [x-1 for x in bg_options]
             # Let the user choose from the options provided by their roll...
-            entry_choice = ' '
-            entry_options = string.ascii_uppercase[0:len(bg_options) + rerolls]
             options = [bg_collection[x-1][0] + " (" + str(x) + ")" for x in bg_options]
             if rerolls > 0:
                 options += ["REROLL"]
@@ -7806,6 +7816,7 @@ class Hero:
                                               rwidth=bg_width,
                                               swidth=100,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -7817,6 +7828,7 @@ class Hero:
                                             "results?",
                                             title="Background Selection",
                                             inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -7830,6 +7842,7 @@ class Hero:
                                                     prompt="Choose which result to keep:",
                                                     inputs=inputs,
                                                     width=25)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         entry_index = decision[0]
                         inputs = decision[1]
                         prev_result = die_results[entry_index]
@@ -7869,6 +7882,7 @@ class Hero:
                                           rwidth=bg_width,
                                           swidth=100,
                                           inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_index = decision[0]
         inputs = decision[1]
         print(bg_collection[entry_index][0] + " Background selected.")
@@ -8119,6 +8133,7 @@ class Hero:
                     decision = self.ChooseIndex(section_list,
                                                 prompt=choice_request,
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                 entry_start = entry_index * section_length
@@ -8139,6 +8154,7 @@ class Hero:
                                               rwidth=a_width,
                                               swidth=100,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             ability_template = template_options[entry_index]
@@ -8174,6 +8190,7 @@ class Hero:
                                         title=display_str,
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             damage_entry = decision[0]
             inputs = decision[1]
             # Testing...
@@ -8204,6 +8221,7 @@ class Hero:
                                                 title=display_str,
                                                 inputs=inputs,
                                                 width=50)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
@@ -8216,6 +8234,7 @@ class Hero:
                                             title=display_str,
                                             inputs=inputs,
                                             width=50)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 element_num = decision[0]
                 inputs = decision[1]
         # If the ability needs any basic actions, prompt the user for those
@@ -8231,6 +8250,7 @@ class Hero:
                                                 title=display_str,
                                                 inputs=inputs,
                                                 width=50)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     action_ids[i] = ability_template.action_options[i][entry_index]
@@ -8325,6 +8345,7 @@ class Hero:
                                                     prompt=prompt,
                                                     title=display_str,
                                                     inputs=inputs)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
@@ -8359,6 +8380,7 @@ class Hero:
                                         prompt=rename_prompt,
                                         title=display_str,
                                         inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 0:
@@ -8368,6 +8390,7 @@ class Hero:
                                           title=display_str,
                                           default=new_ability.name,
                                           inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 new_ability.flavorname = decision[0]
                 inputs = decision[1]
             if add==1:
@@ -8455,6 +8478,7 @@ class Hero:
                                       pdice,
                                       stepnum=power_step,
                                       inputs=pass_inputs)[1]
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
@@ -8468,6 +8492,7 @@ class Hero:
                              pdice,
                              stepnum=power_step,
                              inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
             # Substep 2: Yellow Abilities...
@@ -8512,6 +8537,7 @@ class Hero:
                                                     triplet_options=legal_triplets,
                                                     stepnum=yellow_step,
                                                     inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # Substep 3: Green Abilities...
@@ -8531,6 +8557,7 @@ class Hero:
                                                    0,
                                                    stepnum=green_step,
                                                    inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # Substep 4: Power Source Bonus
@@ -8556,6 +8583,7 @@ class Hero:
                               [10],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             elif ps_bonus == 3:
@@ -8574,6 +8602,7 @@ class Hero:
                               [10],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             elif ps_bonus == 4:
@@ -8594,6 +8623,7 @@ class Hero:
                                   [6],
                                   stepnum=bonus_step,
                                   inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 elif len(d6_pqs) == 1:
@@ -8609,6 +8639,7 @@ class Hero:
                                                 title="Power Source: Alien",
                                                 inputs=inputs,
                                                 width=45)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
@@ -8628,6 +8659,7 @@ class Hero:
                               [10],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             elif ps_bonus == 6:
@@ -8648,6 +8680,7 @@ class Hero:
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
                                                 width=40)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     downgraded_power = d8_plus_powers[entry_index]
@@ -8667,6 +8700,7 @@ class Hero:
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
                                                 width=40)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgraded_power = d10_minus_powers[entry_index]
@@ -8687,6 +8721,7 @@ class Hero:
                               [8],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             elif ps_bonus == 8:
@@ -8703,6 +8738,7 @@ class Hero:
                               [6],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             print("That's all for your Power Source! Take " + str(arc_dice) + \
@@ -8789,6 +8825,7 @@ class Hero:
                                               rwidth=ps_width,
                                               swidth=100,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -8801,6 +8838,7 @@ class Hero:
                                             "results?",
                                             title="Power Source Selection",
                                             inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -8812,6 +8850,7 @@ class Hero:
                                                     str(pdice[i]) + "?",
                                                     title="Power Source Selection",
                                                     inputs=inputs)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         entry_choice = decision[0]
                         inputs = decision[1]
                         if entry_choice == 0:
@@ -8851,6 +8890,7 @@ class Hero:
                                           rwidth=ps_width,
                                           swidth=100,
                                           inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_index = decision[0]
         inputs = decision[1]
         print(ps_collection[entry_index][0] + " Power Source selected.")
@@ -8907,6 +8947,7 @@ class Hero:
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
                                             width=45)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -8945,6 +8986,7 @@ class Hero:
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
                                             width=45)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -8977,6 +9019,7 @@ class Hero:
                                        alt_powers=mode_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         if track_inputs:
             print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
@@ -8986,6 +9029,7 @@ class Hero:
                                     prompt="Do you want to give " + t_name + " a new name?",
                                     title="Mode Creation: " + t_name,
                                     inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_choice = decision[0]
         inputs = decision[1]
         if entry_choice == 0:
@@ -8993,6 +9037,7 @@ class Hero:
                                       inputs=inputs,
                                       default=t_name,
                                       title="Mode Creation: " + t_name)
+            print(notePrefix + "proceed = " + str(self.proceed))
             mode_name = decision[0]
             inputs = decision[1]
         # Quality dice in a Mode match the base Quality list, so far
@@ -9365,6 +9410,7 @@ class Hero:
                                           rwidth=dispWidth,
                                           swidth=100,
                                           inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_index = decision[0]
         inputs = decision[1]
         form_ability_template = form_options[entry_index]
@@ -9400,6 +9446,7 @@ class Hero:
                                         title=title,
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             step_choice = decision[0]
             inputs = decision[1]
             if step_text[step_choice] == "Yes, swap 2 Power dice":
@@ -9429,6 +9476,7 @@ class Hero:
                                                 title=title,
                                                 width=dispWidth,
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     entry_options = string.ascii_uppercase[0:len(form_power_dice)]
@@ -9441,6 +9489,7 @@ class Hero:
                                                 title=title,
                                                 width=dispWidth,
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [form_power_dice[i] for i in swap_indices]
@@ -9465,6 +9514,7 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=40)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 die_index = decision[0]
                 inputs = decision[1]
                 changed_die = form_power_dice[die_index]
@@ -9476,6 +9526,7 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=40)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Change changed_die's attributes to those of the newly selected Power
@@ -9502,6 +9553,7 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=50)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index in range(len(power_indices)):
@@ -9528,6 +9580,7 @@ class Hero:
                                        alt_powers=form_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         if track_inputs:
             print(notePrefix + tracker_close)
         # Let the user choose whether to customize the name.
@@ -9537,6 +9590,7 @@ class Hero:
                                     prompt="Do you want to give " + form_name + " a new name?",
                                     title=title,
                                     inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_choice = decision[0]
         inputs = decision[1]
         if entry_choice == 0:
@@ -9544,6 +9598,7 @@ class Hero:
                                       inputs=inputs,
                                       default=form_name,
                                       title=title)
+            print(notePrefix + "proceed = " + str(self.proceed))
             form_name = decision[0]
             inputs = decision[1]
         form_status = Status(ref=1, stepnum=this_step)
@@ -9568,6 +9623,7 @@ class Hero:
                                         inputs=inputs,
                                         title=title,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index in range(len(self.dv_tags)):
@@ -9658,7 +9714,6 @@ class Hero:
             self.archetype = arc_index
             self.archetype_modifier = mod_index
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
-            entry_choice = ' '
             # Add Powers and Qualities from your base Archetype, regardless of modifiers
             # Substep 1: Primary Power/Quality...
             primary_step = this_step + 0.1
@@ -9690,6 +9745,7 @@ class Hero:
                                                 "option above? (y/n)",
                                                 title="Archetype Selection: " + arc_title,
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -9707,6 +9763,7 @@ class Hero:
                                                    a_dice,
                                                    stepnum=primary_step,
                                                    inputs=pass_inputs)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         if track_inputs:
                             print(notePrefix + tracker_close)
                         a_dice = remainders[1]
@@ -9719,6 +9776,7 @@ class Hero:
                                                 str(a_dice) + "?",
                                                 title="Archetype Selection: " + arc_title,
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -9733,6 +9791,7 @@ class Hero:
                                                         " to change die size:",
                                                         inputs=inputs,
                                                         width=40)
+                            print(notePrefix + "proceed = " + str(self.proceed))
                             swap_index = decision[0]
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
@@ -9743,6 +9802,7 @@ class Hero:
                                                     str(primary_matches[swap_index]) + ":",
                                                     inputs=inputs,
                                                     width=40)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         a_die_index = decision[0]
                         inputs = decision[1]
                         primary_matches[swap_index].SetPrevious(primary_step)
@@ -9767,6 +9827,7 @@ class Hero:
                                               a_dice,
                                               stepnum=primary_step,
                                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             elif len(primary_pqs) > 1:
@@ -9786,6 +9847,7 @@ class Hero:
                                            a_dice,
                                            stepnum=primary_step,
                                            inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 a_dice = remainders[1]
@@ -9805,6 +9867,7 @@ class Hero:
                                            a_dice,
                                            stepnum=secondary_step,
                                            inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 a_dice = remainders[1]
@@ -9824,6 +9887,7 @@ class Hero:
                                      a_dice,
                                      stepnum=secondary_step,
                                      inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     a_dice = []
@@ -9841,6 +9905,7 @@ class Hero:
                                  a_dice,
                                  stepnum=tertiary_step,
                                  inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # Substep 4: Bonus Powers/Qualities...
@@ -9861,6 +9926,7 @@ class Hero:
                               [self.arc_bonus_quality],
                               stepnum=bonus_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             # If this Archetype grants a bonus Power or Quality die, this is the time to choose it.
@@ -9879,6 +9945,7 @@ class Hero:
                                   [10],
                                   stepnum=bonus_step,
                                   inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
             # Substep 5: Abilities...
@@ -9904,6 +9971,7 @@ class Hero:
                                   [6],
                                   stepnum=bonus_step,
                                   inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then add the mandatory Abilities for the Modular archetype:
@@ -9921,6 +9989,7 @@ class Hero:
                                        zone,
                                        stepnum=ability_step,
                                        inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Substep 6: Auxiliary Sheets...
@@ -9936,6 +10005,7 @@ class Hero:
                                             prompt=prompt,
                                             title="Archetype Selection: Modular",
                                             inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index == 0:
@@ -9949,6 +10019,7 @@ class Hero:
                                  0,
                                  stepnum=aux_step,
                                  inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then, they get 1 additional Green Mode.
@@ -9973,6 +10044,7 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader="Choose 1 additional Green Mode:",
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 if track_inputs:
@@ -9985,6 +10057,7 @@ class Hero:
                              entry_index,
                              stepnum=aux_step,
                              inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 # Then, they get 2 different Yellow Modes.
@@ -10016,6 +10089,7 @@ class Hero:
                                                       swidth=dispWidth,
                                                       shellHeader=prompt,
                                                       inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     mode_index = yellow_indices[entry_index]
@@ -10029,6 +10103,7 @@ class Hero:
                                  mode_index,
                                  stepnum=aux_step,
                                  inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     del yellow_indices[entry_index]
@@ -10054,6 +10129,7 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader="Choose a Red Mode:",
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 if track_inputs:
@@ -10066,6 +10142,7 @@ class Hero:
                              entry_index,
                              stepnum=aux_step,
                              inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             else:
@@ -10114,6 +10191,7 @@ class Hero:
                                        triplet_options=legal_triplets,
                                        stepnum=ability_step,
                                        inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Then move on to the Green Abilities:
@@ -10177,6 +10255,7 @@ class Hero:
                                                          category_req=category_req,
                                                          stepnum=ability_step,
                                                          inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Next add the Yellow Abilities, if there are any
@@ -10220,6 +10299,7 @@ class Hero:
                                                           triplet_options=legal_triplets,
                                                           stepnum=ability_step,
                                                           inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                 # Substep 6: Auxiliary Sheets...
@@ -10238,6 +10318,7 @@ class Hero:
                         self.ChooseForm(f_zone,
                                         stepnum=aux_step,
                                         inputs=pass_inputs)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         if track_inputs:
                             print(notePrefix + tracker_close)
                 # If the hero is a Minion-Maker, select their Minion Forms
@@ -10250,6 +10331,7 @@ class Hero:
                                                 " has access to:",
                                                 inputs=inputs,
                                                 width=50)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     self.mf_quality = self.quality_dice[entry_index]
@@ -10339,6 +10421,7 @@ class Hero:
                                             prompt=prompt,
                                             title="Archetype Selection: Divided",
                                             inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -10347,6 +10430,7 @@ class Hero:
                                                   " form.",
                                                   inputs=inputs,
                                                   title="Archetype Selection: Divided")
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         self.dv_tags[i] = decision[0]
                         if self.dv_tags[i].islower():
                             self.dv_tags[i] = self.dv_tags[i].capitalize()
@@ -10377,6 +10461,7 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader=tr_prompt,
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 self.dv_transition = entry_index
@@ -10400,6 +10485,7 @@ class Hero:
                                    triplet_options=arc_triplets,
                                    stepnum=transition_step,
                                    inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 # Substep 8: Divided Nature...
@@ -10422,6 +10508,7 @@ class Hero:
                                                     " form for them?",
                                                     inputs=inputs,
                                                     width=50)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         entry_index = decision[0]
                         inputs = decision[1]
                         f.SetPrevious(divided_step)
@@ -10530,6 +10617,7 @@ class Hero:
                                                       swidth=dispWidth,
                                                       shellHeader=dn_prompt,
                                                       inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     self.dv_nature = dn_collection.index(divided_natures[entry_index])
@@ -10550,6 +10638,7 @@ class Hero:
                                        0,
                                        stepnum=divided_step,
                                        inputs=pass_inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     # Create a Civilian Form with standard Qualities & Status but no Powers
@@ -10671,6 +10760,7 @@ class Hero:
                                                                 title="Archetype Selection: " + \
                                                                 "Divided",
                                                                 width=50)
+                                    print(notePrefix + "proceed = " + str(self.proceed))
                                     entry_index = decision[0]
                                     inputs = decision[1]
                                     print("OK! Marking " + \
@@ -10790,6 +10880,7 @@ class Hero:
                                                             "?",
                                                             inputs=inputs,
                                                             width=50)
+                                print(notePrefix + "proceed = " + str(self.proceed))
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + assigning_id[1] + " as a " + \
@@ -10852,6 +10943,7 @@ class Hero:
                                                             inputs=inputs,
                                                             title="Archetype Selection: Divided",
                                                             width=50)
+                                print(notePrefix + "proceed = " + str(self.proceed))
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(unassigned_powers[entry_index]) + \
@@ -10894,6 +10986,7 @@ class Hero:
                                                             "?",
                                                             inputs=inputs,
                                                             width=50)
+                                print(notePrefix + "proceed = " + str(self.proceed))
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -10950,6 +11043,7 @@ class Hero:
                                                         "to in both " + self.dv_tags[0] + \
                                                         " and " + self.dv_tags[1] + " Forms:",
                                                         inputs=inputs)
+                            print(notePrefix + "proceed = " + str(self.proceed))
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
@@ -10992,6 +11086,7 @@ class Hero:
                                                         "access to " + str(assigning_die) + \
                                                         "?",
                                                         inputs=inputs)
+                            print(notePrefix + "proceed = " + str(self.proceed))
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -11050,6 +11145,7 @@ class Hero:
                 self.ChoosePrinciple(r_category,
                                      stepnum=prin_step,
                                      inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             else:
@@ -11065,6 +11161,7 @@ class Hero:
                 self.ChoosePrinciple(r_category,
                                      stepnum=prin_step,
                                      inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
             print("That's all for your Archetype!")
@@ -11145,6 +11242,7 @@ class Hero:
                                               swidth=dispWidth,
                                               shellHeader=roll_report,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -11157,6 +11255,7 @@ class Hero:
                                             "results?",
                                             title="Archetype Selection",
                                             inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -11168,6 +11267,7 @@ class Hero:
                                                     str(adice[i]) + "?",
                                                     title="Archetype Selection",
                                                     inputs=inputs)
+                        print(notePrefix + "proceed = " + str(self.proceed))
                         entry_choice = decision[0]
                         inputs = decision[1]
                         if entry_choice == 0:
@@ -11194,6 +11294,7 @@ class Hero:
                                                 "your other Archetype? (y/n)",
                                                 title="Archetype Selection: Modular",
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_choice = decision[0]
                     inputs = decision[1]
                 else:
@@ -11266,6 +11367,7 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader=roll_report,
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Now we have an option from the list
@@ -11302,6 +11404,7 @@ class Hero:
                                           swidth=dispWidth,
                                           shellHeader="Choose an Archetype from the list:",
                                           inputs=inputs)
+        print(notePrefix + "proceed = " + str(self.proceed))
         entry_index = decision[0]
         inputs = decision[1]
         print(arc_collection[entry_index][0] + " Archetype selected.")
@@ -11334,6 +11437,7 @@ class Hero:
                                               shellHeader=arc_mod[0] + " modifies another " + \
                                               "Archetype. Choose another Archetype from the list:",
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
@@ -11399,6 +11503,7 @@ class Hero:
                                  [8],
                                  stepnum=rpq_step,
                                  inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
             # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
@@ -11496,6 +11601,7 @@ class Hero:
                                3,
                                stepnum=out_step,
                                inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
             # Substep 4: Personality Bonus...
@@ -11554,6 +11660,7 @@ class Hero:
                                                 inputs=inputs,
                                                 title="Personality Selection: Impulsive",
                                                 width=40)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgrade_die = upgrade_pqs[entry_index]
@@ -11647,6 +11754,7 @@ class Hero:
                                         prompt="Do you want to use two different Personalities?",
                                         title="Personality Selection",
                                         inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_choice = decision[0]
             inputs = decision[1]
             is_multiple = (entry_choice == 0)
@@ -11709,6 +11817,7 @@ class Hero:
                                                   rwidth=pn_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Now we have a commitment to a valid choice from the list.
@@ -11720,6 +11829,7 @@ class Hero:
                                                 "previous results? (y/n)",
                                                 title="Personality Selection",
                                                 inputs=inputs)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -11737,6 +11847,7 @@ class Hero:
                                                         inputs=inputs,
                                                         title="Personality Selection",
                                                         width=25)
+                            print(notePrefix + "proceed = " + str(self.proceed))
                             inputs = decision[1]
                             prev_result = die_results[decision[0]]
                     rerolls = 0
@@ -11759,6 +11870,7 @@ class Hero:
                                         prompt="Do you want to use two different Personalities?",
                                         title="Personality Selection",
                                         inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_choice = decision[0]
             inputs = decision[1]
             is_multiple = (entry_choice == 0)
@@ -11793,6 +11905,7 @@ class Hero:
                                                   rwidth=pn_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 print(pn_collection[entry_index][0] + " Personality selected.")
@@ -11815,6 +11928,7 @@ class Hero:
                                             inputs=inputs,
                                             title="Personality Selection",
                                             width=50)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 out_choice = decision[0]
                 inputs = decision[1]
             personalities.append(out_choice)
@@ -11845,6 +11959,7 @@ class Hero:
                                               rwidth=pn_width,
                                               swidth=dispWidth,
                                               inputs=inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             print(pn_collection[entry_index][0] + " Personality selected.")
@@ -12041,6 +12156,7 @@ class Hero:
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
                                inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
     def AddRetcon(self,
@@ -12071,6 +12187,7 @@ class Hero:
                                         inputs=inputs,
                                         title="Hero Retcon",
                                         width=60)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             step_choice = step_options[entry_index]
@@ -12104,6 +12221,7 @@ class Hero:
                                                 prompt="Choose the first Power die to swap...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     decision = self.ChooseIndex([str(x) for x in self.power_dice],
@@ -12111,6 +12229,7 @@ class Hero:
                                                 str(self.power_dice[swap_indices[0]]) + "...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [self.power_dice[i] for i in swap_indices]
@@ -12160,6 +12279,7 @@ class Hero:
                                                 prompt="Choose the first Quality die to swap...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
@@ -12167,6 +12287,7 @@ class Hero:
                                                 str(self.quality_dice[swap_indices[0]]) + "...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [self.quality_dice[i] for i in swap_indices]
@@ -12221,6 +12342,7 @@ class Hero:
                                                   rwidth=a_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 edit_ability = ability_options[entry_index]
@@ -12235,6 +12357,7 @@ class Hero:
                                                 title="Retcon: Change an Ability's related " + \
                                                 "Power/Quality",
                                                 width=40)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     edit_index = decision[0]
                     inputs = decision[1]
                 # Find the correct list of powers and qualities to choose a replacement from
@@ -12288,6 +12411,7 @@ class Hero:
                                             title="Retcon: Change an Ability's related " + \
                                             "Power/Quality",
                                             width=50)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
@@ -12318,6 +12442,7 @@ class Hero:
                               [6],
                               stepnum=this_step,
                               inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 self.used_retcon = True
@@ -12421,6 +12546,7 @@ class Hero:
                                                 title="Retcon: Upgrade Red status die",
                                                 inputs=pass_inputs,
                                                 width=50)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     entry_index = decision[0]
@@ -12491,6 +12617,7 @@ class Hero:
                           str(self.status_dice.red) + ") can't be upgraded, but " + \
                           pronouns[self.pronoun_set][2] + " " + edit_form.name + \
                           " Red status die (d" + str(edit_form.status_dice.red) + ") can.")
+                    edit_form.SetPrevious(this_step)
                     edit_form.status_dice.red += 2
                     print("Upgraded " + self.hero_name + "'s " + edit_form.name + \
                           " Red status die to d" + str(edit_form.status_dice.red) + ".")
@@ -12550,6 +12677,7 @@ class Hero:
                 self.ChoosePrinciple(entry_index,
                                      stepnum=this_step,
                                      inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 self.used_retcon = True
@@ -12566,6 +12694,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.AddRedAbility(retcon_step=this_step,
                                    inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 self.used_retcon = True
@@ -12581,7 +12710,10 @@ class Hero:
                 zone_min = self.health_zones[i+1] + 1
             ranges[i] = [self.health_zones[i], zone_min]
         return ranges
-    def AddHealth(self, roll=99, inputs=[]):
+    def AddHealth(self,
+                  roll=99,
+                  isRoot=True,
+                  inputs=[]):
         # Walks the user through determining the hero's max Health and ranges for each status zone.
         # roll: the result of 1d8, prepared earlier
         # inputs: a list of text inputs to use automatically instead of prompting the user
@@ -12601,122 +12733,170 @@ class Hero:
             # The hero doesn't have defined Health yet, so we can continue.
             # Add up the following:
             # Substep 1: 8...
-            self.SetPrevious(this_step + 0.1)
-            self.health_step = this_step
+            if (this_step + 0.1) not in self.steps_modified or self.health_step != this_step:
+                self.SetPrevious(this_step + 0.1)
+                self.health_step = this_step
             # Substep 2: Red status die size...
             red_step = this_step + 0.2
-            self.SetPrevious(red_step)
-            red_options = [self.status_dice.red]
-            red_sources = ["base form"]
-            red_objects = [self.status_dice]
-            if self.dv_personality in range(len(pn_collection)) and \
-               self.status_dice.red != self.dv_status.red:
-                red_options = [self.dv_status.red, self.status_dice.red]
-                red_sources = [str(x) + " Form" for x in self.dv_tags]
-                red_objects = [self.dv_status, self.status_dice]
-            for md in self.other_modes:
-                if md.status_dice.reference not in range(len(dv_defaults)) and \
-                   md.status_dice.red not in red_options:
-                    red_options.append(md.status_dice.red)
-                    red_sources.append(md.name)
-                    red_objects.append(md.status_dice)
-            for fm in self.other_forms:
-                if fm.status_dice.reference not in range(len(dv_defaults)) and \
-                   fm.status_dice.red not in red_options:
-                    red_options.append(fm.status_dice.red)
-                    red_sources.append(fm.name)
-                    red_objects.append(fm.status_dice)
-            red_part = 0
-            if len(red_options) == 1:
-                red_report = self.hero_name + "'s only Red status die size is " + \
-                             str(red_options[0]) + "."
-                red_part = red_options[0]
-                self.health_status = red_objects[0]
-            else:
-                decision = self.ChooseIndex([str(red_options[i]) + " (" + red_sources[i] + ")" \
-                                             for i in range(len(red_options))],
-                                            prompt="Choose a Red status die to use for " + \
-                                            self.hero_name + "'s max Health:",
-                                            inputs=inputs,
-                                            width=50,
-                                            title="Determine Health")
-                entry_index = decision[0]
-                inputs = decision[1]
-                red_report = "Using d" + str(red_options[entry_index]) + " from " + \
+            if isinstance(self.health_status, Status) and \
+               red_step in self.steps_modified and \
+               self.health_status.red in legal_dice:
+                # User already did this part, keep their result
+                red_report = "Using d" + str(self.health_status.red) + " from " + \
                              self.hero_name + "'s Red status."
-                red_part = red_options[entry_index]
-                self.health_status = red_objects[entry_index]
-            print("OK! " + red_report)
+                red_part = self.health_status.red
+            else:
+                # Find a Red status die to use
+                self.SetPrevious(red_step)
+                red_options = [self.status_dice.red]
+                red_sources = ["base form"]
+                red_objects = [self.status_dice]
+                if self.dv_personality in range(len(pn_collection)) and \
+                   self.status_dice.red != self.dv_status.red:
+                    red_options = [self.dv_status.red, self.status_dice.red]
+                    red_sources = [str(x) + " Form" for x in self.dv_tags]
+                    red_objects = [self.dv_status, self.status_dice]
+                for md in self.other_modes:
+                    if md.status_dice.reference not in range(len(dv_defaults)) and \
+                       md.status_dice.red not in red_options:
+                        red_options.append(md.status_dice.red)
+                        red_sources.append(md.name)
+                        red_objects.append(md.status_dice)
+                for fm in self.other_forms:
+                    if fm.status_dice.reference not in range(len(dv_defaults)) and \
+                       fm.status_dice.red not in red_options:
+                        red_options.append(fm.status_dice.red)
+                        red_sources.append(fm.name)
+                        red_objects.append(fm.status_dice)
+                red_part = 0
+                if len(red_options) == 1:
+                    red_report = self.hero_name + "'s only Red status die size is " + \
+                                 str(red_options[0]) + "."
+                    red_part = red_options[0]
+                    self.health_status = red_objects[0]
+                else:
+                    decision = self.ChooseIndex([str(red_options[i]) + " (" + red_sources[i] + \
+                                                 ")" \
+                                                 for i in range(len(red_options))],
+                                                prompt="Choose a Red status die to use for " + \
+                                                self.hero_name + "'s max Health:",
+                                                inputs=inputs,
+                                                width=50,
+                                                title="Determine Health")
+                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    red_report = "Using d" + str(red_options[entry_index]) + " from " + \
+                                 self.hero_name + "'s Red status."
+                    red_part = red_options[entry_index]
+                    self.health_status = red_objects[entry_index]
+                print("OK! " + red_report)
             # Substep 3: die size of an eligible Power or Quality...
             pq_step = this_step + 0.3
-            self.SetPrevious(pq_step)
-            pq_options = self.power_dice + self.quality_dice
-            for md in self.other_modes:
-                md.CheckReference()
-                if not md.std_powers:
-                    pq_options += [d for d in md.power_dice \
-                                   if str(d) not in [str(x) for x in pq_options]]
-                if not md.std_qualities:
-                    pq_options += [d for d in md.quality_dice \
-                                   if str(d) not in [str(x) for x in pq_options]]
-            for fm in self.other_forms:
-                fm.CheckReference()
-                if not fm.std_powers:
-                    pq_options += [d for d in fm.power_dice \
-                                   if str(d) not in [str(x) for x in pq_options]]
-                if not fm.std_qualities:
-                    pq_options += [d for d in fm.quality_dice \
-                                   if str(d) not in [str(x) for x in pq_options]]
-            pq_options = [d for d in pq_options if d.triplet() in self.health_pqs]
-            pq_part = 4
-            if len(pq_options) == 1:
-                pq_report = self.hero_name + "'s only valid Power or Quality for Health is " + \
-                            str(pq_options[0]) + "."
-                pq_part = pq_options[0].diesize
-                self.health_pqdie = pq_options[0]
-            elif len(pq_options) == 0:
-                pq_report = self.hero_name + " has no eligible Powers or Qualities to use for " + \
-                            "Health. Using a d4."
-                pq_part = 4
+            if pq_step in self.steps_modified and \
+               isinstance(self.health_pqdie, PQDie) and \
+               self.health_pqdie.diesize in legal_dice:
+                # User already did this part; keep their result
+                pq_part = self.health_pqdie.diesize
+                if self.health_pqdie.triplet() == [1,9,0] and self.health_pqdie.diesize == 4:
+                    pq_report = self.hero_name + " has no eligible Powers or Qualities to use " + \
+                                "for Health. Using a d4."
+                else:
+                    pq_report = "Using " + str(self.health_pqdie) + " from " + \
+                                self.hero_name + "'s Powers/Qualities."
             else:
-                decision = self.ChooseIndex([str(x) for x in pq_options],
-                                            prompt="Choose a Power or Quality to use for " + \
-                                            self.hero_name + "'s max Health:",
+                # Find a Power/Quality die to use
+                self.SetPrevious(pq_step)
+                pq_options = self.power_dice + self.quality_dice
+                for md in self.other_modes:
+                    md.CheckReference()
+                    if not md.std_powers:
+                        pq_options += [d for d in md.power_dice \
+                                       if str(d) not in [str(x) for x in pq_options]]
+                    if not md.std_qualities:
+                        pq_options += [d for d in md.quality_dice \
+                                       if str(d) not in [str(x) for x in pq_options]]
+                for fm in self.other_forms:
+                    fm.CheckReference()
+                    if not fm.std_powers:
+                        pq_options += [d for d in fm.power_dice \
+                                       if str(d) not in [str(x) for x in pq_options]]
+                    if not fm.std_qualities:
+                        pq_options += [d for d in fm.quality_dice \
+                                       if str(d) not in [str(x) for x in pq_options]]
+                pq_options = [d for d in pq_options if d.triplet() in self.health_pqs]
+                pq_part = 4
+                if len(pq_options) == 1:
+                    pq_report = self.hero_name + "'s only valid Power or Quality for Health " + \
+                                "is " + str(pq_options[0]) + "."
+                    pq_part = pq_options[0].diesize
+                    self.health_pqdie = pq_options[0]
+                elif len(pq_options) == 0:
+                    pq_report = self.hero_name + " has no eligible Powers or Qualities to use " + \
+                                "for Health. Using a d4."
+                    # Set health_pqdie to a d4 Invented Power
+                    self.health_pqdie = PQDie(1,9,0,4)
+                    pq_part = 4
+                else:
+                    decision = self.ChooseIndex([str(x) for x in pq_options],
+                                                prompt="Choose a Power or Quality to use for " + \
+                                                self.hero_name + "'s max Health:",
+                                                inputs=inputs,
+                                                width=50,
+                                                title="Determine Health")
+                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    pq_report = "Using " + str(pq_options[entry_index]) + " from " + \
+                                self.hero_name + "'s Powers/Qualities."
+                    pq_part = pq_options[entry_index].diesize
+                    self.health_pqdie = pq_options[entry_index]
+                print("OK! " + pq_report)
+            # Substep 4: either 4 OR 1d8
+            choice_step = this_step + 0.4
+            if choice_step in self.steps_modified and self.health_choice in range(1,9):
+                # User already did this part; keep their result
+                random_part = self.health_choice
+            else:
+                self.SetPrevious(choice_step)
+                random_part = 4
+                random_prompt = red_report + "\n" + pq_report + "\n" + "The total so far is " + \
+                                str(8 + pq_part + red_part) + " (8 + " + str(red_part) + " + " + \
+                                str(pq_part) + ")." + "\n" + "Which would you like to add?"
+                random_options = ["4", "Roll 1d8"]
+                decision = self.ChooseIndex(random_options,
+                                            prompt=random_prompt,
                                             inputs=inputs,
                                             width=50,
                                             title="Determine Health")
+                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
-                pq_report = "Using " + str(pq_options[entry_index]) + " from " + self.hero_name + \
-                            "'s Powers/Qualities."
-                pq_part = pq_options[entry_index].diesize
-                self.health_pqdie = pq_options[entry_index]
-            print("OK! " + pq_report)
-            # Substep 4: either 4 OR 1d8
-            choice_step = this_step + 0.4
-            self.SetPrevious(choice_step)
-            random_part = 4
-            random_prompt = red_report + "\n" + pq_report + "\n" + "The total so far is " + \
-                            str(8 + pq_part + red_part) + " (8 + " + str(red_part) + " + " + \
-                            str(pq_part) + ")." + "\n" + "Which would you like to add?"
-            random_options = ["4", "Roll 1d8"]
-            decision = self.ChooseIndex(random_options,
-                                        prompt=random_prompt,
-                                        inputs=inputs,
-                                        width=50,
-                                        title="Determine Health")
-            entry_index = decision[0]
-            inputs = decision[1]
-            if random_options[entry_index] == "Roll 1d8":
-                print("Rolling 1d8 for Health...")
-                if roll in range(1,9):
-                    random_part = roll
+                if random_options[entry_index] == "Roll 1d8":
+                    print("Rolling 1d8 for Health...")
+                    if roll in range(1,9):
+                        random_part = roll
+                    else:
+                        random_part = random.randint(1, 8)
+                    print("Rolled " + str(random_part) + "!")
                 else:
-                    random_part = random.randint(1, 8)
-                print("Rolled " + str(random_part) + "!")
-            else:
-                print("Using 4 for Health.")
-            self.health_choice = random_part
+                    print("Using 4 for Health.")
+                self.health_choice = random_part
             max_health = 8 + pq_part + red_part + random_part
             print(self.hero_name + "'s max Health is " + str(max_health) + ".")
             health_index = max_health - hp_bounds[0][0]
@@ -12747,6 +12927,7 @@ class Hero:
                                         str(self.hero_name) + "?",
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12761,6 +12942,7 @@ class Hero:
                 bg_index = self.ConstructedBackground(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             # Add the chosen Background
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -12772,6 +12954,7 @@ class Hero:
                                inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         # Choose a Power Source
         print("2. Power Source")
         if self.power_source in range(len(ps_collection)):
@@ -12785,6 +12968,7 @@ class Hero:
                                         "for " + self.hero_name + "?",
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12799,6 +12983,7 @@ class Hero:
                 ps_index = self.ConstructedPowerSource(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             # Add the chosen Power Source
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -12810,6 +12995,7 @@ class Hero:
                                 inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         # Choose an Archetype
         print("3. Archetype")
         if self.archetype in range(len(arc_collection)):
@@ -12825,6 +13011,7 @@ class Hero:
                                         self.hero_name + "?",
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12839,6 +13026,7 @@ class Hero:
                 arc_indices = self.ConstructedArchetype(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             # Add the chosen Archetype
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -12851,6 +13039,7 @@ class Hero:
                               inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         # Choose one or more Personalities
         print("4. Personality")
         if self.personality in range(len(pn_collection)):
@@ -12873,6 +13062,7 @@ class Hero:
                                         prompt=pn_prompt,
                                         inputs=inputs,
                                         width=50)
+            print(notePrefix + "proceed = " + str(self.proceed))
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -12883,6 +13073,7 @@ class Hero:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.GuidedPersonality(inputs=pass_inputs)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 if pn_indices[0] not in range(len(pn_collection)):
@@ -12897,10 +13088,12 @@ class Hero:
                     pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
+                    print(notePrefix + "proceed = " + str(self.proceed))
             else:
                 pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             # Add the chosen Personality/ies
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -12922,6 +13115,7 @@ class Hero:
                                     inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         # Add 2 Red Abilities
         print("5. Red Abilities")
         rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
@@ -12938,6 +13132,7 @@ class Hero:
             self.AddRedAbility(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
         # Take a Retcon
         print("6. Retcon")
@@ -12954,6 +13149,7 @@ class Hero:
             self.AddRetcon(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         # Determine Max Health
         print("7. Health")
         if self.health_zones != [0,0,0]:
@@ -12967,9 +13163,11 @@ class Hero:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddHealth(roll=health_roll,
+                           isRoot=False,
                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
         print("Done!")
     def Abilities(self, zone):
         # Returns the set of Abilities on this hero's main sheet that match the specified zone.
@@ -16610,6 +16808,7 @@ class HeroFrame(Frame):
                 bg_index = self.myHero.ConstructedBackground(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             # Add the chosen Background
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -16621,6 +16820,7 @@ class HeroFrame(Frame):
                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPowerSource(self, inputs=[]):
@@ -16663,6 +16863,7 @@ class HeroFrame(Frame):
                 ps_index = self.myHero.ConstructedPowerSource(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             # Add the chosen Power Source
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -16673,6 +16874,7 @@ class HeroFrame(Frame):
             self.myHero.AddPowerSource(ps_index, inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroArchetype(self, inputs=[]):
@@ -16717,6 +16919,7 @@ class HeroFrame(Frame):
                 arc_indices = self.myHero.ConstructedArchetype(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             # Add the chosen Archetype
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -16729,6 +16932,7 @@ class HeroFrame(Frame):
                                      inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPersonality(self, inputs=[]):
@@ -16779,6 +16983,7 @@ class HeroFrame(Frame):
                 pn_indices = self.myHero.GuidedPersonality(inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
@@ -16791,10 +16996,12 @@ class HeroFrame(Frame):
                     pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
+                    print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             else:
                 pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             # Add the chosen Personality/ies
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -16816,6 +17023,7 @@ class HeroFrame(Frame):
                                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroRedAbilities(self, inputs=[]):
@@ -16838,6 +17046,7 @@ class HeroFrame(Frame):
             self.myHero.AddRedAbility(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -16860,6 +17069,7 @@ class HeroFrame(Frame):
             self.myHero.AddRetcon(inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
@@ -16879,9 +17089,16 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddHealth(roll=health_roll,
+                                  isRoot=False,
                                   inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         print("Done!")
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -17545,6 +17762,19 @@ class HeroFrame(Frame):
                 self.Empty(buttonPressed=True)
         self.UpdateAll(self.myHero,
                        restore=paused)
+    def RetrievePreviousHero(self):
+        # Switch from the current Hero object to its most recent saved prior version. Use when the
+        #  user cancels in the middle of a step.
+        if isinstance(self.myHero, Hero):
+            if isinstance(self.myHero.prev_version, Hero):
+                self.UpdateAll(self.myHero.prev_version)
+            else:
+                self.UpdateAll(Hero(codename=self.myHero.hero_name,
+                                    civ_name=self.myHero.alias,
+                                    pro_index=self.myHero.pronoun_set))
+        else:
+            self.UpdateAll()
+                
                 
 class SubWindow(Toplevel):
     # A class for subordinate windows
@@ -20958,7 +21188,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=3)
+firstHero = factory.getKnockout(step=6)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
