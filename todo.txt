@@ -212,13 +212,10 @@ Complete steps of hero creation are now reversible
 .	 AddRetcon
 	After a Hero/HeroFrame method gets a choice from the user (explicitly or via method call), it checks the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
 	 ...
-	 AddHeroBackground
-	 AddHeroPowerSource
-	 AddHeroArchetype
-	 AddHeroPersonality
-	 AddHeroRedAbilities
-	 AddHeroRetcon
-	 AddHeroHealth
+.	 AddHeroBackground
+.	 AddHeroPowerSource
+.	 AddHeroArchetype
+.	 AddHeroPersonality
 .	 RenameAny
 .	 RenameHero (3x)
 .	 RenameAbilities (2x)

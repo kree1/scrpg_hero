@@ -16591,6 +16591,11 @@ class HeroFrame(Frame):
                                                "Background for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
                                                width=50)
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -16639,6 +16644,11 @@ class HeroFrame(Frame):
                                                "Source for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
                                                width=50)
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -16688,6 +16698,11 @@ class HeroFrame(Frame):
                                                "Archetype for " + self.myHero.hero_name + "?",
                                                inputs=inputs,
                                                width=50)
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -16747,6 +16762,11 @@ class HeroFrame(Frame):
                                                prompt=pn_prompt,
                                                inputs=inputs,
                                                width=50)
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -20938,7 +20958,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getKnockout(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
