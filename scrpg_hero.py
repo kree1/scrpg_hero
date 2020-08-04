@@ -16945,7 +16945,10 @@ class HeroFrame(Frame):
                                     var=result,
                                     title=title,
                                     success=success)
-            print(notePrefix + "success = " + str(success.get()))
+##            print(notePrefix + "success = " + str(success.get()))
+            if success.get() == 0:
+                # User canceled out; drop everything
+                return
             rename_selection = rename_options[result.get()]
         # Now we can follow up on the selected option
         if rename_selection == character_section:
@@ -16976,7 +16979,10 @@ class HeroFrame(Frame):
                                textVar,
                                title="Hero Creation",
                                success=success)
-        print(notePrefix + "success = " + str(success.get()))
+##        print(notePrefix + "success = " + str(success.get()))
+        if success.get() == 0:
+            # User canceled out; drop everything
+            return
         changed = (self.myHero.hero_name != textVar.get())
         self.myHero.hero_name = textVar.get()
         if changed:
@@ -16990,7 +16996,10 @@ class HeroFrame(Frame):
                                textVar,
                                title="Hero Creation",
                                success=success)
-        print(notePrefix + "success = " + str(success.get()))
+##        print(notePrefix + "success = " + str(success.get()))
+        if success.get() == 0:
+            # User canceled out; drop everything
+            return
         changed = (self.myHero.alias != textVar.get())
         self.myHero.alias = textVar.get()
         if changed:
@@ -17007,7 +17016,10 @@ class HeroFrame(Frame):
                                 title="Hero Creation",
                                 success=success,
                                 width=40)
-        print(notePrefix + "success = " + str(success.get()))
+##        print(notePrefix + "success = " + str(success.get()))
+        if success.get() == 0:
+            # User canceled out; drop everything
+            return
         changed = (self.myHero.pronoun_set != pronoun_choice.get())
         self.myHero.pronoun_set = pronoun_choice.get()
         self.UpdateAll(self.myHero,
@@ -17044,7 +17056,10 @@ class HeroFrame(Frame):
                                         success=success,
                                         lwidth=30,
                                         rwidth=100)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
+                if success.get() == 0:
+                    # User canceled out; drop everything
+                    return
                 selection = ability_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected an Ability to edit
@@ -17059,7 +17074,10 @@ class HeroFrame(Frame):
                                         var=new_name,
                                         title="Edit Hero",
                                         success=success)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
+                    if success.get() == 0:
+                        # User canceled out; drop everything
+                        return
                     changed = (new_name.get() != edit_ability.flavorname)
                     edit_ability.flavorname = new_name.get()
                     if changed:
@@ -17093,7 +17111,10 @@ class HeroFrame(Frame):
                                         success=success,
                                         lwidth=30,
                                         rwidth=100)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
+                if success.get() == 0:
+                    # User canceled out; drop everything
+                    return
                 selection = mode_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a Mode to edit
@@ -17111,7 +17132,10 @@ class HeroFrame(Frame):
                                         var=new_name,
                                         title="Edit Hero",
                                         success=success)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
+                    if success.get() == 0:
+                        # User canceled out; drop everything
+                        return
                     # Make sure this name isn't already being used for a different Mode
                     other_names = [self.myHero.other_modes[i].name for i in \
                                    [i for i in mode_options if i != edit_index]]
@@ -17155,7 +17179,10 @@ class HeroFrame(Frame):
                                         success=success,
                                         lwidth=30,
                                         rwidth=100)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
+                if success.get() == 0:
+                    # User canceled out; drop everything
+                    return
                 selection = form_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a Form to edit
@@ -17196,7 +17223,10 @@ class HeroFrame(Frame):
                                         var=new_name,
                                         title="Edit Hero",
                                         success=success)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
+                    if success.get() == 0:
+                        # User canceled out; drop everything
+                        return
                     # Make sure this name isn't already being used for a different Form
                     other_names = [self.myHero.other_forms[i].name for i in \
                                    [i for i in form_options if i != edit_index]]
@@ -17276,7 +17306,10 @@ class HeroFrame(Frame):
                                         title="Edit Hero",
                                         success=success,
                                         width=30)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
+                if success.get() == 0:
+                    # User canceled out; drop everything
+                    return
                 selection = pqdie_choice.get()
                 if selection in range(1, len(text_options)):
                     # User selected a power/quality to edit
@@ -17291,12 +17324,15 @@ class HeroFrame(Frame):
                                         var=new_name,
                                         title="Edit Hero",
                                         success=success)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
+                    if success.get() == 0:
+                        # User canceled out; drop everything
+                        return
                     # Make sure the new name isn't the name of a different existing Power/Quality
                     official_names = [MixedPQs([x for x in AllCategories(t=0) if x != edit_id[0]]),
                                       MixedPQs([x for x in AllCategories(t=1) if x != edit_id[0]])]
                     other_names = [pqdie_ids[i][1] for i in \
-                                   [i for i in range(len(pqdie_ids)) if i != edit_id]]
+                                   [i for i in range(len(pqdie_ids)) if i != selection-1]]
                     if new_name.get() in official_names[0] + official_names[1]:
                         if new_name.get() in official_names[0]:
                             official_category = 0
@@ -20902,7 +20938,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=2)
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

@@ -219,11 +219,11 @@ Complete steps of hero creation are now reversible
 	 AddHeroRedAbilities
 	 AddHeroRetcon
 	 AddHeroHealth
-	 RenameAny
-	 RenameHero
-	 RenameAbilities
-	 RenameModes
-	 RenameForms
+.	 RenameAny
+.	 RenameHero (3x)
+.	 RenameAbilities (2x)
+.	 RenameModes (2x)
+.	 RenameForms (2x)
 .	 RenamePQDice (2x)
 .	 SaveTXT (2x)
 .	 RevertHero
