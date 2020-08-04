@@ -167,6 +167,51 @@ Figure out titleWidth
   
 Complete steps of hero creation are now reversible
  Can we make this more granular?
+  What would it take for the user to be able to stop in the middle of a step?
+   Data entry windows would need a "Cancel" button
+	SelectFrame
+	EntryFrame
+	ExpandFrame
+	SwapFrame
+	PrincipleFrame
+	AssignFrame
+   Hitting "Cancel" or the X button would need to send a message back to the Hero
+    Hero.__init__: proceed = IntVar(1)
+	Hero.copy: mirror.proceed.set(self.proceed.get())
+	Pass proceed to all data entry windows
+	Windows set proceed to 0 if they're canceled
+	 SelectFrame
+	 EntryFrame
+	 ExpandFrame
+	 SwapFrame
+	 PrincipleFrame
+	 AssignFrame
+	After a Hero method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it checks proceed- if it's 0, cancel everything, revert to the last previous version, and set proceed to 1
+	 AddPQDie
+	 ChoosePQDieSize
+	 ChoosePQ
+	 AssignAllPQ
+	 AddPrinciple
+	 ChoosePrinciple
+	 AddBackground
+	 GuidedBackground
+	 ConstructedBackground
+	 AddAbility
+	 ChooseAbility
+	 AddPowerSource
+	 GuidedPowerSource
+	 ConstructedPowerSource
+	 AddMode
+	 ChooseForm
+	 AddArchetype
+	 GuidedArchetype
+	 ConstructedArchetype
+	 AddPersonality
+	 GuidedPersonality
+	 ConstructedPersonality
+	 AddRedAbility
+	 AddRetcon
+	 AddHealth
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", and get StepDetails to show that?
   Determine substeps...
 .  Background: Qualities, Principle
@@ -176,6 +221,8 @@ Complete steps of hero creation are now reversible
 .  Red Abilities: Red Ability 1, Red Ability 2
 .  Retcon: Swap 2 Power dice, Swap 2 Quality dice, Change the Power/Quality used in an Ability, Add a d6 Power/Quality from ANY category, Upgrade Red status die by one size, Change one of your Principles to any other Principle, Gain another Red ability
 .  Health: Start with 8, Red die, Power/Quality, 4 or 1d8
+  Now that we track this, can we indicate it to the user during the process?
+ ~ The number by itself doesn't tell the user anything, they need something more like a list of applicable substeps with the current one highlighted
  
 Context Menu
  Entries...
