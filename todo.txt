@@ -214,14 +214,20 @@ Complete steps of hero creation are now reversible
 ~	 ChooseIndex / EnterText / ChooseDetailIndex do nothing but get one input from the user; once the corresponding window closes, their job is done even if it was successful
 	 AddPQDie (1x ChooseIndex, 1x EnterText) (no return value)
 	 ChoosePQDieSize (1x ChooseIndex) (returns set of unused dice)
-	 ChoosePQ (2x ChoosePQDieSize, 1x ChooseIndex, 1x ExpandWindow) (returns [list of unused triplets, list of unused die sizes])
+,	 ChoosePQ (2x ChoosePQDieSize, 1x ChooseIndex, 1x ExpandWindow) (returns [list of unused triplets, list of unused die sizes])
+	  ChoosePQDieSize if only one valid triplet
+	  ChoosePQDieSize if multiple valid triplets and multiple valid die sizes
 	 AssignAllPQ (1x ChoosePQ) (no return value)
-	 AddPrinciple (1x ExpandWindow) (no return value)
-	 ChoosePrinciple (2x AddPrinciple, 1x ChooseIndex, 1x ChooseDetailIndex, 1x PrincipleWindow) (no return value)
+.	 AddPrinciple (1x ExpandWindow) (no return value)
+.	 ChoosePrinciple (2x AddPrinciple, 1x ChooseIndex, 1x ChooseDetailIndex, 1x PrincipleWindow) (no return value)
 	 AddBackground (1x ChoosePQDieSize, 1x AssignAllPQ, 1x ChoosePrinciple) (returns set of Power Source dice... but why?)
 	 GuidedBackground (2x ChooseIndex, 1x ChooseDetailIndex) (returns Background index)
 	 ConstructedBackground (1x ChooseDetailIndex) (returns Background index)
-	 ChooseAbility (7x ChooseIndex, 1x EnterText, 1x ChooseDetailIndex, 1x ExpandWindow) (returns set of unused abilities if add==1, the finished Ability otherwise)
+,	 ChooseAbility (7x ChooseIndex, 1x EnterText, 1x ChooseDetailIndex, 1x ExpandWindow) (returns set of unused abilities if add==1, the finished Ability otherwise)
+,	  ExpandWindow for section of Ability list
+,	  ChooseIndex for damage category
+,	  ChooseIndex for [energy/element you have the corresponding Power for]
+,	  ChooseIndex for [basic action]
 	 AddPowerSource (7x ChoosePQ, 1x AssignAllPQ, 2x ChooseAbility, 3x ChooseIndex) (returns set of Archetype dice... but why?)
 	 GuidedPowerSource (2x ChooseIndex, 1x ChooseDetailIndex) (returns Power Source index)
 	 ConstructedPowerSource (1x ChooseDetailIndex) (returns Power Source index)
@@ -234,8 +240,10 @@ Complete steps of hero creation are now reversible
 	 AddPersonality (1x ChooseAbility, 1x ChoosePQDieSize, 1x ChooseIndex) (no return value)
 	 GuidedPersonality (3x ChooseIndex, 1x ChooseDetailIndex) (returns [Personality index])
 	 ConstructedPersonality (2x ChooseIndex, 2x ChooseDetailIndex) (returns [Personality index] or [Heroic Personality index, Civilian Personality index, Out Ability index]
-	 AddRedAbility (1x ChooseAbility, 1x ExpandWindow) (no return value)
-	 AddRetcon (1x AddRedAbility, 1x ChoosePrinciple, 1x ChoosePQ, 8x ChooseIndex, 1x ChooseDetailIndex, 1x ExpandWindow, 2x SwapWindow) (no return value)
+,	 AddRedAbility (1x ChooseAbility, 1x ExpandWindow) (no return value)
+,	  ChooseAbility
+,	 AddRetcon (1x AddRedAbility, 1x ChoosePrinciple, 1x ChoosePQ, 8x ChooseIndex, 1x ChooseDetailIndex, 1x ExpandWindow, 2x SwapWindow) (no return value)
+,	  AddRedAbility for "Gain another Red Ability"
 ~	 HealthRanges doesn't take any input
 .	 AddHealth (3x ChooseIndex) (no return value)
 	 CreateHero (1x AddHealth, 1x AddRetcon, 1x AddRedAbility, 1x GuidedPersonality, 2x ConstructedPersonality, 3x AddPersonality, 1x GuidedArchetype, 1x ConstructedArchetype, 1x AddArchetype, 1x GuidedPowerSource, 1x ConstructedPowerSource, 1x AddPowerSource, 1x GuidedBackground, 1x ConstructedBackground, 1x AddBackground, 4x ChooseIndex) (no return value)
@@ -244,8 +252,8 @@ Complete steps of hero creation are now reversible
 .	 AddHeroPowerSource
 .	 AddHeroArchetype
 .	 AddHeroPersonality
-	 AddHeroRedAbilities
-	 AddHeroRetcon
+.	 AddHeroRedAbilities
+.	 AddHeroRetcon
 .	 AddHeroHealth
 .	 RenameAny
 .	 RenameHero (3x)

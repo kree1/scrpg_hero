@@ -7161,6 +7161,10 @@ class Hero:
                                                   die_options,
                                                   stepnum=max([0, stepnum]),
                                                   inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                return [valid_triplets, valid_dice]
             if track_inputs:
                 print(notePrefix + tracker_close)
             return [[], remaining_dice]
@@ -7216,8 +7220,11 @@ class Hero:
                                             success=success,
                                             lwidth=50,
                                             rwidth=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        return [valid_triplets, valid_dice]
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:sections]
@@ -7256,6 +7263,7 @@ class Hero:
                                                 "\n" + choice_request,
                                                 inputs=inputs,
                                                 title=print_type + " Selection")
+                    print(notePrefix + "proceed = " + str(self.proceed))
                     entry_index = decision[0]
                     inputs = decision[1]
                 entry_start = entry_index * section_length
@@ -7269,7 +7277,10 @@ class Hero:
                                         inputs=inputs,
                                         title=print_type + " Selection",
                                         width=50)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                return [valid_triplets, valid_dice]
             entry_index = decision[0]
             inputs = decision[1]
             triplet_choice = print_triplets[entry_index]
@@ -7287,6 +7298,10 @@ class Hero:
                                                   valid_dice,
                                                   stepnum=max([0, stepnum]),
                                                   inputs=pass_inputs)
+            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                return [valid_triplets, valid_dice]
             if track_inputs:
                 print(notePrefix + tracker_close)
             valid_triplets.remove(triplet_choice)
@@ -7361,6 +7376,9 @@ class Hero:
                                         rwidth=dispWidth)
                 print(notePrefix + "success = " + str(success.get()))
                 self.proceed = success.get()
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    return
                 entry_index = answer.get()
             else:
                 print(self.hero_name + " already has 2 Principles: ")
@@ -7490,7 +7508,10 @@ class Hero:
                                               rwidth=ri_width,
                                               swidth=dispWidth,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                return
             entry_index = decision[0]
             inputs = decision[1]
             ri = r_options[entry_index]
@@ -7502,7 +7523,10 @@ class Hero:
                                         prompt=rename_prompt,
                                         title="Principle Selection",
                                         inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                return
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 1:
@@ -7517,9 +7541,12 @@ class Hero:
                                   entry_index,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    return
             else:
                 # Copy the values in ri so they can be edited or left alone.
                 entry_title = ri.title
@@ -7546,8 +7573,11 @@ class Hero:
                                                    title="Customize " + str(ri),
                                                    success=success,
                                                    width=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        return
                     entry_title = titleVar.get()
                     entry_roleplaying = roleplayingVar.get()
                     entry_minor = minorVar.get()
@@ -7662,9 +7692,12 @@ class Hero:
                                   entry_green,
                                   stepnum=max([0, stepnum]),
                                   inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    return
     def AddBackground(self, bg_index, inputs=[]):
         # Walks the user through adding the quality dice and Principle that they get from the
         #  Background specified by bg_index.
@@ -8110,6 +8143,12 @@ class Hero:
                                             rwidth=a_width)
                     print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if add==1:
+                            return template_options
+                        else:
+                            return []
                     entry_index = answer.get()
                 else:
                     print(options_report)
@@ -8134,6 +8173,12 @@ class Hero:
                                                 prompt=choice_request,
                                                 inputs=inputs)
                     print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if add==1:
+                            return template_options
+                        else:
+                            return []
                     entry_index = decision[0]
                     inputs = decision[1]
                 entry_start = entry_index * section_length
@@ -8154,7 +8199,13 @@ class Hero:
                                               rwidth=a_width,
                                               swidth=100,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if add==1:
+                    return template_options
+                else:
+                    return []
             entry_index = decision[0]
             inputs = decision[1]
             ability_template = template_options[entry_index]
@@ -8191,6 +8242,12 @@ class Hero:
                                         inputs=inputs,
                                         width=50)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if add==1:
+                    return template_options
+                else:
+                    return []
             damage_entry = decision[0]
             inputs = decision[1]
             # Testing...
@@ -8222,6 +8279,12 @@ class Hero:
                                                 inputs=inputs,
                                                 width=50)
                     print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if add==1:
+                            return template_options
+                        else:
+                            return []
                     entry_index = decision[0]
                     inputs = decision[1]
                     element_num = power_die_options[entry_index].index
@@ -8235,6 +8298,12 @@ class Hero:
                                             inputs=inputs,
                                             width=50)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if add==1:
+                        return template_options
+                    else:
+                        return []
                 element_num = decision[0]
                 inputs = decision[1]
         # If the ability needs any basic actions, prompt the user for those
@@ -8251,6 +8320,12 @@ class Hero:
                                                 inputs=inputs,
                                                 width=50)
                     print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if add==1:
+                            return template_options
+                        else:
+                            return []
                     entry_index = decision[0]
                     inputs = decision[1]
                     action_ids[i] = ability_template.action_options[i][entry_index]
@@ -8345,7 +8420,13 @@ class Hero:
                                                     prompt=prompt,
                                                     title=display_str,
                                                     inputs=inputs)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if add==1:
+                                return template_options
+                            else:
+                                return []
                         entry_index = decision[0]
                         inputs = decision[1]
                         pq_triplets[i] = die_options[entry_index].triplet()
@@ -8381,6 +8462,12 @@ class Hero:
                                         title=display_str,
                                         inputs=inputs)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if add==1:
+                    return template_options
+                else:
+                    return []
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 0:
@@ -8391,6 +8478,12 @@ class Hero:
                                           default=new_ability.name,
                                           inputs=inputs)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if add==1:
+                        return template_options
+                    else:
+                        return []
                 new_ability.flavorname = decision[0]
                 inputs = decision[1]
             if add==1:
@@ -11966,6 +12059,7 @@ class Hero:
             return [entry_index]
     def AddRedAbility(self,
                       retcon_step=0,
+                      isRoot=True,
                       inputs=[]):
         # Walks the user through picking out a Red Ability from the options available based on
         #  the hero's current Powers and Qualities.
@@ -12094,8 +12188,13 @@ class Hero:
                                         success=success,
                                         lwidth=35,
                                         rwidth=100)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
                 self.proceed = success.get()
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = answer.get()
             else:
                 entry_options = string.ascii_uppercase[0:len(pq_sublists)]
@@ -12156,10 +12255,16 @@ class Hero:
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
                                inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
     def AddRetcon(self,
+                  isRoot=True,
                   inputs=[]):
         # Walks the user through choosing and implementing one of the AddRetcon options defined in
         #  the rulebook.
@@ -12175,6 +12280,7 @@ class Hero:
                   " Retcon.")
             input()
         else:
+            self.SetPrevious(this_step)
             step_options = ["Swap 2 Power dice",
                             "Swap 2 Quality dice",
                             "Change the Power/Quality used in an Ability",
@@ -12187,7 +12293,12 @@ class Hero:
                                         inputs=inputs,
                                         title="Hero Retcon",
                                         width=60)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             step_choice = step_options[entry_index]
@@ -12213,15 +12324,25 @@ class Hero:
                                           answer1,
                                           success=success,
                                           width=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.power_dice],
                                                 prompt="Choose the first Power die to swap...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     decision = self.ChooseIndex([str(x) for x in self.power_dice],
@@ -12229,7 +12350,12 @@ class Hero:
                                                 str(self.power_dice[swap_indices[0]]) + "...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [self.power_dice[i] for i in swap_indices]
@@ -12271,15 +12397,25 @@ class Hero:
                                           answer1,
                                           success=success,
                                           width=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
                                                 prompt="Choose the first Quality die to swap...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
@@ -12287,7 +12423,12 @@ class Hero:
                                                 str(self.quality_dice[swap_indices[0]]) + "...",
                                                 inputs=inputs,
                                                 title="Hero Retcon")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [self.quality_dice[i] for i in swap_indices]
@@ -12342,7 +12483,12 @@ class Hero:
                                                   rwidth=a_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 edit_ability = ability_options[entry_index]
@@ -12357,7 +12503,12 @@ class Hero:
                                                 title="Retcon: Change an Ability's related " + \
                                                 "Power/Quality",
                                                 width=40)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     edit_index = decision[0]
                     inputs = decision[1]
                 # Find the correct list of powers and qualities to choose a replacement from
@@ -12411,7 +12562,12 @@ class Hero:
                                             title="Retcon: Change an Ability's related " + \
                                             "Power/Quality",
                                             width=50)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
@@ -12442,9 +12598,14 @@ class Hero:
                               [6],
                               stepnum=this_step,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 self.used_retcon = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
                 # This is Substep 5...
@@ -12546,9 +12707,14 @@ class Hero:
                                                 title="Retcon: Upgrade Red status die",
                                                 inputs=pass_inputs,
                                                 width=50)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     if entry_index == len(entry_options) - 1:
@@ -12646,8 +12812,13 @@ class Hero:
                                             success=success,
                                             lwidth=25,
                                             rwidth=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = answer.get()
                 else:
                     entry_options = string.ascii_uppercase[0:len(rc_master)]
@@ -12677,9 +12848,14 @@ class Hero:
                 self.ChoosePrinciple(entry_index,
                                      stepnum=this_step,
                                      inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 self.used_retcon = True
             elif step_choice == "Gain another Red Ability":
                 # This is Substep 7...
@@ -12693,10 +12869,16 @@ class Hero:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
                 self.AddRedAbility(retcon_step=this_step,
+                                   isRoot=False,
                                    inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 self.used_retcon = True
         if self.used_retcon:
             self.RefreshFrame()
@@ -13129,7 +13311,8 @@ class Hero:
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.AddRedAbility(inputs=pass_inputs)
+            self.AddRedAbility(isRoot=False,
+                               inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
@@ -17031,22 +17214,30 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.AddHeroRedAbilities: "
         indent = "    "
         paused = self.PauseAuxWindows()
+        canceled = False
         print("5. Red Abilities")
         rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         if len(rs_abilities) > 1:
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
-        while len(rs_abilities) < 2:
+        while len(rs_abilities) < 2 and not canceled:
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddRedAbility(inputs=pass_inputs)
+            self.myHero.AddRedAbility(isRoot=False,
+                                      inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                canceled = True
             rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -17066,10 +17257,16 @@ class HeroFrame(Frame):
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddRetcon(inputs=pass_inputs)
+            self.myHero.AddRetcon(isRoot=False,
+                                  inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
@@ -21188,7 +21385,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=6)
+firstHero = factory.getAyla(step=5)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
