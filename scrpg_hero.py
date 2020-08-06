@@ -6932,6 +6932,7 @@ class Hero:
                  custom_name=False,
                  flavorname="",
                  stepnum=0,
+                 isRoot=True,
                  inputs=[]):
         # Adds a power/quality die of the specified die size, with the specified identity
         #  (ispower & pair) and custom name (flavorname)
@@ -6969,14 +6970,24 @@ class Hero:
                                         prompt="Do you want to give " + \
                                         MixedPQ([ispower, category, index]) + " a new name?",
                                         inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_choice = decision[0]
             inputs = decision[1]
             if entry_choice == 0:
                 decision = self.EnterText("Enter a new name for " + \
                                           MixedPQ([ispower, category, index]) + ":",
                                           inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 flavorname = decision[0]
                 inputs = decision[1]
         new_die = PQDie(ispower,
@@ -7054,9 +7065,11 @@ class Hero:
                           valid_dice[0],
                           flavorname,
                           stepnum=max([0, stepnum]),
+                          isRoot=False,
                           inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             return []
         else:
             # Are all of valid_dice matching values? If so, just assign that die size.
@@ -7077,9 +7090,11 @@ class Hero:
                               valid_dice[0],
                               flavorname,
                               stepnum=max([0, stepnum]),
+                              isRoot=False,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 return valid_dice[1:]
         # Now we know there are multiple valid_dice with different values. Time to make a choice.
         decision = self.ChooseIndex([str(d) for d in valid_dice],
@@ -7100,9 +7115,11 @@ class Hero:
                       valid_dice[entry_index],
                       flavorname,
                       stepnum=max([0, stepnum]),
+                      isRoot=False,
                       inputs=pass_inputs)
         if track_inputs:
             print(notePrefix + tracker_close)
+        print(notePrefix + "proceed = " + str(self.proceed))
         print("d" + str(valid_dice[entry_index]) + " assigned to " + print_name)
         valid_dice.remove(valid_dice[entry_index])
         return valid_dice
@@ -11539,10 +11556,12 @@ class Hero:
                        pn_index,
                        dv_index=99,
                        out_index=99,
+                       isRoot=True,
                        inputs=[]):
         # Adds the Status dice and Out Ability granted by the specified Personality (or
         #  Personalities, in the case of a Divided hero)
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        # No return value
         notePrefix = "### Hero.AddPersonality: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -11596,9 +11615,14 @@ class Hero:
                                  [8],
                                  stepnum=rpq_step,
                                  inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
             #  Psyche and gets no Qualities in Heroic Form(s)
             matching_dice = [x for x in self.quality_dice if math.floor(x.step) == this_step]
@@ -11607,20 +11631,11 @@ class Hero:
                 # All Civilian Form(s) get this Quality
                 for fm in self.other_forms:
                     fm.CheckReference()
-##                    print(notePrefix + "checking " + fm.name + "...")
                     if fm.dv_index == 0 and \
                        rpq_die not in fm.quality_dice and \
                        not fm.std_qualities:
-##                        print(notePrefix + fm.name + " is " + self.dv_tags[fm.dv_index] + \
-##                              ", adding " + rpq_die.flavorname)
                         fm.SetPrevious(rpq_step)
                         fm.quality_dice.append(rpq_die)
-##                    elif fm.dv_index != 0:
-##                        print(notePrefix + fm.name + " is " + self.dv_tags[fm.dv_index])
-##                    elif rpq_die in fm.quality_dice:
-##                        print(notePrefix + fm.name + " already has " + rpq_die.flavorname)
-##                    elif fm.std_qualities:
-##                        print(notePrefix + fm.name + " refers to the base sheet for Qualities.")
             else:
 ##                print(notePrefix + "Divided Psyche not found")
                 # All Form(s) and Mode(s) get this Quality
@@ -11628,17 +11643,11 @@ class Hero:
                 #  for it
                 for fm in self.other_forms:
                     if rpq_die not in fm.quality_dice and not fm.std_qualities:
-##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + fm[0])
                         fm.SetPrevious(rpq_step)
                         fm.quality_dice.append(rpq_die)
-##                    else:
-##                        print(notePrefix + fm[0] + " already has " + rpq_die.flavorname)
                 for md in self.other_modes:
                     if rpq_die not in md.quality_dice and not md.std_qualities:
-##                        print(notePrefix + "adding " + rpq_die.flavorname + " in " + md.name)
                         md.quality_dice.append(rpq_die)
-##                    else:
-##                        print(notePrefix + md.name + " already has " + rpq_die.flavorname)
             # Substep 2: Status Dice...
             sd_step = this_step + 0.2
             self.SetPrevious(sd_step)
@@ -11694,7 +11703,12 @@ class Hero:
                                3,
                                stepnum=out_step,
                                inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             if track_inputs:
                 print(notePrefix + tracker_close)
             # Substep 4: Personality Bonus...
@@ -11753,7 +11767,12 @@ class Hero:
                                                 inputs=inputs,
                                                 title="Personality Selection: Impulsive",
                                                 width=40)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgrade_die = upgrade_pqs[entry_index]
@@ -11831,7 +11850,9 @@ class Hero:
         else:
             # This hero doesn't have a Personality, but pn_index is invalid
             print("Error! Invalid Personality index: " + str(pn_index))
-    def GuidedPersonality(self, inputs=[]):
+    def GuidedPersonality(self,
+                          isRoot=True,
+                          inputs=[]):
         # Walks the user through randomly choosing Personality(ies) as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### GuidedPersonality: "
@@ -11848,6 +11869,11 @@ class Hero:
                                         title="Personality Selection",
                                         inputs=inputs)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return [99]
             entry_choice = decision[0]
             inputs = decision[1]
             is_multiple = (entry_choice == 0)
@@ -11911,6 +11937,11 @@ class Hero:
                                                   swidth=dispWidth,
                                                   inputs=inputs)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return [99]
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Now we have a commitment to a valid choice from the list.
@@ -11923,6 +11954,11 @@ class Hero:
                                                 title="Personality Selection",
                                                 inputs=inputs)
                     print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return [99]
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -11941,6 +11977,11 @@ class Hero:
                                                         title="Personality Selection",
                                                         width=25)
                             print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return [99]
                             inputs = decision[1]
                             prev_result = die_results[decision[0]]
                     rerolls = 0
@@ -11948,7 +11989,9 @@ class Hero:
                     # User selected a personality.
                     print(pn_collection[pn_indices[entry_index]][0] + " Personality selected.")
                     return [pn_indices[entry_index]]
-    def ConstructedPersonality(self, inputs=[]):
+    def ConstructedPersonality(self,
+                               isRoot=True,
+                               inputs=[]):
         # Walks the user through choosing Personality(ies) from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         notePrefix = "### ConstructedPersonality: "
@@ -11963,7 +12006,12 @@ class Hero:
                                         prompt="Do you want to use two different Personalities?",
                                         title="Personality Selection",
                                         inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return [99]
             entry_choice = decision[0]
             inputs = decision[1]
             is_multiple = (entry_choice == 0)
@@ -11998,7 +12046,12 @@ class Hero:
                                                   rwidth=pn_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return [99]
                 entry_index = decision[0]
                 inputs = decision[1]
                 print(pn_collection[entry_index][0] + " Personality selected.")
@@ -12021,7 +12074,12 @@ class Hero:
                                             inputs=inputs,
                                             title="Personality Selection",
                                             width=50)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return [99]
                 out_choice = decision[0]
                 inputs = decision[1]
             personalities.append(out_choice)
@@ -12052,7 +12110,12 @@ class Hero:
                                               rwidth=pn_width,
                                               swidth=dispWidth,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return [99]
             entry_index = decision[0]
             inputs = decision[1]
             print(pn_collection[entry_index][0] + " Personality selected.")
@@ -17163,10 +17226,15 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
-                pn_indices = self.myHero.GuidedPersonality(inputs=pass_inputs)
+                pn_indices = self.myHero.GuidedPersonality(isRoot=False,
+                                                           inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
@@ -17176,15 +17244,25 @@ class HeroFrame(Frame):
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                    pn_indices = self.myHero.ConstructedPersonality(isRoot=False,
+                                                                    inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                    if self.myHero.proceed == 0:
+                        # User canceled out; fix proceed and drop everything
+                        self.myHero.proceed = 1
+                        return
             else:
-                pn_indices = self.myHero.ConstructedPersonality(inputs=pass_inputs)
+                pn_indices = self.myHero.ConstructedPersonality(isRoot=False,
+                                                                inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
             # Add the chosen Personality/ies
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -17194,19 +17272,28 @@ class HeroFrame(Frame):
                     pass_inputs = inputs.pop(0)
             if len(pn_indices) == 1:
                 self.myHero.AddPersonality(pn_indices[0],
-                                    inputs=pass_inputs)
+                                           isRoot=False,
+                                           inputs=pass_inputs)
             elif len(pn_indices) == 2:
                 self.myHero.AddPersonality(pn_indices[0],
                                            dv_index=pn_indices[1],
+                                           isRoot=False,
                                            inputs=pass_inputs)
             else:
                 self.myHero.AddPersonality(pn_indices[0],
                                            dv_index=pn_indices[1],
                                            out_index=pn_indices[2],
+                                           isRoot=False,
                                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out while modifying myHero; restore to last saved version
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroRedAbilities(self, inputs=[]):
@@ -21385,7 +21472,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getAyla(step=5)
+firstHero = factory.getKnockout(step=3)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
