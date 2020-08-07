@@ -313,6 +313,14 @@ def split_text(text,
         # Make sure to include prefix before the first line
         return prefix + conjunction.join(lines)
 
+def remove_duplicates(entries):
+    # Returns only the unique values from entries
+    collection = [x for x in entries]
+    for i in range(len(collection)-1, 0, -1):
+        if collection[i] in collection[0:i]:
+            del collection[i]
+    return collection
+
 def dice_combo(die_sizes, results=[]):
     # Converts a list of die sizes (e.g., [6, 6, 10]) to a phrase describing the set of dice
     #  (e.g. "2d6 + 1d10")
@@ -7009,6 +7017,7 @@ class Hero:
                         custom_name=False,
                         flavorname="",
                         stepnum=0,
+                        isRoot=True,
                         inputs=[]):
         # Lets the user choose from a list of dice (die_options) to assign to the specified power
         #  or quality (ispower, pair) with custom name (flavorname)
@@ -7070,6 +7079,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return valid_dice
             return []
         else:
             # Are all of valid_dice matching values? If so, just assign that die size.
@@ -7095,6 +7109,11 @@ class Hero:
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return valid_dice
                 return valid_dice[1:]
         # Now we know there are multiple valid_dice with different values. Time to make a choice.
         decision = self.ChooseIndex([str(d) for d in valid_dice],
@@ -7102,6 +7121,11 @@ class Hero:
                                     inputs=inputs,
                                     width=45)
         print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; fix proceed & drop everything
+            if isRoot:
+                self.proceed = 1
+            return valid_dice
         entry_index = decision[0]
         inputs = decision[1]
         if track_inputs:
@@ -7120,6 +7144,11 @@ class Hero:
         if track_inputs:
             print(notePrefix + tracker_close)
         print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; fix proceed & drop everything
+            if isRoot:
+                self.proceed = 1
+            return valid_dice
         print("d" + str(valid_dice[entry_index]) + " assigned to " + print_name)
         valid_dice.remove(valid_dice[entry_index])
         return valid_dice
@@ -7128,6 +7157,7 @@ class Hero:
                  die_options,
                  custom_name=False,
                  stepnum=0,
+                 isRoot=True,
                  inputs=[]):
         # Lets the user choose from a list of powers and/or qualities (triplets) to assign one of a
         #  list of dice (die_options)
@@ -7177,13 +7207,14 @@ class Hero:
                                                   valid_triplets[0][1:],
                                                   die_options,
                                                   stepnum=max([0, stepnum]),
+                                                  isRoot=False,
                                                   inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 return [valid_triplets, valid_dice]
-            if track_inputs:
-                print(notePrefix + tracker_close)
             return [[], remaining_dice]
         else:
             # If none of these, the user has to make a choice...
@@ -7241,6 +7272,8 @@ class Hero:
                     self.proceed = success.get()
                     if self.proceed == 0:
                         # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
                         return [valid_triplets, valid_dice]
                     entry_index = answer.get()
                 else:
@@ -7297,6 +7330,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 return [valid_triplets, valid_dice]
             entry_index = decision[0]
             inputs = decision[1]
@@ -7314,16 +7349,24 @@ class Hero:
                                                   triplet_choice[1:],
                                                   valid_dice,
                                                   stepnum=max([0, stepnum]),
+                                                  isRoot=False,
                                                   inputs=pass_inputs)
             print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 return [valid_triplets, valid_dice]
             if track_inputs:
                 print(notePrefix + tracker_close)
             valid_triplets.remove(triplet_choice)
             return [valid_triplets, remaining_dice]
-    def AssignAllPQ(self, triplets, dice_options, stepnum=0, inputs=[]):
+    def AssignAllPQ(self,
+                    triplets,
+                    dice_options,
+                    stepnum=0,
+                    isRoot=True,
+                    inputs=[]):
         # Prompts the user to assign ALL the dice in dice_options to powers and/or qualities from
         #  triplets, one at a time
         # inputs: a set of text inputs to use automatically instead of prompting the user
@@ -7345,9 +7388,16 @@ class Hero:
             remainders = self.ChoosePQ(remaining_triplets,
                                        remaining_dice,
                                        stepnum=max([0, stepnum]),
+                                       isRoot=False,
                                        inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             remaining_triplets = remainders[0]
             remaining_dice = remainders[1]
             # Repeat until there are no more dice.
@@ -7360,6 +7410,7 @@ class Hero:
                      major="",
                      green="",
                      stepnum=0,
+                     isRoot=True,
                      inputs=[]):
         # Adds a fully defined Principle with the specified category, index, title, roleplaying
         #  text, minor twist, major twist, and Green Ability.
@@ -7395,6 +7446,8 @@ class Hero:
                 self.proceed = success.get()
                 if self.proceed == 0:
                     # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
                     return
                 entry_index = answer.get()
             else:
@@ -7478,7 +7531,11 @@ class Hero:
         # If we have a GUI, update it
         if isinstance(self.myFrame, HeroFrame):
             self.myFrame.UpdateAll(self)
-    def ChoosePrinciple(self, category, stepnum=0, inputs=[]):
+    def ChoosePrinciple(self,
+                        category,
+                        stepnum=0,
+                        isRoot=True,
+                        inputs=[]):
         # Lets the user choose a Principle from the specified category and modify it if necessary
         #  before adding it to the hero.
         # stepnum: the number of the step of hero creation (1-7) at which this Principle is being
@@ -7528,6 +7585,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 return
             entry_index = decision[0]
             inputs = decision[1]
@@ -7543,6 +7602,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 return
             entry_choice = decision[0]
             inputs = decision[1]
@@ -7557,12 +7618,15 @@ class Hero:
                 self.AddPrinciple(category,
                                   entry_index,
                                   stepnum=max([0, stepnum]),
+                                  isRoot=False,
                                   inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
 ##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
                     return
             else:
                 # Copy the values in ri so they can be edited or left alone.
@@ -7594,6 +7658,8 @@ class Hero:
                     self.proceed = success.get()
                     if self.proceed == 0:
                         # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
                         return
                     entry_title = titleVar.get()
                     entry_roleplaying = roleplayingVar.get()
@@ -7708,12 +7774,15 @@ class Hero:
                                   entry_major,
                                   entry_green,
                                   stepnum=max([0, stepnum]),
+                                  isRoot=False,
                                   inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
 ##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
                     return
     def AddBackground(self, bg_index, inputs=[]):
         # Walks the user through adding the quality dice and Principle that they get from the
@@ -7770,10 +7839,11 @@ class Hero:
                                                       q_requirements[0][1:],
                                                       remaining_dice,
                                                       stepnum=quality_step,
+                                                      isRoot=False,
                                                       inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             # Use AssignAllPQ to have the user assign each remaining die to one of the optional
             #  qualities.
             # AssignAllPQ runs until there are no dice left, so there's no need to update
@@ -7787,10 +7857,11 @@ class Hero:
             self.AssignAllPQ(q_options,
                              remaining_dice,
                              stepnum=quality_step,
+                             isRoot=False,
                              inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             self.RefreshFrame()
             # Adding a Principle is the second substep.
             prin_step = this_step + 0.2
@@ -7804,10 +7875,11 @@ class Hero:
                     pass_inputs = inputs.pop(0)
             self.ChoosePrinciple(r_category,
                                  stepnum=prin_step,
+                                 isRoot=False,
                                  inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             print("That's all for your Background! Take " + str(ps_dice) + \
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
@@ -7838,8 +7910,7 @@ class Hero:
             #  their sum.
             bg_options = [min(die_results), max(die_results), sum(die_results)]
             # In case of doubles, remove the duplicate roll:
-            if bg_options[0] == bg_options[1]:
-                del bg_options[1]
+            bg_options = remove_duplicates(bg_options)
             # To convert to 0-index, subtract 1 from each option.
             bg_indices = [x-1 for x in bg_options]
             # Let the user choose from the options provided by their roll...
@@ -8478,7 +8549,7 @@ class Hero:
                                         prompt=rename_prompt,
                                         title=display_str,
                                         inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if add==1:
@@ -8494,7 +8565,7 @@ class Hero:
                                           title=display_str,
                                           default=new_ability.name,
                                           inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if add==1:
@@ -8587,10 +8658,11 @@ class Hero:
                 pdice = self.ChoosePQ(required_powers,
                                       pdice,
                                       stepnum=power_step,
+                                      isRoot=False,
                                       inputs=pass_inputs)[1]
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -8601,10 +8673,11 @@ class Hero:
             self.AssignAllPQ(optional_powers,
                              pdice,
                              stepnum=power_step,
+                             isRoot=False,
                              inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
             if track_inputs:
                 print(notePrefix + tracker_close)
+            print(notePrefix + "proceed = " + str(self.proceed))
             # Substep 2: Yellow Abilities...
             yellow_step = this_step + 0.2
             if yellow_count > 0:
@@ -8647,9 +8720,9 @@ class Hero:
                                                     triplet_options=legal_triplets,
                                                     stepnum=yellow_step,
                                                     inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             # Substep 3: Green Abilities...
             green_step = this_step + 0.3
             if green_count > 0:
@@ -8667,9 +8740,9 @@ class Hero:
                                                    0,
                                                    stepnum=green_step,
                                                    inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             # Substep 4: Power Source Bonus
             bonus_step = this_step + 0.4
             if ps_bonus > 0:
@@ -8692,10 +8765,11 @@ class Hero:
                 self.ChoosePQ(Category(0,0),
                               [10],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             elif ps_bonus == 3:
                 # Supernatural: Gain a d10 Power that ISN'T listed.
                 print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
@@ -8711,10 +8785,11 @@ class Hero:
                 self.ChoosePQ(non_optional_powers,
                               [10],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             elif ps_bonus == 4:
                 # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more d6
                 #  Power from the Alien list.
@@ -8732,10 +8807,11 @@ class Hero:
                     self.ChoosePQ(optional_powers,
                                   [6],
                                   stepnum=bonus_step,
+                                  isRoot=False,
                                   inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+                    print(notePrefix + "proceed = " + str(self.proceed))
                 elif len(d6_pqs) == 1:
                     # Exactly 1 d6: upgrade it without prompting the user.
                     print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
@@ -8768,10 +8844,11 @@ class Hero:
                 self.ChoosePQ(optional_qualities,
                               [10],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             elif ps_bonus == 6:
                 # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
                 #  power by 1 die size.
@@ -8830,10 +8907,11 @@ class Hero:
                 self.ChoosePQ(Category(0,3),
                               [8],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             elif ps_bonus == 8:
                 # The Multiverse: Gain a d6 Power from ANY category.
                 print("Bonus: You get a d6 Power from ANY category.")
@@ -8847,10 +8925,11 @@ class Hero:
                 self.ChoosePQ(power_triplets,
                               [6],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
@@ -8886,8 +8965,7 @@ class Hero:
                 # Since there are only two dice, this is a straightforward list: the two results
                 #  and their sum.
                 ps_options = [min(die_results), max(die_results), sum(die_results)]
-                if ps_options[0] == ps_options[1]:
-                    ps_options.remove(ps_options[0])
+                ps_options = remove_duplicates(ps_options)
             else:
                 roll_report = "Rolled " + str(die_results[0]) + ", " + str(die_results[1]) + \
                               ", and " + str(die_results[2]) + "."
@@ -8896,15 +8974,7 @@ class Hero:
                 #  the sum of all three minus the value of the third.
                 ps_options = [x for x in die_results] + [sum(die_results) - y for y in die_results]
                 ps_options.sort()
-                # Remove duplicates:
-                #  i counts forward from 0 to end-of-list -1
-                #  j counts backward from end-of-list to i
-                #  if ps_options[i] and ps_options[j] match, delete ps_options[j]
-                for i in range(len(ps_options)-1):
-                    for j in range(len(ps_options)-1,i,-1):
-                        if i < j < len(ps_options):
-                            if ps_options[i] == ps_options[j]:
-                                del ps_options[j]
+                ps_options = remove_duplicates(ps_options)
             print(roll_report)
 ##            print(notePrefix + "ps_options: " + str(ps_options))
             # To convert to 0-index, subtract 1 from each option:
@@ -9009,6 +9079,7 @@ class Hero:
                 zone,
                 index,
                 stepnum=0,
+                isRoot=True,
                 inputs=[]):
         # Walks the user through adding a Mode based on the mode_template specified by zone and
         #  index.
@@ -9058,6 +9129,11 @@ class Hero:
                                             title="Mode Creation: " + t_name,
                                             width=45)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -9097,6 +9173,11 @@ class Hero:
                                             title="Mode Creation: " + t_name,
                                             width=45)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 entry_die = remaining_dice[entry_index]
@@ -9129,9 +9210,14 @@ class Hero:
                                        alt_powers=mode_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
         if track_inputs:
             print(notePrefix + tracker_close)
+        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return
         # Let the user choose whether to customize the name.
         mode_name = t_name
         entry_options = ["Yes", "No"]
@@ -9139,7 +9225,12 @@ class Hero:
                                     prompt="Do you want to give " + t_name + " a new name?",
                                     title="Mode Creation: " + t_name,
                                     inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return
         entry_choice = decision[0]
         inputs = decision[1]
         if entry_choice == 0:
@@ -9147,7 +9238,12 @@ class Hero:
                                       inputs=inputs,
                                       default=t_name,
                                       title="Mode Creation: " + t_name)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             mode_name = decision[0]
             inputs = decision[1]
         # Quality dice in a Mode match the base Quality list, so far
@@ -9486,6 +9582,7 @@ class Hero:
     def ChooseForm(self,
                    zone,
                    stepnum=0,
+                   isRoot=True,
                    inputs=[]):
         # Walks the user through selecting and adding a Form in the specified status zone.
         # stepnum: the number of the step of hero creation (1-7) at which this Form is being added
@@ -9520,7 +9617,12 @@ class Hero:
                                           rwidth=dispWidth,
                                           swidth=100,
                                           inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return
         entry_index = decision[0]
         inputs = decision[1]
         form_ability_template = form_options[entry_index]
@@ -9556,7 +9658,12 @@ class Hero:
                                         title=title,
                                         inputs=inputs,
                                         width=50)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             step_choice = decision[0]
             inputs = decision[1]
             if step_text[step_choice] == "Yes, swap 2 Power dice":
@@ -9575,8 +9682,13 @@ class Hero:
                                           title=title,
                                           success=success,
                                           width=dispWidth)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices = [answer0.get(), answer1.get()]
                 else:
                     entry_options = string.ascii_uppercase[0:len(form_power_dice)]
@@ -9586,7 +9698,12 @@ class Hero:
                                                 title=title,
                                                 width=dispWidth,
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[0] = decision[0]
                     inputs = decision[1]
                     entry_options = string.ascii_uppercase[0:len(form_power_dice)]
@@ -9599,7 +9716,12 @@ class Hero:
                                                 title=title,
                                                 width=dispWidth,
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     swap_indices[1] = decision[0]
                     inputs = decision[1]
                 swap_dice = [form_power_dice[i] for i in swap_indices]
@@ -9624,7 +9746,12 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=40)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 die_index = decision[0]
                 inputs = decision[1]
                 changed_die = form_power_dice[die_index]
@@ -9636,7 +9763,12 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=40)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Change changed_die's attributes to those of the newly selected Power
@@ -9663,7 +9795,12 @@ class Hero:
                                             inputs=inputs,
                                             title=title,
                                             width=50)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index in range(len(power_indices)):
@@ -9690,9 +9827,14 @@ class Hero:
                                        alt_powers=form_power_dice,
                                        stepnum=this_step,
                                        inputs=pass_inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
         if track_inputs:
             print(notePrefix + tracker_close)
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return
         # Let the user choose whether to customize the name.
         form_name = form_ability_template.name
         entry_options = ["Yes", "No"]
@@ -9700,7 +9842,12 @@ class Hero:
                                     prompt="Do you want to give " + form_name + " a new name?",
                                     title=title,
                                     inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return
         entry_choice = decision[0]
         inputs = decision[1]
         if entry_choice == 0:
@@ -9708,7 +9855,12 @@ class Hero:
                                       inputs=inputs,
                                       default=form_name,
                                       title=title)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             form_name = decision[0]
             inputs = decision[1]
         form_status = Status(ref=1, stepnum=this_step)
@@ -9733,7 +9885,12 @@ class Hero:
                                         inputs=inputs,
                                         title=title,
                                         width=50)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if entry_index in range(len(self.dv_tags)):
@@ -9748,6 +9905,7 @@ class Hero:
                      arc_index,
                      mod_index=0,
                      a_dice=[],
+                     isRoot=True,
                      inputs=[]):
         # Walks the user through adding the Powers/Qualities, Abilities, and Principle they gain
         #  from the specified Archetype or Archetype combo.
@@ -9841,7 +9999,7 @@ class Hero:
                 ext_report += "\n\nYou already have..."
                 ext_names = str(primary_matches[0])
                 for d in primary_matches[1:]:
-                    ext_names += ", " + str(d)
+                    ext_names += "\n" + str(d)
                 ext_report += "\n" + split_text(ext_names,
                                                 width=100,
                                                 prefix="    ")
@@ -9855,7 +10013,12 @@ class Hero:
                                                 "option above? (y/n)",
                                                 title="Archetype Selection: " + arc_title,
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -9872,10 +10035,16 @@ class Hero:
                         remainders = self.ChoosePQ(primary_options,
                                                    a_dice,
                                                    stepnum=primary_step,
+                                                   isRoot=False,
                                                    inputs=pass_inputs)
-                        print(notePrefix + "proceed = " + str(self.proceed))
                         if track_inputs:
                             print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
                         a_dice = remainders[1]
                 elif primary_alt == 2:
                     # Skip or swap the die with one of the new ones
@@ -9883,10 +10052,15 @@ class Hero:
                     decision = self.ChooseIndex(entry_options,
                                                 prompt=ext_report + "\n\nDo you want to swap " + \
                                                 "one of the dice you have above for one of " + \
-                                                str(a_dice) + "?",
+                                                str(a_dice) + "? (y/n)",
                                                 title="Archetype Selection: " + arc_title,
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_choice = decision[0]
                     inputs = decision[1]
                     if entry_choice == 0:
@@ -9901,7 +10075,12 @@ class Hero:
                                                         " to change die size:",
                                                         inputs=inputs,
                                                         width=40)
-                            print(notePrefix + "proceed = " + str(self.proceed))
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; fix proceed & drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
                             swap_index = decision[0]
                             inputs = decision[1]
                         # Swap the die size of primary_matches[swap_index] with the die size of
@@ -9912,7 +10091,12 @@ class Hero:
                                                     str(primary_matches[swap_index]) + ":",
                                                     inputs=inputs,
                                                     width=40)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
                         a_die_index = decision[0]
                         inputs = decision[1]
                         primary_matches[swap_index].SetPrevious(primary_step)
@@ -9936,10 +10120,16 @@ class Hero:
                                               primary_pqs[0][1:],
                                               a_dice,
                                               stepnum=primary_step,
+                                              isRoot=False,
                                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             elif len(primary_pqs) > 1:
                 # This Archetype has more than 1 primary power/quality and this hero needs to gain
                 #  one of them.
@@ -9956,10 +10146,16 @@ class Hero:
                 remainders = self.ChoosePQ(primary_options,
                                            a_dice,
                                            stepnum=primary_step,
+                                           isRoot=False,
                                            inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 a_dice = remainders[1]
             # Substep 2: Secondary Powers/Qualities...
             secondary_step = this_step + 0.2
@@ -9976,10 +10172,16 @@ class Hero:
                 remainders = self.ChoosePQ(secondary_pqs,
                                            a_dice,
                                            stepnum=secondary_step,
+                                           isRoot=False,
                                            inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 a_dice = remainders[1]
                 entry_choice = ' '
                 # If secondary_count is >1, the user gets to assign any number of dice to
@@ -9996,10 +10198,16 @@ class Hero:
                     self.AssignAllPQ(secondary_pqs + tertiary_pqs,
                                      a_dice,
                                      stepnum=secondary_step,
+                                     isRoot=False,
                                      inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     a_dice = []
             # Substep 3: Tertiary Powers/Qualities...
             tertiary_step = this_step + 0.3
@@ -10014,10 +10222,16 @@ class Hero:
                 self.AssignAllPQ(tertiary_pqs,
                                  a_dice,
                                  stepnum=tertiary_step,
+                                 isRoot=False,
                                  inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Substep 4: Bonus Powers/Qualities...
             bonus_step = this_step + 0.4
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
@@ -10035,10 +10249,16 @@ class Hero:
                 self.ChoosePQ(arc_q_triplets,
                               [self.arc_bonus_quality],
                               stepnum=bonus_step,
+                              isRoot=False,
                               inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # If this Archetype grants a bonus Power or Quality die, this is the time to choose it.
             if arc_grants_dice:
                 if arc_bonus == 2:
@@ -10054,10 +10274,16 @@ class Hero:
                     self.ChoosePQ(Category(1,8),
                                   [10],
                                   stepnum=bonus_step,
+                                  isRoot=False,
                                   inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
             # Substep 5: Abilities...
             ability_step = this_step + 0.5
             if self.archetype_modifier == 2:
@@ -10080,10 +10306,16 @@ class Hero:
                     self.ChoosePQ(power_triplets,
                                   [6],
                                   stepnum=bonus_step,
+                                  isRoot=False,
                                   inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Then add the mandatory Abilities for the Modular archetype:
                 self.SetPrevious(ability_step)
                 mandatory_abilities = [a for a in arc_modular[7]]
@@ -10099,9 +10331,14 @@ class Hero:
                                        zone,
                                        stepnum=ability_step,
                                        inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Substep 6: Auxiliary Sheets...
                 aux_step = this_step + 0.6
                 self.SetPrevious(aux_step)
@@ -10115,7 +10352,12 @@ class Hero:
                                             prompt=prompt,
                                             title="Archetype Selection: Modular",
                                             inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 if entry_index == 0:
@@ -10128,10 +10370,16 @@ class Hero:
                     self.AddMode(-1,
                                  0,
                                  stepnum=aux_step,
+                                 isRoot=False,
                                  inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Then, they get 1 additional Green Mode.
                 dispWidth = 100
                 decision = self.ChooseDetailIndex("Choose 1 additional Green Mode:",
@@ -10154,7 +10402,12 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader="Choose 1 additional Green Mode:",
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 if track_inputs:
@@ -10166,10 +10419,16 @@ class Hero:
                 self.AddMode(0,
                              entry_index,
                              stepnum=aux_step,
+                             isRoot=False,
                              inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 # Then, they get 2 different Yellow Modes.
                 yellow_indices = [i for i in range(len(mc_yellow))]
                 for x in range(2):
@@ -10199,7 +10458,12 @@ class Hero:
                                                       swidth=dispWidth,
                                                       shellHeader=prompt,
                                                       inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     mode_index = yellow_indices[entry_index]
@@ -10212,10 +10476,16 @@ class Hero:
                     self.AddMode(1,
                                  mode_index,
                                  stepnum=aux_step,
+                                 isRoot=False,
                                  inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     del yellow_indices[entry_index]
                 # Finally, they get 1 Red Mode.
                 decision = self.ChooseDetailIndex("Choose a Red Mode:",
@@ -10239,7 +10509,12 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader="Choose a Red Mode:",
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 if track_inputs:
@@ -10251,10 +10526,16 @@ class Hero:
                 self.AddMode(2,
                              entry_index,
                              stepnum=aux_step,
+                             isRoot=False,
                              inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             else:
                 # As long as the hero isn't Modular, they get the Abilities from their main
                 #  Archetype.
@@ -10301,9 +10582,14 @@ class Hero:
                                        triplet_options=legal_triplets,
                                        stepnum=ability_step,
                                        inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Then move on to the Green Abilities:
                 # If mixed_abilities exists, then that's the list of Green Ability options
                 if len(mixed_abilities) > 0:
@@ -10365,9 +10651,14 @@ class Hero:
                                                          category_req=category_req,
                                                          stepnum=ability_step,
                                                          inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Next add the Yellow Abilities, if there are any
                 # If mixed_abilities exists, then green_abilities is the list of Yellow Ability
                 #  options
@@ -10409,9 +10700,14 @@ class Hero:
                                                           triplet_options=legal_triplets,
                                                           stepnum=ability_step,
                                                           inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 # Substep 6: Auxiliary Sheets...
                 aux_step = this_step + 0.6
                 # If the hero is a Form-Changer, create their Forms
@@ -10427,10 +10723,16 @@ class Hero:
                                 pass_inputs = inputs.pop(0)
                         self.ChooseForm(f_zone,
                                         stepnum=aux_step,
+                                        isRoot=False,
                                         inputs=pass_inputs)
-                        print(notePrefix + "proceed = " + str(self.proceed))
                         if track_inputs:
                             print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
                 # If the hero is a Minion-Maker, select their Minion Forms
                 if self.archetype == 13:
                     self.SetPrevious(aux_step)
@@ -10441,7 +10743,12 @@ class Hero:
                                                 " has access to:",
                                                 inputs=inputs,
                                                 width=50)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     self.mf_quality = self.quality_dice[entry_index]
@@ -10476,8 +10783,13 @@ class Hero:
                                                          firstMax=remaining,
                                                          counter=True,
                                                          title="Archetype Selection: Minion-Maker")
-                                print(notePrefix + "success = " + str(success.get()))
+##                                print(notePrefix + "success = " + str(success.get()))
                                 self.proceed = success.get()
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 answers = result.get()
                                 self.min_forms += [min_indices[i] \
                                                    for i in range(len(min_indices)) \
@@ -10531,7 +10843,12 @@ class Hero:
                                             prompt=prompt,
                                             title="Archetype Selection: Divided",
                                             inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -10540,7 +10857,12 @@ class Hero:
                                                   " form.",
                                                   inputs=inputs,
                                                   title="Archetype Selection: Divided")
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
                         self.dv_tags[i] = decision[0]
                         if self.dv_tags[i].islower():
                             self.dv_tags[i] = self.dv_tags[i].capitalize()
@@ -10571,7 +10893,12 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader=tr_prompt,
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 entry_index = decision[0]
                 inputs = decision[1]
                 self.dv_transition = entry_index
@@ -10595,9 +10922,14 @@ class Hero:
                                    triplet_options=arc_triplets,
                                    stepnum=transition_step,
                                    inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 # Substep 8: Divided Nature...
                 divided_step = this_step + 0.8
                 self.SetPrevious(divided_step)
@@ -10618,7 +10950,12 @@ class Hero:
                                                     " form for them?",
                                                     inputs=inputs,
                                                     width=50)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
                         entry_index = decision[0]
                         inputs = decision[1]
                         f.SetPrevious(divided_step)
@@ -10727,7 +11064,12 @@ class Hero:
                                                       swidth=dispWidth,
                                                       shellHeader=dn_prompt,
                                                       inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     self.dv_nature = dn_collection.index(divided_natures[entry_index])
@@ -10748,9 +11090,14 @@ class Hero:
                                        0,
                                        stepnum=divided_step,
                                        inputs=pass_inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
                     if track_inputs:
                         print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     # Create a Civilian Form with standard Qualities & Status but no Powers
                     cv_name = self.dv_tags[0] + " Form"
                     quality_key = PQDie(0,
@@ -10847,8 +11194,13 @@ class Hero:
                                                           title=title,
                                                           success=success,
                                                           width=dispWidth)
-                                    print(notePrefix + "success = " + str(success.get()))
+##                                    print(notePrefix + "success = " + str(success.get()))
                                     self.proceed = success.get()
+                                    if self.proceed == 0:
+                                        # User canceled out; drop everything
+                                        if isRoot:
+                                            self.proceed = 1
+                                        return
                                     constantIndices = [answer0.get(), answer1.get()]
                                     # Move corresponding power IDs from options to constant,
                                     #  removing them in descending order so the indices don't
@@ -10870,7 +11222,12 @@ class Hero:
                                                                 title="Archetype Selection: " + \
                                                                 "Divided",
                                                                 width=50)
-                                    print(notePrefix + "proceed = " + str(self.proceed))
+##                                    print(notePrefix + "proceed = " + str(self.proceed))
+                                    if self.proceed == 0:
+                                        # User canceled out; drop everything
+                                        if isRoot:
+                                            self.proceed = 1
+                                        return
                                     entry_index = decision[0]
                                     inputs = decision[1]
                                     print("OK! Marking " + \
@@ -10967,10 +11324,14 @@ class Hero:
                                                          [x[1] for x in unassigned_power_ids],
                                                          result,
                                                          title="Archetype Selection: Divided",
-                                                         success=success,
-                                                         width=50)
-                                print(notePrefix + "success = " + str(success.get()))
+                                                         success=success)
+##                                print(notePrefix + "success = " + str(success.get()))
                                 self.proceed = success.get()
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 answer = result.get()
                                 for i in range(len(unassigned_power_ids)):
                                     if answer[i] == string.ascii_uppercase[0]:
@@ -10990,7 +11351,12 @@ class Hero:
                                                             "?",
                                                             inputs=inputs,
                                                             width=50)
-                                print(notePrefix + "proceed = " + str(self.proceed))
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + assigning_id[1] + " as a " + \
@@ -11034,8 +11400,13 @@ class Hero:
                                                       title=title,
                                                       success=success,
                                                       width=dispWidth)
-                                print(notePrefix + "success = " + str(success.get()))
+##                                print(notePrefix + "success = " + str(success.get()))
                                 self.proceed = success.get()
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 constantIndices = [answer0.get(), answer1.get()]
                                 # Move corresponding power dice from unassigned to constant,
                                 #  removing them in descending order so the indices don't change
@@ -11053,7 +11424,12 @@ class Hero:
                                                             inputs=inputs,
                                                             title="Archetype Selection: Divided",
                                                             width=50)
-                                print(notePrefix + "proceed = " + str(self.proceed))
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(unassigned_powers[entry_index]) + \
@@ -11076,8 +11452,13 @@ class Hero:
                                                          result,
                                                          title="Archetype Selection: Divided",
                                                          success=success)
-                                print(notePrefix + "success = " + str(success.get()))
+##                                print(notePrefix + "success = " + str(success.get()))
                                 self.proceed = success.get()
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 answer = result.get()
                                 for i in range(len(unassigned_powers)):
                                     if answer[i] == string.ascii_uppercase[0]:
@@ -11096,7 +11477,12 @@ class Hero:
                                                             "?",
                                                             inputs=inputs,
                                                             width=50)
-                                print(notePrefix + "proceed = " + str(self.proceed))
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
                                 entry_index = decision[0]
                                 inputs = decision[1]
                                 print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -11136,8 +11522,13 @@ class Hero:
                                                   title=title,
                                                   success=success,
                                                   width=dispWidth)
-                            print(notePrefix + "success = " + str(success.get()))
+##                            print(notePrefix + "success = " + str(success.get()))
                             self.proceed = success.get()
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
                             constantIndices = [answer0.get(), answer1.get()]
                             # Move corresponding quality dice from unassigned to constant,
                             #  removing them in descending order so the indices don't change
@@ -11153,7 +11544,12 @@ class Hero:
                                                         "to in both " + self.dv_tags[0] + \
                                                         " and " + self.dv_tags[1] + " Forms:",
                                                         inputs=inputs)
-                            print(notePrefix + "proceed = " + str(self.proceed))
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
@@ -11176,8 +11572,13 @@ class Hero:
                                                      result,
                                                      title="Archetype Selection: Divided",
                                                      success=success)
-                            print(notePrefix + "success = " + str(success.get()))
+##                            print(notePrefix + "success = " + str(success.get()))
                             self.proceed = success.get()
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
                             answer = result.get()
                             for i in range(len(unassigned_qualities)):
                                 if answer[i] == string.ascii_uppercase[0]:
@@ -11196,7 +11597,12 @@ class Hero:
                                                         "access to " + str(assigning_die) + \
                                                         "?",
                                                         inputs=inputs)
-                            print(notePrefix + "proceed = " + str(self.proceed))
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
                             entry_index = decision[0]
                             inputs = decision[1]
                             print("OK! Marking " + str(assigning_die) + " as a " + \
@@ -11254,10 +11660,16 @@ class Hero:
                 self.SetPrevious(prin_step)
                 self.ChoosePrinciple(r_category,
                                      stepnum=prin_step,
+                                     isRoot=False,
                                      inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             else:
                 # As long as your hero isn't Divided, they get their Principle from their main
                 #  Archetype
@@ -11270,12 +11682,21 @@ class Hero:
                 self.SetPrevious(prin_step)
                 self.ChoosePrinciple(r_category,
                                      stepnum=prin_step,
+                                     isRoot=False,
                                      inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             print("That's all for your Archetype!")
-    def GuidedArchetype(self, adice=[], inputs=[]):
+    def GuidedArchetype(self,
+                        adice=[],
+                        isRoot=True,
+                        inputs=[]):
         # Walks the user through randomly selecting an Archetype as specified in the rulebook.
         # adice: the set of dice provided in the Background step to use in this one.
         #  Defaults to self.arc_dice if not specified.
@@ -11319,11 +11740,7 @@ class Hero:
                 #  the sum of all three minus the value of the third.
                 arc_options = [x for x in die_results] + [sum(die_results) - y for y in die_results]
                 arc_options.sort()
-                for i in range(len(arc_options)-1):
-                    for j in range(i+1, len(arc_options)):
-                        if i < j < len(arc_options):
-                            if arc_options[i] == arc_options[j]:
-                                del arc_options[j]
+                arc_options = remove_duplicates(arc_options)
             # To convert to 0-index, subtract 1 from each option:
             arc_indices = [x-1 for x in arc_options]
             # Let the user choose from the options provided by their roll...
@@ -11352,7 +11769,12 @@ class Hero:
                                               swidth=dispWidth,
                                               shellHeader=roll_report,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return [99, 99]
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -11366,6 +11788,11 @@ class Hero:
                                             title="Archetype Selection",
                                             inputs=inputs)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return [99, 99]
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -11377,7 +11804,12 @@ class Hero:
                                                     str(adice[i]) + "?",
                                                     title="Archetype Selection",
                                                     inputs=inputs)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return [99, 99]
                         entry_choice = decision[0]
                         inputs = decision[1]
                         if entry_choice == 0:
@@ -11404,7 +11836,12 @@ class Hero:
                                                 "your other Archetype? (y/n)",
                                                 title="Archetype Selection: Modular",
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return [99, 99]
                     entry_choice = decision[0]
                     inputs = decision[1]
                 else:
@@ -11423,8 +11860,7 @@ class Hero:
                         # Since there are only two dice, this is a straightforward list: the two
                         #  results and their sum.
                         arc_options = [min(die_results), max(die_results), sum(die_results)]
-                        if arc_options[0] == arc_options[1]:
-                            arc_options.remove(arc_options[0])
+                        arc_options = remove_duplicates(arc_options)
                         if arc_options[-1] not in range(len(arc_simple)):
                             arc_options.remove(arc_options[-1])
                     else:
@@ -11437,11 +11873,11 @@ class Hero:
                         arc_options = [x for x in die_results] + \
                                       [sum(die_results) - y for y in die_results]
                         arc_options.sort()
+                        arc_options = remove_duplicates(arc_options)
                         for i in range(len(arc_options)-1):
                             for j in range(i+1, len(arc_options)):
                                 if i < j < len(arc_options):
-                                    if arc_options[i] == arc_options[j] or \
-                                       arc_options[j] not in range(len(arc_simple)):
+                                    if arc_options[j] not in range(len(arc_simple)):
                                         del arc_options[j]
                 else:
                     # User chose not to reroll.
@@ -11477,14 +11913,21 @@ class Hero:
                                                   swidth=dispWidth,
                                                   shellHeader=roll_report,
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return [99, 99]
                 entry_index = decision[0]
                 inputs = decision[1]
                 # Now we have an option from the list
                 arc_index = arc_indices[entry_index]
                 print(arc_mod[0] + ":" + arc_collection[arc_index][0] + " Archetype selected.")
                 return [arc_index, modifier_index]
-    def ConstructedArchetype(self, inputs=[]):
+    def ConstructedArchetype(self,
+                             isRoot=True,
+                             inputs=[]):
         # Walks the user through selecting an Archetype from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns [Archetype index, modifier index]
@@ -11514,7 +11957,12 @@ class Hero:
                                           swidth=dispWidth,
                                           shellHeader="Choose an Archetype from the list:",
                                           inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return [99, 99]
         entry_index = decision[0]
         inputs = decision[1]
         print(arc_collection[entry_index][0] + " Archetype selected.")
@@ -11547,7 +11995,12 @@ class Hero:
                                               shellHeader=arc_mod[0] + " modifies another " + \
                                               "Archetype. Choose another Archetype from the list:",
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return [99, 99]
             entry_index = decision[0]
             inputs = decision[1]
             print(arc_mod[0] + ":" + arc_simple[entry_index][0] + " Archetype selected.")
@@ -11614,6 +12067,7 @@ class Hero:
                                  [4, 0],
                                  [8],
                                  stepnum=rpq_step,
+                                 isRoot=False,
                                  inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
@@ -11703,14 +12157,14 @@ class Hero:
                                3,
                                stepnum=out_step,
                                inputs=pass_inputs)
+            if track_inputs:
+                print(notePrefix + tracker_close)
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if isRoot:
                     self.proceed = 1
                 return
-            if track_inputs:
-                print(notePrefix + tracker_close)
             # Substep 4: Personality Bonus...
             bonus_step = this_step + 0.4
             your_personalities = [self.personality]
@@ -11905,8 +12359,7 @@ class Hero:
                 #  and their sum.
                 pn_options = [min(die_results), max(die_results), sum(die_results)]
                 # In case of doubles, remove the duplicate roll:
-                if pn_options[0] == pn_options[1]:
-                    del pn_options[1]
+                pn_options = remove_duplicates(pn_options)
                 # To convert to 0-index, subtract 1 from each option.
                 pn_indices = [x-1 for x in pn_options]
                 # Let the user choose from the options provided by their roll...
@@ -12660,6 +13113,7 @@ class Hero:
                 self.ChoosePQ(power_triplets + quality_triplets,
                               [6],
                               stepnum=this_step,
+                              isRoot=False,
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -12910,6 +13364,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePrinciple(entry_index,
                                      stepnum=this_step,
+                                     isRoot=False,
                                      inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -13318,9 +13773,9 @@ class Hero:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
                 pn_indices = self.GuidedPersonality(inputs=pass_inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
                 if track_inputs:
                     print(notePrefix + tracker_close)
+                print(notePrefix + "proceed = " + str(self.proceed))
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
@@ -17160,12 +17615,18 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
-                arc_indices = self.myHero.GuidedArchetype(inputs=pass_inputs)
+                arc_indices = self.myHero.GuidedArchetype(isRoot=False,
+                                                          inputs=pass_inputs)
             else:
-                arc_indices = self.myHero.ConstructedArchetype(inputs=pass_inputs)
+                arc_indices = self.myHero.ConstructedArchetype(isRoot=False,
+                                                               inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                self.myHero.proceed = 1
+                return
             # Add the chosen Archetype
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -17175,10 +17636,17 @@ class HeroFrame(Frame):
                     pass_inputs = inputs.pop(0)
             self.myHero.AddArchetype(arc_indices[0],
                                      arc_indices[1],
+                                     isRoot=False,
                                      inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out while modifying myHero; restore to last saved version
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPersonality(self, inputs=[]):
@@ -18126,6 +18594,10 @@ class ModeWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myModeFrame.resize(event)
+    def cancel(self, event=None):
+        notePrefix = "### ModeWindow.cancel: "
+        self.parent.focus_set()
+        self.destroy()
 
 class ModeFrame(Frame):
     def __init__(self,
@@ -18745,6 +19217,10 @@ class MinionWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myMinionFrame.resize(event)
+    def cancel(self, event=None):
+        notePrefix = "### MinionWindow.cancel: "
+        self.parent.focus_set()
+        self.destroy()
 
 class MinionFrame(Frame):
     def __init__(self,
@@ -19135,6 +19611,10 @@ class FormWindow(SubWindow):
         if isinstance(event, Event):
             if event.widget == self:
                 self.myFormFrame.resize(event)
+    def cancel(self, event=None):
+        notePrefix = "### FormWindow.cancel: "
+        self.parent.focus_set()
+        self.destroy()
 
 class FormFrame(Frame):
     def __init__(self,
@@ -21472,7 +21952,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=3)
+firstHero = factory.getAyla(step=1)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
