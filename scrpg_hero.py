@@ -1667,7 +1667,7 @@ class Ability:
                  pq_opts=[],
                  pq_ids=[],
                  element_id=99,
-                 actions=[99,99],
+                 actions=[],
                  action_choices=[],
                  categories=[2,2],
                  damage_id=99,
@@ -1891,7 +1891,7 @@ class Ability:
         elif self.has_actions:
             # has_actions is true but no action_choices were specified
             # all basic actions are valid, but only for indices that appear in the text
-            for i in [0,1]:
+            for i in range(len(self.action_options)):
                 if ("%a" + str(i)) in self.text:
                     self.action_options[i] = [x for x in range(len(basic_actions))]
         # Validate actions, add the valid ones to self.insert_actions
@@ -1949,6 +1949,8 @@ class Ability:
                               width=width,
                               prefix=prefix)
         if base_name and self.name != self.flavorname:
+            # If base_name == True and self.name and self.flavorname don't match, include self.name
+            #  (the name of the template Ability) on the next line
             fullText += "\n" + split_text("[" + self.name + "]",
                                           width=width,
                                           prefix=prefix)
@@ -1957,6 +1959,9 @@ class Ability:
                                       prefix=prefix+indent)
         return fullText
     def dispText(self):
+        notePrefix = "### Ability.dispText: "
+        if self.name:
+            notePrefix += self.name + ": "
         disptext = self.text
         if self.has_element:
             if self.insert_element in range(len(mixed_collection[1][1])):
@@ -7078,7 +7083,7 @@ class Hero:
                           inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; fix proceed & drop everything
                 if isRoot:
@@ -7108,7 +7113,7 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; fix proceed & drop everything
                     if isRoot:
@@ -7120,7 +7125,7 @@ class Hero:
                                     prompt="Choose a die to assign to " + print_name + ":",
                                     inputs=inputs,
                                     width=45)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
         if self.proceed == 0:
             # User canceled out; fix proceed & drop everything
             if isRoot:
@@ -7143,7 +7148,7 @@ class Hero:
                       inputs=pass_inputs)
         if track_inputs:
             print(notePrefix + tracker_close)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
         if self.proceed == 0:
             # User canceled out; fix proceed & drop everything
             if isRoot:
@@ -7211,9 +7216,11 @@ class Hero:
                                                   inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 return [valid_triplets, valid_dice]
             return [[], remaining_dice]
         else:
@@ -7313,7 +7320,12 @@ class Hero:
                                                 "\n" + choice_request,
                                                 inputs=inputs,
                                                 title=print_type + " Selection")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return [valid_triplets, valid_dice]
                     entry_index = decision[0]
                     inputs = decision[1]
                 entry_start = entry_index * section_length
@@ -7351,7 +7363,7 @@ class Hero:
                                                   stepnum=max([0, stepnum]),
                                                   isRoot=False,
                                                   inputs=pass_inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if isRoot:
@@ -7392,7 +7404,7 @@ class Hero:
                                        inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if isRoot:
@@ -8229,7 +8241,7 @@ class Hero:
                                             success=success,
                                             lwidth=40,
                                             rwidth=a_width)
-                    print(notePrefix + "success = " + str(success.get()))
+##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
                     if self.proceed == 0:
                         # User canceled out; drop everything
@@ -8260,7 +8272,7 @@ class Hero:
                     decision = self.ChooseIndex(section_list,
                                                 prompt=choice_request,
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if add==1:
@@ -8329,7 +8341,7 @@ class Hero:
                                         title=display_str,
                                         inputs=inputs,
                                         width=50)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if add==1:
@@ -8385,7 +8397,7 @@ class Hero:
                                             title=display_str,
                                             inputs=inputs,
                                             width=50)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if add==1:
@@ -8407,7 +8419,7 @@ class Hero:
                                                 title=display_str,
                                                 inputs=inputs,
                                                 width=50)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if add==1:
@@ -8597,7 +8609,11 @@ class Hero:
             return template_options
         else:
             return new_ability
-    def AddPowerSource(self, ps_index, pdice=[], inputs=[]):
+    def AddPowerSource(self,
+                       ps_index,
+                       pdice=[],
+                       isRoot=True,
+                       inputs=[]):
         # Walks the user through adding the Powers, Yellow Abilities, and Green Ability
         #  (if applicable) that they get from the specified Power Source.
         # pdice: the set of dice received from the Background step to use in this one.
@@ -8662,7 +8678,12 @@ class Hero:
                                       inputs=pass_inputs)[1]
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Use AssignAllPQ to assign each of pdice to one of optional_powers
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -8677,7 +8698,12 @@ class Hero:
                              inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # USer canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             # Substep 2: Yellow Abilities...
             yellow_step = this_step + 0.2
             if yellow_count > 0:
@@ -8722,7 +8748,12 @@ class Hero:
                                                     inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Substep 3: Green Abilities...
             green_step = this_step + 0.3
             if green_count > 0:
@@ -8742,7 +8773,12 @@ class Hero:
                                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Substep 4: Power Source Bonus
             bonus_step = this_step + 0.4
             if ps_bonus > 0:
@@ -8769,7 +8805,12 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             elif ps_bonus == 3:
                 # Supernatural: Gain a d10 Power that ISN'T listed.
                 print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
@@ -8789,7 +8830,12 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             elif ps_bonus == 4:
                 # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more d6
                 #  Power from the Alien list.
@@ -8811,7 +8857,12 @@ class Hero:
                                   inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 elif len(d6_pqs) == 1:
                     # Exactly 1 d6: upgrade it without prompting the user.
                     print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
@@ -8825,7 +8876,12 @@ class Hero:
                                                 title="Power Source: Alien",
                                                 inputs=inputs,
                                                 width=45)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
@@ -8848,7 +8904,12 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             elif ps_bonus == 6:
                 # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
                 #  power by 1 die size.
@@ -8867,7 +8928,12 @@ class Hero:
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
                                                 width=40)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     downgraded_power = d8_plus_powers[entry_index]
@@ -8887,7 +8953,12 @@ class Hero:
                                                 title="Power Source: Cosmos",
                                                 inputs=inputs,
                                                 width=40)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                     entry_index = decision[0]
                     inputs = decision[1]
                     upgraded_power = d10_minus_powers[entry_index]
@@ -8911,7 +8982,12 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             elif ps_bonus == 8:
                 # The Multiverse: Gain a d6 Power from ANY category.
                 print("Bonus: You get a d6 Power from ANY category.")
@@ -8929,12 +9005,20 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
             return arc_dice
-    def GuidedPowerSource(self, pdice=[], inputs=[]):
+    def GuidedPowerSource(self,
+                          pdice=[],
+                          isRoot=True,
+                          inputs=[]):
         # Walks the user through randomly selecting a Power Source as specified in the rulebook.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the selected Power Source.
@@ -9005,7 +9089,12 @@ class Hero:
                                               rwidth=ps_width,
                                               swidth=100,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return 99
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -9018,7 +9107,12 @@ class Hero:
                                             "results?",
                                             title="Power Source Selection",
                                             inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return 99
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -9030,7 +9124,12 @@ class Hero:
                                                     str(pdice[i]) + "?",
                                                     title="Power Source Selection",
                                                     inputs=inputs)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return 99
                         entry_choice = decision[0]
                         inputs = decision[1]
                         if entry_choice == 0:
@@ -9040,7 +9139,9 @@ class Hero:
                 # User selected a Power Source.
                 print(ps_collection[ps_indices[entry_index]][0] + " Power Source selected.")
                 return ps_indices[entry_index]
-    def ConstructedPowerSource(self, inputs=[]):
+    def ConstructedPowerSource(self,
+                               isRoot=True,
+                               inputs=[]):
         # Walks the user through selecting a Power Source from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Power Source selected.
@@ -9070,7 +9171,12 @@ class Hero:
                                           rwidth=ps_width,
                                           swidth=100,
                                           inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return 99
         entry_index = decision[0]
         inputs = decision[1]
         print(ps_collection[entry_index][0] + " Power Source selected.")
@@ -17559,12 +17665,18 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
-                ps_index = self.myHero.GuidedPowerSource(inputs=pass_inputs)
+                ps_index = self.myHero.GuidedPowerSource(isRoot=False,
+                                                         inputs=pass_inputs)
             else:
-                ps_index = self.myHero.ConstructedPowerSource(inputs=pass_inputs)
+                ps_index = self.myHero.ConstructedPowerSource(isRoot=False,
+                                                              inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             # Add the chosen Power Source
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -17572,10 +17684,18 @@ class HeroFrame(Frame):
             if len(inputs) > 0:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
-            self.myHero.AddPowerSource(ps_index, inputs=pass_inputs)
+            self.myHero.AddPowerSource(ps_index,
+                                       isRoot=False,
+                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out while modifying myHero; restore to last saved version
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroArchetype(self, inputs=[]):
