@@ -6748,7 +6748,7 @@ class Hero:
                                     title=title,
                                     success=success,
                                     width=width)
-            print(notePrefix + "success = " + str(success.get()))
+##            print(notePrefix + "success = " + str(success.get()))
             self.proceed = success.get()
             return [answer.get(), inputs]
         else:
@@ -6831,7 +6831,7 @@ class Hero:
                                    var=answer,
                                    title=title,
                                    success=success)
-            print(notePrefix + "success = " + str(success.get()))
+##            print(notePrefix + "success = " + str(success.get()))
             self.proceed = success.get()
             entry_line = answer.get()
         else:
@@ -6891,7 +6891,7 @@ class Hero:
                                     success=success,
                                     lwidth=lwidth,
                                     rwidth=rwidth)
-            print(notePrefix + "success = " + str(success.get()))
+##            print(notePrefix + "success = " + str(success.get()))
             self.proceed = success.get()
             entry_index = answer.get()
         else:
@@ -7796,7 +7796,10 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
-    def AddBackground(self, bg_index, inputs=[]):
+    def AddBackground(self,
+                      bg_index,
+                      isRoot=True,
+                      inputs=[]):
         # Walks the user through adding the quality dice and Principle that they get from the
         #  Background specified by bg_index.
         # inputs: a set of text inputs to use automatically instead of prompting the user
@@ -7829,7 +7832,7 @@ class Hero:
             return bg_collection[self.background][6]
         else:
             # This hero doesn't have a Background yet, so we can add this one.
-            print("OK! You've chosen the " + your_bg[0] + " Background!")
+            print("OK! You've chosen " + your_bg[0] + " as your Background!")
             self.SetPrevious(this_step)
             self.background = bg_index
             # Substep 1: Qualities...
@@ -7838,7 +7841,7 @@ class Hero:
             print("You get " + str(your_bg[2]) + " to assign to Qualities.")
             if len(q_requirements) > 0:
                 # Use ChoosePQDieSize to have the user choose which of their dice goes to the
-                #  required quality.
+                #  required Quality.
                 # ChoosePQDieSize returns the list of unused dice, so update remaining_dice with
                 #  that list.
                 if track_inputs:
@@ -7855,7 +7858,12 @@ class Hero:
                                                       inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return ps_dice
             # Use AssignAllPQ to have the user assign each remaining die to one of the optional
             #  qualities.
             # AssignAllPQ runs until there are no dice left, so there's no need to update
@@ -7873,7 +7881,12 @@ class Hero:
                              inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return ps_dice
             self.RefreshFrame()
             # Adding a Principle is the second substep.
             prin_step = this_step + 0.2
@@ -7891,17 +7904,24 @@ class Hero:
                                  inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return ps_dice
             print("That's all for your Background! Take " + str(ps_dice) + \
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
             self.RefreshFrame()
             return ps_dice
-    def GuidedBackground(self, inputs=[]):
+    def GuidedBackground(self,
+                         isRoot=True,
+                         inputs=[]):
         # Walks the user through randomly selecting a Background as specified in the rulebook.
         # Returns the index of the Background selected.
         # inputs: a set of text inputs to use automatically instead of prompting the user
-        notePrefix = "### GuidedBackground: "
+        notePrefix = "### Hero.GuidedBackground: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
         # The user can reroll any number of their dice once per step.
@@ -7949,7 +7969,12 @@ class Hero:
                                               rwidth=bg_width,
                                               swidth=100,
                                               inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
+                return 99
             entry_index = decision[0]
             inputs = decision[1]
             # Now we have a commitment to a valid choice from the list.
@@ -7961,7 +7986,12 @@ class Hero:
                                             "results?",
                                             title="Background Selection",
                                             inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return 99
                 entry_choice = decision[0]
                 inputs = decision[1]
                 if entry_choice == 0:
@@ -7971,11 +8001,17 @@ class Hero:
                         #  specify which one.
                         prev_result = die_results[0]
                     else:
-                        decision = self.ChooseIndex([str(r) for r in die_results],
+                        decision = self.ChooseIndex([str(r) + " (" + bg_collection[r-1][0] + ")" \
+                                                     for r in die_results],
                                                     prompt="Choose which result to keep:",
                                                     inputs=inputs,
                                                     width=25)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return 99
                         entry_index = decision[0]
                         inputs = decision[1]
                         prev_result = die_results[entry_index]
@@ -7984,7 +8020,9 @@ class Hero:
                 # User selected a background.
                 print(bg_collection[bg_indices[entry_index]][0] + " Background selected.")
                 return bg_indices[entry_index]
-    def ConstructedBackground(self, inputs=[]):
+    def ConstructedBackground(self,
+                              isRoot=True,
+                              inputs=[]):
         # Walks the user through selecting a Background from the full list of options.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the index of the Background selected.
@@ -8015,21 +8053,16 @@ class Hero:
                                           rwidth=bg_width,
                                           swidth=100,
                                           inputs=inputs)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
+        if self.proceed == 0:
+            # User canceled out; drop everything
+            if isRoot:
+                self.proceed = 1
+            return 99
         entry_index = decision[0]
         inputs = decision[1]
         print(bg_collection[entry_index][0] + " Background selected.")
         return entry_index
-    def AddAbility(self, new_ability):
-        # Adds a fully defined Ability.
-        if new_ability.zone in range(len(status_zones)):
-            self.abilities.append(new_ability)
-            print("Added " + str(new_ability) + " in " + status_zones[z_num])
-            # If we have a GUI, update it
-            if isinstance(self.myFrame, HeroFrame):
-                self.myFrame.UpdateAll(self)
-        else:
-            print("Error! Couldn't add " + str(new_ability) + ": no zone specified!")
     def ChooseAbility(self,
                       template_options,
                       zone,
@@ -8038,6 +8071,7 @@ class Hero:
                       add=1,
                       alt_powers=[],
                       stepnum=0,
+                      isRoot=True,
                       inputs=[]):
         # Lets the user choose an Ability from the list of options and modify it as necessary before
         #  adding it to the hero's specified status zone.
@@ -8245,6 +8279,8 @@ class Hero:
                     self.proceed = success.get()
                     if self.proceed == 0:
                         # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
                         if add==1:
                             return template_options
                         else:
@@ -8275,6 +8311,8 @@ class Hero:
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
                         if add==1:
                             return template_options
                         else:
@@ -8302,6 +8340,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 if add==1:
                     return template_options
                 else:
@@ -8344,6 +8384,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 if add==1:
                     return template_options
                 else:
@@ -8400,6 +8442,8 @@ class Hero:
 ##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
                     if add==1:
                         return template_options
                     else:
@@ -8422,6 +8466,8 @@ class Hero:
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
                         if add==1:
                             return template_options
                         else:
@@ -8523,6 +8569,8 @@ class Hero:
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
                             # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
                             if add==1:
                                 return template_options
                             else:
@@ -8564,6 +8612,8 @@ class Hero:
 ##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
+                if isRoot:
+                    self.proceed = 1
                 if add==1:
                     return template_options
                 else:
@@ -8580,6 +8630,8 @@ class Hero:
 ##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
                     if add==1:
                         return template_options
                     else:
@@ -8656,7 +8708,7 @@ class Hero:
             return ps_collection[self.power_source][9]
         else:
             # This hero doesn't have a Power Source, so we can add this one.
-            print("OK! You've chosen the " + your_ps[0] + " Power Source!")
+            print("OK! You've chosen " + your_ps[0] + " as your Power Source!")
             self.SetPrevious(this_step)
             self.power_source = ps_index
             # Substep 1: Powers...
@@ -8745,6 +8797,7 @@ class Hero:
                                                     1,
                                                     triplet_options=legal_triplets,
                                                     stepnum=yellow_step,
+                                                    isRoot=False,
                                                     inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -8770,6 +8823,7 @@ class Hero:
                 green_options = self.ChooseAbility(green_options,
                                                    0,
                                                    stepnum=green_step,
+                                                   isRoot=False,
                                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -9315,6 +9369,7 @@ class Hero:
                                        add=0,
                                        alt_powers=mode_power_dice,
                                        stepnum=this_step,
+                                       isRoot=False,
                                        inputs=pass_inputs)
         if track_inputs:
             print(notePrefix + tracker_close)
@@ -9932,6 +9987,7 @@ class Hero:
                                        add=0,
                                        alt_powers=form_power_dice,
                                        stepnum=this_step,
+                                       isRoot=False,
                                        inputs=pass_inputs)
         if track_inputs:
             print(notePrefix + tracker_close)
@@ -10083,7 +10139,7 @@ class Hero:
                 arc_title = arc_modifiers[mod_index][0] + ":" + your_arc[0]
             else:
                 arc_title = your_arc[0]
-            print("OK! You've chosen the " + arc_title + " Archetype.")
+            print("OK! You've chosen " + arc_title + " as your Archetype.")
             self.SetPrevious(this_step)
             self.archetype = arc_index
             self.archetype_modifier = mod_index
@@ -10436,6 +10492,7 @@ class Hero:
                     self.ChooseAbility([template],
                                        zone,
                                        stepnum=ability_step,
+                                       isRoot=False,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10687,6 +10744,7 @@ class Hero:
                                        zone,
                                        triplet_options=legal_triplets,
                                        stepnum=ability_step,
+                                       isRoot=False,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10756,6 +10814,7 @@ class Hero:
                                                          triplet_options=legal_triplets,
                                                          category_req=category_req,
                                                          stepnum=ability_step,
+                                                         isRoot=False,
                                                          inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -10805,6 +10864,7 @@ class Hero:
                                                           1,
                                                           triplet_options=legal_triplets,
                                                           stepnum=ability_step,
+                                                          isRoot=False,
                                                           inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -11010,7 +11070,7 @@ class Hero:
                 self.dv_transition = entry_index
                 tr_method = tr_collection[entry_index]
                 print("OK! " + tr_method[0] + " selected.")
-                # Use ChooseAbility() to add one of the associated Green Abilities, using a Power
+                # Use ChooseAbility to add one of the associated Green Abilities, using a Power
                 #  or Quality gained from their base Archetype
                 arc_triplets = [triplet for triplet in primary_pqs]
                 arc_triplets += [triplet for triplet in secondary_pqs \
@@ -11027,6 +11087,7 @@ class Hero:
                                    0,
                                    triplet_options=arc_triplets,
                                    stepnum=transition_step,
+                                   isRoot=False,
                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
@@ -11195,6 +11256,7 @@ class Hero:
                     self.ChooseAbility([a_divided_psyche],
                                        0,
                                        stepnum=divided_step,
+                                       isRoot=False,
                                        inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
@@ -12157,7 +12219,7 @@ class Hero:
                           " Personality and " + your_dv_pn[0] + " as your " + self.dv_tags[0] + \
                           " Personality.", 100)
             else:
-                print("OK! You've chosen the " + your_pn[0] + " Personality.")
+                print("OK! You've chosen " + your_pn[0] + " as your Personality.")
             self.SetPrevious(this_step)
             self.personality = pn_index
             # Substep 1: Roleplaying Quality...
@@ -12262,6 +12324,7 @@ class Hero:
             self.ChooseAbility(out_options,
                                3,
                                stepnum=out_step,
+                               isRoot=False,
                                inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
@@ -12876,6 +12939,7 @@ class Hero:
                                2,
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
                                stepnum=this_step,
+                               isRoot=False,
                                inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
@@ -13970,7 +14034,6 @@ class Hero:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AddHealth(roll=health_roll,
-                           isRoot=False,
                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
@@ -17610,12 +17673,18 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             if step_options[entry_index].startswith("Guided"):
-                bg_index = self.myHero.GuidedBackground(inputs=pass_inputs)
+                bg_index = self.myHero.GuidedBackground(isRoot=False,
+                                                        inputs=pass_inputs)
             else:
-                bg_index = self.myHero.ConstructedBackground(inputs=pass_inputs)
+                bg_index = self.myHero.ConstructedBackground(isRoot=False,
+                                                             inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out; fix proceed and drop everything
+                self.myHero.proceed = 1
+                return
             # Add the chosen Background
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -17624,10 +17693,17 @@ class HeroFrame(Frame):
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.myHero.AddBackground(bg_index,
+                                      isRoot=False,
                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            if self.myHero.proceed == 0:
+                # User canceled out while modifying myHero; restore to last saved version
+                self.RetrievePreviousHero()
+                print(notePrefix + "last completed substep: " + \
+                      str(max(self.myHero.steps_modified)))
+                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPowerSource(self, inputs=[]):
@@ -22072,7 +22148,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getAyla(step=1)
+firstHero = factory.getKnockout(step=0)
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

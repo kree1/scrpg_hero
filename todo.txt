@@ -179,24 +179,12 @@ Complete steps of hero creation are now reversible
 .	Hero.__init__: self.proceed = 1
 .	Hero.copy: mirror.proceed = self.proceed
 	Pass proceed to all data entry windows as success; windows set success to 0 if they're canceled
-	 SelectWindow/SelectFrame
-.	  accepts success
-.	  sets success
-	 EntryWindow/EntryFrame
-.	  accepts success
-.	  sets success
-	 ExpandWindow/ExpandFrame
-.	  accepts success
-,	  sets success
-	 SwapWindow/SwapFrame
-.	  accepts success
-,	  sets success
-	 PrincipleWindow/PrincipleFrame
-.	  accepts success
-,	  sets success
-	 AssignWindow/AssignFrame
-.	  accepts success
-,	  sets success
+.	 SelectWindow/SelectFrame
+.	 EntryWindow/EntryFrame
+.	 ExpandWindow/ExpandFrame
+.	 SwapWindow/SwapFrame
+.	 PrincipleWindow/PrincipleFrame
+.	 AssignWindow/AssignFrame
 .	When a Hero/HeroFrame method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it passes success=IntVar(self.myFrame, 1)
 	After a Hero method creates a window explicitly, it sets self.proceed to the value of success
 .	 ChooseIndex
@@ -218,9 +206,9 @@ Complete steps of hero creation are now reversible
 .	 AssignAllPQ (1x ChoosePQ) (no return value)
 .	 AddPrinciple (1x ExpandWindow) (no return value)
 .	 ChoosePrinciple (2x AddPrinciple, 1x ChooseIndex, 1x ChooseDetailIndex, 1x PrincipleWindow) (no return value)
-	 AddBackground (1x ChoosePQDieSize, 1x AssignAllPQ, 1x ChoosePrinciple) (returns set of Power Source dice... but why?)
-	 GuidedBackground (2x ChooseIndex, 1x ChooseDetailIndex) (returns Background index)
-	 ConstructedBackground (1x ChooseDetailIndex) (returns Background index)
+.	 AddBackground (1x ChoosePQDieSize, 1x AssignAllPQ, 1x ChoosePrinciple) (returns set of Power Source dice... but why?)
+.	 GuidedBackground (2x ChooseIndex, 1x ChooseDetailIndex) (returns Background index)
+.	 ConstructedBackground (1x ChooseDetailIndex) (returns Background index)
 .	 ChooseAbility (7x ChooseIndex, 1x EnterText, 1x ChooseDetailIndex, 1x ExpandWindow) (returns set of unused abilities if add==1, the finished Ability otherwise)
 .	 AddPowerSource (7x ChoosePQ, 1x AssignAllPQ, 2x ChooseAbility, 3x ChooseIndex) (returns set of Archetype dice... but why?)
 .	 GuidedPowerSource (2x ChooseIndex, 1x ChooseDetailIndex) (returns Power Source index)
@@ -234,10 +222,8 @@ Complete steps of hero creation are now reversible
 .	 AddPersonality (1x ChooseAbility, 1x ChoosePQDieSize, 1x ChooseIndex) (no return value)
 .	 GuidedPersonality (3x ChooseIndex, 1x ChooseDetailIndex) (returns [Personality index])
 .	 ConstructedPersonality (2x ChooseIndex, 2x ChooseDetailIndex) (returns [Personality index] or [Heroic Personality index, Civilian Personality index, Out Ability index]
-,	 AddRedAbility (1x ChooseAbility, 1x ExpandWindow) (no return value)
-,	  ChooseAbility
-,	 AddRetcon (1x AddRedAbility, 1x ChoosePrinciple, 1x ChoosePQ, 8x ChooseIndex, 1x ChooseDetailIndex, 1x ExpandWindow, 2x SwapWindow) (no return value)
-,	  AddRedAbility for "Gain another Red Ability"
+.	 AddRedAbility (1x ChooseAbility, 1x ExpandWindow) (no return value)
+.	 AddRetcon (1x AddRedAbility, 1x ChoosePrinciple, 1x ChoosePQ, 8x ChooseIndex, 1x ChooseDetailIndex, 1x ExpandWindow, 2x SwapWindow) (no return value)
 ~	 HealthRanges doesn't take any input
 .	 AddHealth (3x ChooseIndex) (no return value)
 ??	 CreateHero (1x AddHealth, 1x AddRetcon, 1x AddRedAbility, 1x GuidedPersonality, 2x ConstructedPersonality, 3x AddPersonality, 1x GuidedArchetype, 1x ConstructedArchetype, 1x AddArchetype, 1x GuidedPowerSource, 1x ConstructedPowerSource, 1x AddPowerSource, 1x GuidedBackground, 1x ConstructedBackground, 1x AddBackground, 4x ChooseIndex) (no return value)
