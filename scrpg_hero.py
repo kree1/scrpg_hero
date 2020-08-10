@@ -6607,6 +6607,7 @@ class Hero:
         self.hero_name = codename
         self.alias = civ_name
         self.pronoun_set = pro_index
+        self.steps_complete = [len(name) == 0 for name in step_names]
         self.power_dice = []
         self.quality_dice = []
         self.health_zones = [0, 0, 0]
@@ -6646,6 +6647,7 @@ class Hero:
         mirror = Hero(codename=self.hero_name,
                       civ_name=self.alias,
                       pro_index=self.pronoun_set)
+        mirror.steps_complete = [x for x in self.steps_complete]
         mirror.power_dice = [x.copy() for x in self.power_dice]
         mirror.quality_dice = [x.copy() for x in self.quality_dice]
         mirror.health_zones = [x for x in self.health_zones]
@@ -7823,10 +7825,11 @@ class Hero:
         r_category = your_bg[5]
         # 6: list of Power Source dice
         ps_dice = your_bg[6]
-        if self.background in range(len(bg_collection)):
+        if self.background in range(len(bg_collection)) or self.steps_complete[this_step]:
             # This hero already has a Background
             print("Error! " + self.hero_name + " already has the " + \
                   bg_collection[self.background][0] + " Background.")
+            self.steps_complete[this_step] = True
             input()
             # Return the Power Source dice from the existing Background.
             return bg_collection[self.background][6]
@@ -7914,6 +7917,7 @@ class Hero:
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
             self.RefreshFrame()
+            self.steps_complete[this_step] = True
             return ps_dice
     def GuidedBackground(self,
                          isRoot=True,
@@ -8699,10 +8703,11 @@ class Hero:
         ps_bonus = your_ps[8]
         # 9: set of archetype dice
         arc_dice = your_ps[9]
-        if self.power_source in range(len(ps_collection)):
+        if self.power_source in range(len(ps_collection)) or self.steps_complete[this_step]:
             # This hero already has a Power Source
             print("Error! " + self.hero_name + " already has the " + \
                   ps_collection[self.power_source][0] + " Power Source.")
+            self.steps_complete[this_step] = True
             input()
             # Return the Archetype dice from the existing Power Source.
             return ps_collection[self.power_source][9]
@@ -9068,6 +9073,7 @@ class Hero:
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
+            self.steps_complete[this_step] = True
             return arc_dice
     def GuidedPowerSource(self,
                           pdice=[],
@@ -10126,12 +10132,13 @@ class Hero:
         arc_bonus = your_arc[19]
         # Some bonus steps have to be implemented sooner than others
         arc_grants_dice = arc_bonus in [2]
-        if self.archetype in range(len(arc_collection)):
+        if self.archetype in range(len(arc_collection)) or self.steps_complete[this_step]:
             # This hero already has an Archetype
             arc_text = arc_collection[self.archetype][0]
             if self.archetype_modifier in range(1,len(arc_modifiers)):
                 arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
             print("Error! " + self.hero_name + " already has the " + arc_text + " Archetype.")
+            self.steps_complete[this_step] = True
             input()
         else:
             # This hero has no Archetype, so we can add this one.
@@ -11860,6 +11867,7 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+            self.steps_complete[this_step] = True
             print("That's all for your Archetype!")
     def GuidedArchetype(self,
                         adice=[],
@@ -12193,7 +12201,7 @@ class Hero:
         # This is Step 4 of hero creation!
         this_step = 4
         your_pn = pn_collection[pn_index]
-        if self.personality in range(len(pn_collection)):
+        if self.personality in range(len(pn_collection)) or self.steps_complete[this_step]:
             # This hero already has a Personality.
             pn_text = "the " + pn_collection[self.personality][0] + " Personality."
             if self.dv_personality in range(len(pn_collection)):
@@ -12202,6 +12210,7 @@ class Hero:
                           pn_collection[self.dv_personality][0] + " Personality in " + \
                           self.dv_tags[0] + " form."
             print("Error! " + self.hero_name + " already has " + pn_text)
+            self.steps_complete[this_step] = True
             input()
         elif pn_index in range(len(pn_collection)):
             # This hero doesn't have a Personality, and we can add this one.
@@ -12469,6 +12478,7 @@ class Hero:
                         for j in range(len(mixed_collection[i])):
                             self.health_pqs += [triplet for triplet in Category(i, j) \
                                                 if triplet not in self.health_pqs]
+            self.steps_complete[this_step] = True
             print("That's all for your Personality.")
         else:
             # This hero doesn't have a Personality, but pn_index is invalid
@@ -12760,24 +12770,30 @@ class Hero:
         if retcon_step != 0:
             this_step = retcon_step
             # Check if this hero already used their Retcon. If so, we have a problem.
-            if self.used_retcon:
+            if self.used_retcon or self.steps_complete[math.floor(this_step)]:
                 print("Error! " + self.hero_name + " already used " + \
                       pronouns[self.pronoun_set][2] + " Retcon.")
                 slots_remaining = False
+                self.steps_complete[math.floor(this_step)] = True
                 input()
         else:
             # Count the number of Red Abilities the hero already has from this step. If it's more
             #  than 1, we have a problem.
-            rs_abilities = [a for a in self.abilities if math.floor(a.step) == this_step]
-            if len(rs_abilities) > 1:
+            rs_abilities = [a for a in self.abilities \
+                            if math.floor(a.step) == math.floor(this_step)]
+            print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
+            if len(rs_abilities) > 1 or self.steps_complete[this_step]:
                 print("Error! " + self.hero_name + " already added " + str(len(rs_abilities)) + \
                       " Red Abilities in step " + str(this_step) + ".")
                 slots_remaining = False
+                self.steps_complete[this_step] = True
                 input()
             # This is Substep X, where X is 1 plus the number of existing Red Abilities from this
             #  step...
             this_step += 0.1*(len(rs_abilities)+1)
         if slots_remaining:
+            if this_step not in self.steps_modified:
+                self.SetPrevious(this_step)
             # First, determine which Red Abilities are available
             pq_dice = self.power_dice + self.quality_dice
             pq_triplets = [d.triplet() for d in pq_dice]
@@ -12830,8 +12846,8 @@ class Hero:
                       " has no Powers or Qualities that grant Red Abilities.")
             sublist_strings = [''] * len(pq_sublists)
             if self.archetype == 13:
-                # Minion-Maker archetype grants its own list of Red Ability options, which use
-                #  Powers but aren't restricted by specific Powers or Qualities
+                # The Minion-Maker archetype grants its own list of Red Ability options, which use
+                #  Powers but aren't restricted to specific Powers or Qualities
                 pq_sublists.append([d for d in self.power_dice])
                 ra_sublists.append([rt for rt in ra_minion_maker])
                 sublist_strings.append("for Minion-Maker heroes")
@@ -12927,8 +12943,6 @@ class Hero:
             # Send that set of Red Abilities and the corresponding restrictions on which
             #  Powers/Qualities to use to ChooseAbility to let them pick an Ability to finish and
             #  add.
-            if this_step not in self.steps_modified:
-                self.SetPrevious(this_step)
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
@@ -12949,6 +12963,16 @@ class Hero:
                 if isRoot:
                     self.proceed = 1
                 return
+            if retcon_step == 0:
+                # Check the number of Abilities the hero has from this step again. If it's more
+                #  than 1, this step is finished.
+                rs_abilities = [a for a in self.abilities \
+                                if math.floor(a.step) == math.floor(this_step)]
+                print(notePrefix + "this_step = " + str(this_step))
+                print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
+                if len(rs_abilities) > 1:
+                    print("That's all for your Red Abilities.")
+                    self.steps_complete[math.floor(this_step)] = True
     def AddRetcon(self,
                   isRoot=True,
                   inputs=[]):
@@ -12961,7 +12985,7 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         # This is step 6 of hero creation!
         this_step = 6
-        if self.used_retcon:
+        if self.used_retcon or self.steps_complete[this_step]:
             print("Error! " + self.hero_name + " already used " + pronouns[self.pronoun_set][2] + \
                   " Retcon.")
             input()
@@ -13055,6 +13079,7 @@ class Hero:
                           str(swap_dice[0].diesize) + " and " + swap_dice[1].flavorname + \
                           " is now d" + str(swap_dice[1].diesize) + ".")
                     self.used_retcon = True
+                    self.steps_complete[math.floor(this_step)] = True
                 elif swap_indices[0] == swap_indices[1]:
                     print("You can't swap " + str(self.power_dice[swap_indices[0]]) + \
                           " with itself.")
@@ -13128,6 +13153,7 @@ class Hero:
                           str(swap_dice[0].diesize) + " and " + swap_dice[1].flavorname + \
                           " is now d" + str(swap_dice[1].diesize) + ".")
                     self.used_retcon = True
+                    self.steps_complete[math.floor(this_step)] = True
                 elif swap_indices[0] == swap_indices[1]:
                     print("You can't swap " + str(self.quality_dice[swap_indices[0]]) + \
                           " with itself.")
@@ -13267,6 +13293,7 @@ class Hero:
                 if isinstance(self.myFrame, HeroFrame):
                     self.myFrame.UpdateAll()
                 self.used_retcon = True
+                self.steps_complete[math.floor(this_step)] = True
             elif step_choice == "Add a d6 Power or Quality from any category":
                 # This is Substep 4...
                 this_step += 0.4
@@ -13294,6 +13321,7 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
+                self.steps_complete[math.floor(this_step)] = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
                 # This is Substep 5...
                 this_step += 0.5
@@ -13426,6 +13454,7 @@ class Hero:
                                 print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                                       " Red status die to d" + str(self.dv_status.red) + ".")
                         self.used_retcon = True
+                        self.steps_complete[math.floor(this_step)] = True
                     elif red_upgrade_forms[entry_index] == 99:
                         # User chose to upgrade the base Red status die
                         self.status_dice.SetPrevious(stepnum=this_step)
@@ -13433,6 +13462,7 @@ class Hero:
                         print("Upgraded " + self.hero_name + "'s " + base_form + \
                               " Red status die to d" + str(self.status_dice.red) + ".")
                         self.used_retcon = True
+                        self.steps_complete[math.floor(this_step)] = True
                     elif red_upgrade_forms[entry_index] == 100:
                         # User chose to upgrade the Red status die from their Divided personality
                         self.dv_status.SetPrevious(stepnum=this_step)
@@ -13440,6 +13470,7 @@ class Hero:
                         print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                               " Red status die to d" + str(self.dv_status.red) + ".")
                         self.used_retcon = True
+                        self.steps_complete[math.floor(this_step)] = True
                     else:
                         # User chose to upgrade an alternate Red status die
                         edit_form = self.other_forms[red_upgrade_forms[entry_index]]
@@ -13449,6 +13480,7 @@ class Hero:
                         print("Upgraded " + self.hero_name + "'s " + edit_form[0] + \
                               " Red status die to d" + edit_form[4].red + ".")
                         self.used_retcon = True
+                        self.steps_complete[math.floor(this_step)] = True
                 elif red_upgrade_forms[0] == 99:
                     # Only one Red die size can be upgraded, and it's from the base form.
                     self.status_dice.SetPrevious(stepnum=this_step)
@@ -13456,6 +13488,7 @@ class Hero:
                     print("Upgraded " + self.hero_name + "'s Red status die to d" + \
                           str(self.status_dice.red) + ".")
                     self.used_retcon = True
+                    self.steps_complete[math.floor(this_step)] = True
                 elif red_upgrade_forms[0] == 100:
                     # Only one Red die size can be upgraded, and it's from the Divided personality.
                     self.dv_status.SetPrevious(stepnum=this_step)
@@ -13463,6 +13496,7 @@ class Hero:
                     print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                           " Red status die to d" + str(self.dv_status.red) + ".")
                     self.used_retcon = True
+                    self.steps_complete[math.floor(this_step)] = True
                 else:
                     # Only one Red die size can be upgraded, and it's from an alternate form.
                     edit_form = self.other_forms[red_upgrade_forms[0]]
@@ -13475,6 +13509,7 @@ class Hero:
                     print("Upgraded " + self.hero_name + "'s " + edit_form.name + \
                           " Red status die to d" + str(edit_form.status_dice.red) + ".")
                     self.used_retcon = True
+                    self.steps_complete[math.floor(this_step)] = True
             elif step_choice == "Change one of your Principles to any other Principle":
                 # This is Substep 6...
                 this_step += 0.6
@@ -13545,6 +13580,7 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
+                self.steps_complete[math.floor(this_step)] = True
             elif step_choice == "Gain another Red Ability":
                 # This is Substep 7...
                 this_step += 0.7
@@ -13568,6 +13604,7 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
+                self.steps_complete[math.floor(this_step)] = True
         if self.used_retcon:
             self.RefreshFrame()
     def HealthRanges(self):
@@ -13774,6 +13811,7 @@ class Hero:
             rn = self.HealthRanges()
             for i in range(len(rn)):
                 print("    " + status_zones[i] + " Zone: " + str(rn[i][0]) + "-" + str(rn[i][1]))
+            self.steps_complete[this_step] = True
         self.RefreshFrame()
     def CreateHero(self, health_roll=99, inputs=[]):
         # Walks the user through hero creation from start to finish.
@@ -17476,15 +17514,16 @@ class HeroFrame(Frame):
     def SetFirstIncomplete(self):
         self.firstIncomplete = 99
         if isinstance(self.myHero, Hero):
-            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
-            self.completeSteps = [isinstance(self.myHero, Hero),
-                                  self.myHero.background in range(len(bg_collection)),
-                                  self.myHero.power_source in range(len(ps_collection)),
-                                  self.myHero.archetype in range(len(arc_collection)),
-                                  self.myHero.personality in range(len(pn_collection)),
-                                  len(rs_abilities) > 1,
-                                  self.myHero.used_retcon,
-                                  self.myHero.health_zones != [0,0,0]]
+##            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
+##            self.completeSteps = [isinstance(self.myHero, Hero),
+##                                  self.myHero.background in range(len(bg_collection)),
+##                                  self.myHero.power_source in range(len(ps_collection)),
+##                                  self.myHero.archetype in range(len(arc_collection)),
+##                                  self.myHero.personality in range(len(pn_collection)),
+##                                  len(rs_abilities) > 1,
+##                                  self.myHero.used_retcon,
+##                                  self.myHero.health_zones != [0,0,0]]
+            self.completeSteps = [x for x in self.myHero.steps_complete]
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
         else:
@@ -17648,7 +17687,9 @@ class HeroFrame(Frame):
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("1. Background")
-        if self.myHero.background in range(len(bg_collection)):
+        this_step = 1
+        self.SetFirstIncomplete()
+        if self.myHero.background in range(len(bg_collection)) or self.firstIncomplete > this_step:
             # This hero already has a Background
             messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
                                  bg_collection[self.myHero.background][0] + " Background.")
@@ -17697,12 +17738,14 @@ class HeroFrame(Frame):
                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
@@ -17716,7 +17759,10 @@ class HeroFrame(Frame):
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("2. Power Source")
-        if self.myHero.power_source in range(len(ps_collection)):
+        this_step = 2
+        self.SetFirstIncomplete()
+        if self.myHero.power_source in range(len(ps_collection)) or \
+           self.firstIncomplete > this_step:
             # This hero already has a Power Source
             messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
                                  ps_collection[self.myHero.power_source][0] + " Power Source.")
@@ -17765,12 +17811,14 @@ class HeroFrame(Frame):
                                        inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
@@ -17784,7 +17832,9 @@ class HeroFrame(Frame):
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("3. Archetype")
-        if self.myHero.archetype in range(len(arc_collection)):
+        this_step = 3
+        self.SetFirstIncomplete()
+        if self.myHero.archetype in range(len(arc_collection)) or self.firstIncomplete > this_step:
             # This hero already has an Archetype
             arc_text = arc_collection[self.myHero.archetype][0]
             if self.myHero.archetype_modifier in range(1,len(arc_modifiers)):
@@ -17836,12 +17886,14 @@ class HeroFrame(Frame):
                                      inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             self.UpdateAll(self.myHero,
                            restore=paused)
@@ -17855,7 +17907,10 @@ class HeroFrame(Frame):
         step_options = ["Guided (roll dice & choose from results)",
                         "Constructed (choose from a table)"]
         print("4. Personality")
-        if self.myHero.personality in range(len(pn_collection)):
+        this_step = 4
+        self.SetFirstIncomplete()
+        if self.myHero.personality in range(len(pn_collection)) or \
+           self.firstIncomplete > this_step:
             # This hero already has a Personality.
             pn_text = "the " + pn_collection[self.myHero.personality][0] + " Personality."
             if self.myHero.dv_personality in range(len(pn_collection)):
@@ -17894,7 +17949,7 @@ class HeroFrame(Frame):
                                                            inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 if self.myHero.proceed == 0:
                     # User canceled out; fix proceed and drop everything
                     self.myHero.proceed = 1
@@ -17912,7 +17967,7 @@ class HeroFrame(Frame):
                                                                     inputs=pass_inputs)
                     if track_inputs:
                         print(notePrefix + tracker_close)
-                    print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                    print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                     if self.myHero.proceed == 0:
                         # User canceled out; fix proceed and drop everything
                         self.myHero.proceed = 1
@@ -17922,7 +17977,7 @@ class HeroFrame(Frame):
                                                                 inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 if self.myHero.proceed == 0:
                     # User canceled out; fix proceed and drop everything
                     self.myHero.proceed = 1
@@ -17951,12 +18006,14 @@ class HeroFrame(Frame):
                                            inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -17967,11 +18024,13 @@ class HeroFrame(Frame):
         paused = self.PauseAuxWindows()
         canceled = False
         print("5. Red Abilities")
-        rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
-        if len(rs_abilities) > 1:
+        this_step = 5
+        self.SetFirstIncomplete()
+        if self.firstIncomplete > this_step:
+            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
-        while len(rs_abilities) < 2 and not canceled:
+        while self.firstIncomplete() <= this_step and not canceled:
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
@@ -17982,14 +18041,17 @@ class HeroFrame(Frame):
                                       inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                # User canceled out while modifying myHero; restore to last saved version
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 canceled = True
-            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
+            self.SetFirstIncomplete()
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroRetcon(self, inputs=[]):
@@ -17998,7 +18060,9 @@ class HeroFrame(Frame):
         indent = "    "
         paused = self.PauseAuxWindows()
         print("6. Retcon")
-        if self.myHero.used_retcon:
+        this_step = 6
+        self.SetFirstIncomplete()
+        if self.firstIncomplete > this_step:
             print(indent + self.myHero.hero_name + " already used " + \
                   pronouns[self.myHero.pronoun_set][2] + " Retcon.")
         else:
@@ -18012,11 +18076,14 @@ class HeroFrame(Frame):
                                   inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                # User canceled out while modifying myHero; restore to last saved version
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -18026,7 +18093,9 @@ class HeroFrame(Frame):
         indent = "    "
         paused = self.PauseAuxWindows()
         print("7. Health")
-        if self.myHero.health_zones != [0,0,0]:
+        this_step = 7
+        self.SetFirstIncomplete()
+        if self.firstIncomplete > this_step:
             print(indent + self.myHero.hero_name + " already has maximum Health (" + \
                   str(self.myHero.health_zones[0]) + ").")
         else:
@@ -18041,11 +18110,14 @@ class HeroFrame(Frame):
                                   inputs=pass_inputs)
             if track_inputs:
                 print(notePrefix + tracker_close)
-            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
-                self.RetrievePreviousHero()
-                print(notePrefix + "last completed substep: " + \
+                # User canceled out while modifying myHero; restore to last saved version
+                print(notePrefix + "first False in steps_complete: " + \
+                      str(self.myHero.steps_complete.index(False)))
+                print(notePrefix + "last started substep: " + \
                       str(max(self.myHero.steps_modified)))
+                self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         print("Done!")
         self.UpdateAll(self.myHero,
@@ -22148,7 +22220,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout(step=0)
+firstHero = factory.getKnockout()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

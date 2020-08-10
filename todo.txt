@@ -244,6 +244,35 @@ Complete steps of hero creation are now reversible
 .	 RenamePQDice (2x)
 .	 SaveTXT (2x)
 .	 RevertHero
+  To resume from the middle of a step...
+.  HeroFrame needs better understanding of when a step is finished
+   All Add[step] methods need to be split into modules that can check whether they're already complete and be performed or skipped accordingly
+	AddBackground
+	 Qualities
+	 Principle
+	AddPowerSource
+	 Powers
+	 Yellow Abilities
+	 Green Abilities
+	 Power Source Bonus
+	AddArchetype
+	 Primary PQ
+	 Secondary PQs
+	 Tertiary PQs
+	 Bonus PQs
+	 Abilities
+	 Auxiliary Sheets
+	 Transition Type
+	 Divided Nature
+	 Principle
+	AddPersonality
+	 Roleplaying Quality
+	 Status Dice
+	 Out Ability
+	 Personality Bonus
+~	AddRedAbility already is a single module
+~	AddRetcon already has a single completeness check, which is all it needs because it only performs one substep
+.	AddHealth
  Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", and get StepDetails to show that?
   Determine substeps...
 .  Background: Qualities, Principle
