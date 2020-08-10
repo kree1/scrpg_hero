@@ -6608,6 +6608,9 @@ class Hero:
         self.alias = civ_name
         self.pronoun_set = pro_index
         self.steps_complete = [len(name) == 0 for name in step_names]
+        self.substeps_complete = [[] for section in substep_names]
+        for i in range(len(substep_names)):
+            self.substeps_complete[i] = [False for name in substep_names[i]]
         self.power_dice = []
         self.quality_dice = []
         self.health_zones = [0, 0, 0]
@@ -6648,6 +6651,7 @@ class Hero:
                       civ_name=self.alias,
                       pro_index=self.pronoun_set)
         mirror.steps_complete = [x for x in self.steps_complete]
+        mirror.substeps_complete = [[y for y in x] for x in self.substeps_complete]
         mirror.power_dice = [x.copy() for x in self.power_dice]
         mirror.quality_dice = [x.copy() for x in self.quality_dice]
         mirror.health_zones = [x for x in self.health_zones]
@@ -12251,10 +12255,10 @@ class Hero:
             self.SetPrevious(this_step)
             self.personality = pn_index
             # Substep 1: Roleplaying Quality...
-            rpq_step = this_step + 0.1
-            if not (rpq_step in self.steps_modified and \
-                    [[0,4,0],8] in [[x.triplet(), x.diesize] for x in self.quality_dice]):
-                # Roleplaying Quality isn't finished; take care of that now
+            rpq_substep = 1
+            rpq_step = this_step + 0.1 * rpq_substep
+            if not self.substeps_complete[this_step][rpq_substep]:
+                # Add a d8 Roleplaying Quality
                 self.SetPrevious(rpq_step)
                 if track_inputs:
                     print(notePrefix + tracker_open)
@@ -12301,9 +12305,11 @@ class Hero:
                     for md in self.other_modes:
                         if rpq_die not in md.quality_dice and not md.std_qualities:
                             md.quality_dice.append(rpq_die)
+                self.substeps_complete[this_step][rpq_substep] = True
             # Substep 2: Status Dice...
-            sd_step = this_step + 0.2
-            if sd_step in self.steps_modified and 0 not in self.status_dice.array():
+            sd_substep = 2
+            sd_step = this_step + 0.1 * sd_substep
+            if self.substeps_complete[this_step][sd_substep]:
                 # Status Dice are taken care of; just prepare out_options for next substep
                 out_options = []
                 if has_multiple:
@@ -12311,8 +12317,9 @@ class Hero:
                     remove_duplicates(out_options)
                 else:
                     out_options = [your_pn[2]]
+                self.substeps_complete[this_step][sd_substep] = True
             else:
-                # Status Dice isn't finished; take care of that now
+                # Add Status Dice
                 self.SetPrevious(sd_step)
                 out_options = []
                 if has_multiple:
@@ -12349,16 +12356,17 @@ class Hero:
                                               stepnum=sd_step)
                     print("You get " + str(self.status_dice.array()) + " as Status dice.")
                     out_options = [your_pn[2]]
+                self.substeps_complete[this_step][sd_substep] = True
             # Substep 3: Out Ability...
-            out_step = this_step + 0.3
-            if not (out_step in self.steps_modified and len(self.Abilities(3)) == 1):
-                # Out Ability isn't finished; take care of that now
+            out_substep = 3
+            out_step = this_step + 0.1 * out_substep
+            if not self.substeps_complete[this_step][out_substep]:
+                # Add the Out Ability (letting the user choose, if there's more than one).
                 self.SetPrevious(out_step)
                 if out_index in range(len(out_options)):
                     # User already chose which Out Ability to use, probably in
                     #  ConstructedPersonality() or GuidedPersonality()
                     out_options = [out_options[out_index]]
-                # Add the Out Ability (letting the user choose, if there's more than one).
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -12378,10 +12386,12 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+                self.substeps_complete[this_step][out_substep] = True
             # Substep 4: Personality Bonus...
-            bonus_step = this_step + 0.4
-            if not (bonus_step in self.steps_modified and self.steps_complete[this_step]):
-                # Personality Bonus isn't finished; take care of that now
+            bonus_substep = 4
+            bonus_step = this_step + 0.1 * bonus_substep
+            if not self.substeps_complete[this_step][bonus_substep]:
+                # Add the Personality Bonus content
                 your_personalities = [self.personality]
                 if has_multiple:
                     your_personalities = [self.dv_personality, self.personality]
@@ -12516,6 +12526,7 @@ class Hero:
                             for j in range(len(mixed_collection[i])):
                                 self.health_pqs += [triplet for triplet in Category(i, j) \
                                                     if triplet not in self.health_pqs]
+                self.substeps_complete[this_step][bonus_substep] = True
             self.steps_complete[this_step] = True
             print("That's all for your Personality.")
         else:
@@ -12806,13 +12817,18 @@ class Hero:
         this_step = 5
         # ... unless it's the retcon
         if retcon_step != 0:
-            this_step = retcon_step
+            this_step = math.floor(retcon_step)
+            ra_substep = int(10 * (retcon_step % 1))
+            ra_step = retcon_step
             # Check if this hero already used their Retcon. If so, we have a problem.
-            if self.used_retcon or self.steps_complete[math.floor(this_step)]:
+            if self.used_retcon or \
+               self.steps_complete[this_step] or \
+               self.substeps_complete[this_step][ra_substep]:
                 print("Error! " + self.hero_name + " already used " + \
                       pronouns[self.pronoun_set][2] + " Retcon.")
                 slots_remaining = False
-                self.steps_complete[math.floor(this_step)] = True
+                self.steps_complete[this_step] = True
+                self.substeps_complete[this_step][this_substep] = True
                 input()
         else:
             # Count the number of Red Abilities the hero already has from this step. If it's more
@@ -12826,12 +12842,13 @@ class Hero:
                 slots_remaining = False
                 self.steps_complete[this_step] = True
                 input()
-            # This is Substep X, where X is 1 plus the number of existing Red Abilities from this
-            #  step...
-            this_step += 0.1*(len(rs_abilities)+1)
+            # If not, this is Substep X, where X is 1 plus the number of existing Red Abilities
+            #  from this step
+            ra_substep = len(rs_abilities) + 1
+            ra_step = this_step + 0.1 * ra_substep
         if slots_remaining:
             if this_step not in self.steps_modified:
-                self.SetPrevious(this_step)
+                self.SetPrevious(ra_step)
             # First, determine which Red Abilities are available
             pq_dice = self.power_dice + self.quality_dice
             pq_triplets = [d.triplet() for d in pq_dice]
@@ -12990,7 +13007,7 @@ class Hero:
             self.ChooseAbility(ra_sublists[entry_index],
                                2,
                                triplet_options=[d.triplet() for d in pq_sublists[entry_index]],
-                               stepnum=this_step,
+                               stepnum=ra_step,
                                isRoot=False,
                                inputs=pass_inputs)
             if track_inputs:
@@ -13006,6 +13023,7 @@ class Hero:
                 #  than 1, this step is finished.
                 rs_abilities = [a for a in self.abilities \
                                 if math.floor(a.step) == math.floor(this_step)]
+                self.substeps_complete[this_step][ra_substep] = True
                 print(notePrefix + "this_step = " + str(this_step))
                 print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
                 if len(rs_abilities) > 1:
@@ -13023,7 +13041,9 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         # This is step 6 of hero creation!
         this_step = 6
-        if self.used_retcon or self.steps_complete[this_step]:
+        if self.used_retcon or \
+           self.steps_complete[this_step] or \
+           True in self.substeps_complete[this_step]:
             print("Error! " + self.hero_name + " already used " + pronouns[self.pronoun_set][2] + \
                   " Retcon.")
             input()
@@ -13052,8 +13072,9 @@ class Hero:
             step_choice = step_options[entry_index]
             if step_choice == "Swap 2 Power dice":
                 # This is Substep 1...
-                this_step += 0.1
-                self.SetPrevious(this_step)
+                pd_substep = 1
+                pd_step = this_step + 0.1 * pd_substep
+                self.SetPrevious(pd_step)
                 # Modify this to include Powers from other Modes/Forms?
                 # ...
                 swap_indices = [99, 99]
@@ -13109,7 +13130,7 @@ class Hero:
                 swap_dice = [self.power_dice[i] for i in swap_indices]
                 if swap_dice[0].diesize != swap_dice[1].diesize:
                     for i in range(len(swap_dice)):
-                        swap_dice[i].SetPrevious(this_step)
+                        swap_dice[i].SetPrevious(pd_step)
                     d_temp = swap_dice[0].diesize
                     swap_dice[0].diesize = swap_dice[1].diesize
                     swap_dice[1].diesize = d_temp
@@ -13117,7 +13138,8 @@ class Hero:
                           str(swap_dice[0].diesize) + " and " + swap_dice[1].flavorname + \
                           " is now d" + str(swap_dice[1].diesize) + ".")
                     self.used_retcon = True
-                    self.steps_complete[math.floor(this_step)] = True
+                    self.steps_complete[this_step] = True
+                    self.substeps_complete[this_step][pd_substep] = True
                 elif swap_indices[0] == swap_indices[1]:
                     print("You can't swap " + str(self.power_dice[swap_indices[0]]) + \
                           " with itself.")
@@ -13126,8 +13148,9 @@ class Hero:
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Swap 2 Quality dice":
                 # This is Substep 2...
-                this_step += 0.2
-                self.SetPrevious(this_step)
+                qd_substep = 2
+                qd_step = this_step + 0.1 * qd_substep
+                self.SetPrevious(qd_step)
                 # Modify this to include Qualities from other Forms?
                 # ...
                 swap_indices = [99, 99]
@@ -13183,7 +13206,7 @@ class Hero:
                 swap_dice = [self.quality_dice[i] for i in swap_indices]
                 if swap_dice[0].diesize != swap_dice[1].diesize:
                     for i in range(len(swap_dice)):
-                        swap_dice[i].SetPrevious(this_step)
+                        swap_dice[i].SetPrevious(qd_step)
                     d_temp = swap_dice[0].diesize
                     swap_dice[0].diesize = swap_dice[1].diesize
                     swap_dice[1].diesize = d_temp
@@ -13191,7 +13214,8 @@ class Hero:
                           str(swap_dice[0].diesize) + " and " + swap_dice[1].flavorname + \
                           " is now d" + str(swap_dice[1].diesize) + ".")
                     self.used_retcon = True
-                    self.steps_complete[math.floor(this_step)] = True
+                    self.steps_complete[this_step] = True
+                    self.substeps_complete[this_step][qd_substep] = True
                 elif swap_indices[0] == swap_indices[1]:
                     print("You can't swap " + str(self.quality_dice[swap_indices[0]]) + \
                           " with itself.")
@@ -13200,8 +13224,9 @@ class Hero:
                           " already have the same die size (d" + swap_dice[0].diesize + ").")
             elif step_choice == "Change the Power/Quality used in an Ability":
                 # This is Substep 3...
-                this_step += 0.3
-                self.SetPrevious(this_step)
+                pqa_substep = 3
+                pqa_step = this_step + 0.1 * pqa_substep
+                self.SetPrevious(pqa_step)
                 # Choose an Ability to change
                 ability_options = []
                 # Make a list of all the hero's Abilities that use at least one Power/Quality,
@@ -13278,7 +13303,7 @@ class Hero:
                                     pq_options += self.quality_dice
                                 else:
                                     pq_options += md.quality_dice
-                                md.SetPrevious(this_step)
+                                md.SetPrevious(pqa_step)
                                 found = True
                     for fm in self.other_forms:
                         if not found:
@@ -13293,7 +13318,7 @@ class Hero:
                                     pq_options += self.quality_dice
                                 else:
                                     pq_options += fm.quality_dice
-                                fm.SetPrevious(this_step)
+                                fm.SetPrevious(pqa_step)
                                 found = True
                 # Remove the option that corresponds to the Power/Quality this ability already uses
                 replaced_pq = None
@@ -13321,7 +13346,7 @@ class Hero:
                 entry_index = decision[0]
                 inputs = decision[1]
                 new_pq = pq_options[entry_index]
-                edit_ability.SetPrevious(this_step)
+                edit_ability.SetPrevious(pqa_step)
                 edit_ability.insert_pqs[edit_index] = new_pq.triplet()
                 if new_pq.name != new_pq.flavorname:
                     edit_ability.flavordice[edit_index] = new_pq.flavorname
@@ -13331,11 +13356,13 @@ class Hero:
                 if isinstance(self.myFrame, HeroFrame):
                     self.myFrame.UpdateAll()
                 self.used_retcon = True
-                self.steps_complete[math.floor(this_step)] = True
+                self.steps_complete[this_step] = True
+                self.substeps_complete[this_step][pqa_substep] = True
             elif step_choice == "Add a d6 Power or Quality from any category":
                 # This is Substep 4...
-                this_step += 0.4
-                self.SetPrevious(this_step)
+                d6_substep = 4
+                d6_step = this_step + 0.1 * d6_substep
+                self.SetPrevious(d6_step)
                 # Let the user choose a Power or Quality to add from any category using ChoosePQ
                 power_triplets = AllCategories(1)
                 quality_triplets = AllCategories(0)
@@ -13347,7 +13374,7 @@ class Hero:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePQ(power_triplets + quality_triplets,
                               [6],
-                              stepnum=this_step,
+                              stepnum=d6_step,
                               isRoot=False,
                               inputs=pass_inputs)
                 if track_inputs:
@@ -13359,11 +13386,13 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
-                self.steps_complete[math.floor(this_step)] = True
+                self.steps_complete[this_step] = True
+                self.substeps_complete[this_step][d6_substep] = True
             elif step_choice == "Upgrade Red status die by one size (maximum d12)":
                 # This is Substep 5...
-                this_step += 0.5
-                self.SetPrevious(this_step)
+                rs_substep = 5
+                rs_step = this_step + 0.1 * rs_substep
+                self.SetPrevious(rs_step)
                 # red_upgrade_sizes: list of individually defined Red status die sizes that can be
                 #  upgraded
                 red_upgrade_sizes = []
@@ -13476,65 +13505,71 @@ class Hero:
                         for fm_index in red_upgrade_forms:
                             if fm_index in range(len(self.other_forms)):
                                 current_form = self.other_forms[fm_index]
-                                current_form.SetPrevious(this_step)
-                                current_form.status_dice.SetPrevious(this_step)
+                                current_form.SetPrevious(rs_step)
+                                current_form.status_dice.SetPrevious(rs_step)
                                 current_form.status_dice.red += 2
                                 print("Upgraded " + self.hero_name + "'s " + current_form[0] + \
                                       " Red status die to d" + str(current_form[4].red) + ".")
                             elif fm_index == 99:
-                                self.status_dice.SetPrevious(stepnum=this_step)
+                                self.status_dice.SetPrevious(stepnum=rs_step)
                                 self.status_dice.red += 2
                                 print("Upgraded " + self.hero_name + "'s " + base_form + \
                                       " Red status die to d" + str(self.status_dice.red) + ".")
                             elif fm_index == 100:
-                                self.dv_status.SetPrevious(stepnum=this_step)
+                                self.dv_status.SetPrevious(stepnum=rs_step)
                                 self.dv_status.red += 2
                                 print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                                       " Red status die to d" + str(self.dv_status.red) + ".")
                         self.used_retcon = True
-                        self.steps_complete[math.floor(this_step)] = True
+                        self.steps_complete[this_step] = True
+                        self.substeps_complete[this_step][rs_substep] = True
                     elif red_upgrade_forms[entry_index] == 99:
                         # User chose to upgrade the base Red status die
-                        self.status_dice.SetPrevious(stepnum=this_step)
+                        self.status_dice.SetPrevious(stepnum=rs_step)
                         self.status_dice.red += 2
                         print("Upgraded " + self.hero_name + "'s " + base_form + \
                               " Red status die to d" + str(self.status_dice.red) + ".")
                         self.used_retcon = True
-                        self.steps_complete[math.floor(this_step)] = True
+                        self.steps_complete[this_step] = True
+                        self.substeps_complete[this_step][rs_substep] = True
                     elif red_upgrade_forms[entry_index] == 100:
                         # User chose to upgrade the Red status die from their Divided personality
-                        self.dv_status.SetPrevious(stepnum=this_step)
+                        self.dv_status.SetPrevious(stepnum=rs_step)
                         self.dv_status.red += 2
                         print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                               " Red status die to d" + str(self.dv_status.red) + ".")
                         self.used_retcon = True
-                        self.steps_complete[math.floor(this_step)] = True
+                        self.steps_complete[this_step] = True
+                        self.substeps_complete[this_step][rs_substep] = True
                     else:
                         # User chose to upgrade an alternate Red status die
                         edit_form = self.other_forms[red_upgrade_forms[entry_index]]
-                        edit_form.SetPrevious(this_step)
-                        edit_form.status_dice.SetPrevious(this_step)
+                        edit_form.SetPrevious(rs_step)
+                        edit_form.status_dice.SetPrevious(rs_step)
                         edit_form.status_dice.red += 2
                         print("Upgraded " + self.hero_name + "'s " + edit_form[0] + \
                               " Red status die to d" + edit_form[4].red + ".")
                         self.used_retcon = True
-                        self.steps_complete[math.floor(this_step)] = True
+                        self.steps_complete[this_step] = True
+                        self.substeps_complete[this_step][rs_substep] = True
                 elif red_upgrade_forms[0] == 99:
                     # Only one Red die size can be upgraded, and it's from the base form.
-                    self.status_dice.SetPrevious(stepnum=this_step)
+                    self.status_dice.SetPrevious(stepnum=rs_step)
                     self.status_dice.red += 2
                     print("Upgraded " + self.hero_name + "'s Red status die to d" + \
                           str(self.status_dice.red) + ".")
                     self.used_retcon = True
-                    self.steps_complete[math.floor(this_step)] = True
+                    self.steps_complete[this_step] = True
+                    self.substeps_complete[this_step][rs_substep] = True
                 elif red_upgrade_forms[0] == 100:
                     # Only one Red die size can be upgraded, and it's from the Divided personality.
-                    self.dv_status.SetPrevious(stepnum=this_step)
+                    self.dv_status.SetPrevious(stepnum=rs_step)
                     self.dv_status.red += 2
                     print("Upgraded " + self.hero_name + "'s " + alt_pn_form + \
                           " Red status die to d" + str(self.dv_status.red) + ".")
                     self.used_retcon = True
-                    self.steps_complete[math.floor(this_step)] = True
+                    self.steps_complete[this_step] = True
+                    self.substeps_complete[this_step][rs_substep] = True
                 else:
                     # Only one Red die size can be upgraded, and it's from an alternate form.
                     edit_form = self.other_forms[red_upgrade_forms[0]]
@@ -13542,16 +13577,19 @@ class Hero:
                           str(self.status_dice.red) + ") can't be upgraded, but " + \
                           pronouns[self.pronoun_set][2] + " " + edit_form.name + \
                           " Red status die (d" + str(edit_form.status_dice.red) + ") can.")
-                    edit_form.SetPrevious(this_step)
+                    edit_form.SetPrevious(rs_step)
+                    edit_form.status_dice.SetPrevious(rs_step)
                     edit_form.status_dice.red += 2
                     print("Upgraded " + self.hero_name + "'s " + edit_form.name + \
                           " Red status die to d" + str(edit_form.status_dice.red) + ".")
                     self.used_retcon = True
-                    self.steps_complete[math.floor(this_step)] = True
+                    self.steps_complete[this_step] = True
+                    self.substeps_complete[this_step][rs_substep] = True
             elif step_choice == "Change one of your Principles to any other Principle":
                 # This is Substep 6...
-                this_step += 0.6
-                self.SetPrevious(this_step)
+                pr_substep = 6
+                pr_step = this_step + 0.1 * pr_substep
+                self.SetPrevious(pr_step)
                 # Have the user choose a category to add from...
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
@@ -13606,7 +13644,7 @@ class Hero:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
                 self.ChoosePrinciple(entry_index,
-                                     stepnum=this_step,
+                                     stepnum=pr_step,
                                      isRoot=False,
                                      inputs=pass_inputs)
                 if track_inputs:
@@ -13618,11 +13656,13 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
-                self.steps_complete[math.floor(this_step)] = True
+                self.steps_complete[this_step] = True
+                self.substeps_complete[this_step][pr_substep] = True
             elif step_choice == "Gain another Red Ability":
                 # This is Substep 7...
-                this_step += 0.7
-                self.SetPrevious(this_step)
+                ra_substep = 7
+                ra_step = this_step + 0.1 * ra_substep
+                self.SetPrevious(ra_step)
                 # Let the user add another Red Ability using AddRedAbility
                 if track_inputs:
                     print(notePrefix + tracker_open)
@@ -13630,7 +13670,7 @@ class Hero:
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.AddRedAbility(retcon_step=this_step,
+                self.AddRedAbility(retcon_step=ra_step,
                                    isRoot=False,
                                    inputs=pass_inputs)
                 if track_inputs:
@@ -13642,7 +13682,8 @@ class Hero:
                         self.proceed = 1
                     return
                 self.used_retcon = True
-                self.steps_complete[math.floor(this_step)] = True
+                self.steps_complete[this_step] = True
+                self.substeps_complete[this_step][ra_substep] = True
         if self.used_retcon:
             self.RefreshFrame()
     def HealthRanges(self):
@@ -13667,6 +13708,8 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         # This is step 7 of hero creation!
         this_step = 7
+        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+              str(self.substeps_complete[this_step]))
         if self.health_zones != [0,0,0]:
             # The hero already has defined Health!
             print("Error! " + self.hero_name + " already has maximum Health:")
@@ -13678,14 +13721,16 @@ class Hero:
             # The hero doesn't have defined Health yet, so we can continue.
             # Add up the following:
             # Substep 1: 8...
-            if (this_step + 0.1) not in self.steps_modified or self.health_step != this_step:
-                self.SetPrevious(this_step + 0.1)
+            eight_substep = 1
+            eight_step = this_step + 0.1 * eight_substep
+            if not self.substeps_complete[this_step][eight_substep]:
+                self.SetPrevious(eight_step)
                 self.health_step = this_step
+                self.substeps_complete[this_step][eight_substep] = True
             # Substep 2: Red status die size...
-            red_step = this_step + 0.2
-            if red_step in self.steps_modified and \
-               isinstance(self.health_status, Status) and \
-               self.health_status.red in legal_dice:
+            red_substep = 2
+            red_step = this_step + 0.1 * red_substep
+            if self.substeps_complete[this_step][red_substep]:
                 # User already did this part, keep their result
                 red_report = "Using d" + str(self.health_status.red) + " from " + \
                              self.hero_name + "'s Red status."
@@ -13728,7 +13773,7 @@ class Hero:
                                                 inputs=inputs,
                                                 width=50,
                                                 title="Determine Health")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if isRoot:
@@ -13740,12 +13785,12 @@ class Hero:
                                  self.hero_name + "'s Red status."
                     red_part = red_options[entry_index]
                     self.health_status = red_objects[entry_index]
+                self.substeps_complete[this_step][red_substep] = True
                 print("OK! " + red_report)
             # Substep 3: die size of an eligible Power or Quality...
-            pq_step = this_step + 0.3
-            if pq_step in self.steps_modified and \
-               isinstance(self.health_pqdie, PQDie) and \
-               self.health_pqdie.diesize in legal_dice:
+            pq_substep = 3
+            pq_step = this_step + 0.1 * pq_substep
+            if self.substeps_complete[this_step][pq_substep]:
                 # User already did this part; keep their result
                 pq_part = self.health_pqdie.diesize
                 if self.health_pqdie.triplet() == [1,9,0] and self.health_pqdie.diesize == 4:
@@ -13794,7 +13839,7 @@ class Hero:
                                                 inputs=inputs,
                                                 width=50,
                                                 title="Determine Health")
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if isRoot:
@@ -13806,13 +13851,16 @@ class Hero:
                                 self.hero_name + "'s Powers/Qualities."
                     pq_part = pq_options[entry_index].diesize
                     self.health_pqdie = pq_options[entry_index]
+                self.substeps_complete[this_step][pq_substep] = True
                 print("OK! " + pq_report)
             # Substep 4: either 4 OR 1d8
-            choice_step = this_step + 0.4
-            if choice_step in self.steps_modified and self.health_choice in range(1,9):
+            choice_substep = 4
+            choice_step = this_step + 0.1 * choice_substep
+            if self.substeps_complete[this_step][choice_substep]:
                 # User already did this part; keep their result
                 random_part = self.health_choice
             else:
+                # Get the user's choice of 4 or 1d8
                 self.SetPrevious(choice_step)
                 random_part = 4
                 random_prompt = red_report + "\n" + pq_report + "\n" + "The total so far is " + \
@@ -13824,7 +13872,7 @@ class Hero:
                                             inputs=inputs,
                                             width=50,
                                             title="Determine Health")
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -13842,6 +13890,7 @@ class Hero:
                 else:
                     print("Using 4 for Health.")
                 self.health_choice = random_part
+                self.substeps_complete[this_step][choice_substep] = True
             max_health = 8 + pq_part + red_part + random_part
             print(self.hero_name + "'s max Health is " + str(max_health) + ".")
             health_index = max_health - hp_bounds[0][0]
@@ -18050,6 +18099,8 @@ class HeroFrame(Frame):
                       str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+##              str(self.myHero.substeps_complete[this_step]))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroRedAbilities(self, inputs=[]):
@@ -18154,6 +18205,8 @@ class HeroFrame(Frame):
                       str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+              str(self.myHero.substeps_complete[this_step]))
         print("Done!")
         self.UpdateAll(self.myHero,
                        restore=paused)
