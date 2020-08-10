@@ -8667,20 +8667,27 @@ class Hero:
             return new_ability
     def AddPowerSource(self,
                        ps_index,
-                       pdice=[],
+                       p_dice=[],
                        isRoot=True,
                        inputs=[]):
         # Walks the user through adding the Powers, Yellow Abilities, and Green Ability
         #  (if applicable) that they get from the specified Power Source.
-        # pdice: the set of dice received from the Background step to use in this one.
+        # p_dice: the set of dice received from the Background step to use in this one.
         #  If not specified here, uses self.ps_dice.
         # inputs: a list of text inputs to use automatically instead of prompting the user
         # Returns the set of dice they'll use in the Archetype step.
         notePrefix = "### AddPowerSource: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        if pdice == []:
-            pdice = self.ps_dice
+        if p_dice == []:
+            p_dice = self.ps_dice
+        elif self.ps_dice == []:
+            valid_arg = True
+            for d in p_dice:
+                if d not in legal_dice:
+                    valid_arg = False
+            if valid_arg:
+                self.ps_dice = p_dice
         # This is Step 2 of hero creation!
         this_step = 2
         your_ps = ps_collection[ps_index]
@@ -8719,20 +8726,20 @@ class Hero:
             # Substep 1: Powers...
             power_step = this_step + 0.1
             self.SetPrevious(power_step)
-            print("You have " + str(pdice) + " to assign to Powers.")
+            print("You have " + str(p_dice) + " to assign to Powers.")
             if len(required_powers) > 0:
-                # Use ChoosePQ to assign one of pdice to one of required_powers
+                # Use ChoosePQ to assign one of p_dice to one of required_powers
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                pdice = self.ChoosePQ(required_powers,
-                                      pdice,
-                                      stepnum=power_step,
-                                      isRoot=False,
-                                      inputs=pass_inputs)[1]
+                p_dice = self.ChoosePQ(required_powers,
+                                       p_dice,
+                                       stepnum=power_step,
+                                       isRoot=False,
+                                       inputs=pass_inputs)[1]
                 if track_inputs:
                     print(notePrefix + tracker_close)
 ##                print(notePrefix + "proceed = " + str(self.proceed))
@@ -8741,7 +8748,7 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
-            # Use AssignAllPQ to assign each of pdice to one of optional_powers
+            # Use AssignAllPQ to assign each of p_dice to one of optional_powers
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []
@@ -8749,7 +8756,7 @@ class Hero:
                 if str(inputs[0]) != inputs[0]:
                     pass_inputs = inputs.pop(0)
             self.AssignAllPQ(optional_powers,
-                             pdice,
+                             p_dice,
                              stepnum=power_step,
                              isRoot=False,
                              inputs=pass_inputs)
@@ -9076,7 +9083,7 @@ class Hero:
             self.steps_complete[this_step] = True
             return arc_dice
     def GuidedPowerSource(self,
-                          pdice=[],
+                          p_dice=[],
                           isRoot=True,
                           inputs=[]):
         # Walks the user through randomly selecting a Power Source as specified in the rulebook.
@@ -9085,25 +9092,25 @@ class Hero:
         notePrefix = "### Hero.GuidedPowerSource: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
-        if pdice == [] and self.ps_dice == []:
+        if p_dice == [] and self.ps_dice == []:
             print("Error! No dice have been specified for this step.")
             return 99
-        elif pdice == []:
-            pdice = self.ps_dice
-        elif len(pdice) not in [2,3]:
-            print("Error! " + str(pdice) + " is not a valid set of Power Source dice.")
+        elif p_dice == []:
+            p_dice = self.ps_dice
+        elif len(p_dice) not in [2,3]:
+            print("Error! " + str(p_dice) + " is not a valid set of Power Source dice.")
             return 99
         # The user can reroll any number of their dice once per step.
         rerolls = 1
-        prev_results = [0 for d in pdice]
+        prev_results = [0 for d in p_dice]
         while rerolls >= 0:
             die_results = prev_results
-            print("Rolling " + dice_combo(pdice, results=die_results) + " for Power Source:")
-            for i in range(len(pdice)):
+            print("Rolling " + dice_combo(p_dice, results=die_results) + " for Power Source:")
+            for i in range(len(p_dice)):
                 if die_results[i] == 0:
-                    die_results[i] = random.randint(1, pdice[i])
+                    die_results[i] = random.randint(1, p_dice[i])
             ps_options = []
-            if len(pdice) == 2:
+            if len(p_dice) == 2:
                 roll_report = "Rolled " + str(die_results[0]) + " and " + str(die_results[1]) + "."
                 # The player can choose between any single result or the sum of any pair of results.
                 # Since there are only two dice, this is a straightforward list: the two results
@@ -9181,7 +9188,7 @@ class Hero:
                         decision = self.ChooseIndex(entry_options,
                                                     prompt="Do you want to keep " + \
                                                     str(die_results[i]) + " on your d" + \
-                                                    str(pdice[i]) + "?",
+                                                    str(p_dice[i]) + "?",
                                                     title="Power Source Selection",
                                                     inputs=inputs)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
@@ -10084,6 +10091,13 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         if a_dice == []:
             a_dice = self.arc_dice
+        elif self.arc_dice == []:
+            valid_arg = True
+            for d in a_dice:
+                if d not in legal_dice:
+                    valid_arg = False
+            if valid_arg:
+                self.arc_dice = a_dice
         # This is Step 3 of hero creation!
         this_step = 3
         your_arc = arc_simple[arc_index]
@@ -12201,8 +12215,12 @@ class Hero:
         # This is Step 4 of hero creation!
         this_step = 4
         your_pn = pn_collection[pn_index]
-        if self.personality in range(len(pn_collection)) or self.steps_complete[this_step]:
-            # This hero already has a Personality.
+        if (self.personality in range(len(pn_collection)) and \
+            [self.personality, self.dv_personality] != [pn_index, dv_index]) or \
+            self.steps_complete[this_step]:
+            # The specified Personality/ies can't be added, because the hero...
+            #  a) already has a different Personality selected
+            #  or b) already has the Personality step finished
             pn_text = "the " + pn_collection[self.personality][0] + " Personality."
             if self.dv_personality in range(len(pn_collection)):
                 pn_text = "the " + pn_collection[self.personality][0] + " Personality in " + \
@@ -12228,256 +12246,276 @@ class Hero:
                           " Personality and " + your_dv_pn[0] + " as your " + self.dv_tags[0] + \
                           " Personality.", 100)
             else:
-                print("OK! You've chosen " + your_pn[0] + " as your Personality.")
+                printlong("OK! You've chosen " + your_pn[0] + " as your Personality.",
+                          100)
             self.SetPrevious(this_step)
             self.personality = pn_index
             # Substep 1: Roleplaying Quality...
             rpq_step = this_step + 0.1
-            self.SetPrevious(rpq_step)
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            self.ChoosePQDieSize(0,
-                                 [4, 0],
-                                 [8],
-                                 stepnum=rpq_step,
-                                 isRoot=False,
-                                 inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "proceed = " + str(self.proceed))
-            if self.proceed == 0:
-                # User canceled out; drop everything
-                if isRoot:
-                    self.proceed = 1
-                return
-            # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
-            #  Psyche and gets no Qualities in Heroic Form(s)
-            matching_dice = [x for x in self.quality_dice if math.floor(x.step) == this_step]
-            rpq_die = matching_dice[0]
-            if dn_collection.index(a_divided_psyche) == self.dv_nature:
-                # All Civilian Form(s) get this Quality
-                for fm in self.other_forms:
-                    fm.CheckReference()
-                    if fm.dv_index == 0 and \
-                       rpq_die not in fm.quality_dice and \
-                       not fm.std_qualities:
-                        fm.SetPrevious(rpq_step)
-                        fm.quality_dice.append(rpq_die)
-            else:
-##                print(notePrefix + "Divided Psyche not found")
-                # All Form(s) and Mode(s) get this Quality
-                # This doesn't count as editing them, >> IF << they refer back to the base sheet
-                #  for it
-                for fm in self.other_forms:
-                    if rpq_die not in fm.quality_dice and not fm.std_qualities:
-                        fm.SetPrevious(rpq_step)
-                        fm.quality_dice.append(rpq_die)
-                for md in self.other_modes:
-                    if rpq_die not in md.quality_dice and not md.std_qualities:
-                        md.quality_dice.append(rpq_die)
+            if not (rpq_step in self.steps_modified and \
+                    [[0,4,0],8] in [[x.triplet(), x.diesize] for x in self.quality_dice]):
+                # Roleplaying Quality isn't finished; take care of that now
+                self.SetPrevious(rpq_step)
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                self.ChoosePQDieSize(0,
+                                     [4, 0],
+                                     [8],
+                                     stepnum=rpq_step,
+                                     isRoot=False,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
+                # This Quality is available in all Modes and all Forms, UNLESS the hero has Divided
+                #  Psyche and gets no Qualities in Heroic Form(s)
+                matching_dice = [x for x in self.quality_dice if math.floor(x.step) == this_step]
+                rpq_die = matching_dice[0]
+                if dn_collection.index(a_divided_psyche) == self.dv_nature:
+                    # All Civilian Form(s) get this Quality
+                    for fm in self.other_forms:
+                        fm.CheckReference()
+                        if fm.dv_index == 0 and \
+                           rpq_die not in fm.quality_dice and \
+                           not fm.std_qualities:
+                            fm.SetPrevious(rpq_step)
+                            fm.quality_dice.append(rpq_die)
+                else:
+##                    print(notePrefix + "Divided Psyche not found")
+                    # All Form(s) and Mode(s) get this Quality
+                    # This doesn't count as editing them, >> IF << they refer back to the base
+                    #  sheet for it
+                    for fm in self.other_forms:
+                        if rpq_die not in fm.quality_dice and not fm.std_qualities:
+                            fm.SetPrevious(rpq_step)
+                            fm.quality_dice.append(rpq_die)
+                    for md in self.other_modes:
+                        if rpq_die not in md.quality_dice and not md.std_qualities:
+                            md.quality_dice.append(rpq_die)
             # Substep 2: Status Dice...
             sd_step = this_step + 0.2
-            self.SetPrevious(sd_step)
-            out_options = []
-            if has_multiple:
-                self.status_dice = Status(green=your_pn[1][0],
-                                          yellow=your_pn[1][1],
-                                          red=your_pn[1][2],
-                                          ref=-1,
-                                          stepnum=sd_step)
-                self.dv_status = Status(green=your_dv_pn[1][0],
-                                        yellow=your_dv_pn[1][1],
-                                        red=your_dv_pn[1][2],
-                                        ref=-1,
-                                        stepnum=sd_step)
-                printlong("You get " + str(self.status_dice.array()) + " as Status dice in " + \
-                          self.dv_tags[1] + " Form(s), and " + str(self.dv_status.array()) + " in " + \
-                          self.dv_tags[0] + " Form(s).", 100)
-                for i in range(len(self.other_forms)):
-                    form_editing = self.other_forms[i]
-                    # If this Form isn't the same dv_tag as the base form, make its status dice
-                    #  refer to the non-base Personality.
-                    if form_editing.dv_index == 0:
-                        form_editing.SetPrevious(sd_step)
-                        form_editing.status_dice.SetReference(ref=0,
-                                                              stepnum=sd_step)
-                out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
-                if out_options[0] == out_options[1]:
-                    del out_options[1]
+            if sd_step in self.steps_modified and 0 not in self.status_dice.array():
+                # Status Dice are taken care of; just prepare out_options for next substep
+                out_options = []
+                if has_multiple:
+                    out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
+                    remove_duplicates(out_options)
+                else:
+                    out_options = [your_pn[2]]
             else:
-                self.status_dice = Status(green=your_pn[1][0],
-                                          yellow=your_pn[1][1],
-                                          red=your_pn[1][2],
-                                          ref=-1,
-                                          stepnum=sd_step)
-                print("You get " + str(self.status_dice.array()) + " as Status dice.")
-                out_options = [your_pn[2]]
+                # Status Dice isn't finished; take care of that now
+                self.SetPrevious(sd_step)
+                out_options = []
+                if has_multiple:
+                    self.status_dice = Status(green=your_pn[1][0],
+                                              yellow=your_pn[1][1],
+                                              red=your_pn[1][2],
+                                              ref=-1,
+                                              stepnum=sd_step)
+                    self.dv_status = Status(green=your_dv_pn[1][0],
+                                            yellow=your_dv_pn[1][1],
+                                            red=your_dv_pn[1][2],
+                                            ref=-1,
+                                            stepnum=sd_step)
+                    printlong("You get " + str(self.status_dice.array()) + \
+                              " as Status dice in " + self.dv_tags[1] + " Form(s), and " + \
+                              str(self.dv_status.array()) + " in " + self.dv_tags[0] + \
+                              " Form(s).",
+                              100)
+                    for i in range(len(self.other_forms)):
+                        form_editing = self.other_forms[i]
+                        # If this Form isn't the same dv_tag as the base form, make its status dice
+                        #  refer to the non-base Personality.
+                        if form_editing.dv_index == 0:
+                            form_editing.SetPrevious(sd_step)
+                            form_editing.status_dice.SetReference(ref=0,
+                                                                  stepnum=sd_step)
+                    out_options = [pn[2] for pn in [your_pn, your_dv_pn]]
+                    remove_duplicates(out_options)
+                else:
+                    self.status_dice = Status(green=your_pn[1][0],
+                                              yellow=your_pn[1][1],
+                                              red=your_pn[1][2],
+                                              ref=-1,
+                                              stepnum=sd_step)
+                    print("You get " + str(self.status_dice.array()) + " as Status dice.")
+                    out_options = [your_pn[2]]
             # Substep 3: Out Ability...
             out_step = this_step + 0.3
-            self.SetPrevious(out_step)
-            if out_index in range(len(out_options)):
-                # User already chose which Out Ability to use, probably in ConstructedPersonality()
-                #  or GuidedPersonality()
-                out_options = [out_options[out_index]]
-            # Add the Out Ability (letting the user choose, if there's more than one).
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            self.ChooseAbility(out_options,
-                               3,
-                               stepnum=out_step,
-                               isRoot=False,
-                               inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "proceed = " + str(self.proceed))
-            if self.proceed == 0:
-                # User canceled out; drop everything
-                if isRoot:
-                    self.proceed = 1
-                return
+            if not (out_step in self.steps_modified and len(self.Abilities(3)) == 1):
+                # Out Ability isn't finished; take care of that now
+                self.SetPrevious(out_step)
+                if out_index in range(len(out_options)):
+                    # User already chose which Out Ability to use, probably in
+                    #  ConstructedPersonality() or GuidedPersonality()
+                    out_options = [out_options[out_index]]
+                # Add the Out Ability (letting the user choose, if there's more than one).
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                self.ChooseAbility(out_options,
+                                   3,
+                                   stepnum=out_step,
+                                   isRoot=False,
+                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Substep 4: Personality Bonus...
             bonus_step = this_step + 0.4
-            your_personalities = [self.personality]
-            if has_multiple:
-                your_personalities = [self.dv_personality, self.personality]
-            has_bonus = False
-            for index in your_personalities:
-                if pn_collection[index][3] > 0:
-                    has_bonus = True
-            if has_bonus:
-                self.SetPrevious(bonus_step)
-            for i in range(len(your_personalities)):
-                pn_index = your_personalities[i]
-                this_bonus = pn_collection[pn_index][3]
-                if this_bonus == 1:
-                    # Impulsive: Upgrade one of your Power or Quality dice by one step
-                    #  (maximum d12).
-                    upgrade_pqs = []
-                    matching_forms = self.other_forms
-                    impulsive_prompt = "Choose a Power or Quality to upgrade by one size:"
-                    if i == 1 or not has_multiple:
-                        # Include dice from the base form (always "Heroic" if Divided)
-                        upgrade_pqs += [d for d in self.power_dice + self.quality_dice \
-                                        if d.diesize < max(legal_dice)]
-                    if has_multiple:
-                        # Choose the die to upgrade from the set of dice available in the
-                        #  corresponding Divided Form.
-                        impulsive_prompt = "Choose a " + self.dv_tags[i] + \
-                                           " Power or Quality to upgrade by one size:"
-                        matching_forms = [form for form in self.other_forms if form[6] == i]
-                    for this_form in matching_forms:
-                        # Add less-than-maximal Powers and Qualities from this form, if they don't
-                        #  already have dice in upgrade_pqs
-                        this_form.CheckReference()
-                        if not this_form.std_powers:
-                            upgrade_pqs += [d for d in this_form.power_dice \
-                                            if d.diesize < max(legal_dice) \
-                                            and d.triplet() not in \
-                                            [ex.triplet() for ex in upgrade_pqs]]
-                        if not this_form.std_qualities:
-                            upgrade_pqs += [d for d in this_form.quality_dice \
-                                            if d.diesize < max(legal_dice) \
-                                            and d.triplet() not in \
-                                            [ex.triplet() for ex in upgrade_pqs]]
-                    # Check if the hero has Divided Psyche. If so, their Heroic Form can only use
-                    #  Powers, and their Civilian Form can only use Qualities.
-                    if dn_collection.index(a_divided_psyche) == self.dv_nature:
-                        if i == 1:
-                            upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
-                        else:
-                            upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 0]
-                    decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
-                                                prompt=impulsive_prompt,
-                                                inputs=inputs,
-                                                title="Personality Selection: Impulsive",
-                                                width=40)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    upgrade_die = upgrade_pqs[entry_index]
-                    upgrade_triplet = upgrade_die.triplet()
-                    if upgrade_triplet[0] == 1:
-                        # Upgrading a Power
-                        # Find all Power dice matching this triplet that can be upgraded, and
-                        #  upgrade them
-                        for d in self.power_dice:
-                            if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                d.SetPrevious(bonus_step)
-                                d.diesize += 2
-                                if len(self.other_forms) > 0:
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          " in base form.")
-                                else:
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          ".")
-                        # Make sure to check other Forms as well, if they have their own Power
-                        #  lists
-                        for f in self.other_forms:
-                            f.CheckReference()
-                            if f.power_dice != self.power_dice and not f.std_powers:
-                                for d in f.power_dice:
-                                    if d.triplet() == upgrade_triplet and \
-                                       d.diesize < max(legal_dice):
-                                        d.SetPrevious(bonus_step)
-                                        d.diesize += 2
-                                        print("Upgraded " + d.flavorname + " to d" + \
-                                              str(d.diesize) + " in " + f.name + ".")
-                        # Other Modes always have their own Power lists using a subset of the base
-                        #  Powers, so check those too
-                        for m in self.other_modes:
-                            for d in m.power_dice:
+            if not (bonus_step in self.steps_modified and self.steps_complete[this_step]):
+                # Personality Bonus isn't finished; take care of that now
+                your_personalities = [self.personality]
+                if has_multiple:
+                    your_personalities = [self.dv_personality, self.personality]
+                has_bonus = False
+                for index in your_personalities:
+                    if pn_collection[index][3] > 0:
+                        has_bonus = True
+                if has_bonus:
+                    self.SetPrevious(bonus_step)
+                for i in range(len(your_personalities)):
+                    pn_index = your_personalities[i]
+                    this_bonus = pn_collection[pn_index][3]
+                    if this_bonus == 1:
+                        # Impulsive: Upgrade one of your Power or Quality dice by one step
+                        #  (maximum d12).
+                        upgrade_pqs = []
+                        matching_forms = self.other_forms
+                        impulsive_prompt = "Choose a Power or Quality to upgrade by one size:"
+                        if i == 1 or not has_multiple:
+                            # Include dice from the base form (always "Heroic" if Divided)
+                            upgrade_pqs += [d for d in self.power_dice + self.quality_dice \
+                                            if d.diesize < max(legal_dice)]
+                        if has_multiple:
+                            # Choose the die to upgrade from the set of dice available in the
+                            #  corresponding Divided Form.
+                            impulsive_prompt = "Choose a " + self.dv_tags[i] + \
+                                               " Power or Quality to upgrade by one size:"
+                            matching_forms = [form for form in self.other_forms if form[6] == i]
+                        for this_form in matching_forms:
+                            # Add less-than-maximal Powers and Qualities from this form, if they
+                            #  don't already have dice in upgrade_pqs
+                            this_form.CheckReference()
+                            if not this_form.std_powers:
+                                upgrade_pqs += [d for d in this_form.power_dice \
+                                                if d.diesize < max(legal_dice) \
+                                                and d.triplet() not in \
+                                                [ex.triplet() for ex in upgrade_pqs]]
+                            if not this_form.std_qualities:
+                                upgrade_pqs += [d for d in this_form.quality_dice \
+                                                if d.diesize < max(legal_dice) \
+                                                and d.triplet() not in \
+                                                [ex.triplet() for ex in upgrade_pqs]]
+                        # Check if the hero has Divided Psyche. If so, their Heroic Form can only
+                        #  use Powers, and their Civilian Form can only use Qualities.
+                        if dn_collection.index(a_divided_psyche) == self.dv_nature:
+                            if i == 1:
+                                upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
+                            else:
+                                upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 0]
+                        decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
+                                                    prompt=impulsive_prompt,
+                                                    inputs=inputs,
+                                                    title="Personality Selection: Impulsive",
+                                                    width=40)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        upgrade_die = upgrade_pqs[entry_index]
+                        upgrade_triplet = upgrade_die.triplet()
+                        if upgrade_triplet[0] == 1:
+                            # Upgrading a Power
+                            # Find all Power dice matching this triplet that can be upgraded, and
+                            #  upgrade them
+                            for d in self.power_dice:
                                 if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                    m.SetPrevious(bonus_step)
                                     d.SetPrevious(bonus_step)
                                     d.diesize += 2
-                                    print("Upgraded " + d.flavorname + " to d" + \
-                                          str(d.diesize) + " in " + m.name + ".")
-                    else:
-                        # Upgrading a Quality
-                        # Find all Quality dice matching this triplet that can be upgraded, and
-                        #  upgrade them
-                        for d in self.quality_dice:
-                            if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
-                                d.SetPrevious(bonus_step)
-                                d.diesize += 2
-                                if len(self.other_forms) > 0:
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          " in base form.")
-                                else:
-                                    print("Upgraded " + d.flavorname + " to d" + str(d.diesize) + \
-                                          ".")
-                        # Make sure to check other Forms as well, if they have their own Quality
-                        #  lists
-                        for f in self.other_forms:
-                            if f.quality_dice != self.quality_dice and not f.std_qualities:
-                                for d in f.quality_dice:
+                                    if len(self.other_forms) > 0:
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + " in base form.")
+                                    else:
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + ".")
+                            # Make sure to check other Forms as well, if they have their own Power
+                            #  lists
+                            for f in self.other_forms:
+                                f.CheckReference()
+                                if f.power_dice != self.power_dice and not f.std_powers:
+                                    for d in f.power_dice:
+                                        if d.triplet() == upgrade_triplet and \
+                                           d.diesize < max(legal_dice):
+                                            d.SetPrevious(bonus_step)
+                                            d.diesize += 2
+                                            print("Upgraded " + d.flavorname + " to d" + \
+                                                  str(d.diesize) + " in " + f.name + ".")
+                            # Other Modes always have their own Power lists using a subset of the
+                            #  base Powers, so check those too
+                            for m in self.other_modes:
+                                for d in m.power_dice:
                                     if d.triplet() == upgrade_triplet and \
                                        d.diesize < max(legal_dice):
+                                        m.SetPrevious(bonus_step)
                                         d.SetPrevious(bonus_step)
                                         d.diesize += 2
                                         print("Upgraded " + d.flavorname + " to d" + \
-                                              str(d.diesize) + " in " + f[0] + ".")
-                        # Other Modes always use the Qualities from the base sheet (so far), so no
-                        #  need to check them
-                elif this_bonus == 2:
-                    # Mischievous: You may use any Power or Quality to determine Health.
-                    for i in range(len(mixed_collection)):
-                        for j in range(len(mixed_collection[i])):
-                            self.health_pqs += [triplet for triplet in Category(i, j) \
-                                                if triplet not in self.health_pqs]
+                                              str(d.diesize) + " in " + m.name + ".")
+                        else:
+                            # Upgrading a Quality
+                            # Find all Quality dice matching this triplet that can be upgraded, and
+                            #  upgrade them
+                            for d in self.quality_dice:
+                                if d.triplet() == upgrade_triplet and d.diesize < max(legal_dice):
+                                    d.SetPrevious(bonus_step)
+                                    d.diesize += 2
+                                    if len(self.other_forms) > 0:
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + " in base form.")
+                                    else:
+                                        print("Upgraded " + d.flavorname + " to d" + \
+                                              str(d.diesize) + ".")
+                            # Make sure to check other Forms as well, if they have their own
+                            #  Quality lists
+                            for f in self.other_forms:
+                                if f.quality_dice != self.quality_dice and not f.std_qualities:
+                                    for d in f.quality_dice:
+                                        if d.triplet() == upgrade_triplet and \
+                                           d.diesize < max(legal_dice):
+                                            d.SetPrevious(bonus_step)
+                                            d.diesize += 2
+                                            print("Upgraded " + d.flavorname + " to d" + \
+                                                  str(d.diesize) + " in " + f[0] + ".")
+                            # Other Modes always use the Qualities from the base sheet (so far), so
+                            #  no need to check them
+                    elif this_bonus == 2:
+                        # Mischievous: You may use any Power or Quality to determine Health.
+                        for i in range(len(mixed_collection)):
+                            for j in range(len(mixed_collection[i])):
+                                self.health_pqs += [triplet for triplet in Category(i, j) \
+                                                    if triplet not in self.health_pqs]
             self.steps_complete[this_step] = True
             print("That's all for your Personality.")
         else:
@@ -13645,8 +13683,8 @@ class Hero:
                 self.health_step = this_step
             # Substep 2: Red status die size...
             red_step = this_step + 0.2
-            if isinstance(self.health_status, Status) and \
-               red_step in self.steps_modified and \
+            if red_step in self.steps_modified and \
+               isinstance(self.health_status, Status) and \
                self.health_status.red in legal_dice:
                 # User already did this part, keep their result
                 red_report = "Using d" + str(self.health_status.red) + " from " + \
@@ -17477,16 +17515,7 @@ class HeroFrame(Frame):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
             self.stepButtons[0].config(text="Edit Names...")
-            rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
-            self.completeSteps = [isinstance(self.myHero, Hero),
-                                  self.myHero.background in range(len(bg_collection)),
-                                  self.myHero.power_source in range(len(ps_collection)),
-                                  self.myHero.archetype in range(len(arc_collection)),
-                                  self.myHero.personality in range(len(pn_collection)),
-                                  len(rs_abilities) > 1,
-                                  self.myHero.used_retcon,
-                                  self.myHero.health_zones != [0,0,0]]
-            self.firstIncomplete = 99
+            self.SetFirstIncomplete()
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
             if self.firstIncomplete in range(1,len(self.stepButtons)):
@@ -17909,9 +17938,8 @@ class HeroFrame(Frame):
         print("4. Personality")
         this_step = 4
         self.SetFirstIncomplete()
-        if self.myHero.personality in range(len(pn_collection)) or \
-           self.firstIncomplete > this_step:
-            # This hero already has a Personality.
+        if self.firstIncomplete > this_step:
+            # This hero already finished the Personality step.
             pn_text = "the " + pn_collection[self.myHero.personality][0] + " Personality."
             if self.myHero.dv_personality in range(len(pn_collection)):
                 pn_text = "the " + pn_collection[self.myHero.personality][0] + \
@@ -17920,49 +17948,66 @@ class HeroFrame(Frame):
                           self.myHero.dv_tags[0] + " form."
             print(indent + self.myHero.hero_name + " already has " + pn_text)
         else:
-            pn_indices = []
-            pn_prompt = "How would you like to choose a Personality for " + \
-                        self.myHero.hero_name + "?"
-            if self.myHero.archetype_modifier == 1:
-                # Divided heroes can have more than one Personality
-                pn_prompt = "How would you like to choose Personality/ies for " + \
+            if self.myHero.personality in range(len(pn_collection)):
+                # This hero already has a Personality, but hasn't finished adding the attributes
+                #  that it provides. No need to ask the user to choose a Personality.
+                pn_indices = [self.myHero.personality,
+                              self.myHero.dv_personality]
+            else:
+                # This hero doesn't have a Personality and the user needs to choose one.
+                pn_indices = []
+                pn_prompt = "How would you like to choose a Personality for " + \
                             self.myHero.hero_name + "?"
-            decision = self.myHero.ChooseIndex(step_options,
-                                               prompt=pn_prompt,
-                                               inputs=inputs,
-                                               width=50)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
-            entry_index = decision[0]
-            inputs = decision[1]
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            if step_options[entry_index].startswith("Guided"):
-                pn_indices = self.myHero.GuidedPersonality(isRoot=False,
-                                                           inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
+                if self.myHero.archetype_modifier == 1:
+                    # Divided heroes can have more than one Personality
+                    pn_prompt = "How would you like to choose Personality/ies for " + \
+                                self.myHero.hero_name + "?"
+                decision = self.myHero.ChooseIndex(step_options,
+                                                   prompt=pn_prompt,
+                                                   inputs=inputs,
+                                                   width=50)
 ##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 if self.myHero.proceed == 0:
                     # User canceled out; fix proceed and drop everything
                     self.myHero.proceed = 1
                     return
-                if pn_indices[0] not in range(len(pn_collection)):
-                    print("There was a problem with your Guided result. " + \
-                          "Let's try the Constructed method.")
+                entry_index = decision[0]
+                inputs = decision[1]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                if step_options[entry_index].startswith("Guided"):
+                    pn_indices = self.myHero.GuidedPersonality(isRoot=False,
+                                                               inputs=pass_inputs)
                     if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                    if self.myHero.proceed == 0:
+                        # User canceled out; fix proceed and drop everything
+                        self.myHero.proceed = 1
+                        return
+                    if pn_indices[0] not in range(len(pn_collection)):
+                        print("There was a problem with your Guided result. " + \
+                              "Let's try the Constructed method.")
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        pn_indices = self.myHero.ConstructedPersonality(isRoot=False,
+                                                                        inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                        if self.myHero.proceed == 0:
+                            # User canceled out; fix proceed and drop everything
+                            self.myHero.proceed = 1
+                            return
+                else:
                     pn_indices = self.myHero.ConstructedPersonality(isRoot=False,
                                                                     inputs=pass_inputs)
                     if track_inputs:
@@ -17972,16 +18017,6 @@ class HeroFrame(Frame):
                         # User canceled out; fix proceed and drop everything
                         self.myHero.proceed = 1
                         return
-            else:
-                pn_indices = self.myHero.ConstructedPersonality(isRoot=False,
-                                                                inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-                if self.myHero.proceed == 0:
-                    # User canceled out; fix proceed and drop everything
-                    self.myHero.proceed = 1
-                    return
             # Add the chosen Personality/ies
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -18030,7 +18065,7 @@ class HeroFrame(Frame):
             rs_abilities = [a for a in self.myHero.abilities if math.floor(a.step) == 5]
             print(indent + self.myHero.hero_name + " already added " + str(len(rs_abilities)) + \
                   " Red Abilities in step 5.")
-        while self.firstIncomplete() <= this_step and not canceled:
+        while self.firstIncomplete <= this_step and not canceled:
             if track_inputs:
                 print(notePrefix + tracker_open)
             pass_inputs = []

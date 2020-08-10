@@ -246,30 +246,56 @@ Complete steps of hero creation are now reversible
 .	 RevertHero
   To resume from the middle of a step...
 .  HeroFrame needs better understanding of when a step is finished
-   All Add[step] methods need to be split into modules that can check whether they're already complete and be performed or skipped accordingly
+   AddHero* methods need to recognize when a Characteristic has been chosen but not completed, and skip the Guided*/Constructed* call if so
+    AddHeroBackground
+	AddHeroPowerSource
+	AddHeroArchetype
+.	AddHeroPersonality
+   Add[step] methods need to be split into modules by substep that can check whether they're already complete and be performed or skipped accordingly
 	AddBackground
 	 Qualities
+	  Skip condition: *_step in self.steps_modified and sorted([x.diesize for x in self.quality_dice if math.floor(x.step) == this_step]) == sorted(remaining_dice)
 	 Principle
+	  Skip condition: *_step in self.steps_modified and math.floor(this_step) in [math.floor(x.step) for x in self.principles]
 	AddPowerSource
 	 Powers
+	  Skip condition: *_step in self.steps_modified and sorted([x.diesize for x in self.power_dice if math.floor(x.step) == this_step]) == sorted(p_dice)
 	 Yellow Abilities
+	  Skip condition: *_step in self.steps_modified and len([x for x in self.abilities if x.step == yellow_step and x.zone == 1]) == yellow_count
 	 Green Abilities
+	  Skip condition: *_step in self.steps_modified and len([x for x in self.abilities if x.step == green_step and x.zone == 0]) == green_count
 	 Power Source Bonus
+	  Skip condition: self.steps_complete[this_step]
 	AddArchetype
 	 Primary PQ
+	  Skip condition: *_step in self.steps_modified and ...
 	 Secondary PQs
+	  Skip condition: *_step in self.steps_modified and ...
 	 Tertiary PQs
+	  Skip condition: *_step in self.steps_modified and sorted([x.diesize for x in (self.power_dice + self.quality_dice) if math.floor(x.step) == this_step]) == sorted(self.arc_dice)
 	 Bonus PQs
+	  Skip condition: *_step in self.steps_modified and ...
 	 Abilities
+	  Skip condition: *_step in self.steps_modified and ...
 	 Auxiliary Sheets
+	  Skip condition: *_step in self.steps_modified and ...
 	 Transition Type
+	  Skip condition: *_step in self.steps_modified and ...
 	 Divided Nature
+	  Skip condition: *_step in self.steps_modified and ...
+	   Divided Psyche: each Divided Form has only a Power list or a Quality list, not both
+	   Split Form: ...
 	 Principle
-	AddPersonality
-	 Roleplaying Quality
-	 Status Dice
-	 Out Ability
-	 Personality Bonus
+	  Skip condition: *_step in self.steps_modified and math.floor(this_step) in [math.floor(x.step) for x in self.principles]
+.	AddPersonality
+.	 Roleplaying Quality
+.	  Skip condition: *_step in self.steps_modified and [[0,4,0],8] in [[x.triplet(), x.diesize] for x in self.quality_dice]
+.	 Status Dice
+.	  Skip condition: *_step in self.steps_modified and 0 not in self.status_dice.array()
+.	 Out Ability
+.	  Skip condition: *_step in self.steps_modified and len(self.Abilities(3)) == 1
+.	 Personality Bonus
+.	  Skip condition: self.steps_complete[this_step]
 ~	AddRedAbility already is a single module
 ~	AddRetcon already has a single completeness check, which is all it needs because it only performs one substep
 .	AddHealth
