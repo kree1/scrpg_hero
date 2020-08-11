@@ -247,34 +247,69 @@ Complete steps of hero creation are now reversible
   To resume from the middle of a step...
 .  HeroFrame needs better understanding of when a step is finished
    AddHero* methods need to recognize when a Characteristic has been chosen but not completed, and skip the Guided*/Constructed* call if so
-    AddHeroBackground
+.	AddHeroBackground
 	AddHeroPowerSource
 	AddHeroArchetype
 .	AddHeroPersonality
    Add[step] methods need to be split into modules by substep that can check whether they're already complete and be performed or skipped accordingly
-	AddBackground
-	 Qualities
-	 Principle
-	AddPowerSource
-	 Powers
-	 Yellow Abilities
-	 Green Abilities
-	 Power Source Bonus
-	AddArchetype
-	 Primary PQ
-	 Secondary PQs
-	 Tertiary PQs
-	 Bonus PQs
-	 Abilities
-	 Auxiliary Sheets
-	 Transition Type
-	 Divided Nature
-	 Principle
-.	AddPersonality
-.	 Roleplaying Quality
-.	 Status Dice
-.	 Out Ability
-.	 Personality Bonus
+.	Completion checks...
+.	 AddBackground
+.	  Qualities
+.	  Principle
+.	 AddPowerSource
+.	  Powers
+.	  Yellow Abilities
+.	  Green Abilities (Power Source: not Training, Mystical, Supernatural, Alien, Genius, Cosmos, Unknown, or The Multiverse)
+.	  Power Source Bonus (Power Source: Training / Mystical / Supernatural / Alien / Genius / Cosmos / Unknown / The Multiverse)
+.	 AddArchetype
+.	  Primary PQ
+.	  Secondary PQs
+.	  Tertiary PQs 
+.	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+.	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+.	  Bonus PQs
+.	  Abilities
+.	  Auxiliary Sheets
+.	   Modular
+.	   Form-Changer
+.	   Minion-Maker
+.	  Transition Type
+.	  Divided Nature
+.	  Principle
+.	 AddPersonality
+.	  Roleplaying Quality
+.	  Status Dice
+.	  Out Ability
+.	  Personality Bonus
+	Perform or skip...
+.	AddBackground
+.	  Qualities
+.	  Principle
+	 AddPowerSource
+	  Powers
+	  Yellow Abilities
+	  Green Abilities
+	  Power Source Bonus
+	 AddArchetype
+	  Primary PQ
+	  Secondary PQs
+	  Tertiary PQs
+	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+	  Bonus PQs
+	  Abilities
+	  Auxiliary Sheets
+	   Modular
+	   Form-Changer
+	   Minion-Maker
+	  Transition Type
+	  Divided Nature
+	  Principle
+.	 AddPersonality
+.	  Roleplaying Quality
+.	  Status Dice
+.	  Out Ability
+.	  Personality Bonus
 ~	AddRedAbility already is a single module
 ~	AddRetcon already has a single completeness check, which is all it needs because it only performs one substep
 .	AddHealth

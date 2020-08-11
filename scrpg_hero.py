@@ -7822,15 +7822,18 @@ class Hero:
         # 2: list of quality dice
         remaining_dice = [d for d in your_bg[2]]
         # 3: required quality triplet (if applicable)
-        q_requirements = your_bg[3]
+        q_requirements = [x for x in your_bg[3]]
         # 4: optional quality triplets
         q_options = [triplet for triplet in your_bg[4]]
         # 5: Principle category
         r_category = your_bg[5]
         # 6: list of Power Source dice
         ps_dice = your_bg[6]
-        if self.background in range(len(bg_collection)) or self.steps_complete[this_step]:
-            # This hero already has a Background
+        if (self.background in range(len(bg_collection)) and self.background != bg_index) \
+           or self.steps_complete[this_step]:
+            # The specified Background can't be added, because the hero...
+            #  a) already has a different Background selected
+            #  or b) already has the Background step finished
             print("Error! " + self.hero_name + " already has the " + \
                   bg_collection[self.background][0] + " Background.")
             self.steps_complete[this_step] = True
@@ -7838,31 +7841,57 @@ class Hero:
             # Return the Power Source dice from the existing Background.
             return bg_collection[self.background][6]
         else:
-            # This hero doesn't have a Background yet, so we can add this one.
+            # This hero doesn't have a Background yet, or hasn't finished adding this one.
             print("OK! You've chosen " + your_bg[0] + " as your Background!")
-            self.SetPrevious(this_step)
-            self.background = bg_index
+            if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                self.SetPrevious(this_step)
+                self.background = bg_index
             # Substep 1: Qualities...
-            quality_step = this_step + 0.1
-            self.SetPrevious(quality_step)
-            print("You get " + str(your_bg[2]) + " to assign to Qualities.")
-            if len(q_requirements) > 0:
-                # Use ChoosePQDieSize to have the user choose which of their dice goes to the
-                #  required Quality.
-                # ChoosePQDieSize returns the list of unused dice, so update remaining_dice with
-                #  that list.
+            quality_substep = 1
+            quality_step = this_step + 0.1 * quality_substep
+            if not self.substeps_complete[this_step][quality_substep]:
+                self.SetPrevious(quality_step)
+                print("You get " + str(your_bg[2]) + " to assign to Qualities.")
+                if len(q_requirements) > 0:
+                    # Use ChoosePQDieSize to have the user choose which of their dice goes to the
+                    #  required Quality.
+                    # ChoosePQDieSize returns the list of unused dice, so update remaining_dice
+                    #  with that list.
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    remaining_dice = self.ChoosePQDieSize(q_requirements[0][0],
+                                                          q_requirements[0][1:],
+                                                          remaining_dice,
+                                                          stepnum=quality_step,
+                                                          isRoot=False,
+                                                          inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return ps_dice
+                # Use AssignAllPQ to have the user assign each remaining die to one of the optional
+                #  qualities.
+                # AssignAllPQ runs until there are no dice left, so there's no need to update
+                #  remaining_dice afterward.
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                remaining_dice = self.ChoosePQDieSize(q_requirements[0][0],
-                                                      q_requirements[0][1:],
-                                                      remaining_dice,
-                                                      stepnum=quality_step,
-                                                      isRoot=False,
-                                                      inputs=pass_inputs)
+                self.AssignAllPQ(q_options,
+                                 remaining_dice,
+                                 stepnum=quality_step,
+                                 isRoot=False,
+                                 inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
 ##                print(notePrefix + "proceed = " + str(self.proceed))
@@ -7871,56 +7900,36 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return ps_dice
-            # Use AssignAllPQ to have the user assign each remaining die to one of the optional
-            #  qualities.
-            # AssignAllPQ runs until there are no dice left, so there's no need to update
-            #  remaining_dice afterward.
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            self.AssignAllPQ(q_options,
-                             remaining_dice,
-                             stepnum=quality_step,
-                             isRoot=False,
-                             inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "proceed = " + str(self.proceed))
-            if self.proceed == 0:
-                # User canceled out; drop everything
-                if isRoot:
-                    self.proceed = 1
-                return ps_dice
-            self.RefreshFrame()
-            # Adding a Principle is the second substep.
-            prin_step = this_step + 0.2
-            self.SetPrevious(prin_step)
-            # Use ChoosePrinciple to have the user select a Principle from the specified category.
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            self.ChoosePrinciple(r_category,
-                                 stepnum=prin_step,
-                                 isRoot=False,
-                                 inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "proceed = " + str(self.proceed))
-            if self.proceed == 0:
-                # User canceled out; drop everything
-                if isRoot:
-                    self.proceed = 1
-                return ps_dice
+                self.substeps_complete[this_step][quality_substep] = True
+            # Substep 2: Principle...
+            prin_substep = 2
+            prin_step = this_step + 0.1 * prin_substep
+            if not self.substeps_complete[this_step][prin_substep]:
+                self.SetPrevious(prin_step)
+                # Use ChoosePrinciple to have the user select a Principle from the specified
+                #  category.
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                self.ChoosePrinciple(r_category,
+                                     stepnum=prin_step,
+                                     isRoot=False,
+                                     inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return ps_dice
+                self.substeps_complete[this_step][prin_substep] = True
             print("That's all for your Background! Take " + str(ps_dice) + \
                   " to use in the Power Source step.")
             self.ps_dice = ps_dice
-            self.RefreshFrame()
             self.steps_complete[this_step] = True
             return ps_dice
     def GuidedBackground(self,
@@ -8699,9 +8708,9 @@ class Hero:
         # 0: title
         # 1: description
         # 2: list of required powers (if applicable)
-        required_powers = your_ps[2]
+        required_powers = [p for p in your_ps[2]]
         # 3: list of optional powers
-        optional_powers = your_ps[3]
+        optional_powers = [p for p in your_ps[3]]
         # 4: number of Yellow Abilities
         yellow_count = your_ps[4]
         # 5: list of Yellow Ability options
@@ -8728,7 +8737,8 @@ class Hero:
             self.SetPrevious(this_step)
             self.power_source = ps_index
             # Substep 1: Powers...
-            power_step = this_step + 0.1
+            power_substep = 1
+            power_step = this_step + 0.1 * power_substep
             self.SetPrevious(power_step)
             print("You have " + str(p_dice) + " to assign to Powers.")
             if len(required_powers) > 0:
@@ -8772,8 +8782,10 @@ class Hero:
                 if isRoot:
                     self.proceed = 1
                 return
+            self.substeps_complete[this_step][power_substep] = True
             # Substep 2: Yellow Abilities...
-            yellow_step = this_step + 0.2
+            yellow_substep = 2
+            yellow_step = this_step + 0.1 * yellow_substep
             if yellow_count > 0:
                 self.SetPrevious(yellow_step)
             for i in range(yellow_count):
@@ -8823,8 +8835,10 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+            self.substeps_complete[this_step][yellow_substep] = True
             # Substep 3: Green Abilities...
-            green_step = this_step + 0.3
+            green_substep = 3
+            green_step = this_step + 0.1 * green_substep
             if green_count > 0:
                 self.SetPrevious(green_step)
             for i in range(green_count):
@@ -8849,8 +8863,10 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+            self.substeps_complete[this_step][green_substep] = True
             # Substep 4: Power Source Bonus
-            bonus_step = this_step + 0.4
+            bonus_substep = 4
+            bonus_step = this_step + 0.1 * bonus_substep
             if ps_bonus > 0:
 ##                print(notePrefix + "ps_bonus = " + str(ps_bonus))
                 self.SetPrevious(bonus_step)
@@ -9081,6 +9097,7 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+            self.substeps_complete[this_step][bonus_substep] = True
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
@@ -10110,7 +10127,7 @@ class Hero:
         # 1: description
         # 2: list of primary powers/qualities (if applicable)
         # 3: index of what to do if you have the primary power/quality already (if applicable)
-        primary_pqs = your_arc[2]
+        primary_pqs = [pq for pq in your_arc[2]]
         primary_matches = [d for d in self.power_dice + self.quality_dice \
                            if d.triplet() in primary_pqs]
         primary_category = DieCategory(primary_pqs)
@@ -10118,9 +10135,9 @@ class Hero:
         # 4: number of secondary powers/qualities (if applicable) (2 indicates "1 or more")
         # 5: list of secondary powers/qualities (if applicable)
         secondary_count = your_arc[4]
-        secondary_pqs = your_arc[5]
+        secondary_pqs = [pq for pq in your_arc[5]]
         # 6: list of tertiary powers/qualities
-        tertiary_pqs = your_arc[6]
+        tertiary_pqs = [pq for pq in your_arc[6]]
         # 7: list of mandatory abilities (if applicable)
         mandatory_abilities = [a for a in your_arc[7]]
         # 8: number of green abilities to choose
@@ -10171,7 +10188,8 @@ class Hero:
             print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
             # Add Powers and Qualities from your base Archetype, regardless of modifiers
             # Substep 1: Primary Power/Quality...
-            primary_step = this_step + 0.1
+            primary_substep = 1
+            primary_step = this_step + 0.1 * primary_substep
             if len(primary_matches) > 0 and primary_alt > 0:
                 # This hero already has at least one of the primary Powers/Qualities for this
                 #  Archetype.
@@ -10344,8 +10362,13 @@ class Hero:
                         self.proceed = 1
                     return
                 a_dice = remainders[1]
+            self.substeps_complete[this_step][primary_substep] = True
             # Substep 2: Secondary Powers/Qualities...
-            secondary_step = this_step + 0.2
+            secondary_substep = 2
+            secondary_step = this_step + 0.1 * secondary_substep
+            # ... and Substep 3: Tertiary Powers/Qualities...
+            tertiary_substep = 3
+            tertiary_step = this_step + 0.1 * tertiary_substep
             if len(secondary_pqs) > 0:
                 # Add 1 of the secondary Powers/Qualities:
                 remainders = []
@@ -10376,6 +10399,8 @@ class Hero:
                 #  which is the same as saying that each remaining die should be assigned within
                 #  either of those lists.
                 if secondary_count > 1 and len(a_dice) > 0:
+                    self.substeps_complete[this_step][secondary_substep] = True
+                    self.SetPrevious(tertiary_step)
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
@@ -10384,7 +10409,7 @@ class Hero:
                             pass_inputs = inputs.pop(0)
                     self.AssignAllPQ(secondary_pqs + tertiary_pqs,
                                      a_dice,
-                                     stepnum=secondary_step,
+                                     stepnum=tertiary_step,
                                      isRoot=False,
                                      inputs=pass_inputs)
                     if track_inputs:
@@ -10395,17 +10420,17 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
+                    self.substeps_complete[this_step][tertiary_substep] = True
                     a_dice = []
-            # Substep 3: Tertiary Powers/Qualities...
-            tertiary_step = this_step + 0.3
+            self.substeps_complete[this_step][secondary_substep] = True
             if len(a_dice) > 0:
+                self.SetPrevious(tertiary_step)
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
                 if len(inputs) > 0:
                     if str(inputs[0]) != inputs[0]:
                         pass_inputs = inputs.pop(0)
-                self.SetPrevious(tertiary_step)
                 self.AssignAllPQ(tertiary_pqs,
                                  a_dice,
                                  stepnum=tertiary_step,
@@ -10419,8 +10444,10 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+            self.substeps_complete[this_step][tertiary_substep] = True
             # Substep 4: Bonus Powers/Qualities...
-            bonus_step = this_step + 0.4
+            bonus_substep = 4
+            bonus_step = this_step + 0.1 * bonus_substep
             # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
             #  the time to choose it.
             if self.arc_bonus_quality in legal_dice:
@@ -10471,8 +10498,10 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
+            self.substeps_complete[this_step][bonus_substep] = True
             # Substep 5: Abilities...
-            ability_step = this_step + 0.5
+            ability_substep = 5
+            ability_step = this_step + 0.1 * ability_substep
             if self.archetype_modifier == 2:
                 # If the hero is Modular, they get Modular abilities and Modes instead of the
                 #  Abilities from their other Archetype
@@ -10527,8 +10556,10 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
+                self.substeps_complete[this_step][ability_substep] = True
                 # Substep 6: Auxiliary Sheets...
-                aux_step = this_step + 0.6
+                aux_substep = 6
+                aux_step = this_step + 0.1 * aux_substep
                 self.SetPrevious(aux_step)
                 # First, the user gets to choose whether to add a Powerless Mode.
                 prompt = "You can add a Powerless Mode if there are circumstances where you " + \
@@ -10724,6 +10755,7 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+                self.substeps_complete[this_step][aux_substep] = True
             else:
                 # As long as the hero isn't Modular, they get the Abilities from their main
                 #  Archetype.
@@ -10899,8 +10931,10 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
+                self.substeps_complete[this_step][ability_substep] = True
                 # Substep 6: Auxiliary Sheets...
-                aux_step = this_step + 0.6
+                aux_substep = 6
+                aux_step = this_step + 0.1 * aux_substep
                 # If the hero is a Form-Changer, create their Forms
                 if self.archetype == 15:
                     # Add 2 Green Forms and 1 Yellow Form.
@@ -10925,7 +10959,7 @@ class Hero:
                                 self.proceed = 1
                             return
                 # If the hero is a Minion-Maker, select their Minion Forms
-                if self.archetype == 13:
+                elif self.archetype == 13:
                     self.SetPrevious(aux_step)
                     entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
                     decision = self.ChooseIndex([str(x) for x in self.quality_dice],
@@ -11010,6 +11044,7 @@ class Hero:
                                 print("OK! Added " + min_collection[mf_index][0] + " to " + \
                                       self.hero_name + "'s Minion sheet.")
                         self.mf_step = aux_step
+                self.substeps_complete[this_step][aux_substep] = True
             # Some Archetypes modify the set of Powers that can be used for Health...
             if arc_bonus == 1:
                 # Armored: You may use a Materials or Technological Power when determining Health.
@@ -11017,12 +11052,16 @@ class Hero:
             elif arc_bonus == 2:
                 # Robot/Cyborg: You may use a Technological Power when determining Health.
                 self.health_pqs += Category(1,8)
+            transition_substep = 7
+            transition_step = this_step + 0.1 * transition_substep
+            divided_substep = 8
+            divided_step = this_step + 0.1 * divided_substep
             # Substep 9: Principle...
-            prin_step = this_step + 0.9
+            prin_substep = 9
+            prin_step = this_step + 0.1 * prin_substep
             if self.archetype_modifier == 1:
                 # If the hero is Divided, they take some extra steps here
                 # Substep 7: Transition Type...
-                transition_step = this_step + 0.7
                 self.SetPrevious(transition_step)
                 prompt = "As a Divided hero, you have two very different forms, such as a " + \
                          "nonpowered civilian form and a powered heroic form."
@@ -11122,8 +11161,8 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+                self.substeps_complete[this_step][transition_substep] = True
                 # Substep 8: Divided Nature...
-                divided_step = this_step + 0.8
                 self.SetPrevious(divided_step)
                 divided_natures = [a for a in dn_collection]
                 dn_prompt = "Choose one as the nature of your divided self:"
@@ -11842,6 +11881,7 @@ class Hero:
                     self.other_forms.append(heroic_form)
                     print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                           "'s Form Sheet in Green.")
+                self.substeps_complete[this_step][divided_substep] = True
                 # Finally, choose a Principle from the Divided archetype
                 r_category = arc_divided[18]
                 if track_inputs:
@@ -11863,9 +11903,12 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+                self.substeps_complete[this_step][prin_substep] = True
             else:
                 # As long as your hero isn't Divided, they get their Principle from their main
                 #  Archetype
+                self.substeps_complete[this_step][transition_substep] = True
+                self.substeps_complete[this_step][divided_substep] = True
                 if track_inputs:
                     print(notePrefix + tracker_open)
                 pass_inputs = []
@@ -11885,6 +11928,7 @@ class Hero:
                     if isRoot:
                         self.proceed = 1
                     return
+                self.substeps_complete[this_step][prin_substep] = True
             self.steps_complete[this_step] = True
             print("That's all for your Archetype!")
     def GuidedArchetype(self,
@@ -12235,7 +12279,7 @@ class Hero:
             self.steps_complete[this_step] = True
             input()
         elif pn_index in range(len(pn_collection)):
-            # This hero doesn't have a Personality, and we can add this one.
+            # This hero doesn't have a finished Personality, and we can add this one.
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
             # has_multiple is only true if the hero has the Divided modifier AND dv_index is a
@@ -12252,8 +12296,9 @@ class Hero:
             else:
                 printlong("OK! You've chosen " + your_pn[0] + " as your Personality.",
                           100)
-            self.SetPrevious(this_step)
-            self.personality = pn_index
+            if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                self.SetPrevious(this_step)
+                self.personality = pn_index
             # Substep 1: Roleplaying Quality...
             rpq_substep = 1
             rpq_step = this_step + 0.1 * rpq_substep
@@ -17571,19 +17616,15 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
-            # Now that resetButton's function has changed, it only needs to be available under
-            #  certain circumstances...
-            if True in self.completeSteps[1:]:
-##                print(notePrefix + "completeSteps[" + str(self.completeSteps[1:].index(True)+1) + \
-##                      "] = True, activating ResetButton")
+            # resetButton only needs to be available if myHero has been edited by any step of hero
+            #  creation...
+            if len(self.myHero.steps_modified) > 0:
+##                print(notePrefix + "max(steps_modified) = " + \
+##                      str(max(self.myHero.steps_modified)) + ", activating ResetButton")
                 self.resetButton.config(state=NORMAL)
-                for b in self.textButtons:
-                    b.config(state=NORMAL)
             else:
-##                print(notePrefix + "True not found in completeSteps[1:], disabling ResetButton")
+##                print(notePrefix + "max(steps_modified) not found, disabling ResetButton")
                 self.resetButton.config(state=DISABLED)
-                for b in self.textButtons:
-                    b.config(state=DISABLED)
         else:
             self.stepButtons[0].config(text="0. Add Names")
             self.resetButton.config(state=DISABLED)
@@ -17767,43 +17808,50 @@ class HeroFrame(Frame):
         print("1. Background")
         this_step = 1
         self.SetFirstIncomplete()
-        if self.myHero.background in range(len(bg_collection)) or self.firstIncomplete > this_step:
-            # This hero already has a Background
+        if self.firstIncomplete > this_step:
+            # This hero already finished the Background step.
             messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
                                  bg_collection[self.myHero.background][0] + " Background.")
         else:
-            bg_index = 99
-            decision = self.myHero.ChooseIndex(step_options,
-                                               prompt="How would you like to choose a " + \
-                                               "Background for " + self.myHero.hero_name + "?",
-                                               inputs=inputs,
-                                               width=50)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
-            entry_index = decision[0]
-            inputs = decision[1]
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            if step_options[entry_index].startswith("Guided"):
-                bg_index = self.myHero.GuidedBackground(isRoot=False,
-                                                        inputs=pass_inputs)
+            if self.myHero.background in range(len(bg_collection)):
+                # This hero already has a Background, but hasn't finished adding the attributes
+                #  that it provides. No need to ask them to choose a Background.
+                bg_index = self.myHero.background
             else:
-                bg_index = self.myHero.ConstructedBackground(isRoot=False,
-                                                             inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
+                # This hero doesn't have a Background and the user needs to choose one before they
+                #  can add it.
+                bg_index = 99
+                decision = self.myHero.ChooseIndex(step_options,
+                                                   prompt="How would you like to choose a " + \
+                                                   "Background for " + self.myHero.hero_name + "?",
+                                                   inputs=inputs,
+                                                   width=50)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
+                entry_index = decision[0]
+                inputs = decision[1]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                if step_options[entry_index].startswith("Guided"):
+                    bg_index = self.myHero.GuidedBackground(isRoot=False,
+                                                            inputs=pass_inputs)
+                else:
+                    bg_index = self.myHero.ConstructedBackground(isRoot=False,
+                                                                 inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
             # Add the chosen Background
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -17825,6 +17873,8 @@ class HeroFrame(Frame):
                       str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPowerSource(self, inputs=[]):
@@ -17898,6 +17948,8 @@ class HeroFrame(Frame):
                       str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroArchetype(self, inputs=[]):
@@ -17973,6 +18025,8 @@ class HeroFrame(Frame):
                       str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
                 print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPersonality(self, inputs=[]):
@@ -18003,7 +18057,8 @@ class HeroFrame(Frame):
                 pn_indices = [self.myHero.personality,
                               self.myHero.dv_personality]
             else:
-                # This hero doesn't have a Personality and the user needs to choose one.
+                # This hero doesn't have a Personality and the user needs to choose one before they
+                #  can add it.
                 pn_indices = []
                 pn_prompt = "How would you like to choose a Personality for " + \
                             self.myHero.hero_name + "?"
@@ -18825,13 +18880,17 @@ class HeroFrame(Frame):
            False not in self.completeSteps:
             # myHero has finished at least 1 creation step
             # Prompt the user to ask where to restart from
-            lastStep = self.firstIncomplete
+            nextStep = self.firstIncomplete
+            # User can restart from any completed step, or any partially completed step
+            if nextStep < math.floor(max(self.myHero.steps_modified)) + 1:
+                hasPartial = True
+                nextStep = math.floor(max(self.myHero.steps_modified)) + 1
             if False not in self.completeSteps:
-                lastStep = len(step_names)
-            if autoStep in range(1, lastStep):
+                nextStep = len(step_names)
+            if autoStep in range(1, nextStep):
                 firstRedo = autoStep
             else:
-                stepOptions = [str(x) + ": " + step_names[x] for x in range(1, lastStep)]
+                stepOptions = [str(x) + ": " + step_names[x] for x in range(1, nextStep)]
                 stepOptions = ["0: Clear ALL hero data"] + stepOptions + \
                               ["Cancel (leave hero as-is)"]
                 revertPrompt = "Choose a step of hero creation to redo from:"
@@ -18844,12 +18903,12 @@ class HeroFrame(Frame):
                                         title="Revert Hero",
                                         success=success,
                                         width=40)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
                 firstRedo = stepChoice.get()
             if success.get() == 0:
                 # User canceled out; drop everything
                 return
-            elif firstRedo in range(1, lastStep):
+            elif firstRedo in range(1, nextStep):
                 # User selected a step to redo from
 ##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
 ##                      ") selected")
@@ -18861,7 +18920,7 @@ class HeroFrame(Frame):
                 if saveFirst:
                     self.SaveTxt()
                 self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
-            elif firstRedo == lastStep:
+            elif firstRedo == nextStep:
                 # User selected not to redo
                 print(notePrefix + stepOptions[firstRedo] + " selected")
             elif firstRedo == 0:
@@ -22308,7 +22367,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getKnockout()
+firstHero = factory.getJo()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
