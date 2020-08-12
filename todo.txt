@@ -248,7 +248,7 @@ Complete steps of hero creation are now reversible
 .  HeroFrame needs better understanding of when a step is finished
    AddHero* methods need to recognize when a Characteristic has been chosen but not completed, and skip the Guided*/Constructed* call if so
 .	AddHeroBackground
-	AddHeroPowerSource
+.	AddHeroPowerSource
 	AddHeroArchetype
 .	AddHeroPersonality
    Add[step] methods need to be split into modules by substep that can check whether they're already complete and be performed or skipped accordingly
@@ -285,11 +285,11 @@ Complete steps of hero creation are now reversible
 .	AddBackground
 .	  Qualities
 .	  Principle
-	 AddPowerSource
-	  Powers
-	  Yellow Abilities
-	  Green Abilities
-	  Power Source Bonus
+.	 AddPowerSource
+.	  Powers
+.	  Yellow Abilities
+.	  Green Abilities (Power Source: not Training, Mystical, Supernatural, Alien, Genius, Cosmos, Unknown, or The Multiverse)
+.	  Power Source Bonus (Power Source: Training / Mystical / Supernatural / Alien / Genius / Cosmos / Unknown / The Multiverse)
 	 AddArchetype
 	  Primary PQ
 	  Secondary PQs

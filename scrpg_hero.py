@@ -7842,8 +7842,8 @@ class Hero:
             return bg_collection[self.background][6]
         else:
             # This hero doesn't have a Background yet, or hasn't finished adding this one.
-            print("OK! You've chosen " + your_bg[0] + " as your Background!")
             if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                print("OK! You've chosen " + your_bg[0] + " as your Background!")
                 self.SetPrevious(this_step)
                 self.background = bg_index
             # Substep 1: Qualities...
@@ -8723,8 +8723,11 @@ class Hero:
         ps_bonus = your_ps[8]
         # 9: set of archetype dice
         arc_dice = your_ps[9]
-        if self.power_source in range(len(ps_collection)) or self.steps_complete[this_step]:
-            # This hero already has a Power Source
+        if (self.power_source in range(len(ps_collection)) and self.power_source != ps_index) or \
+           self.steps_complete[this_step]:
+            # The specified Power Source can't be added, because the hero...
+            #  a) already has a different Power Source selected
+            #  or b) already has the Power Source step finished
             print("Error! " + self.hero_name + " already has the " + \
                   ps_collection[self.power_source][0] + " Power Source.")
             self.steps_complete[this_step] = True
@@ -8732,211 +8735,364 @@ class Hero:
             # Return the Archetype dice from the existing Power Source.
             return ps_collection[self.power_source][9]
         else:
-            # This hero doesn't have a Power Source, so we can add this one.
-            print("OK! You've chosen " + your_ps[0] + " as your Power Source!")
-            self.SetPrevious(this_step)
-            self.power_source = ps_index
+            # This hero doesn't have a Power Source yet, or hasn't finished adding this one.
+            if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                print("OK! You've chosen " + your_ps[0] + " as your Power Source!")
+                self.SetPrevious(this_step)
+                self.power_source = ps_index
             # Substep 1: Powers...
             power_substep = 1
             power_step = this_step + 0.1 * power_substep
-            self.SetPrevious(power_step)
-            print("You have " + str(p_dice) + " to assign to Powers.")
-            if len(required_powers) > 0:
-                # Use ChoosePQ to assign one of p_dice to one of required_powers
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                p_dice = self.ChoosePQ(required_powers,
-                                       p_dice,
-                                       stepnum=power_step,
-                                       isRoot=False,
-                                       inputs=pass_inputs)[1]
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            # Use AssignAllPQ to assign each of p_dice to one of optional_powers
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            self.AssignAllPQ(optional_powers,
-                             p_dice,
-                             stepnum=power_step,
-                             isRoot=False,
-                             inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "proceed = " + str(self.proceed))
-            if self.proceed == 0:
-                # USer canceled out; drop everything
-                if isRoot:
-                    self.proceed = 1
-                return
-            self.substeps_complete[this_step][power_substep] = True
-            # Substep 2: Yellow Abilities...
-            yellow_substep = 2
-            yellow_step = this_step + 0.1 * yellow_substep
-            if yellow_count > 0:
-                self.SetPrevious(yellow_step)
-            for i in range(yellow_count):
-                # Use ChooseAbility to select and add a Yellow Ability from yellow_options and
-                #  update yellow_options to remove that Ability
-                legal_triplets = [x.triplet() for x in self.power_dice] + \
-                                 [y.triplet() for y in self.quality_dice]
-                # Make a list of abilities the hero has in this zone from this Power Source
-                ps_zone_abilities = [x for x in self.abilities \
-                                     if math.floor(x.step) == this_step and x.zone == 1]
-##                print(notePrefix + "ps_zone_abilities = " + \
-##                      str([str(x) for x in ps_zone_abilities]))
-                if len(ps_zone_abilities) > 0:
-                    # Start by making a list of the Powers/Qualities already used in
-                    #  ps_zone_abilities:
-                    ps_triplets = []
-                    for x in ps_zone_abilities:
-                        ps_triplets += [y for y in x.insert_pqs \
-                                        if len(y) == 3 and y not in ps_triplets]
-##                    print(notePrefix + "ps_triplets = " + str(ps_triplets))
-##                    print(notePrefix + "(" + str(MixedPQs(ps_triplets)) + ")")
-                    # Remove those previously-used triplets from the list of triplets that can be
-                    #  used in this ability:
-                    while len([x for x in legal_triplets if x in ps_triplets]) > 0:
-                        for x in ps_triplets:
-                            if x in legal_triplets:
-                                legal_triplets.remove(x)
-##                    print(notePrefix + "legal_triplets = " + str(legal_triplets))
-##                    print(notePrefix + "(" + str(MixedPQs(legal_triplets)) + ")")
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                yellow_options = self.ChooseAbility(yellow_options,
-                                                    1,
-                                                    triplet_options=legal_triplets,
-                                                    stepnum=yellow_step,
-                                                    isRoot=False,
-                                                    inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            self.substeps_complete[this_step][yellow_substep] = True
-            # Substep 3: Green Abilities...
-            green_substep = 3
-            green_step = this_step + 0.1 * green_substep
-            if green_count > 0:
-                self.SetPrevious(green_step)
-            for i in range(green_count):
-                # Use ChooseAbility to select and add a Green Ability from green_options and update
-                #  green_options to remove that Ability
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                green_options = self.ChooseAbility(green_options,
-                                                   0,
-                                                   stepnum=green_step,
-                                                   isRoot=False,
-                                                   inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            self.substeps_complete[this_step][green_substep] = True
-            # Substep 4: Power Source Bonus
-            bonus_substep = 4
-            bonus_step = this_step + 0.1 * bonus_substep
-            if ps_bonus > 0:
-##                print(notePrefix + "ps_bonus = " + str(ps_bonus))
-                self.SetPrevious(bonus_step)
-            if ps_bonus == 1:
-                # Training: Next step, add a bonus d8 Quality from your Archetype's list.
-                self.arc_bonus_quality = 8
-                print("Bonus: Next step, you'll get an extra d" + str(self.arc_bonus_quality) + \
-                      " Quality from that Archetype's list.")
-            elif ps_bonus == 2:
-                # Mystical: Gain a d10 Information Quality.
-                print("Bonus: You get a d10 Information Quality.")
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,0),
-                              [10],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            elif ps_bonus == 3:
-                # Supernatural: Gain a d10 Power that ISN'T listed.
-                print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
-                power_triplets = AllCategories(t=1)
-                non_optional_powers = [triplet for triplet in power_triplets \
-                                       if triplet not in optional_powers]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.ChoosePQ(non_optional_powers,
-                              [10],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            elif ps_bonus == 4:
-                # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more d6
-                #  Power from the Alien list.
-                d6_pqs = [d for d in self.power_dice + self.quality_dice if d.diesize == 6]
-                if len(d6_pqs) == 0:
-                    # No d6s to upgrade.
-                    print("Bonus: Since you can't upgrade a d6 Power or Quality, " + \
-                          "you gain a d6 Power from the Alien list.")
+            if not self.substeps_complete[this_step][power_substep]:
+                self.SetPrevious(power_step)
+                print("You have " + str(p_dice) + " to assign to Powers.")
+                if len(required_powers) > 0:
+                    # Use ChoosePQ to assign one of p_dice to one of required_powers
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(optional_powers,
+                    p_dice = self.ChoosePQ(required_powers,
+                                           p_dice,
+                                           stepnum=power_step,
+                                           isRoot=False,
+                                           inputs=pass_inputs)[1]
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                # Use AssignAllPQ to assign each of p_dice to one of optional_powers
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                self.AssignAllPQ(optional_powers,
+                                 p_dice,
+                                 stepnum=power_step,
+                                 isRoot=False,
+                                 inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # USer canceled out; drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
+                self.substeps_complete[this_step][power_substep] = True
+            # Substep 2: Yellow Abilities...
+            yellow_substep = 2
+            yellow_step = this_step + 0.1 * yellow_substep
+            if not self.substeps_complete[this_step][yellow_substep]:
+                if yellow_count > 0:
+                    self.SetPrevious(yellow_step)
+                for i in range(yellow_count):
+                    # Use ChooseAbility to select and add a Yellow Ability from yellow_options and
+                    #  update yellow_options to remove that Ability
+                    legal_triplets = [x.triplet() for x in self.power_dice] + \
+                                     [y.triplet() for y in self.quality_dice]
+                    # Make a list of Abilities the hero has in this zone from this Power Source
+                    ps_zone_abilities = [x for x in self.abilities \
+                                         if math.floor(x.step) == this_step and x.zone == 1]
+##                    print(notePrefix + "ps_zone_abilities = " + \
+##                          str([str(x) for x in ps_zone_abilities]))
+                    if len(ps_zone_abilities) > 0:
+                        # Start by making a list of the Powers/Qualities already used in
+                        #  ps_zone_abilities:
+                        ps_triplets = []
+                        for x in ps_zone_abilities:
+                            ps_triplets += [y for y in x.insert_pqs \
+                                            if len(y) == 3 and y not in ps_triplets]
+##                        print(notePrefix + "ps_triplets = " + str(ps_triplets))
+##                        print(notePrefix + "(" + str(MixedPQs(ps_triplets)) + ")")
+                        # Remove those previously-used triplets from the list of triplets that can
+                        #  be used in this Ability:
+                        while len([x for x in legal_triplets if x in ps_triplets]) > 0:
+                            for x in ps_triplets:
+                                if x in legal_triplets:
+                                    legal_triplets.remove(x)
+##                        print(notePrefix + "legal_triplets = " + str(legal_triplets))
+##                        print(notePrefix + "(" + str(MixedPQs(legal_triplets)) + ")")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    yellow_options = self.ChooseAbility(yellow_options,
+                                                        1,
+                                                        triplet_options=legal_triplets,
+                                                        stepnum=yellow_step,
+                                                        isRoot=False,
+                                                        inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                self.substeps_complete[this_step][yellow_substep] = True
+            # Substep 3: Green Abilities...
+            green_substep = 3
+            green_step = this_step + 0.1 * green_substep
+            if not self.substeps_complete[this_step][green_substep]:
+                if green_count > 0:
+                    self.SetPrevious(green_step)
+                for i in range(green_count):
+                    # Use ChooseAbility to select and add a Green Ability from green_options and
+                    #  update green_options to remove that Ability
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    green_options = self.ChooseAbility(green_options,
+                                                       0,
+                                                       stepnum=green_step,
+                                                       isRoot=False,
+                                                       inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                self.substeps_complete[this_step][green_substep] = True
+            # Substep 4: Power Source Bonus
+            bonus_substep = 4
+            bonus_step = this_step + 0.1 * bonus_substep
+            if not self.substeps_complete[this_step][bonus_substep]:
+                if ps_bonus > 0:
+##                    print(notePrefix + "ps_bonus = " + str(ps_bonus))
+                    self.SetPrevious(bonus_step)
+                if ps_bonus == 1:
+                    # Training: Next step, add a bonus d8 Quality from your Archetype's list.
+                    self.arc_bonus_quality = 8
+                    print("Bonus: Next step, you'll get an extra d" + \
+                          str(self.arc_bonus_quality) + " Quality from that Archetype's list.")
+                elif ps_bonus == 2:
+                    # Mystical: Gain a d10 Information Quality.
+                    print("Bonus: You get a d10 Information Quality.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePQ(Category(0,0),
+                                  [10],
+                                  stepnum=bonus_step,
+                                  isRoot=False,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                elif ps_bonus == 3:
+                    # Supernatural: Gain a d10 Power that ISN'T listed.
+                    print("Bonus: You get a d10 Power that ISN'T on the Supernatural list.")
+                    power_triplets = AllCategories(t=1)
+                    non_optional_powers = [triplet for triplet in power_triplets \
+                                           if triplet not in optional_powers]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePQ(non_optional_powers,
+                                  [10],
+                                  stepnum=bonus_step,
+                                  isRoot=False,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                elif ps_bonus == 4:
+                    # Alien: Upgrade a d6 Power or Quality to d8. If you can't, instead gain 1 more
+                    #  d6 Power from the Alien list.
+                    d6_pqs = [d for d in self.power_dice + self.quality_dice if d.diesize == 6]
+                    if len(d6_pqs) == 0:
+                        # No d6s to upgrade.
+                        print("Bonus: Since you can't upgrade a d6 Power or Quality, " + \
+                              "you gain a d6 Power from the Alien list.")
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.ChoosePQ(optional_powers,
+                                      [6],
+                                      stepnum=bonus_step,
+                                      isRoot=False,
+                                      inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # USer canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                    elif len(d6_pqs) == 1:
+                        # Exactly 1 d6: upgrade it without prompting the user.
+                        print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
+                        d6_pqs[0].SetPrevious(bonus_step)
+                        d6_pqs[0].diesize = 8
+                    else:
+                        # More than 1 d6: user gets to choose which to upgrade.
+                        decision = self.ChooseIndex([str(x) for x in d6_pqs],
+                                                    prompt="Bonus: Choose a d6 Power or " + \
+                                                    "Quality to upgrade to d8.",
+                                                    title="Power Source: Alien",
+                                                    inputs=inputs,
+                                                    width=45)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # USer canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
+                        d6_pqs[entry_index].SetPrevious(bonus_step)
+                        d6_pqs[entry_index].diesize = 8
+                elif ps_bonus == 5:
+                    # Genius: Gain 1 d10 Information or Mental Quality
+                    print("Bonus: You get a d10 Information or Mental Quality.")
+                    optional_qualities = Category(0,0) + Category(0,1)
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePQ(optional_qualities,
+                                  [10],
+                                  stepnum=bonus_step,
+                                  isRoot=False,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                elif ps_bonus == 6:
+                    # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
+                    #  power by 1 die size.
+                    print("Bonus: Downgrade one Power by 1 die size and " + \
+                          "upgrade another Power by 1 die size.")
+                    d8_plus_powers = [d for d in self.power_dice if d.diesize > 6]
+                    downgraded_power = ""
+                    if len(d8_plus_powers) == 1:
+                        print("Downgrading " + str(d8_plus_powers[0]) + " by one size (d" + \
+                              str(d8_plus_powers[0].diesize-2) + ").")
+                        d8_plus_powers[0].diesize = d8_plus_powers[0].diesize-2
+                        downgraded_power = d8_plus_powers[0]
+                    else:
+                        decision = self.ChooseIndex([str(x) for x in d8_plus_powers],
+                                                    prompt="Choose a Power to downgrade:",
+                                                    title="Power Source: Cosmos",
+                                                    inputs=inputs,
+                                                    width=40)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # USer canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        downgraded_power = d8_plus_powers[entry_index]
+                        print("Downgrading " + str(downgraded_power) + " by one size (d" + \
+                              str(downgraded_power.diesize-2) + ").")
+                        downgraded_power.SetPrevious(bonus_step)
+                        downgraded_power.diesize = downgraded_power.diesize-2
+                    d10_minus_powers = [d for d in self.power_dice if d.diesize < 12]
+                    d10_minus_powers.remove(downgraded_power)
+                    if len(d10_minus_powers) == 1:
+                        print("Upgrading " + str(d10_minus_powers[0]) + " by one size (d" + \
+                              str(d10_minus_powers[0].diesize+2) + ").")
+                        d10_minus_powers[0].diesize = d10_minus_powers[0].diesize + 2
+                    else:
+                        decision = self.ChooseIndex([str(x) for x in d10_minus_powers],
+                                                    prompt="Choose a Power to upgrade:",
+                                                    title="Power Source: Cosmos",
+                                                    inputs=inputs,
+                                                    width=40)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # USer canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        upgraded_power = d10_minus_powers[entry_index]
+                        print("Upgrading " + str(upgraded_power) + " by one size (d" + \
+                              str(upgraded_power.diesize+2) + ").")
+                        upgraded_power.SetPrevious(bonus_step)
+                        upgraded_power.diesize = upgraded_power.diesize + 2
+                elif ps_bonus == 7:
+                    # Unknown: Gain a d8 Social Quality.
+                    print("Bonus: You get a d8 Social Quality.")
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePQ(Category(0,3),
+                                  [8],
+                                  stepnum=bonus_step,
+                                  isRoot=False,
+                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # USer canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                elif ps_bonus == 8:
+                    # The Multiverse: Gain a d6 Power from ANY category.
+                    print("Bonus: You get a d6 Power from ANY category.")
+                    power_triplets = AllCategories(t=1)
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePQ(power_triplets,
                                   [6],
                                   stepnum=bonus_step,
                                   isRoot=False,
@@ -8949,155 +9105,7 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
-                elif len(d6_pqs) == 1:
-                    # Exactly 1 d6: upgrade it without prompting the user.
-                    print("Bonus: Upgrading your d6 in " + d6_pqs[0].flavorname + " to a d8.")
-                    d6_pqs[0].SetPrevious(bonus_step)
-                    d6_pqs[0].diesize = 8
-                else:
-                    # More than 1 d6: user gets to choose which to upgrade.
-                    decision = self.ChooseIndex([str(x) for x in d6_pqs],
-                                                prompt="Bonus: Choose a d6 Power or Quality to " + \
-                                                "upgrade to d8.",
-                                                title="Power Source: Alien",
-                                                inputs=inputs,
-                                                width=45)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # USer canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    print("Upgrading " + d6_pqs[entry_index].flavorname + " to d8.")
-                    d6_pqs[entry_index].SetPrevious(bonus_step)
-                    d6_pqs[entry_index].diesize = 8
-            elif ps_bonus == 5:
-                # Genius: Gain 1 d10 Information or Mental Quality
-                print("Bonus: You get a d10 Information or Mental Quality.")
-                optional_qualities = Category(0,0) + Category(0,1)
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.ChoosePQ(optional_qualities,
-                              [10],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            elif ps_bonus == 6:
-                # Cosmos: Downgrade a d8/d10/d12 power by 1 die size and upgrade a d6/d8/d10
-                #  power by 1 die size.
-                print("Bonus: Downgrade one Power by 1 die size and " + \
-                      "upgrade another Power by 1 die size.")
-                d8_plus_powers = [d for d in self.power_dice if d.diesize > 6]
-                downgraded_power = ""
-                if len(d8_plus_powers) == 1:
-                    print("Downgrading " + str(d8_plus_powers[0]) + " by one size (d" + \
-                          str(d8_plus_powers[0].diesize-2) + ").")
-                    d8_plus_powers[0].diesize = d8_plus_powers[0].diesize-2
-                    downgraded_power = d8_plus_powers[0]
-                else:
-                    decision = self.ChooseIndex([str(x) for x in d8_plus_powers],
-                                                prompt="Choose a Power to downgrade:",
-                                                title="Power Source: Cosmos",
-                                                inputs=inputs,
-                                                width=40)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # USer canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    downgraded_power = d8_plus_powers[entry_index]
-                    print("Downgrading " + str(downgraded_power) + " by one size (d" + \
-                          str(downgraded_power.diesize-2) + ").")
-                    downgraded_power.SetPrevious(bonus_step)
-                    downgraded_power.diesize = downgraded_power.diesize-2
-                d10_minus_powers = [d for d in self.power_dice if d.diesize < 12]
-                d10_minus_powers.remove(downgraded_power)
-                if len(d10_minus_powers) == 1:
-                    print("Upgrading " + str(d10_minus_powers[0]) + " by one size (d" + \
-                          str(d10_minus_powers[0].diesize+2) + ").")
-                    d10_minus_powers[0].diesize = d10_minus_powers[0].diesize + 2
-                else:
-                    decision = self.ChooseIndex([str(x) for x in d10_minus_powers],
-                                                prompt="Choose a Power to upgrade:",
-                                                title="Power Source: Cosmos",
-                                                inputs=inputs,
-                                                width=40)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # USer canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    upgraded_power = d10_minus_powers[entry_index]
-                    print("Upgrading " + str(upgraded_power) + " by one size (d" + \
-                          str(upgraded_power.diesize+2) + ").")
-                    upgraded_power.SetPrevious(bonus_step)
-                    upgraded_power.diesize = upgraded_power.diesize + 2
-            elif ps_bonus == 7:
-                # Unknown: Gain a d8 Social Quality.
-                print("Bonus: You get a d8 Social Quality.")
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.ChoosePQ(Category(0,3),
-                              [8],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            elif ps_bonus == 8:
-                # The Multiverse: Gain a d6 Power from ANY category.
-                print("Bonus: You get a d6 Power from ANY category.")
-                power_triplets = AllCategories(t=1)
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.ChoosePQ(power_triplets,
-                              [6],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # USer canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            self.substeps_complete[this_step][bonus_substep] = True
+                self.substeps_complete[this_step][bonus_substep] = True
             print("That's all for your Power Source! Take " + str(arc_dice) + \
                   " to use in the Archetype step.")
             self.arc_dice = arc_dice
@@ -12287,16 +12295,17 @@ class Hero:
             has_multiple = (self.archetype_modifier == 1 \
                             and dv_index in range(len(pn_collection)) \
                             and dv_index != pn_index)
-            if has_multiple:
-                self.dv_personality = dv_index
-                your_dv_pn = pn_collection[self.dv_personality]
-                printlong("OK! You've chosen " + your_pn[0] + " as your " + self.dv_tags[1] + \
-                          " Personality and " + your_dv_pn[0] + " as your " + self.dv_tags[0] + \
-                          " Personality.", 100)
-            else:
-                printlong("OK! You've chosen " + your_pn[0] + " as your Personality.",
-                          100)
             if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                if has_multiple:
+                    self.dv_personality = dv_index
+                    your_dv_pn = pn_collection[self.dv_personality]
+                    printlong("OK! You've chosen " + your_pn[0] + " as your " + self.dv_tags[1] + \
+                              " Personality and " + your_dv_pn[0] + " as your " + \
+                              self.dv_tags[0] + " Personality.",
+                              100)
+                else:
+                    printlong("OK! You've chosen " + your_pn[0] + " as your Personality.",
+                              100)
                 self.SetPrevious(this_step)
                 self.personality = pn_index
             # Substep 1: Roleplaying Quality...
@@ -17889,44 +17898,50 @@ class HeroFrame(Frame):
         print("2. Power Source")
         this_step = 2
         self.SetFirstIncomplete()
-        if self.myHero.power_source in range(len(ps_collection)) or \
-           self.firstIncomplete > this_step:
-            # This hero already has a Power Source
+        if self.firstIncomplete > this_step:
+            # This hero already finished the Power Source step.
             messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
                                  ps_collection[self.myHero.power_source][0] + " Power Source.")
         else:
-            ps_index = 99
-            decision = self.myHero.ChooseIndex(step_options,
-                                               prompt="How would you like to choose a Power " + \
-                                               "Source for " + self.myHero.hero_name + "?",
-                                               inputs=inputs,
-                                               width=50)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
-            entry_index = decision[0]
-            inputs = decision[1]
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            if step_options[entry_index].startswith("Guided"):
-                ps_index = self.myHero.GuidedPowerSource(isRoot=False,
-                                                         inputs=pass_inputs)
+            if self.myHero.power_source in range(len(ps_collection)):
+                # This hero already has a Power Source, but hasn't finished adding the attributes
+                #  that it provides. No need to ask them to choose a Power Source.
+                ps_index = self.myHero.power_source
             else:
-                ps_index = self.myHero.ConstructedPowerSource(isRoot=False,
-                                                              inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
+                # This hero doesn't have a Power Source and the user needs to choose one before
+                #  they can add it.
+                ps_index = 99
+                decision = self.myHero.ChooseIndex(step_options,
+                                                   prompt="How would you like to choose a Power " + \
+                                                   "Source for " + self.myHero.hero_name + "?",
+                                                   inputs=inputs,
+                                                   width=50)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
+                entry_index = decision[0]
+                inputs = decision[1]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                if step_options[entry_index].startswith("Guided"):
+                    ps_index = self.myHero.GuidedPowerSource(isRoot=False,
+                                                             inputs=pass_inputs)
+                else:
+                    ps_index = self.myHero.ConstructedPowerSource(isRoot=False,
+                                                                  inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
             # Add the chosen Power Source
             if track_inputs:
                 print(notePrefix + tracker_open)
