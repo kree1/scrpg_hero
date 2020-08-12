@@ -7836,7 +7836,6 @@ class Hero:
             #  or b) already has the Background step finished
             print("Error! " + self.hero_name + " already has the " + \
                   bg_collection[self.background][0] + " Background.")
-            self.steps_complete[this_step] = True
             input()
             # Return the Power Source dice from the existing Background.
             return bg_collection[self.background][6]
@@ -8730,7 +8729,6 @@ class Hero:
             #  or b) already has the Power Source step finished
             print("Error! " + self.hero_name + " already has the " + \
                   ps_collection[self.power_source][0] + " Power Source.")
-            self.steps_complete[this_step] = True
             input()
             # Return the Archetype dice from the existing Power Source.
             return ps_collection[self.power_source][9]
@@ -10119,14 +10117,14 @@ class Hero:
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
         if a_dice == []:
-            a_dice = self.arc_dice
+            a_dice = [d for d in self.arc_dice]
         elif self.arc_dice == []:
             valid_arg = True
             for d in a_dice:
                 if d not in legal_dice:
                     valid_arg = False
             if valid_arg:
-                self.arc_dice = a_dice
+                self.arc_dice = [d for d in a_dice]
         # This is Step 3 of hero creation!
         this_step = 3
         your_arc = arc_simple[arc_index]
@@ -10175,117 +10173,169 @@ class Hero:
         arc_bonus = your_arc[19]
         # Some bonus steps have to be implemented sooner than others
         arc_grants_dice = arc_bonus in [2]
-        if self.archetype in range(len(arc_collection)) or self.steps_complete[this_step]:
-            # This hero already has an Archetype
+        if (self.archetype in range(len(arc_collection)) and \
+            [self.archetype, self.archetype_modifier] != [arc_index, mod_index]) or \
+            self.steps_complete[this_step]:
+            # The specified Archetype can't be added, because the hero...
+            #  a) already has a different Archetype selected
+            #  or b) already has the Archetype step finished
             arc_text = arc_collection[self.archetype][0]
             if self.archetype_modifier in range(1,len(arc_modifiers)):
                 arc_text = arc_modifiers[self.archetype_modifier][0] + ":" + arc_text
             print("Error! " + self.hero_name + " already has the " + arc_text + " Archetype.")
-            self.steps_complete[this_step] = True
             input()
         else:
-            # This hero has no Archetype, so we can add this one.
+            # This hero doesn't have an Archetype yet, or hasn't finished adding this one.
             if mod_index > 0:
                 arc_title = arc_modifiers[mod_index][0] + ":" + your_arc[0]
             else:
                 arc_title = your_arc[0]
-            print("OK! You've chosen " + arc_title + " as your Archetype.")
-            self.SetPrevious(this_step)
-            self.archetype = arc_index
-            self.archetype_modifier = mod_index
-            print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
+            if len(self.steps_modified) == 0 or max(self.steps_modified) < this_step:
+                print("OK! You've chosen " + arc_title + " as your Archetype.")
+                self.SetPrevious(this_step)
+                self.archetype = arc_index
+                self.archetype_modifier = mod_index
             # Add Powers and Qualities from your base Archetype, regardless of modifiers
             # Substep 1: Primary Power/Quality...
             primary_substep = 1
             primary_step = this_step + 0.1 * primary_substep
-            if len(primary_matches) > 0 and primary_alt > 0:
-                # This hero already has at least one of the primary Powers/Qualities for this
-                #  Archetype.
-                ext_report = "This archetype requires one of the following " + \
-                             categories_plural[primary_category] + "..."
-                primary_names = MixedPQ(primary_pqs[0])
-                for triplet in primary_pqs[1:]:
-                    primary_names += ", " + MixedPQ(triplet)
-                ext_report += "\n" + split_text(primary_names,
-                                                width=100,
-                                                prefix="    ")
-                ext_report += "\n\nYou already have..."
-                ext_names = str(primary_matches[0])
-                for d in primary_matches[1:]:
-                    ext_names += "\n" + str(d)
-                ext_report += "\n" + split_text(ext_names,
-                                                width=100,
-                                                prefix="    ")
-                # primary_alt > 0, so the user gets to make a choice
-                if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
-                    # Skip or choose another die to gain
-                    entry_options = ["Yes", "No"]
-                    decision = self.ChooseIndex(entry_options,
-                                                prompt=ext_report + "\n\nDo you want to put " + \
-                                                "one of " + str(a_dice) + " into another " + \
-                                                "option above? (y/n)",
-                                                title="Archetype Selection: " + arc_title,
-                                                inputs=inputs)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
+            if self.substeps_complete[this_step][primary_substep]:
+                # The primary Power/Quality (if there is one) has already been assigned. Find out
+                #  what die size it was given, and remove that value from a_dice.
+                primary_changed = [pq for pq in (self.power_dice + self.quality_dice) if \
+                                   (pq.step == primary_step or primary_step in pq.steps_modified)]
+                if len(primary_changed) < 1:
+                    if len(primary_pqs) > 0:
+                        printlong("Error! substeps_complete for Primary Power/Quality is " + \
+                                  "True, and " + arc_title + " has a Primary Power/Quality, " + \
+                                  "but none of " + self.hero_name + "'s Powers/Qualities were " + \
+                                  "added/modified in this substep!",
+                                  100)
+                        self.substeps_complete[this_step][primary_substep] = False
                         return
-                    entry_choice = decision[0]
-                    inputs = decision[1]
-                    if entry_choice == 0:
-                        # Gain one of the primary_pqs that this hero doesn't already have.
-                        primary_options = [triplet for triplet in primary_pqs if triplet not in \
-                                           [d.triplet() for d in primary_matches]]
-                        if track_inputs:
-                            print(notePrefix + tracker_open)
-                        pass_inputs = []
-                        if len(inputs) > 0:
-                            if str(inputs[0]) != inputs[0]:
-                                pass_inputs = inputs.pop(0)
-                        self.SetPrevious(primary_step)
-                        remainders = self.ChoosePQ(primary_options,
-                                                   a_dice,
-                                                   stepnum=primary_step,
-                                                   isRoot=False,
-                                                   inputs=pass_inputs)
-                        if track_inputs:
-                            print(notePrefix + tracker_close)
+                elif len(primary_changed) > 1:
+                    primary_changed_list = str(primary_changed[0])
+                    for i in range(1, len(primary_changed)):
+                        primary_changed_list += ", "
+                        if i == len(primary_changed) - 1:
+                            primary_changed_list += "and "
+                        primary_changed_list += str(primary_changed[i])
+                    printlong("Error! More than one Power/Quality (" + primary_changed_list + \
+                              ") was added/modified in the Primary Power/Quality substep!",
+                              100)
+                    return
+                else:
+                    primary_size = primary_changed[0].diesize
+                    print(notePrefix + "found primary Power/Quality " + str(primary_changed[0]))
+                    del a_dice[a_dice.index(primary_size)]
+                    print(notePrefix + "remaining a_dice: " + str(a_dice))
+            else:
+                print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
+                if len(primary_matches) > 0 and primary_alt > 0:
+                    # This hero already has at least one of the primary Powers/Qualities for this
+                    #  Archetype.
+                    ext_report = "This archetype requires one of the following " + \
+                                 categories_plural[primary_category] + "..."
+                    primary_names = MixedPQ(primary_pqs[0])
+                    for triplet in primary_pqs[1:]:
+                        primary_names += ", " + MixedPQ(triplet)
+                    ext_report += "\n" + split_text(primary_names,
+                                                    width=100,
+                                                    prefix="    ")
+                    ext_report += "\n\nYou already have..."
+                    ext_names = str(primary_matches[0])
+                    for d in primary_matches[1:]:
+                        ext_names += "\n" + str(d)
+                    ext_report += "\n" + split_text(ext_names,
+                                                    width=100,
+                                                    prefix="    ")
+                    # primary_alt > 0, so the user gets to make a choice
+                    if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
+                        # Skip or choose another die to gain
+                        entry_options = ["Yes", "No"]
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt=ext_report + "\n\nDo you want to " + \
+                                                    "put one of " + str(a_dice) + \
+                                                    " into another option above? (y/n)",
+                                                    title="Archetype Selection: " + arc_title,
+                                                    inputs=inputs)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
                             # User canceled out; fix proceed & drop everything
                             if isRoot:
                                 self.proceed = 1
                             return
-                        a_dice = remainders[1]
-                elif primary_alt == 2:
-                    # Skip or swap the die with one of the new ones
-                    entry_options = ["Yes", "No"]
-                    decision = self.ChooseIndex(entry_options,
-                                                prompt=ext_report + "\n\nDo you want to swap " + \
-                                                "one of the dice you have above for one of " + \
-                                                str(a_dice) + "? (y/n)",
-                                                title="Archetype Selection: " + arc_title,
-                                                inputs=inputs)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_choice = decision[0]
-                    inputs = decision[1]
-                    if entry_choice == 0:
-                        swap_index = 0
-                        if len(primary_matches) > 1:
-                            # Choose one of primary_matches to swap out.
-                            entry_options = string.ascii_uppercase[0:len(primary_matches)]
-                            cat_index = DieCategory([d.triplet() for d in primary_matches])
-                            cat_text = categories_singular[cat_index]
-                            decision = self.ChooseIndex([str(x) for x in primary_matches],
-                                                        prompt="Choose a " + cat_text + \
-                                                        " to change die size:",
+                        entry_choice = decision[0]
+                        inputs = decision[1]
+                        if entry_choice == 0:
+                            # Gain one of the primary_pqs that this hero doesn't already have.
+                            primary_options = [triplet for triplet in primary_pqs \
+                                               if triplet not in \
+                                               [d.triplet() for d in primary_matches]]
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.SetPrevious(primary_step)
+                            remainders = self.ChoosePQ(primary_options,
+                                                       a_dice,
+                                                       stepnum=primary_step,
+                                                       isRoot=False,
+                                                       inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; fix proceed & drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                            a_dice = remainders[1]
+                    elif primary_alt == 2:
+                        # Skip or swap the die with one of the new ones
+                        entry_options = ["Yes", "No"]
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt=ext_report + "\n\nDo you want to " + \
+                                                    "swap one of the dice you have above for " + \
+                                                    "one of " + str(a_dice) + "? (y/n)",
+                                                    title="Archetype Selection: " + arc_title,
+                                                    inputs=inputs)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_choice = decision[0]
+                        inputs = decision[1]
+                        if entry_choice == 0:
+                            swap_index = 0
+                            if len(primary_matches) > 1:
+                                # Choose one of primary_matches to swap out.
+                                entry_options = string.ascii_uppercase[0:len(primary_matches)]
+                                cat_index = DieCategory([d.triplet() for d in primary_matches])
+                                cat_text = categories_singular[cat_index]
+                                decision = self.ChooseIndex([str(x) for x in primary_matches],
+                                                            prompt="Choose a " + cat_text + \
+                                                            " to change die size:",
+                                                            inputs=inputs,
+                                                            width=40)
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; fix proceed & drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
+                                swap_index = decision[0]
+                                inputs = decision[1]
+                            # Swap the die size of primary_matches[swap_index] with the die size of
+                            #  one of a_dice.
+                            self.SetPrevious(primary_step)
+                            decision = self.ChooseIndex([str(x) for x in a_dice],
+                                                        prompt="Choose a new die size for " + \
+                                                        str(primary_matches[swap_index]) + ":",
                                                         inputs=inputs,
                                                         width=40)
 ##                            print(notePrefix + "proceed = " + str(self.proceed))
@@ -10294,120 +10344,171 @@ class Hero:
                                 if isRoot:
                                     self.proceed = 1
                                 return
-                            swap_index = decision[0]
+                            a_die_index = decision[0]
                             inputs = decision[1]
-                        # Swap the die size of primary_matches[swap_index] with the die size of
-                        #  one of a_dice.
-                        self.SetPrevious(primary_step)
-                        decision = self.ChooseIndex([str(x) for x in a_dice],
-                                                    prompt="Choose a new die size for " + \
-                                                    str(primary_matches[swap_index]) + ":",
-                                                    inputs=inputs,
-                                                    width=40)
-##                        print(notePrefix + "proceed = " + str(self.proceed))
-                        if self.proceed == 0:
-                            # User canceled out; fix proceed & drop everything
-                            if isRoot:
-                                self.proceed = 1
-                            return
-                        a_die_index = decision[0]
-                        inputs = decision[1]
-                        primary_matches[swap_index].SetPrevious(primary_step)
-                        d_temp = a_dice[a_die_index]
-                        a_dice[a_die_index] = primary_matches[swap_index].diesize
-                        primary_matches[swap_index].diesize = d_temp
-                        print("OK! " + self.hero_name + " now has " + \
-                              str(primary_matches[swap_index]) + ", and " + str(a_dice) + \
-                              " remaining for Powers/Qualities.")
-            elif len(primary_pqs)==1:
-                # This Archetype has exactly 1 primary power/quality and this hero needs to gain it.
-                # print("primary_pqs[0]: " + str(primary_pqs[0]))
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(primary_step)
-                a_dice = self.ChoosePQDieSize(primary_pqs[0][0],
-                                              primary_pqs[0][1:],
-                                              a_dice,
-                                              stepnum=primary_step,
-                                              isRoot=False,
-                                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            elif len(primary_pqs) > 1:
-                # This Archetype has more than 1 primary power/quality and this hero needs to gain
-                #  one of them.
-                primary_options = [triplet for triplet in primary_pqs if triplet not in \
-                                   [d.triplet() for d in primary_matches]]
-                remainders = []
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(primary_step)
-                remainders = self.ChoosePQ(primary_options,
-                                           a_dice,
-                                           stepnum=primary_step,
-                                           isRoot=False,
-                                           inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                a_dice = remainders[1]
-            self.substeps_complete[this_step][primary_substep] = True
+                            primary_matches[swap_index].SetPrevious(primary_step)
+                            d_temp = a_dice[a_die_index]
+                            a_dice[a_die_index] = primary_matches[swap_index].diesize
+                            primary_matches[swap_index].diesize = d_temp
+                            print("OK! " + self.hero_name + " now has " + \
+                                  str(primary_matches[swap_index]) + ", and " + str(a_dice) + \
+                                  " remaining for Powers/Qualities.")
+                elif len(primary_pqs)==1:
+                    # This Archetype has exactly 1 primary Power/Quality and this hero needs to
+                    #  gain it.
+                    # print("primary_pqs[0]: " + str(primary_pqs[0]))
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.SetPrevious(primary_step)
+                    a_dice = self.ChoosePQDieSize(primary_pqs[0][0],
+                                                  primary_pqs[0][1:],
+                                                  a_dice,
+                                                  stepnum=primary_step,
+                                                  isRoot=False,
+                                                  inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                elif len(primary_pqs) > 1:
+                    # This Archetype has more than 1 primary power/quality and this hero needs to
+                    #  gain one of them.
+                    primary_options = [triplet for triplet in primary_pqs if triplet not in \
+                                       [d.triplet() for d in primary_matches]]
+                    remainders = []
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.SetPrevious(primary_step)
+                    remainders = self.ChoosePQ(primary_options,
+                                               a_dice,
+                                               stepnum=primary_step,
+                                               isRoot=False,
+                                               inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    a_dice = remainders[1]
+                self.substeps_complete[this_step][primary_substep] = True
             # Substep 2: Secondary Powers/Qualities...
             secondary_substep = 2
             secondary_step = this_step + 0.1 * secondary_substep
             # ... and Substep 3: Tertiary Powers/Qualities...
             tertiary_substep = 3
             tertiary_step = this_step + 0.1 * tertiary_substep
-            if len(secondary_pqs) > 0:
-                # Add 1 of the secondary Powers/Qualities:
-                remainders = []
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(secondary_step)
-                remainders = self.ChoosePQ(secondary_pqs,
-                                           a_dice,
-                                           stepnum=secondary_step,
-                                           isRoot=False,
-                                           inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                a_dice = remainders[1]
-                entry_choice = ' '
-                # If secondary_count is >1, the user gets to assign any number of dice to
-                #  Powers/Qualities from secondary_pqs, then assign the rest within tertiary_pqs...
-                #  which is the same as saying that each remaining die should be assigned within
-                #  either of those lists.
-                if secondary_count > 1 and len(a_dice) > 0:
-                    self.substeps_complete[this_step][secondary_substep] = True
+            if not self.substeps_complete[this_step][tertiary_substep]:
+                if len(secondary_pqs) > 0:
+                    if self.substeps_complete[this_step][secondary_substep]:
+                        # 1 of the secondary Powers/Qualities has already been added. Find out what
+                        #  die size it was given, and remove that value from a_dice.
+                        secondary_added = [pq for pq in (self.power_dice + self.quality_dice) if \
+                                           pq.step == secondary_step]
+                        if len(secondary_added) < 1:
+                            printlong(notePrefix + "substeps_complete[" + str(this_step) + \
+                                      "] = " + str(self.substeps_complete[this_step]))
+                            printlong("Error! substeps_complete for Secondary " + \
+                                      "Powers/Qualities is True, and " + arc_title + \
+                                      " has Secondary Powers/Qualities, but none " + \
+                                      "of " + self.hero_name + "'s Powers/Qualities were " + \
+                                      "added in this substep!",
+                                      100)
+                            self.substeps_complete[this_step][secondary_substep] = False
+                            return
+                        secondary_added_list = str(secondary_added[0])
+                        for i in range(1, len(secondary_added)):
+                            secondary_added_list += ", "
+                            if i == len(secondary_added) - 1:
+                                secondary_added_list += "and "
+                            secondary_added_list += str(secondary_added[i])
+                        if len(secondary_added) > len(a_dice):
+                            printlong("Error! The number of Powers/Qualities added in " + \
+                                      "Secondary Powers/Qualities (" + secondary_added_list + \
+                                      ") is greater than the number of dice remaining to " + \
+                                      "assign (" + str(a_dice) + ").",
+                                      100)
+                            return
+                        elif len(secondary_added) > 1 and secondary_count == 1:
+                            printlong("Error! " + arc_title + " only grants 1 Secondary " + \
+                                      "Power/Quality, but more than 1 was added (" + \
+                                      secondary_added_list + ")!",
+                                      100)
+                            return
+                        else:
+                            for pq in secondary_added:
+                                print(notePrefix + "found secondary Power/Quality " + str(pq))
+                                del a_dice[a_dice.index(pq.diesize)]
+                                print(notePrefix + "remaining a_dice: " + str(a_dice))
+                    else:
+                        # Add 1 of the secondary Powers/Qualities:
+                        remainders = []
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.SetPrevious(secondary_step)
+                        remainders = self.ChoosePQ(secondary_pqs,
+                                                   a_dice,
+                                                   stepnum=secondary_step,
+                                                   isRoot=False,
+                                                   inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        a_dice = remainders[1]
+                    # If secondary_count is >1, the user gets to assign any number of their
+                    #  remaining dice within secondary_pqs, then assign the rest within
+                    #  tertiary_pqs...
+                    #  which is the same as saying that each remaining die should be assigned
+                    #  within the union of those lists.
+                    if secondary_count > 1 and len(a_dice) > 0:
+                        self.substeps_complete[this_step][secondary_substep] = True
+                        self.SetPrevious(tertiary_step)
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.AssignAllPQ(secondary_pqs + tertiary_pqs,
+                                         a_dice,
+                                         stepnum=tertiary_step,
+                                         isRoot=False,
+                                         inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        self.substeps_complete[this_step][tertiary_substep] = True
+                        a_dice = []
+                self.substeps_complete[this_step][secondary_substep] = True
+                if len(a_dice) > 0:
                     self.SetPrevious(tertiary_step)
                     if track_inputs:
                         print(notePrefix + tracker_open)
@@ -10415,7 +10516,7 @@ class Hero:
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AssignAllPQ(secondary_pqs + tertiary_pqs,
+                    self.AssignAllPQ(tertiary_pqs,
                                      a_dice,
                                      stepnum=tertiary_step,
                                      isRoot=False,
@@ -10428,73 +10529,25 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
-                    self.substeps_complete[this_step][tertiary_substep] = True
-                    a_dice = []
-            self.substeps_complete[this_step][secondary_substep] = True
-            if len(a_dice) > 0:
-                self.SetPrevious(tertiary_step)
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.AssignAllPQ(tertiary_pqs,
-                                 a_dice,
-                                 stepnum=tertiary_step,
-                                 isRoot=False,
-                                 inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            self.substeps_complete[this_step][tertiary_substep] = True
+                self.substeps_complete[this_step][tertiary_substep] = True
             # Substep 4: Bonus Powers/Qualities...
             bonus_substep = 4
             bonus_step = this_step + 0.1 * bonus_substep
-            # If the hero's Power Source gave them a bonus Quality from their Archetype, this is
-            #  the time to choose it.
-            if self.arc_bonus_quality in legal_dice:
-                arc_q_triplets = [triplet for triplet in \
-                                  primary_pqs + secondary_pqs + tertiary_pqs if triplet[0]==0]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(bonus_step)
-                self.ChoosePQ(arc_q_triplets,
-                              [self.arc_bonus_quality],
-                              stepnum=bonus_step,
-                              isRoot=False,
-                              inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-            # If this Archetype grants a bonus Power or Quality die, this is the time to choose it.
-            if arc_grants_dice:
-                if arc_bonus == 2:
-                    # Robot/Cyborg: Gain a d10 Technological Power.
-                    print("Bonus: You get a d10 Technological Power.")
+            if not self.substeps_complete[this_step][bonus_substep]:
+                # If the hero's Power Source gave them a bonus Quality from their Archetype, this
+                #  is the time to choose it.
+                if self.arc_bonus_quality in legal_dice:
+                    self.SetPrevious(bonus_step)
+                    arc_q_triplets = [triplet for triplet in \
+                                      primary_pqs + secondary_pqs + tertiary_pqs if triplet[0]==0]
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.SetPrevious(bonus_step)
-                    self.ChoosePQ(Category(1,8),
-                                  [10],
+                    self.ChoosePQ(arc_q_triplets,
+                                  [self.arc_bonus_quality],
                                   stepnum=bonus_step,
                                   isRoot=False,
                                   inputs=pass_inputs)
@@ -10506,184 +10559,160 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
-            self.substeps_complete[this_step][bonus_substep] = True
+                # If this Archetype grants a bonus Power or Quality die, this is the time to choose
+                #  it.
+                if arc_grants_dice:
+                    if arc_bonus == 2:
+                        # Robot/Cyborg: Gain a d10 Technological Power.
+                        self.SetPrevious(bonus_step)
+                        print("Bonus: You get a d10 Technological Power.")
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.ChoosePQ(Category(1,8),
+                                      [10],
+                                      stepnum=bonus_step,
+                                      isRoot=False,
+                                      inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                if self.archetype_modifier == 2 and len(self.power_dice) < 4:
+                    # If the hero is Modular and has fewer than 4 Powers, add d6 Powers until they
+                    #  have 4.
+                    self.SetPrevious(bonus_step)
+                    while len(self.power_dice) < 4:
+                        print(self.hero_name + " has " + str(len(self.power_dice)) + \
+                              " of the 4 Power dice they'll need as a Modular hero. Choose a " + \
+                              "d6 Power from any category to fill in the list:")
+                        power_triplets = AllCategories(t=1)
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.ChoosePQ(power_triplets,
+                                      [6],
+                                      stepnum=bonus_step,
+                                      isRoot=False,
+                                      inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                self.substeps_complete[this_step][bonus_substep] = True
             # Substep 5: Abilities...
             ability_substep = 5
             ability_step = this_step + 0.1 * ability_substep
-            if self.archetype_modifier == 2:
-                # If the hero is Modular, they get Modular abilities and Modes instead of the
-                #  Abilities from their other Archetype
-                # First, if the hero has fewer than 4 Powers, add d6 Powers until they have 4.
-                if len(self.power_dice) < 4:
-                    self.SetPrevious(bonus_step)
-                while len(self.power_dice) < 4:
-                    print(self.hero_name + " has " + str(len(self.power_dice)) + \
-                          " of the 4 Power dice they'll need as a Modular hero. Choose a d6 " + \
-                          "Power from any category to fill in the list:")
-                    power_triplets = AllCategories(t=1)
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.ChoosePQ(power_triplets,
-                                  [6],
-                                  stepnum=bonus_step,
-                                  isRoot=False,
-                                  inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
+            # ... and Substep 6: Auxiliary Sheets...
+            aux_substep = 6
+            aux_step = this_step + 0.1 * aux_substep
+            if not self.substeps_complete[this_step][aux_substep]:
+                if self.archetype_modifier == 2:
+                    # If the hero is Modular, they get Modular Abilities and Modes instead of the
+                    #  Abilities from their other Archetype.
+                    if not self.substeps_complete[this_step][ability_substep]:
+                        # First, add the mandatory Abilities for the Modular archetype:
+                        self.SetPrevious(ability_step)
+                        mandatory_abilities = [a for a in arc_modular[7]]
+                        for template in mandatory_abilities:
+                            zone = template.zone
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.ChooseAbility([template],
+                                               zone,
+                                               stepnum=ability_step,
+                                               isRoot=False,
+                                               inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; fix proceed & drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                        self.substeps_complete[this_step][ability_substep] = True
+                    # Substep 6: Auxiliary Sheets...
+                    self.SetPrevious(aux_step)
+                    # First, the user gets to choose whether to add a Powerless Mode.
+                    prompt = "You can add a Powerless Mode if there are circumstances where you " + \
+                             "could be separated from your power source (like having a Power Suit " + \
+                             "that provides all your powers).\nDo you want to add a Powerless " + \
+                             "Mode?\n\n" + ModeTemplateDetails(-1,0)
+                    entry_options = ["Yes", "No"]
+                    decision = self.ChooseIndex(entry_options,
+                                                prompt=prompt,
+                                                title="Archetype Selection: Modular",
+                                                inputs=inputs)
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; fix proceed & drop everything
                         if isRoot:
                             self.proceed = 1
                         return
-                # Then add the mandatory Abilities for the Modular archetype:
-                self.SetPrevious(ability_step)
-                mandatory_abilities = [a for a in arc_modular[7]]
-                for template in mandatory_abilities:
-                    zone = template.zone
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.ChooseAbility([template],
-                                       zone,
-                                       stepnum=ability_step,
-                                       isRoot=False,
-                                       inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                self.substeps_complete[this_step][ability_substep] = True
-                # Substep 6: Auxiliary Sheets...
-                aux_substep = 6
-                aux_step = this_step + 0.1 * aux_substep
-                self.SetPrevious(aux_step)
-                # First, the user gets to choose whether to add a Powerless Mode.
-                prompt = "You can add a Powerless Mode if there are circumstances where you " + \
-                         "could be separated from your power source (like having a Power Suit " + \
-                         "that provides all your powers).\nDo you want to add a Powerless " + \
-                         "Mode?\n\n" + ModeTemplateDetails(-1,0)
-                entry_options = ["Yes", "No"]
-                decision = self.ChooseIndex(entry_options,
-                                            prompt=prompt,
-                                            title="Archetype Selection: Modular",
-                                            inputs=inputs)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; fix proceed & drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_index = decision[0]
-                inputs = decision[1]
-                if entry_index == 0:
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.AddMode(-1,
-                                 0,
-                                 stepnum=aux_step,
-                                 isRoot=False,
-                                 inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                # Then, they get 1 additional Green Mode.
-                dispWidth = 100
-                decision = self.ChooseDetailIndex("Choose 1 additional Green Mode:",
-                                                  "Enter a lowercase letter to see a Mode " + \
-                                                  "expanded, or an uppercase letter to select it.",
-                                                  [x[0] for x in mc_green],
-                                                  [ModeTemplateDetails(0,
-                                                                       i,
-                                                                       width=-1,
-                                                                       indented=True) \
-                                                   for i in range(len(mc_green))],
-                                                  [ModeTemplateDetails(0,
-                                                                       i,
-                                                                       width=dispWidth,
-                                                                       indented=True) \
-                                                   for i in range(len(mc_green))],
-                                                  title="Mode Selection",
-                                                  lwidth=30,
-                                                  rwidth=100,
-                                                  swidth=dispWidth,
-                                                  shellHeader="Choose 1 additional Green Mode:",
-                                                  inputs=inputs)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_index = decision[0]
-                inputs = decision[1]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.AddMode(0,
-                             entry_index,
-                             stepnum=aux_step,
-                             isRoot=False,
-                             inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                # Then, they get 2 different Yellow Modes.
-                yellow_indices = [i for i in range(len(mc_yellow))]
-                for x in range(2):
-                    prompt = ""
-                    if x > 0:
-                        prompt = "Choose the second Yellow Mode:"
-                    else:
-                        prompt = "Choose the first Yellow Mode:"
-                    decision = self.ChooseDetailIndex(prompt,
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    if entry_index == 0:
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs = inputs.pop(0)
+                        self.AddMode(-1,
+                                     0,
+                                     stepnum=aux_step,
+                                     isRoot=False,
+                                     inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; fix proceed & drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                    # Then, they get 1 additional Green Mode.
+                    dispWidth = 100
+                    decision = self.ChooseDetailIndex("Choose 1 additional Green Mode:",
                                                       "Enter a lowercase letter to see a Mode " + \
                                                       "expanded, or an uppercase letter to " + \
                                                       "select it.",
-                                                      [mc_yellow[x][0] for x in yellow_indices],
-                                                      [ModeTemplateDetails(1,
-                                                                           x,
+                                                      [x[0] for x in mc_green],
+                                                      [ModeTemplateDetails(0,
+                                                                           i,
                                                                            width=-1,
                                                                            indented=True) \
-                                                       for x in yellow_indices],
-                                                      [ModeTemplateDetails(1,
-                                                                           x,
+                                                       for i in range(len(mc_green))],
+                                                      [ModeTemplateDetails(0,
+                                                                           i,
                                                                            width=dispWidth,
                                                                            indented=True) \
-                                                       for x in yellow_indices],
+                                                       for i in range(len(mc_green))],
                                                       title="Mode Selection",
                                                       lwidth=30,
                                                       rwidth=100,
                                                       swidth=dispWidth,
-                                                      shellHeader=prompt,
+                                                      shellHeader="Choose 1 additional Green " + \
+                                                      "Mode:",
                                                       inputs=inputs)
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
@@ -10693,15 +10722,14 @@ class Hero:
                         return
                     entry_index = decision[0]
                     inputs = decision[1]
-                    mode_index = yellow_indices[entry_index]
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
                     if len(inputs) > 0:
                         if str(inputs[0]) != inputs[0]:
                             pass_inputs = inputs.pop(0)
-                    self.AddMode(1,
-                                 mode_index,
+                    self.AddMode(0,
+                                 entry_index,
                                  stepnum=aux_step,
                                  isRoot=False,
                                  inputs=pass_inputs)
@@ -10713,251 +10741,56 @@ class Hero:
                         if isRoot:
                             self.proceed = 1
                         return
-                    del yellow_indices[entry_index]
-                # Finally, they get 1 Red Mode.
-                decision = self.ChooseDetailIndex("Choose a Red Mode:",
-                                                  "Enter a lowercase letter to see a Mode " + \
-                                                  "expanded, or an uppercase letter to " + \
-                                                  "select it.",
-                                                  [x[0] for x in mc_red],
-                                                  [ModeTemplateDetails(2,
-                                                                       i,
-                                                                       width=-1,
-                                                                       indented=True) \
-                                                   for i in range(len(mc_red))],
-                                                  [ModeTemplateDetails(2,
-                                                                       i,
-                                                                       width=dispWidth,
-                                                                       indented=True) \
-                                                   for i in range(len(mc_red))],
-                                                  title="Mode Selection",
-                                                  lwidth=30,
-                                                  rwidth=100,
-                                                  swidth=dispWidth,
-                                                  shellHeader="Choose a Red Mode:",
-                                                  inputs=inputs)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_index = decision[0]
-                inputs = decision[1]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.AddMode(2,
-                             entry_index,
-                             stepnum=aux_step,
-                             isRoot=False,
-                             inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                self.substeps_complete[this_step][aux_substep] = True
-            else:
-                # As long as the hero isn't Modular, they get the Abilities from their main
-                #  Archetype.
-                self.SetPrevious(ability_step)
-                # Start with the mandatory Abilities for the Archetype, if applicable:
-                for template in mandatory_abilities:
-                    zone = template.zone
-                    legal_triplets = [x.triplet() for x in self.power_dice] + \
-                                     [y.triplet() for y in self.quality_dice]
-                    # Make a list of abilities the hero has in this zone from this Archetype
-                    arc_zone_abilities = [x for x in self.abilities \
-                                          if math.floor(x.step) == this_step and x.zone == zone]
-                    if len(arc_zone_abilities) > 0:
-                        if (zone == 0 and green_unique > 0) or (zone == 1 and yellow_unique > 0):
-                            # There's a minimum number of unique Powers/Qualities that need to be
-                            #  used in the Archetype abilities for this zone. Find out if it's been
-                            #  met, and if not, restrict this Ability to unused ones.
-                            # Start by making a list of the Powers/Qualities already used in
-                            #  arc_zone_abilities:
-                            arc_triplets = []
-                            for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs \
-                                                 if len(y) == 3 and y not in arc_triplets]
-                            if (zone == 0 and len(arc_triplets) < green_unique) or \
-                               (zone == 1 and len(arc_triplets) < yellow_unique):
-                                # This Ability needs to use a Power/Quality that hasn't been used
-                                #  in this zone before
-                                while len([x for x in legal_triplets if x in arc_triplets]) > 0:
-                                    for x in arc_triplets:
-                                        if x in legal_triplets:
-                                            legal_triplets.remove(x)
-                    if zone == 0 and green_limited:
-                        # This is a Green Ability, and Green Abilities from this Archetype use only
-                        #  Powers/Qualities from this Archetype
-                        legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.ChooseAbility([template],
-                                       zone,
-                                       triplet_options=legal_triplets,
-                                       stepnum=ability_step,
-                                       isRoot=False,
-                                       inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                # Then move on to the Green Abilities:
-                # If mixed_abilities exists, then that's the list of Green Ability options
-                if len(mixed_abilities) > 0:
-                    green_abilities = mixed_abilities
-                for i in range(green_count):
-                    # Add another Green Ability from the list.
-                    category_req = -1
-                    legal_triplets = [x.triplet() for x in self.power_dice] + \
-                                     [y.triplet() for y in self.quality_dice]
-                    # If this is the first Green Ability and requires_primary, then specify that
-                    #  it needs to use one of the primary powers/qualities:
-                    if i == 0 and requires_primary:
-                        legal_triplets = primary_pqs
-                    # If this is the second Green Ability and category_required is 0 or 1, then
-                    #  specify that it needs to use a die from the specified category:
-                    elif i == 1 and category_required in [0,1]:
-                        category_req = category_required
-                    # Make a list of abilities the hero has in this zone from this Archetype
-                    arc_zone_abilities = [x for x in self.abilities \
-                                          if math.floor(x.step) == this_step and x.zone == 0]
-##                    print("### AddArchetype: len(arc_zone_abilities) for zone=0 is " + \
-##                          str(len(arc_zone_abilities)))
-                    if len(arc_zone_abilities) > 0:
-##                        print("### AddArchetype: green_unique=" + str(green_unique))
-                        if green_unique > 0:
-                            # There's a minimum number of unique Powers/Qualities that need to be
-                            #  used in the Archetype abilities for this zone. Find out if it's been
-                            #  met, and if not, restrict this Ability to unused ones.
-                            # Start by making a list of the Powers/Qualities already used in
-                            #  arc_zone_abilities:
-                            arc_triplets = []
-                            for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs \
-                                                 if len(y) == 3 and y not in arc_triplets]
-##                            print("### AddArchetype: arc_triplets=" + str(arc_triplets))
-##                            print("### AddArchetype: len(arc_triplets)=" + str(len(arc_triplets)))
-                            if len(arc_triplets) < green_unique:
-                                # This Ability needs to use a Power/Quality that hasn't been used
-                                #  in this zone before
-                                while len([x for x in legal_triplets if x in arc_triplets]) > 0:
-                                    for x in arc_triplets:
-                                        if x in legal_triplets:
-                                            legal_triplets.remove(x)
-                    if green_limited:
-                        # Green Abilities from this Archetype use only Powers/Qualities from this
-                        #  Archetype
-                        legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
-##                    print("### AddArchetype: legal_triplets=" + str(legal_triplets))
-                    # Finally, add the ability
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    green_abilities = self.ChooseAbility(green_abilities,
-                                                         0,
-                                                         triplet_options=legal_triplets,
-                                                         category_req=category_req,
-                                                         stepnum=ability_step,
-                                                         isRoot=False,
-                                                         inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                # Next add the Yellow Abilities, if there are any
-                # If mixed_abilities exists, then green_abilities is the list of Yellow Ability
-                #  options
-                if len(mixed_abilities) > 0:
-                    yellow_abilities = green_abilities
-                for i in range(yellow_count):
-                    # Add another Yellow Ability from the list.
-                    legal_triplets = [x.triplet() for x in self.power_dice] + \
-                                     [y.triplet() for y in self.quality_dice]
-                    # Make a list of abilities the hero has in this zone from this Archetype
-                    arc_zone_abilities = [x for x in self.abilities \
-                                          if math.floor(x.step) == this_step and x.zone == 1]
-                    if len(arc_zone_abilities) > 0:
-                        if yellow_unique > 0:
-                            # There's a minimum number of unique Powers/Qualities that need to be
-                            #  used in the Archetype abilities for this zone. Find out if it's been
-                            #  met, and if not, restrict this Ability to unused ones.
-                            # Start by making a list of the Powers/Qualities already used in
-                            #  arc_zone_abilities:
-                            arc_triplets = []
-                            for x in arc_zone_abilities:
-                                arc_triplets += [y for y in x.insert_pqs \
-                                                 if len(y) == 3 and y not in arc_triplets]
-                            if len(arc_triplets) < yellow_unique:
-                                # This Ability needs to use a Power/Quality that hasn't been used
-                                #  in this zone before
-                                while len([x for x in legal_triplets if x in arc_triplets]) > 0:
-                                    for x in arc_triplets:
-                                        if x in legal_triplets:
-                                            legal_triplets.remove(x)
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    yellow_abilities = self.ChooseAbility(yellow_abilities,
-                                                          1,
-                                                          triplet_options=legal_triplets,
-                                                          stepnum=ability_step,
-                                                          isRoot=False,
-                                                          inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                self.substeps_complete[this_step][ability_substep] = True
-                # Substep 6: Auxiliary Sheets...
-                aux_substep = 6
-                aux_step = this_step + 0.1 * aux_substep
-                # If the hero is a Form-Changer, create their Forms
-                if self.archetype == 15:
-                    # Add 2 Green Forms and 1 Yellow Form.
-                    self.SetPrevious(aux_step)
-                    for f_zone in [0,0,1]:
+                    # Then, they get 2 different Yellow Modes.
+                    yellow_indices = [i for i in range(len(mc_yellow))]
+                    for x in range(2):
+                        prompt = ""
+                        if x > 0:
+                            prompt = "Choose the second Yellow Mode:"
+                        else:
+                            prompt = "Choose the first Yellow Mode:"
+                        decision = self.ChooseDetailIndex(prompt,
+                                                          "Enter a lowercase letter to see a " + \
+                                                          "Mode expanded, or an uppercase " + \
+                                                          "letter to select it.",
+                                                          [mc_yellow[x][0] \
+                                                           for x in yellow_indices],
+                                                          [ModeTemplateDetails(1,
+                                                                               x,
+                                                                               width=-1,
+                                                                               indented=True) \
+                                                           for x in yellow_indices],
+                                                          [ModeTemplateDetails(1,
+                                                                               x,
+                                                                               width=dispWidth,
+                                                                               indented=True) \
+                                                           for x in yellow_indices],
+                                                          title="Mode Selection",
+                                                          lwidth=30,
+                                                          rwidth=100,
+                                                          swidth=dispWidth,
+                                                          shellHeader=prompt,
+                                                          inputs=inputs)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        mode_index = yellow_indices[entry_index]
                         if track_inputs:
                             print(notePrefix + tracker_open)
                         pass_inputs = []
                         if len(inputs) > 0:
                             if str(inputs[0]) != inputs[0]:
                                 pass_inputs = inputs.pop(0)
-                        self.ChooseForm(f_zone,
-                                        stepnum=aux_step,
-                                        isRoot=False,
-                                        inputs=pass_inputs)
+                        self.AddMode(1,
+                                     mode_index,
+                                     stepnum=aux_step,
+                                     isRoot=False,
+                                     inputs=pass_inputs)
                         if track_inputs:
                             print(notePrefix + tracker_close)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
@@ -10966,16 +10799,29 @@ class Hero:
                             if isRoot:
                                 self.proceed = 1
                             return
-                # If the hero is a Minion-Maker, select their Minion Forms
-                elif self.archetype == 13:
-                    self.SetPrevious(aux_step)
-                    entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
-                    decision = self.ChooseIndex([str(x) for x in self.quality_dice],
-                                                prompt="Choose a Quality to determine the " + \
-                                                "number of Minion Forms " + self.hero_name + \
-                                                " has access to:",
-                                                inputs=inputs,
-                                                width=50)
+                        del yellow_indices[entry_index]
+                    # Finally, they get 1 Red Mode.
+                    decision = self.ChooseDetailIndex("Choose a Red Mode:",
+                                                      "Enter a lowercase letter to see a Mode " + \
+                                                      "expanded, or an uppercase letter to " + \
+                                                      "select it.",
+                                                      [x[0] for x in mc_red],
+                                                      [ModeTemplateDetails(2,
+                                                                           i,
+                                                                           width=-1,
+                                                                           indented=True) \
+                                                       for i in range(len(mc_red))],
+                                                      [ModeTemplateDetails(2,
+                                                                           i,
+                                                                           width=dispWidth,
+                                                                           indented=True) \
+                                                       for i in range(len(mc_red))],
+                                                      title="Mode Selection",
+                                                      lwidth=30,
+                                                      rwidth=100,
+                                                      swidth=dispWidth,
+                                                      shellHeader="Choose a Red Mode:",
+                                                      inputs=inputs)
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
@@ -10984,209 +10830,249 @@ class Hero:
                         return
                     entry_index = decision[0]
                     inputs = decision[1]
-                    self.mf_quality = self.quality_dice[entry_index]
-                    max_forms = self.mf_quality.diesize
-                    if max_forms >= len(min_collection):
-                        print("OK! Adding all " + str(len(min_collection)) + \
-                              " Minion Forms to " + self.hero_name + "'s Minion Sheet.")
-                        for i in range(len(min_collection)):
-                            self.min_forms[i] = [s for s in min_collection[i]]
-                    else:
-                        # The user needs to choose their Minion Forms.
-                        min_indices = [i for i in range(len(min_collection))]
-                        while len(self.min_forms) < max_forms:
-                            if self.UseGUI(inputs):
-                                # Use AssignWindow to choose any number of minion forms at once
-                                result = StringVar(self.myFrame)
-                                remaining = max_forms - len(self.min_forms)
-                                success = IntVar(self.myFrame, 1)
-                                questions = AssignWindow(self.myFrame,
-                                                         "Choose exactly " + str(remaining) + \
-                                                         " Minion Forms to add...",
-                                                         ["Add", "Don't Add"],
-                                                         [MinionFormStr(i,
-                                                                        width=-1,
-                                                                        breaks=1) for i in \
-                                                          min_indices],
-                                                         result,
-                                                         default=1,
-                                                         success=success,
-                                                         rwidth=10,
-                                                         firstMin=remaining,
-                                                         firstMax=remaining,
-                                                         counter=True,
-                                                         title="Archetype Selection: Minion-Maker")
-##                                print(notePrefix + "success = " + str(success.get()))
-                                self.proceed = success.get()
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                answers = result.get()
-                                self.min_forms += [min_indices[i] \
-                                                   for i in range(len(min_indices)) \
-                                                   if answers[i] == string.ascii_uppercase[0]]
-                            else:
-                                # Use the text shell to choose the next minion form
-                                entry_options = string.ascii_uppercase[0:len(min_indices)]
-                                print("Choose a Minion Form (#" + str(len(self.min_forms) + 1) + \
-                                      " of " + str(max_forms) + "):")
-                                for i in range(len(min_indices)):
-                                    printlong(entry_options[i] + ": " + \
-                                              MinionFormStr(min_indices[i],
-                                                            width=-1,
-                                                            breaks=0),
-                                              width=100,
-                                              prefix="    ")
-                                decision = choose_letter(entry_options,
-                                                         ' ',
-                                                         inputs=inputs)
-                                entry_choice = decision[0]
-                                inputs = decision[1]
-                                entry_index = entry_options.find(entry_choice)
-                                # EDIT: Use self.ChooseIndex(), not find()?
-                                # ...
-                                mf_index = min_indices.pop(entry_index)
-                                self.min_forms.append(mf_index)
-                                print("OK! Added " + min_collection[mf_index][0] + " to " + \
-                                      self.hero_name + "'s Minion sheet.")
-                        self.mf_step = aux_step
-                self.substeps_complete[this_step][aux_substep] = True
-            # Some Archetypes modify the set of Powers that can be used for Health...
-            if arc_bonus == 1:
-                # Armored: You may use a Materials or Technological Power when determining Health.
-                self.health_pqs += Category(1,4) + Category(1,8)
-            elif arc_bonus == 2:
-                # Robot/Cyborg: You may use a Technological Power when determining Health.
-                self.health_pqs += Category(1,8)
-            transition_substep = 7
-            transition_step = this_step + 0.1 * transition_substep
-            divided_substep = 8
-            divided_step = this_step + 0.1 * divided_substep
-            # Substep 9: Principle...
-            prin_substep = 9
-            prin_step = this_step + 0.1 * prin_substep
-            if self.archetype_modifier == 1:
-                # If the hero is Divided, they take some extra steps here
-                # Substep 7: Transition Type...
-                self.SetPrevious(transition_step)
-                prompt = "As a Divided hero, you have two very different forms, such as a " + \
-                         "nonpowered civilian form and a powered heroic form."
-                prompt += "\n" + "The default names for these forms are " + self.dv_tags[0] + \
-                          " and " + self.dv_tags[1] + "."
-                prompt += "\n" + "Do you want to give them custom names?"
-                entry_options = ["Yes", "No"]
-                decision = self.ChooseIndex(entry_options,
-                                            prompt=prompt,
-                                            title="Archetype Selection: Divided",
-                                            inputs=inputs)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_choice = decision[0]
-                inputs = decision[1]
-                if entry_choice == 0:
-                    for i in range(len(self.dv_tags)):
-                        decision = self.EnterText("Enter a new name for your " + self.dv_tags[i] + \
-                                                  " form.",
-                                                  inputs=inputs,
-                                                  title="Archetype Selection: Divided")
-##                        print(notePrefix + "proceed = " + str(self.proceed))
-                        if self.proceed == 0:
-                            # User canceled out; drop everything
-                            if isRoot:
-                                self.proceed = 1
-                            return
-                        self.dv_tags[i] = decision[0]
-                        if self.dv_tags[i].islower():
-                            self.dv_tags[i] = self.dv_tags[i].capitalize()
-                        inputs = decision[1]
-                        if len(self.dv_tags[i]) == 0:
-                            self.dv_tags[i] = dv_defaults[i]
-                # Choose a method of transition
-                tr_prompt = "Choose a method of transformation between your " + self.dv_tags[0] + \
-                            " and " + self.dv_tags[1] + " forms:"
-                dispWidth = 100
-                decision = self.ChooseDetailIndex(tr_prompt,
-                                                  "Enter a lowercase letter to see a " + \
-                                                  "transition method expanded, or an " + \
-                                                  "uppercase letter to select it.",
-                                                  [x[0] for x in tr_collection],
-                                                  [TransitionDetails(i,
-                                                                     width=-1,
-                                                                     indented=True) \
-                                                   for i in range(len(tr_collection))],
-                                                  [TransitionDetails(i,
-                                                                     width=dispWidth,
-                                                                     indented=True) \
-                                                   for i in range(len(tr_collection))],
-                                                  title="Archetype: Divided - " + \
-                                                  "Transition Selection",
-                                                  lwidth=35,
-                                                  rwidth=100,
-                                                  swidth=dispWidth,
-                                                  shellHeader=tr_prompt,
-                                                  inputs=inputs)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_index = decision[0]
-                inputs = decision[1]
-                self.dv_transition = entry_index
-                tr_method = tr_collection[entry_index]
-                print("OK! " + tr_method[0] + " selected.")
-                # Use ChooseAbility to add one of the associated Green Abilities, using a Power
-                #  or Quality gained from their base Archetype
-                arc_triplets = [triplet for triplet in primary_pqs]
-                arc_triplets += [triplet for triplet in secondary_pqs \
-                                 if triplet not in arc_triplets]
-                arc_triplets += [triplet for triplet in tertiary_pqs \
-                                 if triplet not in arc_triplets]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs=inputs.pop(0)
-                self.ChooseAbility(tr_method[2],
-                                   0,
-                                   triplet_options=arc_triplets,
-                                   stepnum=transition_step,
-                                   isRoot=False,
-                                   inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                self.substeps_complete[this_step][transition_substep] = True
-                # Substep 8: Divided Nature...
-                self.SetPrevious(divided_step)
-                divided_natures = [a for a in dn_collection]
-                dn_prompt = "Choose one as the nature of your divided self:"
-                if self.archetype == 15:
-                    # This hero is a Form-Changer. Any of their Forms that don't currently have a
-                    #  Civilian or Heroic tag need to have one assigned BEFORE they can choose a
-                    #  Divided Nature.
-                    unassigned_forms = [f for f in self.other_forms \
-                                        if f.dv_index not in range(len(self.dv_tags))]
-                    for f in unassigned_forms:
-                        entry_options = string.ascii_uppercase[0:len(self.dv_tags)]
-                        decision = self.ChooseIndex(self.dv_tags,
-                                                    prompt=self.hero_name + " is a Divided " + \
-                                                    "hero. Is " + f.name + " a " + \
-                                                    self.dv_tags[0] + " or " + self.dv_tags[1] + \
-                                                    " form for them?",
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.AddMode(2,
+                                 entry_index,
+                                 stepnum=aux_step,
+                                 isRoot=False,
+                                 inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    self.substeps_complete[this_step][aux_substep] = True
+                else:
+                    if not self.substeps_complete[this_step][ability_substep]:
+                        # As long as the hero isn't Modular, they get the Abilities from their main
+                        #  Archetype.
+                        self.SetPrevious(ability_step)
+                        # Start with the mandatory Abilities for the Archetype, if applicable:
+                        for template in mandatory_abilities:
+                            zone = template.zone
+                            legal_triplets = [x.triplet() for x in self.power_dice] + \
+                                             [y.triplet() for y in self.quality_dice]
+                            # Make a list of abilities the hero has in this zone from this
+                            #  Archetype
+                            arc_zone_abilities = [x for x in self.abilities \
+                                                  if math.floor(x.step) == this_step and \
+                                                  x.zone == zone]
+                            if len(arc_zone_abilities) > 0:
+                                if (zone == 0 and green_unique > 0) or \
+                                   (zone == 1 and yellow_unique > 0):
+                                    # There's a minimum number of unique Powers/Qualities that need
+                                    #  to be used in the Archetype abilities for this zone. Find
+                                    #  out if it's been met, and if not, restrict this Ability to
+                                    #  unused ones.
+                                    # Start by making a list of the Powers/Qualities already used
+                                    #  in arc_zone_abilities:
+                                    arc_triplets = []
+                                    for x in arc_zone_abilities:
+                                        arc_triplets += [y for y in x.insert_pqs \
+                                                         if len(y) == 3 and y not in arc_triplets]
+                                    if (zone == 0 and len(arc_triplets) < green_unique) or \
+                                       (zone == 1 and len(arc_triplets) < yellow_unique):
+                                        # This Ability needs to use a Power/Quality that hasn't
+                                        #  been used in this zone before
+                                        while len([x for x in legal_triplets \
+                                                   if x in arc_triplets]) > 0:
+                                            for x in arc_triplets:
+                                                if x in legal_triplets:
+                                                    legal_triplets.remove(x)
+                            if zone == 0 and green_limited:
+                                # This is a Green Ability, and Green Abilities from this Archetype
+                                #  use only Powers/Qualities from this Archetype
+                                legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.ChooseAbility([template],
+                                               zone,
+                                               triplet_options=legal_triplets,
+                                               stepnum=ability_step,
+                                               isRoot=False,
+                                               inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                        # Then move on to the Green Abilities:
+                        # If mixed_abilities exists, then that's the list of Green Ability options
+                        if len(mixed_abilities) > 0:
+                            green_abilities = mixed_abilities
+                        for i in range(green_count):
+                            # Add another Green Ability from the list.
+                            category_req = -1
+                            legal_triplets = [x.triplet() for x in self.power_dice] + \
+                                             [y.triplet() for y in self.quality_dice]
+                            # If this is the first Green Ability and requires_primary, then specify
+                            #  that it needs to use one of the primary powers/qualities:
+                            if i == 0 and requires_primary:
+                                legal_triplets = primary_pqs
+                            # If this is the second Green Ability and category_required is 0 or 1,
+                            #  then specify that it needs to use a die from the specified category:
+                            elif i == 1 and category_required in [0,1]:
+                                category_req = category_required
+                            # Make a list of abilities the hero has in this zone from this
+                            #  Archetype
+                            arc_zone_abilities = [x for x in self.abilities \
+                                                  if math.floor(x.step) == this_step and \
+                                                  x.zone == 0]
+##                            print("### AddArchetype: len(arc_zone_abilities) for zone=0 is " + \
+##                                  str(len(arc_zone_abilities)))
+                            if len(arc_zone_abilities) > 0:
+##                                print("### AddArchetype: green_unique=" + str(green_unique))
+                                if green_unique > 0:
+                                    # There's a minimum number of unique Powers/Qualities that need
+                                    #  to be used in the Archetype abilities for this zone. Find
+                                    #  out if it's been met, and if not, restrict this Ability to
+                                    #  unused ones.
+                                    # Start by making a list of the Powers/Qualities already used
+                                    #  in arc_zone_abilities:
+                                    arc_triplets = []
+                                    for x in arc_zone_abilities:
+                                        arc_triplets += [y for y in x.insert_pqs \
+                                                         if len(y) == 3 and y not in arc_triplets]
+##                                    print("### AddArchetype: arc_triplets=" + str(arc_triplets))
+##                                    print("### AddArchetype: len(arc_triplets)=" + \
+##                                          str(len(arc_triplets)))
+                                    if len(arc_triplets) < green_unique:
+                                        # This Ability needs to use a Power/Quality that hasn't
+                                        #  been used in this zone before
+                                        while len([x for x in legal_triplets \
+                                                   if x in arc_triplets]) > 0:
+                                            for x in arc_triplets:
+                                                if x in legal_triplets:
+                                                    legal_triplets.remove(x)
+                            if green_limited:
+                                # Green Abilities from this Archetype use only Powers/Qualities
+                                #  from this Archetype
+                                legal_triplets = [x for x in legal_triplets if x in all_arc_pqs]
+##                            print("### AddArchetype: legal_triplets=" + str(legal_triplets))
+                            # Finally, add the Ability
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            green_abilities = self.ChooseAbility(green_abilities,
+                                                                 0,
+                                                                 triplet_options=legal_triplets,
+                                                                 category_req=category_req,
+                                                                 stepnum=ability_step,
+                                                                 isRoot=False,
+                                                                 inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                        # Next add the Yellow Abilities, if there are any
+                        # If mixed_abilities exists, then green_abilities is the list of remaining
+                        #  Yellow Ability options
+                        if len(mixed_abilities) > 0:
+                            yellow_abilities = green_abilities
+                        for i in range(yellow_count):
+                            # Add another Yellow Ability from the list.
+                            legal_triplets = [x.triplet() for x in self.power_dice] + \
+                                             [y.triplet() for y in self.quality_dice]
+                            # Make a list of abilities the hero has in this zone from this
+                            #  Archetype
+                            arc_zone_abilities = [x for x in self.abilities \
+                                                  if math.floor(x.step) == this_step and \
+                                                  x.zone == 1]
+                            if len(arc_zone_abilities) > 0:
+                                if yellow_unique > 0:
+                                    # There's a minimum number of unique Powers/Qualities that need
+                                    #  to be used in the Archetype abilities for this zone. Find
+                                    #  out if it's been met, and if not, restrict this Ability to
+                                    #  unused ones.
+                                    # Start by making a list of the Powers/Qualities already used
+                                    #  in arc_zone_abilities:
+                                    arc_triplets = []
+                                    for x in arc_zone_abilities:
+                                        arc_triplets += [y for y in x.insert_pqs \
+                                                         if len(y) == 3 and y not in arc_triplets]
+                                    if len(arc_triplets) < yellow_unique:
+                                        # This Ability needs to use a Power/Quality that hasn't
+                                        #  been used in this zone before
+                                        while len([x for x in legal_triplets \
+                                                   if x in arc_triplets]) > 0:
+                                            for x in arc_triplets:
+                                                if x in legal_triplets:
+                                                    legal_triplets.remove(x)
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            yellow_abilities = self.ChooseAbility(yellow_abilities,
+                                                                  1,
+                                                                  triplet_options=legal_triplets,
+                                                                  stepnum=ability_step,
+                                                                  isRoot=False,
+                                                                  inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                        self.substeps_complete[this_step][ability_substep] = True
+                    # Substep 6: Auxiliary Sheets...
+                    # If the hero is a Form-Changer, create their Forms
+                    if self.archetype == 15:
+                        # Add 2 Green Forms and 1 Yellow Form.
+                        self.SetPrevious(aux_step)
+                        for f_zone in [0,0,1]:
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.ChooseForm(f_zone,
+                                            stepnum=aux_step,
+                                            isRoot=False,
+                                            inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                    # If the hero is a Minion-Maker, select their Minion Forms
+                    elif self.archetype == 13:
+                        self.SetPrevious(aux_step)
+                        entry_options = string.ascii_uppercase[0:len(self.quality_dice)]
+                        decision = self.ChooseIndex([str(x) for x in self.quality_dice],
+                                                    prompt="Choose a Quality to determine the " + \
+                                                    "number of Minion Forms " + self.hero_name + \
+                                                    " has access to:",
                                                     inputs=inputs,
                                                     width=50)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
@@ -11197,238 +11083,833 @@ class Hero:
                             return
                         entry_index = decision[0]
                         inputs = decision[1]
-                        f.SetPrevious(divided_step)
-                        f.dv_index = entry_index
-                        f.status_dice = Status(ref=entry_index,
-                                               stepnum=divided_step)
-                        print("OK! " + f.name + " is now marked as a " + \
-                              self.dv_tags[f.dv_index] + " Form.")
-                    # Now that all Form-Changer Forms have a Divided tag, we can determine whether
-                    #  Split Form is legal
-                    # Unless specific conditions are met, Split Form is not legal for this hero
-                    divided_natures.remove(a_split_form)
-                    # First condition: all Forms, including the base sheet, MUST share at least 2
-                    #  Powers
-                    # (Since Power die sizes may be different in different Forms, we can't use
-                    #  full PQDie objects to assign them- we need their identifying category and
-                    #  index, plus flavorname in case the hero has something like 2 different
-                    #  Signature Weapons)
-                    common_power_ids = [[p.triplet(), p.flavorname] for p in self.power_dice]
-                    for fm in self.other_forms:
-                        form_power_ids = [[p.triplet(), p.flavorname] for p in fm.power_dice]
-                        common_power_ids = [pair for pair in common_power_ids \
-                                            if pair in form_power_ids]
-                    for pair in common_power_ids:
-                        print(notePrefix + "Split Form check: common_power_ids: " + pair[1] + \
-                              " (" + MixedPQ(pair[0]) + ")")
-                    if len(common_power_ids) >= 2:
-                        print(notePrefix + "Split Form check: at least 2 common_power_ids found")
-                        # Next condition depends on whether all Form-Changer Forms share a Divided
-                        #  tag
-                        dv_counts = [0 for t in self.dv_tags]
-                        for fm in self.other_forms:
-                            dv_counts[fm.dv_index] += 1
-                        if dv_counts[0] == 0:
-                            print(notePrefix + "Split Form check: all Form-Changer Forms are " + \
-                                  self.dv_tags[1])
-                            # All Form-Changer Forms are Heroic
-                            # Split Form is OK, with the following specifications:
-                            divided_natures = [a_divided_psyche, a_split_form]
-                            # Constant Powers must be chosen from the Power IDs common to all
-                            #  Forms
-                            constant_power_options = common_power_ids
-                            # Other Powers that appear in Form-Changer Forms are Heroic Powers
-                            # Other Powers that appear on the base sheet are assigned by the user
-                        elif dv_counts[1] == 0:
-                            print(notePrefix + "Split Form check: all Form-Changer Forms are " + \
-                                  self.dv_tags[0])
-                            # All Form-Changer Forms are Civilian
-                            # Split Form is OK, with the following specifications:
-                            divided_natures = [a_divided_psyche, a_split_form]
-                            # Constant Powers must be chosen from the Power IDs common to all
-                            #  Forms
-                            constant_power_options = common_power_ids
-                            # Other Powers that appear in Form-Changer Forms are Civilian Powers
-                            # Other Powers that appear on the base sheet are assigned by the user
+                        self.mf_quality = self.quality_dice[entry_index]
+                        max_forms = self.mf_quality.diesize
+                        if max_forms >= len(min_collection):
+                            print("OK! Adding all " + str(len(min_collection)) + \
+                                  " Minion Forms to " + self.hero_name + "'s Minion Sheet.")
+                            for i in range(len(min_collection)):
+                                self.min_forms[i] = [s for s in min_collection[i]]
                         else:
-                            print(notePrefix + "Split Form check: Form-Changer Forms are mixed")
-                            # Some Form-Changer Forms are Civilian and some are Heroic
-                            # Next condition: all Civilian Forms and all Heroic Forms must share
-                            #  EXACTLY 2 Power IDs
-                            heroic_form_ids = []
-                            civilian_form_ids = []
+                            # The user needs to choose their Minion Forms.
+                            min_indices = [i for i in range(len(min_collection))]
+                            while len(self.min_forms) < max_forms:
+                                if self.UseGUI(inputs):
+                                    # Use AssignWindow to choose any number of minion forms at once
+                                    result = StringVar(self.myFrame)
+                                    remaining = max_forms - len(self.min_forms)
+                                    success = IntVar(self.myFrame, 1)
+                                    questions = AssignWindow(self.myFrame,
+                                                             "Choose exactly " + str(remaining) + \
+                                                             " Minion Forms to add...",
+                                                             ["Add", "Don't Add"],
+                                                             [MinionFormStr(i,
+                                                                            width=-1,
+                                                                            breaks=1) for i in \
+                                                              min_indices],
+                                                             result,
+                                                             default=1,
+                                                             success=success,
+                                                             rwidth=10,
+                                                             firstMin=remaining,
+                                                             firstMax=remaining,
+                                                             counter=True,
+                                                             title="Archetype: Minion-Maker")
+##                                    print(notePrefix + "success = " + str(success.get()))
+                                    self.proceed = success.get()
+                                    if self.proceed == 0:
+                                        # User canceled out; drop everything
+                                        if isRoot:
+                                            self.proceed = 1
+                                        return
+                                    answers = result.get()
+                                    self.min_forms += [min_indices[i] \
+                                                       for i in range(len(min_indices)) \
+                                                       if answers[i] == string.ascii_uppercase[0]]
+                                else:
+                                    # Use the text shell to choose the next minion form
+                                    entry_options = string.ascii_uppercase[0:len(min_indices)]
+                                    print("Choose a Minion Form (#" + \
+                                          str(len(self.min_forms) + 1) + " of " + \
+                                          str(max_forms) + "):")
+                                    for i in range(len(min_indices)):
+                                        printlong(entry_options[i] + ": " + \
+                                                  MinionFormStr(min_indices[i],
+                                                                width=-1,
+                                                                breaks=0),
+                                                  width=100,
+                                                  prefix="    ")
+                                    decision = choose_letter(entry_options,
+                                                             ' ',
+                                                             inputs=inputs)
+                                    entry_choice = decision[0]
+                                    inputs = decision[1]
+                                    entry_index = entry_options.find(entry_choice)
+                                    # EDIT: Use self.ChooseIndex(), not find()?
+                                    # ...
+                                    mf_index = min_indices.pop(entry_index)
+                                    self.min_forms.append(mf_index)
+                                    print("OK! Added " + min_collection[mf_index][0] + " to " + \
+                                          self.hero_name + "'s Minion sheet.")
+                            self.mf_step = aux_step
+                    # Some Archetypes modify the set of Powers that can be used for Health...
+                    if arc_bonus == 1:
+                        # Armored: You may use a Materials or Technological Power when determining
+                        #  Health.
+                        self.health_pqs += Category(1,4) + Category(1,8)
+                    elif arc_bonus == 2:
+                        # Robot/Cyborg: You may use a Technological Power when determining Health.
+                        self.health_pqs += Category(1,8)
+                    self.substeps_complete[this_step][aux_substep] = True
+            transition_substep = 7
+            transition_step = this_step + 0.1 * transition_substep
+            divided_substep = 8
+            divided_step = this_step + 0.1 * divided_substep
+            # Substep 9: Principle...
+            prin_substep = 9
+            prin_step = this_step + 0.1 * prin_substep
+            if not self.substeps_complete[this_step][prin_substep]:
+                if self.archetype_modifier == 1:
+                    # If the hero is Divided, they take some extra steps here
+                    # Substep 7: Transition Type...
+                    if not self.substeps_complete[this_step][transition_substep]:
+                        self.SetPrevious(transition_step)
+                        prompt = "As a Divided hero, you have two very different forms, such " + \
+                                 "as a nonpowered civilian form and a powered heroic form."
+                        prompt += "\n" + "The default names for these forms are " + \
+                                  self.dv_tags[0] + " and " + self.dv_tags[1] + "."
+                        prompt += "\n" + "Do you want to give them custom names?"
+                        entry_options = ["Yes", "No"]
+                        decision = self.ChooseIndex(entry_options,
+                                                    prompt=prompt,
+                                                    title="Archetype Selection: Divided",
+                                                    inputs=inputs)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_choice = decision[0]
+                        inputs = decision[1]
+                        if entry_choice == 0:
+                            for i in range(len(self.dv_tags)):
+                                decision = self.EnterText("Enter a new name for your " + \
+                                                          self.dv_tags[i] + " form.",
+                                                          inputs=inputs,
+                                                          title="Archetype Selection: Divided")
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
+                                self.dv_tags[i] = decision[0]
+                                if self.dv_tags[i].islower():
+                                    self.dv_tags[i] = self.dv_tags[i].capitalize()
+                                inputs = decision[1]
+                                if len(self.dv_tags[i]) == 0:
+                                    self.dv_tags[i] = dv_defaults[i]
+                        # Choose a method of transition
+                        tr_prompt = "Choose a method of transformation between your " + \
+                                    self.dv_tags[0] + " and " + self.dv_tags[1] + " forms:"
+                        dispWidth = 100
+                        decision = self.ChooseDetailIndex(tr_prompt,
+                                                          "Enter a lowercase letter to see a " + \
+                                                          "transition method expanded, or an " + \
+                                                          "uppercase letter to select it.",
+                                                          [x[0] for x in tr_collection],
+                                                          [TransitionDetails(i,
+                                                                             width=-1,
+                                                                             indented=True) \
+                                                           for i in range(len(tr_collection))],
+                                                          [TransitionDetails(i,
+                                                                             width=dispWidth,
+                                                                             indented=True) \
+                                                           for i in range(len(tr_collection))],
+                                                          title="Archetype: Divided - " + \
+                                                          "Transition Selection",
+                                                          lwidth=35,
+                                                          rwidth=100,
+                                                          swidth=dispWidth,
+                                                          shellHeader=tr_prompt,
+                                                          inputs=inputs)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        entry_index = decision[0]
+                        inputs = decision[1]
+                        self.dv_transition = entry_index
+                        tr_method = tr_collection[entry_index]
+                        print("OK! " + tr_method[0] + " selected.")
+                        # Use ChooseAbility to add one of the associated Green Abilities, using a
+                        #  Power or Quality gained from their base Archetype
+                        arc_triplets = [triplet for triplet in primary_pqs]
+                        arc_triplets += [triplet for triplet in secondary_pqs \
+                                         if triplet not in arc_triplets]
+                        arc_triplets += [triplet for triplet in tertiary_pqs \
+                                         if triplet not in arc_triplets]
+                        if track_inputs:
+                            print(notePrefix + tracker_open)
+                        pass_inputs = []
+                        if len(inputs) > 0:
+                            if str(inputs[0]) != inputs[0]:
+                                pass_inputs=inputs.pop(0)
+                        self.ChooseAbility(tr_method[2],
+                                           0,
+                                           triplet_options=arc_triplets,
+                                           stepnum=transition_step,
+                                           isRoot=False,
+                                           inputs=pass_inputs)
+                        if track_inputs:
+                            print(notePrefix + tracker_close)
+##                        print(notePrefix + "proceed = " + str(self.proceed))
+                        if self.proceed == 0:
+                            # User canceled out; drop everything
+                            if isRoot:
+                                self.proceed = 1
+                            return
+                        self.substeps_complete[this_step][transition_substep] = True
+                    # Substep 8: Divided Nature...
+                    if not self.substeps_complete[this_step][divided_substep]:
+                        self.SetPrevious(divided_step)
+                        divided_natures = [a for a in dn_collection]
+                        dn_prompt = "Choose one as the nature of your divided self:"
+                        if self.archetype == 15:
+                            # This hero is a Form-Changer. Any of their Forms that don't currently
+                            #  have a Civilian or Heroic tag need to have one assigned BEFORE they
+                            #  can choose a Divided Nature.
+                            unassigned_forms = [f for f in self.other_forms \
+                                                if f.dv_index not in range(len(self.dv_tags))]
+                            for f in unassigned_forms:
+                                entry_options = string.ascii_uppercase[0:len(self.dv_tags)]
+                                decision = self.ChooseIndex(self.dv_tags,
+                                                            prompt=self.hero_name + " is a " + \
+                                                            "Divided hero. Is " + f.name + \
+                                                            " a " + self.dv_tags[0] + " or " + \
+                                                            self.dv_tags[1] + " form for them?",
+                                                            inputs=inputs,
+                                                            width=50)
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
+                                entry_index = decision[0]
+                                inputs = decision[1]
+                                f.SetPrevious(divided_step)
+                                f.dv_index = entry_index
+                                f.status_dice = Status(ref=entry_index,
+                                                       stepnum=divided_step)
+                                print("OK! " + f.name + " is now marked as a " + \
+                                      self.dv_tags[f.dv_index] + " Form.")
+                            # Now that all Form-Changer Forms have a Divided tag, we can determine
+                            #  whether Split Form is legal
+                            # Unless specific conditions are met, Split Form is not legal for this
+                            #  hero
+                            divided_natures.remove(a_split_form)
+                            # First condition: all Forms, including the base sheet, MUST share at
+                            #  least 2 Powers
+                            # (Since Power die sizes may be different in different Forms, we can't
+                            #  use full PQDie objects to assign them- we need their identifying
+                            #  category and index, plus flavorname in case the hero has something
+                            #  like 2 different Signature Weapons)
+                            common_power_ids = [[p.triplet(), p.flavorname] \
+                                                for p in self.power_dice]
                             for fm in self.other_forms:
                                 form_power_ids = [[p.triplet(), p.flavorname] \
                                                   for p in fm.power_dice]
-                                if fm.dv_index == 0:
-                                    heroic_form_ids.extend([pair for pair in form_power_ids \
-                                                            if pair not in heroic_form_ids])
+                                common_power_ids = [pair for pair in common_power_ids \
+                                                    if pair in form_power_ids]
+                            for pair in common_power_ids:
+                                print(notePrefix + "Split Form check: common_power_ids: " + \
+                                      pair[1] + " (" + MixedPQ(pair[0]) + ")")
+                            if len(common_power_ids) >= 2:
+                                print(notePrefix + "Split Form check: at least 2 " + \
+                                      "common_power_ids found")
+                                # Next condition depends on whether all Form-Changer Forms share a
+                                #  Divided tag
+                                dv_counts = [0 for t in self.dv_tags]
+                                for fm in self.other_forms:
+                                    dv_counts[fm.dv_index] += 1
+                                if dv_counts[0] == 0:
+                                    print(notePrefix + "Split Form check: all Form-Changer " + \
+                                          "Forms are " + self.dv_tags[1])
+                                    # All Form-Changer Forms are Heroic
+                                    # Split Form is OK, with the following specifications:
+                                    divided_natures = [a_divided_psyche, a_split_form]
+                                    # Constant Powers must be chosen from the Power IDs common to
+                                    #  all Forms
+                                    constant_power_options = common_power_ids
+                                    # Other Powers that appear in Form-Changer Forms are Heroic
+                                    #  Powers
+                                    # Other Powers that appear on the base sheet are assigned by
+                                    #  the user
+                                elif dv_counts[1] == 0:
+                                    print(notePrefix + "Split Form check: all Form-Changer " + \
+                                          "Forms are " + self.dv_tags[0])
+                                    # All Form-Changer Forms are Civilian
+                                    # Split Form is OK, with the following specifications:
+                                    divided_natures = [a_divided_psyche, a_split_form]
+                                    # Constant Powers must be chosen from the Power IDs common to
+                                    #  all Forms
+                                    constant_power_options = common_power_ids
+                                    # Other Powers that appear in Form-Changer Forms are Civilian
+                                    #  Powers
+                                    # Other Powers that appear on the base sheet are assigned by
+                                    #  the user
                                 else:
-                                    civilian_form_ids.extend([pair for pair in form_power_ids \
-                                                              if pair not in civilian_form_ids])
-                            common_ids = [pair for pair in heroic_form_ids \
-                                          if pair in civilian_form_ids]
-                            for pair in common_ids:
-                                print(notePrefix + "Split Form check: common_ids: " + pair[1] + \
-                                      " (" + MixedPQ(pair[0]) + ")")
-                            if len(common_ids) == 2:
-                                print(notePrefix + \
-                                      "Split Form check: exactly 2 common Powers found")
-                                # Split Form is OK, with the following specifications:
-                                divided_natures.append(a_split_form)
-                                # The 2 Constant Powers are the ones in common_ids
-                                constant_power_options = common_ids
-                                # Other Powers that appear in Heroic Forms are Heroic Powers
-                                # Other Powers that appear in Civilian Forms are Civilian Powers
-                                # Other Powers that appear on the base sheet are assigned by the
-                                #  user
-                if len(divided_natures) > 1:
-                    if self.archetype == 15 and a_split_form in divided_natures:
-                        print(notePrefix + "Split Form check passed!")
-                    # If both options are valid...
-                    decision = self.ChooseDetailIndex(dn_prompt,
-                                                      "Enter a lowercase letter to see a " + \
-                                                      "divided nature expanded, or an " + \
-                                                      "uppercase letter to select it.",
-                                                      [x.name for x in divided_natures],
-                                                      [x.details(width=-1,
-                                                                 indented=True) \
-                                                       for x in divided_natures],
-                                                      [x.details(width=dispWidth,
-                                                                 indented=True) \
-                                                       for x in divided_natures],
-                                                      title="Archetype: Divided - Divided Nature",
-                                                      lwidth=30,
-                                                      rwidth=100,
-                                                      swidth=dispWidth,
-                                                      shellHeader=dn_prompt,
-                                                      inputs=inputs)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    entry_index = decision[0]
-                    inputs = decision[1]
-                    self.dv_nature = dn_collection.index(divided_natures[entry_index])
-                else:
-                    if self.archetype == 15 and a_split_form not in divided_natures:
-                        print(notePrefix + "Split Form check failed!")
-                    # Otherwise, automatically take the only one that works
-                    self.dv_nature = dn_collection.index(divided_natures[0])
-                if dn_collection[self.dv_nature] == a_divided_psyche:
-                    # Add the Divided Psyche Green Ability
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.ChooseAbility([a_divided_psyche],
-                                       0,
-                                       stepnum=divided_step,
-                                       isRoot=False,
-                                       inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    # Create a Civilian Form with standard Qualities & Status but no Powers
-                    cv_name = self.dv_tags[0] + " Form"
-                    quality_key = PQDie(0,
-                                        4,
-                                        0,
-                                        4,
-                                        flavorname="[Standard Qualities]",
-                                        stepnum=divided_step)
-                    civilian_form = Form(cv_name,
-                                         zone=0,
-                                         pqs=[quality_key],
-                                         status=Status(ref=0,
-                                                       stepnum=divided_step),
-                                         divided=0,
-                                         stepnum=divided_step)
-                    self.other_forms.append(civilian_form)
-                    print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
-                          "'s Form Sheet in Green.")
-                    # Create a Heroic Form with standard Powers and Status but no Qualities
-                    hr_name = self.dv_tags[1] + " Form"
-                    power_key = PQDie(1,
-                                      9,
-                                      0,
-                                      4,
-                                      flavorname="[Standard Powers]",
-                                      stepnum=divided_step)
-                    heroic_form = Form(hr_name,
-                                       zone=0,
-                                       pqs=[power_key],
-                                       status=Status(ref=1,
-                                                     stepnum=divided_step),
-                                       divided=1,
-                                       stepnum=divided_step)
-                    self.other_forms.append(heroic_form)
-                    print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
-                          "'s Form Sheet in Green.")
-                    if self.archetype == 15:
-                        # The hero's alternate Forms from Form-Changer also have to follow the
-                        #  Divided Psyche rules...
-                        for i in range(len(self.other_forms)):
-                            form_editing = self.other_forms[i]
-                            form_editing.SetPrevious(divided_step)
-                            if form_editing.dv_index == 0:
-                                # This form is Civilian. Remove its Power list.
-                                form_editing.power_dice = []
-                            else:
-                                # This form is Heroic. Remove its Quality list.
-                                form_editing.quality_dice = []
-                elif dn_collection[self.dv_nature] == a_split_form:
-                    # Split Form isn't really an Ability, just a set of instructions to follow
-                    #  during this step and the next one
-                    if self.archetype == 15:
-                        # This hero is a Form-Changer, and doesn't necessarily use the same Power
-                        #  die sizes in all their Forms. Instead of assigning specific Power dice
-                        #  to Heroic or Civilian, we need to assign dice based on what Power they
-                        #  represent- their category and index, plus their custom name, in case
-                        #  the hero has 2 different Signature Weapons or something along those
-                        #  lines.
-                        constant_power_ids = []
-                        assign_prompt = ""
-                        # When Split Form was determined to be possible for this hero, the list of
-                        #  constant_power_options (IDs for Powers that are available in all Forms
-                        #  and on the base sheet) was defined.
-                        if len(constant_power_options) == 2:
-                            # These 2 Powers are available in both Divided aspects.
-                            constant_power_ids = constant_power_options
-                            constant_report = constant_power_ids[0][1] + " and " + \
-                                              constant_power_ids[1][1] + \
-                                              " are the only Powers on all of " + \
-                                              self.hero_name + "'s Power lists. These will be " + \
-                                              pronouns[self.pronoun_set][2] + " constant Powers."
-                            if self.UseGUI(inputs):
-                                assign_prompt += constant_report
-                            else:
-                                printlong(constant_report)
+                                    print(notePrefix + "Split Form check: Form-Changer Forms " + \
+                                          "are mixed")
+                                    # Some Form-Changer Forms are Civilian and some are Heroic
+                                    # Next condition: all Civilian Forms and all Heroic Forms must
+                                    #  share EXACTLY 2 Power IDs
+                                    heroic_form_ids = []
+                                    civilian_form_ids = []
+                                    for fm in self.other_forms:
+                                        form_power_ids = [[p.triplet(), p.flavorname] \
+                                                          for p in fm.power_dice]
+                                        if fm.dv_index == 0:
+                                            heroic_form_ids.extend([pair \
+                                                                    for pair in form_power_ids \
+                                                                    if pair not in \
+                                                                    heroic_form_ids])
+                                        else:
+                                            civilian_form_ids.extend([pair \
+                                                                      for pair in form_power_ids \
+                                                                      if pair not in \
+                                                                      civilian_form_ids])
+                                    common_ids = [pair for pair in heroic_form_ids \
+                                                  if pair in civilian_form_ids]
+                                    for pair in common_ids:
+                                        print(notePrefix + "Split Form check: common_ids: " + \
+                                              pair[1] + " (" + MixedPQ(pair[0]) + ")")
+                                    if len(common_ids) == 2:
+                                        print(notePrefix + \
+                                              "Split Form check: exactly 2 common Powers found")
+                                        # Split Form is OK, with the following specifications:
+                                        divided_natures.append(a_split_form)
+                                        # The 2 Constant Powers are the ones in common_ids
+                                        constant_power_options = common_ids
+                                        # Other Powers that appear in Heroic Forms are Heroic
+                                        #  Powers
+                                        # Other Powers that appear in Civilian Forms are Civilian
+                                        #  Powers
+                                        # Other Powers that appear on the base sheet are assigned
+                                        #  by the user
+                        if len(divided_natures) > 1:
+                            if self.archetype == 15 and a_split_form in divided_natures:
+                                print(notePrefix + "Split Form check passed!")
+                            # If both options are valid...
+                            dispWidth = 100
+                            decision = self.ChooseDetailIndex(dn_prompt,
+                                                              "Enter a lowercase letter to " + \
+                                                              "see a divided nature expanded, " + \
+                                                              "or an uppercase letter to " + \
+                                                              "select it.",
+                                                              [x.name for x in divided_natures],
+                                                              [x.details(width=-1,
+                                                                         indented=True) \
+                                                               for x in divided_natures],
+                                                              [x.details(width=dispWidth,
+                                                                         indented=True) \
+                                                               for x in divided_natures],
+                                                              title="Archetype: Divided - " + \
+                                                              "Divided Nature",
+                                                              lwidth=30,
+                                                              rwidth=100,
+                                                              swidth=dispWidth,
+                                                              shellHeader=dn_prompt,
+                                                              inputs=inputs)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                            entry_index = decision[0]
+                            inputs = decision[1]
+                            self.dv_nature = dn_collection.index(divided_natures[entry_index])
                         else:
-                            # Pick 2 of these to be available in both Divided aspects.
-                            while len(constant_power_ids) < 2:
-                                if len(constant_power_ids) == 0 and self.UseGUI(inputs):
-                                    # Use a SwapWindow to select both constant Powers at once
+                            if self.archetype == 15 and a_split_form not in divided_natures:
+                                print(notePrefix + "Split Form check failed!")
+                            # Otherwise, automatically take the only one that works
+                            self.dv_nature = dn_collection.index(divided_natures[0])
+                        if dn_collection[self.dv_nature] == a_divided_psyche:
+                            # Add the Divided Psyche Green Ability
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.ChooseAbility([a_divided_psyche],
+                                               0,
+                                               stepnum=divided_step,
+                                               isRoot=False,
+                                               inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                            # Create a Civilian Form with standard Qualities & Status but no Powers
+                            cv_name = self.dv_tags[0] + " Form"
+                            quality_key = PQDie(0,
+                                                4,
+                                                0,
+                                                4,
+                                                flavorname="[Standard Qualities]",
+                                                stepnum=divided_step)
+                            civilian_form = Form(cv_name,
+                                                 zone=0,
+                                                 pqs=[quality_key],
+                                                 status=Status(ref=0,
+                                                               stepnum=divided_step),
+                                                 divided=0,
+                                                 stepnum=divided_step)
+                            self.other_forms.append(civilian_form)
+                            print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
+                                  "'s Form Sheet in Green.")
+                            # Create a Heroic Form with standard Powers and Status but no Qualities
+                            hr_name = self.dv_tags[1] + " Form"
+                            power_key = PQDie(1,
+                                              9,
+                                              0,
+                                              4,
+                                              flavorname="[Standard Powers]",
+                                              stepnum=divided_step)
+                            heroic_form = Form(hr_name,
+                                               zone=0,
+                                               pqs=[power_key],
+                                               status=Status(ref=1,
+                                                             stepnum=divided_step),
+                                               divided=1,
+                                               stepnum=divided_step)
+                            self.other_forms.append(heroic_form)
+                            print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
+                                  "'s Form Sheet in Green.")
+                            if self.archetype == 15:
+                                # The hero's alternate Forms from Form-Changer also have to follow
+                                #  the Divided Psyche rules...
+                                for i in range(len(self.other_forms)):
+                                    form_editing = self.other_forms[i]
+                                    form_editing.SetPrevious(divided_step)
+                                    if form_editing.dv_index == 0:
+                                        # This form is Civilian. Remove its Power list.
+                                        form_editing.power_dice = []
+                                    else:
+                                        # This form is Heroic. Remove its Quality list.
+                                        form_editing.quality_dice = []
+                        elif dn_collection[self.dv_nature] == a_split_form:
+                            # Split Form isn't really an Ability, just a set of instructions to
+                            #  follow during this step and the next one
+                            if self.archetype == 15:
+                                # This hero is a Form-Changer, and doesn't necessarily use the same
+                                #  Power die sizes in all their Forms. Instead of assigning
+                                #  specific Power dice to Heroic or Civilian, we need to assign
+                                #  dice based on what Power they represent- their category and
+                                #  index, plus their custom name, in case the hero has 2 different
+                                #  Signature Weapons or something along those lines.
+                                constant_power_ids = []
+                                assign_prompt = ""
+                                # When Split Form was determined to be possible for this hero, the
+                                #  list of constant_power_options (IDs for Powers that are
+                                #  available in all Forms and on the base sheet) was defined.
+                                if len(constant_power_options) == 2:
+                                    # These 2 Powers are available in both Divided aspects.
+                                    constant_power_ids = constant_power_options
+                                    constant_report = constant_power_ids[0][1] + " and " + \
+                                                      constant_power_ids[1][1] + \
+                                                      " are the only Powers on all of " + \
+                                                      self.hero_name + "'s Power lists. These " + \
+                                                      "will be " + \
+                                                      pronouns[self.pronoun_set][2] + \
+                                                      " constant Powers."
+                                    if self.UseGUI(inputs):
+                                        assign_prompt += constant_report
+                                    else:
+                                        printlong(constant_report)
+                                else:
+                                    # Pick 2 of these to be available in both Divided aspects.
+                                    while len(constant_power_ids) < 2:
+                                        if len(constant_power_ids) == 0 and self.UseGUI(inputs):
+                                            # Use a SwapWindow to select both constant Powers at
+                                            #  once
+                                            dispWidth = 100
+                                            answer0 = IntVar()
+                                            answer1 = IntVar()
+                                            prompt = "Choose 2 Powers for " + self.hero_name + \
+                                                     " to have access to in both " + \
+                                                     self.dv_tags[0] + " and " + \
+                                                     self.dv_tags[1] + " Forms:"
+                                            title = "Archetype: Divided:Form-Changer"
+                                            success = IntVar(self.myFrame, 1)
+                                            question = SwapWindow(self.myFrame,
+                                                                  prompt,
+                                                                  [x[1] for x in \
+                                                                   constant_power_options],
+                                                                  answer0,
+                                                                  answer1,
+                                                                  title=title,
+                                                                  success=success,
+                                                                  width=dispWidth)
+##                                            print(notePrefix + "success = " + str(success.get()))
+                                            self.proceed = success.get()
+                                            if self.proceed == 0:
+                                                # User canceled out; drop everything
+                                                if isRoot:
+                                                    self.proceed = 1
+                                                return
+                                            constant_indices = [answer0.get(), answer1.get()]
+                                            # Move corresponding power IDs from options to
+                                            #  constant, removing them in descending order so the
+                                            #  indices don't change
+                                            last_index = max(constant_indices)
+                                            first_index = min(constant_indices)
+                                            last_power = constant_power_options.pop(last_index)
+                                            first_power = constant_power_options.pop(first_index)
+                                            constant_power_ids.append(first_power)
+                                            constant_power_ids.append(last_power)
+                                        else:
+                                            # Select one constant Power at a time
+                                            decision = self.ChooseIndex([x[1] for x in \
+                                                                         constant_power_options],
+                                                                        prompt="Choose a " + \
+                                                                        "Power for " + \
+                                                                        self.hero_name + \
+                                                                        " to have " + \
+                                                                        "access to in both " + \
+                                                                        self.dv_tags[0] + \
+                                                                        " and " + \
+                                                                        self.dv_tags[1] + \
+                                                                        " Forms:",
+                                                                        inputs=inputs,
+                                                                        title="Archetype: Divided",
+                                                                        width=50)
+##                                            print(notePrefix + "proceed = " + str(self.proceed))
+                                            if self.proceed == 0:
+                                                # User canceled out; drop everything
+                                                if isRoot:
+                                                    self.proceed = 1
+                                                return
+                                            entry_index = decision[0]
+                                            inputs = decision[1]
+                                            print("OK! Marking " + \
+                                                  constant_power_options[entry_index][1] + \
+                                                  " as a constant Power.")
+                                            constant_die = constant_power_options.pop(entry_index)
+                                            constant_power_ids.append(constant_die)
+                                # Add all other Power IDs that appear in Civilian or Heroic forms
+                                #  to the corresponding list: non-constant Powers from Civilian
+                                #  Forms become Civilian Powers, and non-constant Powers from
+                                #  Heroic Forms become Heroic Powers
+                                civilian_power_ids = []
+                                heroic_power_ids = []
+                                unassigned_power_ids = []
+                                for fm in self.other_forms:
+##                                    if fm.dv_index in range(len(self.dv_tags)):
+##                                        printlong(notePrefix + "Split Form assignment: " + \
+##                                                  fm.name + " (" + self.dv_tags[fm.dv_index] + ")")
+##                                    else:
+##                                        printlong(notePrefix + "Split Form assignment: " + \
+##                                                  fm.name + " (undecided)")
+                                    form_power_ids = [[p.triplet(), p.flavorname] \
+                                                      for p in fm.power_dice]
+                                    unassigned_form_ids = [pair for pair in form_power_ids \
+                                                           if pair not in constant_power_ids \
+                                                           and pair not in civilian_power_ids \
+                                                           and pair not in heroic_power_ids]
+##                                    for pair in unassigned_form_ids:
+##                                        if fm.dv_index in range(len(self.dv_tags)):
+##                                            printlong(notePrefix + \
+##                                                      "Split Form assignment: " + pair[1] + \
+##                                                      " (" + MixedPQ(pair[0]) + ") is " + \
+##                                                      self.dv_tags[fm.dv_index])
+                                    if fm.dv_index == 0:
+                                        civilian_power_ids.extend(unassigned_form_ids)
+                                    elif fm.dv_index == 1:
+                                        heroic_power_ids.extend(unassigned_form_ids)
+                                    else:
+                                        print(notePrefix + "Whoops! Looks like " + form.name + \
+                                              " didn't get a Divided tag...")
+                                        unassigned_power_ids.extend(unassigned_form_ids)
+##                                        for pair in unassigned_form_ids:
+##                                            printlong(notePrefix + "Split Form assignment: " + \
+##                                                      pair[1] + " (" + MixedPQ(pair[0]) + \
+##                                                      ") is unassigned")
+                                auto_civilian_names = [pair[1] for pair in civilian_power_ids]
+                                if len(auto_civilian_names) > 0:
+                                    civilian_text = auto_civilian_names[0]
+                                    for j in range(1, len(auto_civilian_names)-1):
+                                        civilian_text += ", " + auto_civilian_names[j]
+                                    last_name = auto_civilian_names[len(auto_civilian_names) - 1]
+                                    if len(auto_civilian_names) > 2:
+                                        civilian_text += ","
+                                    if len(auto_civilian_names) > 1:
+                                        civilian_text += " and " + last_name
+                                    if len(assign_prompt) > 0:
+                                        assign_prompt += "\n"
+                                    assign_prompt += civilian_text + " are on " + \
+                                                     self.hero_name + "'s Power " + \
+                                                     "list(s) in Civilian form(s). " + \
+                                                     "These will be Civilian Powers."
+                                auto_heroic_names = [pair[1] for pair in heroic_power_ids]
+                                if len(auto_heroic_names) > 0:
+                                    heroic_text = auto_heroic_names[0]
+                                    for j in range(1, len(auto_heroic_names)-1):
+                                        heroic_text += ", " + auto_heroic_names[j]
+                                    last_name = auto_heroic_names[len(auto_heroic_names) - 1]
+                                    if len(auto_heroic_names) > 2:
+                                        heroic_text += ","
+                                    if len(auto_heroic_names) > 1:
+                                        heroic_text += " and " + last_name
+                                    if len(assign_prompt) > 0:
+                                        assign_prompt += "\n"
+                                    assign_prompt += heroic_text + " are on " + self.hero_name + \
+                                                     "'s Power list(s) in Heroic form(s). " + \
+                                                     "These will be Heroic Powers."
+                                if len(assign_prompt) > 0:
+                                    assign_prompt += "\n"
+                                # The only Powers left to assign should be ones that appear on the
+                                #  base Power list but not in any alternate Forms.
+                                base_power_ids = [[p.triplet(), p.flavorname] \
+                                                  for p in self.power_dice]
+                                unassigned_power_ids.extend([pair for pair in base_power_ids \
+                                                             if pair not in constant_power_ids + \
+                                                             heroic_power_ids + \
+                                                             civilian_power_ids])
+                                # Assign each of them to either Civilian or Heroic.
+                                while len(unassigned_power_ids) > 0:
+                                    if self.UseGUI(inputs):
+                                        # Use an AssignWindow to assign the remaining Power IDs
+                                        result = StringVar(self.myFrame)
+                                        success = IntVar(self.myFrame, 1)
+                                        questions = AssignWindow(self.myFrame,
+                                                                 assign_prompt + "Assign " + \
+                                                                 self.hero_name + \
+                                                                 "'s remaining Powers to one " + \
+                                                                 "of " + \
+                                                                 pronouns[self.pronoun_set][2] + \
+                                                                 " Divided Forms...",
+                                                                 self.dv_tags,
+                                                                 [x[1] \
+                                                                  for x in unassigned_power_ids],
+                                                                 result,
+                                                                 title="Archetype: Divided",
+                                                                 success=success)
+##                                        print(notePrefix + "success = " + str(success.get()))
+                                        self.proceed = success.get()
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        answer = result.get()
+                                        for i in range(len(unassigned_power_ids)):
+                                            if answer[i] == string.ascii_uppercase[0]:
+                                                civilian_power_ids.append(unassigned_power_ids[i])
+                                            elif answer[i] == string.ascii_uppercase[1]:
+                                                heroic_power_ids.append(unassigned_power_ids[i])
+                                        unassigned_power_ids = [pair \
+                                                                for pair in unassigned_power_ids \
+                                                                if pair not in civilian_power_ids \
+                                                                and pair not in heroic_power_ids]
+                                    else:
+                                        # Use ChooseIndex to assign the next ID
+                                        assigning_id = unassigned_power_ids.pop(0)
+                                        decision = self.ChooseIndex(self.dv_tags,
+                                                                    prompt="Which of " + \
+                                                                    self.hero_name + \
+                                                                    "'s Divided Forms should " + \
+                                                                    "have access to " + \
+                                                                    assigning_id[1] + "?",
+                                                                    inputs=inputs,
+                                                                    width=50)
+##                                        print(notePrefix + "proceed = " + str(self.proceed))
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        entry_index = decision[0]
+                                        inputs = decision[1]
+                                        print("OK! Marking " + assigning_id[1] + " as a " + \
+                                              self.dv_tags[entry_index] + " Power.")
+                                        if entry_index == 0:
+                                            civilian_power_ids.append(assigning_id)
+                                        else:
+                                            heroic_power_ids.append(assigning_id)
+                                # Now we can compile the list of Power dice that each base form
+                                #  gets.
+                                hr_power_dice = [d for d in self.power_dice \
+                                                 if [d.triplet(), d.flavorname] in \
+                                                 heroic_power_ids + constant_power_ids]
+                                cv_power_dice = [d for d in self.power_dice \
+                                                 if [d.triplet(), d.flavorname] in \
+                                                 civilian_power_ids + constant_power_ids]
+                            else:
+                                # This hero isn't a Form-Changer, so their Powers are a single list
+                                #  of PQDie objects that we need to split between constant,
+                                #  Civilian, and Heroic
+                                unassigned_powers = [d for d in self.power_dice]
+                                constant_powers = []
+                                civilian_powers = []
+                                heroic_powers = []
+                                # Pick 2 Powers to be available in both forms.
+                                while len(constant_powers) < 2:
+                                    if len(constant_powers) == 0 and self.UseGUI(inputs):
+                                        # Use a SwapWindow to select both constant Powers at once
+                                        dispWidth = 100
+                                        answer0 = IntVar()
+                                        answer1 = IntVar()
+                                        prompt = "Choose 2 Powers for " + self.hero_name + \
+                                                 " to have access to in both " + \
+                                                 self.dv_tags[0] + " and " + self.dv_tags[1] + \
+                                                 " Forms:"
+                                        title = "Archetype: Divided"
+                                        success = IntVar(self.myFrame, 1)
+                                        question = SwapWindow(self.myFrame,
+                                                              prompt,
+                                                              [str(x) for x in unassigned_powers],
+                                                              answer0,
+                                                              answer1,
+                                                              title=title,
+                                                              success=success,
+                                                              width=dispWidth)
+##                                        print(notePrefix + "success = " + str(success.get()))
+                                        self.proceed = success.get()
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        constant_indices = [answer0.get(), answer1.get()]
+                                        # Move corresponding power dice from unassigned to
+                                        #  constant, removing them in descending order so the
+                                        #  indices don't change
+                                        last_power = unassigned_powers.pop(max(constant_indices))
+                                        first_power = unassigned_powers.pop(min(constant_indices))
+                                        constant_powers.append(first_power)
+                                        constant_powers.append(last_power)
+                                    else:
+                                        # Select one constant Power at a time
+                                        decision = self.ChooseIndex([str(x) \
+                                                                     for x in unassigned_powers],
+                                                                    prompt="Choose a Power " + \
+                                                                    "for " + self.hero_name + \
+                                                                    " to have access to in " + \
+                                                                    "both " + self.dv_tags[0] + \
+                                                                    " and " + self.dv_tags[1] + \
+                                                                    " Forms:",
+                                                                    inputs=inputs,
+                                                                    title="Archetype: Divided",
+                                                                    width=50)
+##                                        print(notePrefix + "proceed = " + str(self.proceed))
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        entry_index = decision[0]
+                                        inputs = decision[1]
+                                        print("OK! Marking " + \
+                                              str(unassigned_powers[entry_index]) + \
+                                              " as a constant Power.")
+                                        constant_powers.append(unassigned_powers.pop(entry_index))
+                                # Assign each remaining Power to either Civilian or Heroic.
+                                while len(unassigned_powers) > 0:
+                                    if self.UseGUI(inputs):
+                                        # Use an AssignWindow to assign the remaining dice
+                                        result = StringVar(self.myFrame)
+                                        success = IntVar(self.myFrame, 1)
+                                        questions = AssignWindow(self.myFrame,
+                                                                 "Assign " + self.hero_name + \
+                                                                 "'s remaining Powers to " + \
+                                                                 "one of " + \
+                                                                 pronouns[self.pronoun_set][2] + \
+                                                                 " Divided Forms...",
+                                                                 self.dv_tags,
+                                                                 [str(x) \
+                                                                  for x in unassigned_powers],
+                                                                 result,
+                                                                 title="Archetype: Divided",
+                                                                 success=success)
+##                                        print(notePrefix + "success = " + str(success.get()))
+                                        self.proceed = success.get()
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        answer = result.get()
+                                        for i in range(len(unassigned_powers)):
+                                            if answer[i] == string.ascii_uppercase[0]:
+                                                civilian_powers.append(unassigned_powers[i])
+                                            elif answer[i] == string.ascii_uppercase[1]:
+                                                heroic_powers.append(unassigned_powers[i])
+                                        unassigned_powers = [x for x in unassigned_powers \
+                                                             if x not in civilian_powers + \
+                                                             heroic_powers]
+                                    else:
+                                        # Use ChooseIndex to assign the next die
+                                        assigning_die = unassigned_powers.pop(0)
+                                        decision = self.ChooseIndex(self.dv_tags,
+                                                                    prompt="Which of " + \
+                                                                    self.hero_name + \
+                                                                    "'s Divided Forms should " + \
+                                                                    "have access to " + \
+                                                                    str(assigning_die) + "?",
+                                                                    inputs=inputs,
+                                                                    width=50)
+##                                        print(notePrefix + "proceed = " + str(self.proceed))
+                                        if self.proceed == 0:
+                                            # User canceled out; drop everything
+                                            if isRoot:
+                                                self.proceed = 1
+                                            return
+                                        entry_index = decision[0]
+                                        inputs = decision[1]
+                                        print("OK! Marking " + str(assigning_die) + " as a " + \
+                                              self.dv_tags[entry_index] + " " + \
+                                              categories_singular[assigning_die.ispower] + ".")
+                                        if entry_index == 0:
+                                            civilian_powers.append(assigning_die)
+                                        else:
+                                            heroic_powers.append(assigning_die)
+                                # Now we can compile the list of Power dice that each base form
+                                #  gets.
+                                hr_power_dice = [d for d in constant_powers + heroic_powers]
+                                cv_power_dice = [d for d in constant_powers + civilian_powers]
+                            # Phew! That takes care of Power assignment.
+                            # Form-Changer can't alter a hero's Qualities, so they get assigned as
+                            #  PQDie objects no matter what.
+                            constant_qualities = []
+                            civilian_qualities = []
+                            heroic_qualities = []
+                            unassigned_qualities = [d for d in self.quality_dice]
+                            # Pick 2 Qualities to be available in both forms.
+                            while len(constant_qualities) < 2:
+                                if len(constant_qualities) == 0 and self.UseGUI(inputs):
+                                    # Use a SwapWindow to select both constant Qualities at once
                                     dispWidth = 100
                                     answer0 = IntVar()
                                     answer1 = IntVar()
-                                    prompt = "Choose 2 Powers for " + self.hero_name + \
+                                    prompt = "Choose 2 Qualities for " + self.hero_name + \
                                              " to have access to in both " + self.dv_tags[0] + \
                                              " and " + self.dv_tags[1] + " Forms:"
-                                    title = "Archetype Selection: Divided:Form-Changer"
+                                    title = "Archetype: Divided"
                                     success = IntVar(self.myFrame, 1)
                                     question = SwapWindow(self.myFrame,
                                                           prompt,
-                                                          [x[1] for x in constant_power_options],
+                                                          [str(x) for x in unassigned_qualities],
                                                           answer0,
                                                           answer1,
                                                           title=title,
@@ -11441,27 +11922,24 @@ class Hero:
                                         if isRoot:
                                             self.proceed = 1
                                         return
-                                    constantIndices = [answer0.get(), answer1.get()]
-                                    # Move corresponding power IDs from options to constant,
+                                    constant_indices = [answer0.get(), answer1.get()]
+                                    # Move corresponding quality dice from unassigned to constant,
                                     #  removing them in descending order so the indices don't
                                     #  change
-                                    last_power = constant_power_options.pop(max(constantIndices))
-                                    first_power = constant_power_options.pop(min(constantIndices))
-                                    constant_power_ids.append(first_power)
-                                    constant_power_ids.append(last_power)
+                                    last_quality = unassigned_qualities.pop(max(constant_indices))
+                                    first_quality = unassigned_qualities.pop(min(constant_indices))
+                                    constant_qualities.append(first_quality)
+                                    constant_qualities.append(last_quality)
                                 else:
-                                    # Select one constant Power at a time
-                                    decision = self.ChooseIndex([x[1] \
-                                                                 for x in constant_power_options],
-                                                                prompt="Choose a Power for " + \
+                                    # Select one constant Quality at a time
+                                    decision = self.ChooseIndex([str(x) \
+                                                                 for x in unassigned_qualities],
+                                                                prompt="Choose a Quality for " + \
                                                                 self.hero_name + " to have " + \
                                                                 "access to in both " + \
                                                                 self.dv_tags[0] + " and " + \
                                                                 self.dv_tags[1] + " Forms:",
-                                                                inputs=inputs,
-                                                                title="Archetype Selection: " + \
-                                                                "Divided",
-                                                                width=50)
+                                                                inputs=inputs)
 ##                                    print(notePrefix + "proceed = " + str(self.proceed))
                                     if self.proceed == 0:
                                         # User canceled out; drop everything
@@ -11471,471 +11949,151 @@ class Hero:
                                     entry_index = decision[0]
                                     inputs = decision[1]
                                     print("OK! Marking " + \
-                                          constant_power_options[entry_index][1] + \
-                                          " as a constant Power.")
-                                    constant_power_ids.append(constant_power_options.pop(entry_index))
-                        # Add all other Power IDs that appear in Civilian or Heroic forms to the
-                        #  corresponding list: non-constant Powers from Civilian Forms become
-                        #  Civilian Powers, and non-constant Powers from Heroic Forms become Heroic
-                        #  Powers
-                        civilian_power_ids = []
-                        heroic_power_ids = []
-                        unassigned_power_ids = []
-                        for fm in self.other_forms:
-##                            if fm.dv_index in range(len(self.dv_tags)):
-##                                printlong(notePrefix + "Split Form assignment: " + fm.name + \
-##                                          " (" + self.dv_tags[fm.dv_index] + ")")
-##                            else:
-##                                printlong(notePrefix + "Split Form assignment: " + fm.name + \
-##                                          " (undecided)")
-                            form_power_ids = [[p.triplet(), p.flavorname] for p in fm.power_dice]
-                            unassigned_form_ids = [pair for pair in form_power_ids \
-                                                   if pair not in constant_power_ids \
-                                                   and pair not in civilian_power_ids \
-                                                   and pair not in heroic_power_ids]
-##                            for pair in unassigned_form_ids:
-##                                if fm.dv_index in range(len(self.dv_tags)):
-##                                    printlong(notePrefix + \
-##                                              "Split Form assignment: " + pair[1] + " (" + \
-##                                              MixedPQ(pair[0]) + ") is " + \
-##                                              self.dv_tags[fm.dv_index])
-                            if fm.dv_index == 0:
-                                civilian_power_ids.extend(unassigned_form_ids)
-                            elif fm.dv_index == 1:
-                                heroic_power_ids.extend(unassigned_form_ids)
-                            else:
-                                print(notePrefix + "Whoops! Looks like " + form.name + \
-                                      " didn't get a Divided tag...")
-                                unassigned_power_ids.extend(unassigned_form_ids)
-##                                for pair in unassigned_form_ids:
-##                                    printlong(notePrefix + "Split Form assignment: " + pair[1] + \
-##                                              " (" + MixedPQ(pair[0]) + ") is unassigned")
-                        auto_civilian_names = [pair[1] for pair in civilian_power_ids]
-                        if len(auto_civilian_names) > 0:
-                            civilian_text = auto_civilian_names[0]
-                            for j in range(1, len(auto_civilian_names)-1):
-                                civilian_text += ", " + auto_civilian_names[j]
-                            if len(auto_civilian_names) > 2:
-                                civilian_text += ","
-                            if len(auto_civilian_names) > 1:
-                                civilian_text += " and " + \
-                                                 auto_civilian_names[len(auto_civilian_names) - 1]
-                            if len(assign_prompt) > 0:
-                                assign_prompt += "\n"
-                            assign_prompt += civilian_text + " are on " + self.hero_name + \
-                                             "'s Power " + "list(s) in Civilian form(s). " + \
-                                             "These will be Civilian Powers."
-                        auto_heroic_names = [pair[1] for pair in heroic_power_ids]
-                        if len(auto_heroic_names) > 0:
-                            heroic_text = auto_heroic_names[0]
-                            for j in range(1, len(auto_heroic_names)-1):
-                                heroic_text += ", " + auto_heroic_names[j]
-                            if len(auto_heroic_names) > 2:
-                                heroic_text += ","
-                            if len(auto_heroic_names) > 1:
-                                heroic_text += " and " + \
-                                               auto_heroic_names[len(auto_heroic_names) - 1]
-                            if len(assign_prompt) > 0:
-                                assign_prompt += "\n"
-                            assign_prompt += heroic_text + " are on " + self.hero_name + \
-                                             "'s Power list(s) in Heroic form(s). These will " + \
-                                             "be Heroic Powers."
-                        if len(assign_prompt) > 0:
-                            assign_prompt += "\n"
-                        # The only Powers left to assign should be ones that appear on the base
-                        #  Power list but not in any alternate Forms.
-                        base_power_ids = [[p.triplet(), p.flavorname] for p in self.power_dice]
-                        unassigned_power_ids.extend([pair for pair in base_power_ids \
-                                                     if pair not in constant_power_ids + \
-                                                     heroic_power_ids + civilian_power_ids])
-                        # Assign each of them to either Civilian or Heroic.
-                        while len(unassigned_power_ids) > 0:
-                            if self.UseGUI(inputs):
-                                # Use an AssignWindow to assign the remaining Power IDs
-                                result = StringVar(self.myFrame)
-                                success = IntVar(self.myFrame, 1)
-                                questions = AssignWindow(self.myFrame,
-                                                         assign_prompt + "Assign " + \
-                                                         self.hero_name + \
-                                                         "'s remaining Powers to one of " + \
-                                                         pronouns[self.pronoun_set][2] + \
-                                                         " Divided Forms...",
-                                                         self.dv_tags,
-                                                         [x[1] for x in unassigned_power_ids],
-                                                         result,
-                                                         title="Archetype Selection: Divided",
-                                                         success=success)
-##                                print(notePrefix + "success = " + str(success.get()))
-                                self.proceed = success.get()
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                answer = result.get()
-                                for i in range(len(unassigned_power_ids)):
-                                    if answer[i] == string.ascii_uppercase[0]:
-                                        civilian_power_ids.append(unassigned_power_ids[i])
-                                    elif answer[i] == string.ascii_uppercase[1]:
-                                        heroic_power_ids.append(unassigned_power_ids[i])
-                                unassigned_power_ids = [pair for pair in unassigned_power_ids \
-                                                        if pair not in civilian_power_ids \
-                                                        and pair not in heroic_power_ids]
-                            else:
-                                # Use ChooseIndex to assign the next ID
-                                assigning_id = unassigned_power_ids.pop(0)
-                                decision = self.ChooseIndex(self.dv_tags,
-                                                            prompt="Which of " + self.hero_name + \
-                                                            "'s Divided Forms should have " + \
-                                                            "access to " + assigning_id[1] + \
-                                                            "?",
-                                                            inputs=inputs,
-                                                            width=50)
-##                                print(notePrefix + "proceed = " + str(self.proceed))
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                entry_index = decision[0]
-                                inputs = decision[1]
-                                print("OK! Marking " + assigning_id[1] + " as a " + \
-                                      self.dv_tags[entry_index] + " Power.")
-                                if entry_index == 0:
-                                    civilian_power_ids.append(assigning_id)
+                                          str(unassigned_qualities[entry_index]) + \
+                                          " as a constant Quality.")
+                                    constant_die = unassigned_qualities.pop(entry_index)
+                                    constant_qualities.append(constant_die)
+                            # Assign each remaining Quality to either Civilian or Heroic.
+                            while len(unassigned_qualities) > 0:
+                                if self.UseGUI(inputs):
+                                    # Use an AssignWindow to assign the remaining dice
+                                    result = StringVar(self.myFrame)
+                                    success = IntVar(self.myFrame, 1)
+                                    questions = AssignWindow(self.myFrame,
+                                                             "Assign " + self.hero_name + \
+                                                             "'s remaining Qualities to " + \
+                                                             "one of " + \
+                                                             pronouns[self.pronoun_set][2] + \
+                                                             " Divided Forms...",
+                                                             self.dv_tags,
+                                                             [str(x) \
+                                                              for x in unassigned_qualities],
+                                                             result,
+                                                             title="Archetype: Divided",
+                                                             success=success)
+##                                    print(notePrefix + "success = " + str(success.get()))
+                                    self.proceed = success.get()
+                                    if self.proceed == 0:
+                                        # User canceled out; drop everything
+                                        if isRoot:
+                                            self.proceed = 1
+                                        return
+                                    answer = result.get()
+                                    for i in range(len(unassigned_qualities)):
+                                        if answer[i] == string.ascii_uppercase[0]:
+                                            civilian_qualities.append(unassigned_qualities[i])
+                                        elif answer[i] == string.ascii_uppercase[1]:
+                                            heroic_qualities.append(unassigned_qualities[i])
+                                    unassigned_qualities = [x for x in unassigned_qualities \
+                                                       if x not in civilian_qualities + \
+                                                       heroic_qualities]
                                 else:
-                                    heroic_power_ids.append(assigning_id)
-                        # Now we can compile the list of Power dice that each base form gets.
-                        hr_power_dice = [d for d in self.power_dice \
-                                         if [d.triplet(), d.flavorname] in \
-                                         heroic_power_ids + constant_power_ids]
-                        cv_power_dice = [d for d in self.power_dice \
-                                         if [d.triplet(), d.flavorname] in \
-                                         civilian_power_ids + constant_power_ids]
-                    else:
-                        # This hero isn't a Form-Changer, so their Powers are a single list of
-                        #  PQDie objects that we need to split between constant, Civilian, and
-                        #  Heroic
-                        unassigned_powers = [d for d in self.power_dice]
-                        constant_powers = []
-                        civilian_powers = []
-                        heroic_powers = []
-                        # Pick 2 Powers to be available in both forms.
-                        while len(constant_powers) < 2:
-                            if len(constant_powers) == 0 and self.UseGUI(inputs):
-                                # Use a SwapWindow to select both constant Powers at once
-                                dispWidth = 100
-                                answer0 = IntVar()
-                                answer1 = IntVar()
-                                prompt = "Choose 2 Powers for " + self.hero_name + \
-                                         " to have access to in both " + self.dv_tags[0] + \
-                                         " and " + self.dv_tags[1] + " Forms:"
-                                title = "Archetype Selection: Divided"
-                                success = IntVar(self.myFrame, 1)
-                                question = SwapWindow(self.myFrame,
-                                                      prompt,
-                                                      [str(x) for x in unassigned_powers],
-                                                      answer0,
-                                                      answer1,
-                                                      title=title,
-                                                      success=success,
-                                                      width=dispWidth)
-##                                print(notePrefix + "success = " + str(success.get()))
-                                self.proceed = success.get()
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                constantIndices = [answer0.get(), answer1.get()]
-                                # Move corresponding power dice from unassigned to constant,
-                                #  removing them in descending order so the indices don't change
-                                last_power = unassigned_powers.pop(max(constantIndices))
-                                first_power = unassigned_powers.pop(min(constantIndices))
-                                constant_powers.append(first_power)
-                                constant_powers.append(last_power)
-                            else:
-                                # Select one constant Power at a time
-                                decision = self.ChooseIndex([str(x) for x in unassigned_powers],
-                                                            prompt="Choose a Power for " + \
-                                                            self.hero_name + " to have access " + \
-                                                            "to in both " + self.dv_tags[0] + \
-                                                            " and " + self.dv_tags[1] + " Forms:",
-                                                            inputs=inputs,
-                                                            title="Archetype Selection: Divided",
-                                                            width=50)
-##                                print(notePrefix + "proceed = " + str(self.proceed))
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                entry_index = decision[0]
-                                inputs = decision[1]
-                                print("OK! Marking " + str(unassigned_powers[entry_index]) + \
-                                      " as a constant Power.")
-                                constant_powers.append(unassigned_powers.pop(entry_index))
-                        # Assign each remaining Power to either Civilian or Heroic.
-                        while len(unassigned_powers) > 0:
-                            if self.UseGUI(inputs):
-                                # Use an AssignWindow to assign the remaining dice
-                                result = StringVar(self.myFrame)
-                                success = IntVar(self.myFrame, 1)
-                                questions = AssignWindow(self.myFrame,
-                                                         "Assign " + self.hero_name + \
-                                                         "'s remaining Powers to " + \
-                                                         "one of " + \
-                                                         pronouns[self.pronoun_set][2] + \
-                                                         " Divided Forms...",
-                                                         self.dv_tags,
-                                                         [str(x) for x in unassigned_powers],
-                                                         result,
-                                                         title="Archetype Selection: Divided",
-                                                         success=success)
-##                                print(notePrefix + "success = " + str(success.get()))
-                                self.proceed = success.get()
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                answer = result.get()
-                                for i in range(len(unassigned_powers)):
-                                    if answer[i] == string.ascii_uppercase[0]:
-                                        civilian_powers.append(unassigned_powers[i])
-                                    elif answer[i] == string.ascii_uppercase[1]:
-                                        heroic_powers.append(unassigned_powers[i])
-                                unassigned_powers = [x for x in unassigned_powers \
-                                                   if x not in civilian_powers + heroic_powers]
-                            else:
-                                # Use ChooseIndex to assign the next die
-                                assigning_die = unassigned_powers.pop(0)
-                                decision = self.ChooseIndex(self.dv_tags,
-                                                            prompt="Which of " + self.hero_name + \
-                                                            "'s Divided Forms should have " + \
-                                                            "access to " + str(assigning_die) + \
-                                                            "?",
-                                                            inputs=inputs,
-                                                            width=50)
-##                                print(notePrefix + "proceed = " + str(self.proceed))
-                                if self.proceed == 0:
-                                    # User canceled out; drop everything
-                                    if isRoot:
-                                        self.proceed = 1
-                                    return
-                                entry_index = decision[0]
-                                inputs = decision[1]
-                                print("OK! Marking " + str(assigning_die) + " as a " + \
-                                      self.dv_tags[entry_index] + " " + \
-                                      categories_singular[assigning_die.ispower] + ".")
-                                if entry_index == 0:
-                                    civilian_powers.append(assigning_die)
-                                else:
-                                    heroic_powers.append(assigning_die)
-                        # Now we can compile the list of Power dice that each base form gets.
-                        hr_power_dice = [d for d in constant_powers + heroic_powers]
-                        cv_power_dice = [d for d in constant_powers + civilian_powers]
-                    # Phew! That takes care of Power assignment.
-                    # Form-Changer can't alter a hero's Qualities, so they get assigned as
-                    #  PQDie objects no matter what.
-                    constant_qualities = []
-                    civilian_qualities = []
-                    heroic_qualities = []
-                    unassigned_qualities = [d for d in self.quality_dice]
-                    # Pick 2 Qualities to be available in both forms.
-                    while len(constant_qualities) < 2:
-                        if len(constant_qualities) == 0 and self.UseGUI(inputs):
-                            # Use a SwapWindow to select both constant Qualities at once
-                            dispWidth = 100
-                            answer0 = IntVar()
-                            answer1 = IntVar()
-                            prompt = "Choose 2 Qualities for " + self.hero_name + \
-                                     " to have access to in both " + self.dv_tags[0] + \
-                                     " and " + self.dv_tags[1] + " Forms:"
-                            title = "Archetype Selection: Divided"
-                            success = IntVar(self.myFrame, 1)
-                            question = SwapWindow(self.myFrame,
-                                                  prompt,
-                                                  [str(x) for x in unassigned_qualities],
-                                                  answer0,
-                                                  answer1,
-                                                  title=title,
-                                                  success=success,
-                                                  width=dispWidth)
-##                            print(notePrefix + "success = " + str(success.get()))
-                            self.proceed = success.get()
-                            if self.proceed == 0:
-                                # User canceled out; drop everything
-                                if isRoot:
-                                    self.proceed = 1
-                                return
-                            constantIndices = [answer0.get(), answer1.get()]
-                            # Move corresponding quality dice from unassigned to constant,
-                            #  removing them in descending order so the indices don't change
-                            last_quality = unassigned_qualities.pop(max(constantIndices))
-                            first_quality = unassigned_qualities.pop(min(constantIndices))
-                            constant_qualities.append(first_quality)
-                            constant_qualities.append(last_quality)
-                        else:
-                            # Select one constant Quality at a time
-                            decision = self.ChooseIndex([str(x) for x in unassigned_qualities],
-                                                        prompt="Choose a Quality for " + \
-                                                        self.hero_name + " to have access " + \
-                                                        "to in both " + self.dv_tags[0] + \
-                                                        " and " + self.dv_tags[1] + " Forms:",
-                                                        inputs=inputs)
-##                            print(notePrefix + "proceed = " + str(self.proceed))
-                            if self.proceed == 0:
-                                # User canceled out; drop everything
-                                if isRoot:
-                                    self.proceed = 1
-                                return
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(unassigned_qualities[entry_index]) + \
-                                  " as a constant Quality.")
-                            constant_qualities.append(unassigned_qualities.pop(entry_index))
-                    # Assign each remaining Quality to either Civilian or Heroic.
-                    while len(unassigned_qualities) > 0:
-                        if self.UseGUI(inputs):
-                            # Use an AssignWindow to assign the remaining dice
-                            result = StringVar(self.myFrame)
-                            success = IntVar(self.myFrame, 1)
-                            questions = AssignWindow(self.myFrame,
-                                                     "Assign " + self.hero_name + \
-                                                     "'s remaining Qualities to " + \
-                                                     "one of " + \
-                                                     pronouns[self.pronoun_set][2] + \
-                                                     " Divided Forms...",
-                                                     self.dv_tags,
-                                                     [str(x) for x in unassigned_qualities],
-                                                     result,
-                                                     title="Archetype Selection: Divided",
-                                                     success=success)
-##                            print(notePrefix + "success = " + str(success.get()))
-                            self.proceed = success.get()
-                            if self.proceed == 0:
-                                # User canceled out; drop everything
-                                if isRoot:
-                                    self.proceed = 1
-                                return
-                            answer = result.get()
-                            for i in range(len(unassigned_qualities)):
-                                if answer[i] == string.ascii_uppercase[0]:
-                                    civilian_qualities.append(unassigned_qualities[i])
-                                elif answer[i] == string.ascii_uppercase[1]:
-                                    heroic_qualities.append(unassigned_qualities[i])
-                            unassigned_qualities = [x for x in unassigned_qualities \
-                                               if x not in civilian_qualities + \
-                                               heroic_qualities]
-                        else:
-                            # Use ChooseIndex to assign the next die
-                            assigning_die = unassigned_qualities.pop(0)
-                            decision = self.ChooseIndex(self.dv_tags,
-                                                        prompt="Which of " + self.hero_name + \
-                                                        "'s Divided Forms should have " + \
-                                                        "access to " + str(assigning_die) + \
-                                                        "?",
-                                                        inputs=inputs)
-##                            print(notePrefix + "proceed = " + str(self.proceed))
-                            if self.proceed == 0:
-                                # User canceled out; drop everything
-                                if isRoot:
-                                    self.proceed = 1
-                                return
-                            entry_index = decision[0]
-                            inputs = decision[1]
-                            print("OK! Marking " + str(assigning_die) + " as a " + \
-                                  self.dv_tags[entry_index] + " " + \
-                                  categories_singular[assigning_die.ispower] + ".")
-                            if entry_index == 0:
-                                civilian_qualities.append(assigning_die)
-                            else:
-                                heroic_qualities.append(assigning_die)
-                    # Now we can compile the list of Quality dice that each form gets.
-                    hr_quality_dice = [d for d in constant_qualities + heroic_qualities]
-                    cv_quality_dice = [d for d in constant_qualities + civilian_qualities]
-                    if self.archetype == 15:
-                        # The hero is a Form-Changer, and their alternate Forms currently have
-                        #  Quality lists that just refer back to the base sheet. Edit them to match
-                        #  their respective Divided tags instead.
-                        for fm in self.other_forms:
-                            fm.SetPrevious(divided_step)
-                            if fm.dv_index == 0:
-                                fm.quality_dice = cv_quality_dice
-                            elif fm.dv_index == 1:
-                                fm.quality_dice = hr_quality_dice
-                    # >> Split up the Abilities? <<
-                    # ...
-                    cv_name = self.dv_tags[0] + " Form"
-                    civilian_form = Form(cv_name,
-                                         zone=0,
-                                         pqs=cv_power_dice+cv_quality_dice,
-                                         status=Status(ref=0,
-                                                       stepnum=divided_step),
-                                         divided=0,
-                                         stepnum=divided_step)
-                    self.other_forms.append(civilian_form)
-                    print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
-                          "'s Form Sheet in Green.")
-                    hr_name = self.dv_tags[1] + " Form"
-                    heroic_form = Form(hr_name,
-                                       zone=0,
-                                       pqs=hr_power_dice+hr_quality_dice,
-                                       status=Status(ref=1,
-                                                     stepnum=divided_step),
-                                       divided=1,
-                                       stepnum=divided_step)
-                    self.other_forms.append(heroic_form)
-                    print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
-                          "'s Form Sheet in Green.")
-                self.substeps_complete[this_step][divided_substep] = True
-                # Finally, choose a Principle from the Divided archetype
-                r_category = arc_divided[18]
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(prin_step)
-                self.ChoosePrinciple(r_category,
-                                     stepnum=prin_step,
-                                     isRoot=False,
-                                     inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                self.substeps_complete[this_step][prin_substep] = True
-            else:
-                # As long as your hero isn't Divided, they get their Principle from their main
-                #  Archetype
-                self.substeps_complete[this_step][transition_substep] = True
-                self.substeps_complete[this_step][divided_substep] = True
-                if track_inputs:
-                    print(notePrefix + tracker_open)
-                pass_inputs = []
-                if len(inputs) > 0:
-                    if str(inputs[0]) != inputs[0]:
-                        pass_inputs = inputs.pop(0)
-                self.SetPrevious(prin_step)
-                self.ChoosePrinciple(r_category,
-                                     stepnum=prin_step,
-                                     isRoot=False,
-                                     inputs=pass_inputs)
-                if track_inputs:
-                    print(notePrefix + tracker_close)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
+                                    # Use ChooseIndex to assign the next die
+                                    assigning_die = unassigned_qualities.pop(0)
+                                    decision = self.ChooseIndex(self.dv_tags,
+                                                                prompt="Which of " + \
+                                                                self.hero_name + \
+                                                                "'s Divided Forms should " + \
+                                                                "have access to " + \
+                                                                str(assigning_die) + "?",
+                                                                inputs=inputs)
+##                                    print(notePrefix + "proceed = " + str(self.proceed))
+                                    if self.proceed == 0:
+                                        # User canceled out; drop everything
+                                        if isRoot:
+                                            self.proceed = 1
+                                        return
+                                    entry_index = decision[0]
+                                    inputs = decision[1]
+                                    print("OK! Marking " + str(assigning_die) + " as a " + \
+                                          self.dv_tags[entry_index] + " " + \
+                                          categories_singular[assigning_die.ispower] + ".")
+                                    if entry_index == 0:
+                                        civilian_qualities.append(assigning_die)
+                                    else:
+                                        heroic_qualities.append(assigning_die)
+                            # Now we can compile the list of Quality dice that each form gets.
+                            hr_quality_dice = [d for d in constant_qualities + heroic_qualities]
+                            cv_quality_dice = [d for d in constant_qualities + civilian_qualities]
+                            if self.archetype == 15:
+                                # The hero is a Form-Changer, and their alternate Forms currently
+                                #  have Quality lists that just refer back to the base sheet. Edit
+                                #  them to match their respective Divided tags instead.
+                                for fm in self.other_forms:
+                                    fm.SetPrevious(divided_step)
+                                    if fm.dv_index == 0:
+                                        fm.quality_dice = cv_quality_dice
+                                    elif fm.dv_index == 1:
+                                        fm.quality_dice = hr_quality_dice
+                            cv_name = self.dv_tags[0] + " Form"
+                            civilian_form = Form(cv_name,
+                                                 zone=0,
+                                                 pqs=cv_power_dice+cv_quality_dice,
+                                                 status=Status(ref=0,
+                                                               stepnum=divided_step),
+                                                 divided=0,
+                                                 stepnum=divided_step)
+                            self.other_forms.append(civilian_form)
+                            print("Added " + self.dv_tags[0] + " Form to " + self.hero_name + \
+                                  "'s Form Sheet in Green.")
+                            hr_name = self.dv_tags[1] + " Form"
+                            heroic_form = Form(hr_name,
+                                               zone=0,
+                                               pqs=hr_power_dice+hr_quality_dice,
+                                               status=Status(ref=1,
+                                                             stepnum=divided_step),
+                                               divided=1,
+                                               stepnum=divided_step)
+                            self.other_forms.append(heroic_form)
+                            print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
+                                  "'s Form Sheet in Green.")
+                        self.substeps_complete[this_step][divided_substep] = True
+                    # Substep 9: Principle...
+                    self.SetPrevious(prin_step)
+                    # Finally, choose a Principle from the Divided archetype
+                    r_category = arc_divided[18]
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePrinciple(r_category,
+                                         stepnum=prin_step,
+                                         isRoot=False,
+                                         inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                else:
+                    # As long as the hero isn't Divided, they get their Principle from their main
+                    #  Archetype
+                    self.substeps_complete[this_step][transition_substep] = True
+                    self.substeps_complete[this_step][divided_substep] = True
+                    self.SetPrevious(prin_step)
+                    if track_inputs:
+                        print(notePrefix + tracker_open)
+                    pass_inputs = []
+                    if len(inputs) > 0:
+                        if str(inputs[0]) != inputs[0]:
+                            pass_inputs = inputs.pop(0)
+                    self.ChoosePrinciple(r_category,
+                                         stepnum=prin_step,
+                                         isRoot=False,
+                                         inputs=pass_inputs)
+                    if track_inputs:
+                        print(notePrefix + tracker_close)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
                 self.substeps_complete[this_step][prin_substep] = True
             self.steps_complete[this_step] = True
             print("That's all for your Archetype!")
@@ -12284,10 +12442,9 @@ class Hero:
                           pn_collection[self.dv_personality][0] + " Personality in " + \
                           self.dv_tags[0] + " form."
             print("Error! " + self.hero_name + " already has " + pn_text)
-            self.steps_complete[this_step] = True
             input()
         elif pn_index in range(len(pn_collection)):
-            # This hero doesn't have a finished Personality, and we can add this one.
+            # This hero doesn't have a Personality yet, or hasn't finished adding this one.
             # Not all Divided heroes take more than one Personality. We'll use has_multiple to
             #  indicate whether this hero is one of them.
             # has_multiple is only true if the hero has the Divided modifier AND dv_index is a
@@ -17979,45 +18136,51 @@ class HeroFrame(Frame):
         print("3. Archetype")
         this_step = 3
         self.SetFirstIncomplete()
-        if self.myHero.archetype in range(len(arc_collection)) or self.firstIncomplete > this_step:
-            # This hero already has an Archetype
+        if self.firstIncomplete > this_step:
+            # This hero already finished the Archetype step.
             arc_text = arc_collection[self.myHero.archetype][0]
             if self.myHero.archetype_modifier in range(1,len(arc_modifiers)):
                 arc_text = arc_modifiers[self.myHero.archetype_modifier][0] + ":" + arc_text
             print(indent + self.myHero.hero_name + " already has the " + arc_text + " Archetype.")
         else:
-            arc_indices = [99, 99]
-            decision = self.myHero.ChooseIndex(step_options,
-                                               prompt="How would you like to choose an " + \
-                                               "Archetype for " + self.myHero.hero_name + "?",
-                                               inputs=inputs,
-                                               width=50)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed and drop everything
-                self.myHero.proceed = 1
-                return
-            entry_index = decision[0]
-            inputs = decision[1]
-            if track_inputs:
-                print(notePrefix + tracker_open)
-            pass_inputs = []
-            if len(inputs) > 0:
-                if str(inputs[0]) != inputs[0]:
-                    pass_inputs = inputs.pop(0)
-            if step_options[entry_index].startswith("Guided"):
-                arc_indices = self.myHero.GuidedArchetype(isRoot=False,
-                                                          inputs=pass_inputs)
+            if self.myHero.archetype in range(len(arc_collection)):
+                # This hero already has an Archetype, but hasn't finished adding the attributes
+                #  that it provides. No need to ask the user to choose an Archetype.
+                arc_indices = [self.myHero.archetype,
+                               self.myHero.archetype_modifier]
             else:
-                arc_indices = self.myHero.ConstructedArchetype(isRoot=False,
-                                                               inputs=pass_inputs)
-            if track_inputs:
-                print(notePrefix + tracker_close)
-##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            if self.myHero.proceed == 0:
-                # User canceled out; fix proceed & drop everything
-                self.myHero.proceed = 1
-                return
+                arc_indices = [99, 99]
+                decision = self.myHero.ChooseIndex(step_options,
+                                                   prompt="How would you like to choose an " + \
+                                                   "Archetype for " + self.myHero.hero_name + "?",
+                                                   inputs=inputs,
+                                                   width=50)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed and drop everything
+                    self.myHero.proceed = 1
+                    return
+                entry_index = decision[0]
+                inputs = decision[1]
+                if track_inputs:
+                    print(notePrefix + tracker_open)
+                pass_inputs = []
+                if len(inputs) > 0:
+                    if str(inputs[0]) != inputs[0]:
+                        pass_inputs = inputs.pop(0)
+                if step_options[entry_index].startswith("Guided"):
+                    arc_indices = self.myHero.GuidedArchetype(isRoot=False,
+                                                              inputs=pass_inputs)
+                else:
+                    arc_indices = self.myHero.ConstructedArchetype(isRoot=False,
+                                                                   inputs=pass_inputs)
+                if track_inputs:
+                    print(notePrefix + tracker_close)
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+                if self.myHero.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    self.myHero.proceed = 1
+                    return
             # Add the chosen Archetype
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -18927,11 +19090,20 @@ class HeroFrame(Frame):
                 # User selected a step to redo from
 ##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
 ##                      ") selected")
+                name = "your hero"
+                reference = "this hero's"
+                if self.myHero.hero_name:
+                    name = self.myHero.hero_name
+                elif self.myHero.alias:
+                    name = self.myHero.alias
+                if self.myHero.pronoun_set in range(len(pronouns)):
+                    reference = pronouns[self.myHero.pronoun_set][2]
+                message = name.capitalize() + "'s existing data from the " + \
+                          step_names[firstRedo] + \
+                          " step and later will be lost. Do you want to save " + reference + \
+                          " current data to a TXT file first?"
                 saveFirst = messagebox.askyesno(title="Save Changes?",
-                                                message="Your hero's existing data from the " + \
-                                                step_names[firstRedo] + " step and later will " + \
-                                                "be lost. Do you want to save this hero to a " + \
-                                                "TXT file first?")
+                                                message=message)
                 if saveFirst:
                     self.SaveTxt()
                 self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
@@ -22382,7 +22554,7 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getJo()
+firstHero = factory.getShikari()
 disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero

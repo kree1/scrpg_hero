@@ -281,7 +281,7 @@ Complete steps of hero creation are now reversible
 .	  Status Dice
 .	  Out Ability
 .	  Personality Bonus
-	Perform or skip...
+.	Perform or skip...
 .	AddBackground
 .	  Qualities
 .	  Principle
@@ -290,21 +290,25 @@ Complete steps of hero creation are now reversible
 .	  Yellow Abilities
 .	  Green Abilities (Power Source: not Training, Mystical, Supernatural, Alien, Genius, Cosmos, Unknown, or The Multiverse)
 .	  Power Source Bonus (Power Source: Training / Mystical / Supernatural / Alien / Genius / Cosmos / Unknown / The Multiverse)
-	 AddArchetype
-	  Primary PQ
-	  Secondary PQs
-	  Tertiary PQs
-	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-	  Bonus PQs
-	  Abilities
-	  Auxiliary Sheets
-	   Modular
-	   Form-Changer
-	   Minion-Maker
-	  Transition Type
-	  Divided Nature
-	  Principle
+.	 AddArchetype
+.	  Primary PQ
+.	  Secondary PQs
+.	  Tertiary PQs
+.	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+.	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
+.	  Bonus PQs (Archetype: Robot/Cyborg, Power Source: Training, Archetype: Modular & <4 Power dice)
+.	  Abilities
+.	   Modular
+.	   not Modular
+.	  Auxiliary Sheets
+.	   Modular
+.	   Form-Changer
+.	   Minion-Maker
+.	  Transition Type
+.	  Divided Nature
+.	  Principle
+.	   Divided
+.	   not Divided
 .	 AddPersonality
 .	  Roleplaying Quality
 .	  Status Dice
@@ -337,6 +341,10 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
+
+Bind Home and End to first and last entries in SelectFrame and ExpandFrame
+Bind Up and Down to individual OptionMenu objects in SwapFrame (you should be able to use these once you've selected an OptionMenu using Tab)
+Use SwapWindow to pick 2 Form Powers to upgrade in Yellow Form
  
 Default background is gray94
 
