@@ -168,166 +168,32 @@ Figure out titleWidth
 Complete steps of hero creation are now reversible
  Can we make this more granular?
   What would it take for the user to be able to stop in the middle of a step?
-   Data entry windows would need a "Cancel" button
-.	SelectFrame
-.	EntryFrame
-.	ExpandFrame
-.	SwapFrame
-.	PrincipleFrame
-.	AssignFrame
-   Hitting "Cancel" or the X button would need to send a message back to the Hero
+.  Data entry windows would need a "Cancel" button
+.  Hitting "Cancel" or the X button would need to send a message back to the Hero
 .	Hero.__init__: self.proceed = 1
 .	Hero.copy: mirror.proceed = self.proceed
-	Pass proceed to all data entry windows as success; windows set success to 0 if they're canceled
-.	 SelectWindow/SelectFrame
-.	 EntryWindow/EntryFrame
-.	 ExpandWindow/ExpandFrame
-.	 SwapWindow/SwapFrame
-.	 PrincipleWindow/PrincipleFrame
-.	 AssignWindow/AssignFrame
+.	Pass proceed to all data entry windows as success; windows set success to 0 if they're canceled
 .	When a Hero/HeroFrame method creates a window (explicitly or via ChooseIndex, EnterText, or ChooseDetailIndex), it passes success=IntVar(self.myFrame, 1)
-	After a Hero method creates a window explicitly, it sets self.proceed to the value of success
-.	 ChooseIndex
-.	 EnterText
-.	 ChooseDetailIndex
-.	 ChoosePQ
-.	 AddPrinciple
-.	 ChoosePrinciple
-.	 ChooseAbility
-.	 ChooseForm
-.	 AddArchetype
-.	 AddRedAbility
-.	 AddRetcon
-	After a Hero/HeroFrame method gets a choice from the user (explicitly or via method call), it checks the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
-~	 ChooseIndex / EnterText / ChooseDetailIndex do nothing but get one input from the user; once the corresponding window closes, their job is done even if it was successful
-.	 AddPQDie (1x ChooseIndex, 1x EnterText) (no return value)
-.	 ChoosePQDieSize (3x AddPQDie, 1x ChooseIndex) (returns set of unused dice)
-.	 ChoosePQ (2x ChoosePQDieSize, 1x ChooseIndex, 1x ExpandWindow) (returns [list of unused triplets, list of unused die sizes])
-.	 AssignAllPQ (1x ChoosePQ) (no return value)
-.	 AddPrinciple (1x ExpandWindow) (no return value)
-.	 ChoosePrinciple (2x AddPrinciple, 1x ChooseIndex, 1x ChooseDetailIndex, 1x PrincipleWindow) (no return value)
-.	 AddBackground (1x ChoosePQDieSize, 1x AssignAllPQ, 1x ChoosePrinciple) (returns set of Power Source dice... but why?)
-.	 GuidedBackground (2x ChooseIndex, 1x ChooseDetailIndex) (returns Background index)
-.	 ConstructedBackground (1x ChooseDetailIndex) (returns Background index)
-.	 ChooseAbility (7x ChooseIndex, 1x EnterText, 1x ChooseDetailIndex, 1x ExpandWindow) (returns set of unused abilities if add==1, the finished Ability otherwise)
-.	 AddPowerSource (7x ChoosePQ, 1x AssignAllPQ, 2x ChooseAbility, 3x ChooseIndex) (returns set of Archetype dice... but why?)
-.	 GuidedPowerSource (2x ChooseIndex, 1x ChooseDetailIndex) (returns Power Source index)
-.	 ConstructedPowerSource (1x ChooseDetailIndex) (returns Power Source index)
-.	 AddMode (1x ChooseAbility, 3x ChooseIndex, 1x EnterText) (no return value)
-~	 DisplayMode / ModeDetails / DisplayForm / FormDetails don't take any input
-.	 ChooseForm (1x ChooseAbility, 8x ChooseIndex, 1x EnterText, 1x ChooseDetailIndex, 1x SwapWindow) (no return value)
-.	 AddArchetype (1x ChooseForm, 4x AddMode, 6x ChooseAbility, 2x ChoosePrinciple, 2x AssignAllPQ, 6x ChoosePQ, 1x ChoosePQDieSize, 14x ChooseIndex, 1x EnterText, 5x ChooseDetailIndex, 4x AssignWindow, 3x SwapWindow) (no return value)
-.	 GuidedArchetype (3x ChooseIndex, 2x ChooseDetailIndex) (returns [Archetype index, modifier index])
-.	 ConstructedArchetype (2x ChooseDetailIndex) (returns [Archetype index, modifier index])
-.	 AddPersonality (1x ChooseAbility, 1x ChoosePQDieSize, 1x ChooseIndex) (no return value)
-.	 GuidedPersonality (3x ChooseIndex, 1x ChooseDetailIndex) (returns [Personality index])
-.	 ConstructedPersonality (2x ChooseIndex, 2x ChooseDetailIndex) (returns [Personality index] or [Heroic Personality index, Civilian Personality index, Out Ability index]
-.	 AddRedAbility (1x ChooseAbility, 1x ExpandWindow) (no return value)
-.	 AddRetcon (1x AddRedAbility, 1x ChoosePrinciple, 1x ChoosePQ, 8x ChooseIndex, 1x ChooseDetailIndex, 1x ExpandWindow, 2x SwapWindow) (no return value)
-~	 HealthRanges doesn't take any input
-.	 AddHealth (3x ChooseIndex) (no return value)
-??	 CreateHero (1x AddHealth, 1x AddRetcon, 1x AddRedAbility, 1x GuidedPersonality, 2x ConstructedPersonality, 3x AddPersonality, 1x GuidedArchetype, 1x ConstructedArchetype, 1x AddArchetype, 1x GuidedPowerSource, 1x ConstructedPowerSource, 1x AddPowerSource, 1x GuidedBackground, 1x ConstructedBackground, 1x AddBackground, 4x ChooseIndex) (no return value)
-	  What does "drop everything and revert" look like for this method?
-~	 Abilities / DisplayStep / StepDetails / DisplaySteps / AllStepDetails / display / details don't take any input
-.	 AddHeroBackground
-.	 AddHeroPowerSource
-.	 AddHeroArchetype
-.	 AddHeroPersonality
-.	 AddHeroRedAbilities
-.	 AddHeroRetcon
-.	 AddHeroHealth
-.	 RenameAny
-.	 RenameHero (3x)
-.	 RenameAbilities (2x)
-.	 RenameModes (2x)
-.	 RenameForms (2x)
-.	 RenamePQDice (2x)
-.	 SaveTXT (2x)
-.	 RevertHero
-  To resume from the middle of a step...
+.	After a Hero method creates a window explicitly, it sets self.proceed to the value of success
+,	After a Hero/HeroFrame method gets a choice from the user (explicitly or via method call), it checks the value of success- if it's 0, cancel everything, revert to the last previous version, & set self.proceed = 1
+,	 CreateHero (1x AddHealth, 1x AddRetcon, 1x AddRedAbility, 1x GuidedPersonality, 2x ConstructedPersonality, 3x AddPersonality, 1x GuidedArchetype, 1x ConstructedArchetype, 1x AddArchetype, 1x GuidedPowerSource, 1x ConstructedPowerSource, 1x AddPowerSource, 1x GuidedBackground, 1x ConstructedBackground, 1x AddBackground, 4x ChooseIndex) (no return value)
+. To resume from the middle of a step...
 .  HeroFrame needs better understanding of when a step is finished
-   AddHero* methods need to recognize when a Characteristic has been chosen but not completed, and skip the Guided*/Constructed* call if so
-.	AddHeroBackground
-.	AddHeroPowerSource
-	AddHeroArchetype
-.	AddHeroPersonality
-   Add[step] methods need to be split into modules by substep that can check whether they're already complete and be performed or skipped accordingly
-.	Completion checks...
-.	 AddBackground
-.	  Qualities
-.	  Principle
-.	 AddPowerSource
-.	  Powers
-.	  Yellow Abilities
-.	  Green Abilities (Power Source: not Training, Mystical, Supernatural, Alien, Genius, Cosmos, Unknown, or The Multiverse)
-.	  Power Source Bonus (Power Source: Training / Mystical / Supernatural / Alien / Genius / Cosmos / Unknown / The Multiverse)
-.	 AddArchetype
-.	  Primary PQ
-.	  Secondary PQs
-.	  Tertiary PQs 
-.	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-.	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-.	  Bonus PQs
-.	  Abilities
-.	  Auxiliary Sheets
-.	   Modular
-.	   Form-Changer
-.	   Minion-Maker
-.	  Transition Type
-.	  Divided Nature
-.	  Principle
-.	 AddPersonality
-.	  Roleplaying Quality
-.	  Status Dice
-.	  Out Ability
-.	  Personality Bonus
-.	Perform or skip...
-.	AddBackground
-.	  Qualities
-.	  Principle
-.	 AddPowerSource
-.	  Powers
-.	  Yellow Abilities
-.	  Green Abilities (Power Source: not Training, Mystical, Supernatural, Alien, Genius, Cosmos, Unknown, or The Multiverse)
-.	  Power Source Bonus (Power Source: Training / Mystical / Supernatural / Alien / Genius / Cosmos / Unknown / The Multiverse)
-.	 AddArchetype
-.	  Primary PQ
-.	  Secondary PQs
-.	  Tertiary PQs
-.	   secondary_count = 1 (Archetype: Physical Powerhouse / Blaster / Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-.	   secondary_count = 2 (Archetype: not Physical Powerhouse, Blaster, or Elemental Manipulator; Power Source: not Accident, Cursed, or Extradimensional)
-.	  Bonus PQs (Archetype: Robot/Cyborg, Power Source: Training, Archetype: Modular & <4 Power dice)
-.	  Abilities
-.	   Modular
-.	   not Modular
-.	  Auxiliary Sheets
-.	   Modular
-.	   Form-Changer
-.	   Minion-Maker
-.	  Transition Type
-.	  Divided Nature
-.	  Principle
-.	   Divided
-.	   not Divided
-.	 AddPersonality
-.	  Roleplaying Quality
-.	  Status Dice
-.	  Out Ability
-.	  Personality Bonus
-~	AddRedAbility already is a single module
-~	AddRetcon already has a single completeness check, which is all it needs because it only performs one substep
-.	AddHealth
- Can we track WHEN in a step an attribute was added/modified, e.g. "this one was the primary power/quality for the Archetype", and get StepDetails to show that?
-  Determine substeps...
-.  Background: Qualities, Principle
-.  Power Source: Powers, Yellow Abilities, Green Abilities, Power Source Bonus
-.  Archetype: Primary PQ, Secondary PQs, Tertiary PQs, Bonus PQs, Abilities, Auxiliary Sheets, Transition Type, Divided Nature, Principle
-.  Personality: Roleplaying Quality, Status Dice, Out Ability, Personality Bonus
-.  Red Abilities: Red Ability 1, Red Ability 2
-.  Retcon: Swap 2 Power dice, Swap 2 Quality dice, Change the Power/Quality used in an Ability, Add a d6 Power/Quality from ANY category, Upgrade Red status die by one size, Change one of your Principles to any other Principle, Gain another Red ability
-.  Health: Start with 8, Red die, Power/Quality, 4 or 1d8
+.  AddHero* methods need to recognize when a Characteristic has been chosen but not completed, and skip the Guided*/Constructed* call if so
+.  Add[step] methods need to be split into modules by substep that can check whether they're already complete and be performed or skipped accordingly
+. To resume from EARLIER in the middle of a step...
+.  Give RevertHero the option to reset to a specific completed substep
+ Track WHEN in a step an attribute was added/modified
+  Substeps...
+.  Background: Qualities -> Principle
+.  Power Source: Powers -> Yellow Abilities -> Green Abilities -> Power Source Bonus
+.  Archetype: Primary PQ -> Secondary PQs -> Tertiary PQs -> Bonus PQs -> Abilities -> Auxiliary Sheets -> Transition Type -> Divided Nature -> Principle
+.  Personality: Roleplaying Quality -> Status Dice -> Out Ability -> Personality Bonus
+.  Red Abilities: Red Ability 1 -> Red Ability 2
+.  Retcon: Swap 2 Power dice / Swap 2 Quality dice / Change the Power/Quality used in an Ability / Add a d6 Power/Quality from ANY category / Upgrade Red status die by one size / Change one of your Principles to any other Principle / Gain another Red ability
+.  Health: Start with 8 -> Red die -> Power/Quality -> 4 or 1d8
   Now that we track this, can we indicate it to the user during the process?
- ~ The number by itself doesn't tell the user anything, they need something more like a list of applicable substeps with the current one highlighted
+ ~ The number by itself doesn't tell the user anything; they would need something more like a list of applicable substeps with the current one highlighted
  
 Context Menu
  Entries...
@@ -342,8 +208,7 @@ Let EditNames rename...
 .	Modes
 .	dice
 
-Bind Home and End to first and last entries in SelectFrame and ExpandFrame
-Bind Up and Down to individual OptionMenu objects in SwapFrame (you should be able to use these once you've selected an OptionMenu using Tab)
+Bind Up and Down to move functions on individual OptionMenu objects in SwapFrame (you should be able to use these once you've selected an OptionMenu using Tab)
 Use SwapWindow to pick 2 Form Powers to upgrade in Yellow Form
  
 Default background is gray94

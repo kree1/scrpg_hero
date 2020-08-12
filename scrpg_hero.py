@@ -31,15 +31,15 @@ step_names = ["",
               "Retcon",
               "Health"]
 substep_names = [[],
-                 ["",
+                 ["Background Selection",
                   "Qualities",
                   "Principle"], # Background substeps
-                 ["",
+                 ["Power Source Selection",
                   "Powers",
                   "Yellow Abilities",
                   "Green Abilities",
                   "Power Source Bonus"], # Power Source substeps
-                 ["",
+                 ["Archetype Selection",
                   "Primary Power/Quality",
                   "Secondary Powers/Qualities",
                   "Tertiary Powers/Qualities",
@@ -49,7 +49,7 @@ substep_names = [[],
                   "Transition Type",
                   "Divided Nature",
                   "Principle"], # Archetype substeps
-                 ["",
+                 ["Personality Selection",
                   "Roleplaying Quality",
                   "Status Dice",
                   "Out Ability",
@@ -339,6 +339,27 @@ def dice_combo(die_sizes, results=[]):
         else:
             dice_text += " + " + str(dice_by_size[i]) + "d" + str(12-2*i)
     return dice_text
+
+def get_step_name(stepnum,
+                  branch=True):
+    # Returns the name of the step or substep indicated by stepnum.
+    # branch: should the parent step name be included if stepnum refers to a substep?
+    stepnum = 0.1 * math.floor(10 * stepnum)
+    parent_num = math.floor(stepnum)
+    child_num = 0
+    step_text = ""
+    if parent_num in range(1, len(step_names)):
+        step_text = step_names[parent_num]
+    if stepnum != parent_num:
+        child_num = int((stepnum % 1) * 10)
+        if parent_num in range(1, len(step_names)):
+            if child_num in range(len(substep_names[parent_num])):
+                child_name = substep_names[parent_num][child_num]
+                if branch:
+                    step_text += " - " + child_name
+                elif len(child_name) > 0:
+                    step_text = child_name
+    return step_text
 
 global invalid_message
 invalid_message = "Please choose a listed letter option."
@@ -7845,6 +7866,7 @@ class Hero:
                 print("OK! You've chosen " + your_bg[0] + " as your Background!")
                 self.SetPrevious(this_step)
                 self.background = bg_index
+                self.substeps_complete[this_step][0] = True
             # Substep 1: Qualities...
             quality_substep = 1
             quality_step = this_step + 0.1 * quality_substep
@@ -8738,6 +8760,7 @@ class Hero:
                 print("OK! You've chosen " + your_ps[0] + " as your Power Source!")
                 self.SetPrevious(this_step)
                 self.power_source = ps_index
+                self.substeps_complete[this_step][0] = True
             # Substep 1: Powers...
             power_substep = 1
             power_step = this_step + 0.1 * power_substep
@@ -10195,6 +10218,7 @@ class Hero:
                 self.SetPrevious(this_step)
                 self.archetype = arc_index
                 self.archetype_modifier = mod_index
+                self.substeps_complete[this_step][0] = True
             # Add Powers and Qualities from your base Archetype, regardless of modifiers
             # Substep 1: Primary Power/Quality...
             primary_substep = 1
@@ -12465,6 +12489,7 @@ class Hero:
                               100)
                 self.SetPrevious(this_step)
                 self.personality = pn_index
+                self.substeps_complete[this_step][0] = True
             # Substep 1: Roleplaying Quality...
             rpq_substep = 1
             rpq_step = this_step + 0.1 * rpq_substep
@@ -13039,7 +13064,7 @@ class Hero:
                       pronouns[self.pronoun_set][2] + " Retcon.")
                 slots_remaining = False
                 self.steps_complete[this_step] = True
-                self.substeps_complete[this_step][this_substep] = True
+                self.substeps_complete[this_step][ra_substep] = True
                 input()
         else:
             # Count the number of Red Abilities the hero already has from this step. If it's more
@@ -14111,9 +14136,13 @@ class Hero:
                 print("    " + status_zones[i] + " Zone: " + str(rn[i][0]) + "-" + str(rn[i][1]))
             self.steps_complete[this_step] = True
         self.RefreshFrame()
-    def CreateHero(self, health_roll=99, inputs=[]):
+    def CreateHero(self,
+                   health_roll=99,
+                   isRoot=True,
+                   inputs=[]):
         # Walks the user through hero creation from start to finish.
         # inputs: a list of text inputs to use automatically instead of prompting the user
+        # No return value.
         notePrefix = "### CreateHero: "
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
@@ -14134,6 +14163,11 @@ class Hero:
                                         inputs=inputs,
                                         width=50)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -14149,6 +14183,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             # Add the chosen Background
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -14161,6 +14200,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         # Choose a Power Source
         print("2. Power Source")
         if self.power_source in range(len(ps_collection)):
@@ -14175,6 +14219,11 @@ class Hero:
                                         inputs=inputs,
                                         width=50)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -14190,6 +14239,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             # Add the chosen Power Source
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -14202,6 +14256,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         # Choose an Archetype
         print("3. Archetype")
         if self.archetype in range(len(arc_collection)):
@@ -14218,6 +14277,11 @@ class Hero:
                                         inputs=inputs,
                                         width=50)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -14233,6 +14297,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             # Add the chosen Archetype
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -14246,6 +14315,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         # Choose one or more Personalities
         print("4. Personality")
         if self.personality in range(len(pn_collection)):
@@ -14269,6 +14343,11 @@ class Hero:
                                         inputs=inputs,
                                         width=50)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             entry_index = decision[0]
             inputs = decision[1]
             if track_inputs:
@@ -14282,6 +14361,11 @@ class Hero:
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
                 if pn_indices[0] not in range(len(pn_collection)):
                     print("There was a problem with your Guided result. " + \
                           "Let's try the Constructed method.")
@@ -14295,11 +14379,21 @@ class Hero:
                     if track_inputs:
                         print(notePrefix + tracker_close)
                     print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; fix proceed & drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
             else:
                 pn_indices = self.ConstructedPersonality(inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
                 print(notePrefix + "proceed = " + str(self.proceed))
+                if self.proceed == 0:
+                    # User canceled out; fix proceed & drop everything
+                    if isRoot:
+                        self.proceed = 1
+                    return
             # Add the chosen Personality/ies
             if track_inputs:
                 print(notePrefix + tracker_open)
@@ -14322,6 +14416,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         # Add 2 Red Abilities
         print("5. Red Abilities")
         rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
@@ -14340,6 +14439,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
             rs_abilities = [a for a in self.abilities if math.floor(a.step) == 5]
         # Take a Retcon
         print("6. Retcon")
@@ -14357,6 +14461,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         # Determine Max Health
         print("7. Health")
         if self.health_zones != [0,0,0]:
@@ -14374,6 +14483,11 @@ class Hero:
             if track_inputs:
                 print(notePrefix + tracker_close)
             print(notePrefix + "proceed = " + str(self.proceed))
+            if self.proceed == 0:
+                # User canceled out; fix proceed & drop everything
+                if isRoot:
+                    self.proceed = 1
+                return
         print("Done!")
     def Abilities(self, zone):
         # Returns the set of Abilities on this hero's main sheet that match the specified zone.
@@ -17247,7 +17361,7 @@ class HeroFrame(Frame):
                 charStep = indices[0] + 1
                 if self.firstIncomplete > charStep:
                     contextMenu.add_command(label="Reset Step " + str(charStep) + ": " + \
-                                            step_names[charStep] + "...",
+                                            get_step_name(charStep) + "...",
                                             command=lambda revert=charStep: \
                                             self.RevertHero(autoStep=revert))
             elif identifier in ["healthTitle", "healthValues"]:
@@ -17255,10 +17369,10 @@ class HeroFrame(Frame):
                 #  step of hero creation that gave them Health values, give the context menu the
                 #  option to reset to that step
                 if isinstance(self.myHero, Hero):
-                    healthStep = math.floor(self.myHero.health_step)
+                    healthStep = self.myHero.health_step
                     if self.firstIncomplete > healthStep:
                         contextMenu.add_command(label="Reset Step " + str(healthStep) + ": " + \
-                                                step_names[healthStep] + "...",
+                                                get_step_name(healthStep) + "...",
                                                 command=lambda revert=healthStep: \
                                                 self.RevertHero(autoStep=revert))
             elif identifier in ["statusTitle", "statusValues"]:
@@ -17267,11 +17381,11 @@ class HeroFrame(Frame):
                 #  hero creation that gave them those dice
                 if isinstance(self.myHero, Hero):
                     if isinstance(self.myHero.status_dice, Status):
-                        statusStep = math.floor(self.myHero.status_dice.step)
+                        statusStep = self.myHero.status_dice.step
                         if self.firstIncomplete > statusStep:
                             contextMenu.add_command(label="Reset Status (Step " + \
                                                     str(statusStep) + ": " + \
-                                                    step_names[statusStep] + ")...",
+                                                    get_step_name(statusStep) + ")...",
                                                     command=lambda revert=statusStep: \
                                                     self.RevertHero(autoStep=revert))
                         # If the hero's Status dice have been edited since they were added, give
@@ -17280,12 +17394,11 @@ class HeroFrame(Frame):
                         if len(self.myHero.status_dice.steps_modified) > 0:
                             lastStatusStep = statusStep
                             for s in self.myHero.status_dice.steps_modified:
-                                if self.firstIncomplete > math.floor(s) and \
-                                   math.floor(s) != lastStatusStep:
-                                    nextStep = math.floor(s)
+                                if self.firstIncomplete > s and s != lastStatusStep:
+                                    nextStep = s
                                     contextMenu.add_command(label="Revert edit to Status " + \
                                                             "(Step " + str(nextStep) + ": " + \
-                                                            step_names[nextStep] + ")...",
+                                                            get_step_name(nextStep) + ")...",
                                                             command=lambda revert=nextStep: \
                                                             self.RevertHero(autoStep=revert))
                                     lastStatusStep = nextStep
@@ -17323,11 +17436,12 @@ class HeroFrame(Frame):
                         else:
                             sourceDie = self.myHeroQualities[listIndex]
                 if sourceDie:
-                    dieStep = math.floor(sourceDie.step)
+                    dieStep = sourceDie.step
                     if self.firstIncomplete > dieStep:
                         contextMenu.add_command(label="Reset this " + \
                                                 categories_singular[isPower] + " (Step " + \
-                                                str(dieStep) + ": " + step_names[dieStep] + ")...",
+                                                str(dieStep) + ": " + get_step_name(dieStep) + \
+                                                ")...",
                                                 command=lambda revert=dieStep: \
                                                 self.RevertHero(autoStep=revert))
                     if len(sourceDie.steps_modified) > 0:
@@ -17336,13 +17450,12 @@ class HeroFrame(Frame):
                         #  it was modified
                         lastDieStep = dieStep
                         for s in sourceDie.steps_modified:
-                            if self.firstIncomplete > math.floor(s) and \
-                               math.floor(s) != lastDieStep:
-                                nextStep = math.floor(s)
+                            if self.firstIncomplete > s and s != lastDieStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this " + \
                                                         categories_singular[isPower] + \
                                                         " (Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
                                 lastDieStep = nextStep
@@ -17359,10 +17472,10 @@ class HeroFrame(Frame):
                     if prinIndex in range(len(self.myHeroPrinciples)):
                         sourcePrinciple = self.myHeroPrinciples[prinIndex]
                 if isinstance(sourcePrinciple, Principle):
-                    prinStep = math.floor(sourcePrinciple.step)
+                    prinStep = sourcePrinciple.step
                     if self.firstIncomplete > prinStep:
                         contextMenu.add_command(label="Reset this Principle (Step " + \
-                                                str(prinStep) + ": " + step_names[prinStep] + \
+                                                str(prinStep) + ": " + get_step_name(prinStep) + \
                                                 ")...",
                                                 command=lambda revert=prinStep: \
                                                 self.RevertHero(autoStep=revert))
@@ -17372,12 +17485,11 @@ class HeroFrame(Frame):
                         #  modified
                         lastPrinStep = prinStep
                         for s in sourcePrinciple.steps_modified:
-                            if self.firstIncomplete > math.floor(s) and \
-                               math.floor(s) != lastPrinStep:
-                                nextStep = math.floor(s)
+                            if self.firstIncomplete > s and s != lastPrinStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this Principle " + \
                                                         "(Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
                                 lastPrinStep = nextStep
@@ -17393,11 +17505,11 @@ class HeroFrame(Frame):
                         if indices[1] in range(len(self.myZoneAbilities[indices[0]])):
                             sourceAbility = self.myZoneAbilities[indices[0]][indices[1]]
                 if isinstance(sourceAbility, Ability):
-                    abilityStep = math.floor(sourceAbility.step)
+                    abilityStep = sourceAbility.step
                     if self.firstIncomplete > abilityStep:
                         contextMenu.add_command(label="Reset this Ability (Step " + \
                                                 str(abilityStep) + ": " + \
-                                                step_names[abilityStep] + ")...",
+                                                get_step_name(abilityStep) + ")...",
                                                 command=lambda revert=abilityStep: \
                                                 self.RevertHero(autoStep=revert))
                     if len(sourceAbility.steps_modified) > 0:
@@ -17406,12 +17518,11 @@ class HeroFrame(Frame):
                         #  modified
                         lastAbilityStep = abilityStep
                         for s in sourceAbility.steps_modified:
-                            if self.firstIncomplete > math.floor(s) and \
-                               math.floor(s) != lastAbilityStep:
-                                nextStep = math.floor(s)
+                            if self.firstIncomplete > s and s != lastAbilityStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this Ability " + \
                                                         "(Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
                                 lastAbilityStep = nextStep
@@ -17425,35 +17536,35 @@ class HeroFrame(Frame):
                     contextMenu.add_command(label="Rename " + self.auxWords[0] + "...",
                                             command=self.RenameModes)
                     # Find the earliest step a Mode was added
-                    modeStep = math.floor(self.myHero.other_modes[0].step)
+                    modeStep = self.myHero.other_modes[0].step
                     # Make a list of later steps when a Mode was added or edited
                     modeEditSteps = []
                     for md in self.myHero.other_modes:
-                        thisModeSource = math.floor(md.step)
+                        thisModeSource = md.step
                         if thisModeSource < modeStep:
                             if modeStep not in modeEditSteps:
                                 modeEditSteps.append(modeStep)
                             modeStep = thisModeSource
                         for s in md.steps_modified:
-                            if math.floor(s) not in modeEditSteps:
-                                modeEditSteps.append(math.floor(s))
+                            if s not in modeEditSteps:
+                                modeEditSteps.append(s)
                     if self.firstIncomplete > modeStep:
                         # Give the context menu the option to revert to the step when the first
                         #  Mode was added
                         contextMenu.add_command(label="Reset all " + self.auxWords[0] + \
                                                 " (Step " + str(modeStep) + ": " + \
-                                                step_names[modeStep] + ")...",
+                                                get_step_name(modeStep) + ")...",
                                                 command=lambda revert=modeStep: \
                                                 self.RevertHero(autoStep=revert))
                         lastModeStep = modeStep
                         modeEditSteps.sort()
                         for s in modeEditSteps:
-                            if math.floor(s) != lastModeStep:
-                                nextStep = math.floor(s)
+                            if s != lastModeStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to " + \
                                                         self.auxWords[0] + " (Step " + \
                                                         str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
                                 lastModeStep = nextStep
@@ -17464,50 +17575,49 @@ class HeroFrame(Frame):
                     contextMenu.add_command(label="Rename " + self.auxWords[1] + "...",
                                             command=self.RenameForms)
                     # Find the earliest step a Form was added
-                    formStep = math.floor(self.myHero.other_forms[0].step)
+                    formStep = self.myHero.other_forms[0].step
                     # Make a list of later steps when a Form was added or edited
                     formEditSteps = []
                     for fm in self.myHero.other_forms:
-                        thisFormSource = math.floor(fm.step)
+                        thisFormSource = fm.step
                         if thisFormSource < formStep:
                             if formStep not in formEditSteps:
                                 formEditSteps.append(formStep)
                             formStep = thisFormSource
                         for s in fm.steps_modified:
-                            if math.floor(s) not in formEditSteps:
-                                formEditSteps.append(math.floor(s))
+                            if s not in formEditSteps:
+                                formEditSteps.append(s)
                     if self.firstIncomplete > formStep:
                         # Give the context menu the option to revert to the step when the first
                         #  Form was added
                         contextMenu.add_command(label="Reset all " + self.auxWords[1] + \
                                                 " (Step " + str(formStep) + ": " + \
-                                                step_names[formStep] + ")...",
+                                                get_step_name(formStep) + ")...",
                                                 command=lambda revert=formStep: \
                                                 self.RevertHero(autoStep=revert))
                         lastFormStep = formStep
                         formEditSteps.sort()
                         for s in formEditSteps:
-                            if math.floor(s) != lastFormStep:
-                                nextStep = math.floor(s)
+                            if s != lastFormStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to " + \
                                                         self.auxWords[1] + " (Step " + \
                                                         str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         self.RevertHero(autoStep=revert))
                                 lastFormStep = nextStep
                 elif indices[0] == 2 and self.myAuxCounts[2] > 0:
                     # This is the View Minion Forms button and the hero has at least one Minion
                     #  Form
-##                    print(notePrefix + "activated from " + self.auxWords[2] + " button")
-                    minionStep = math.floor(self.myHero.mf_step)
-                    if minionStep in range(1,len(step_names)):
-                        if self.firstIncomplete > minionStep:
-                            contextMenu.add_command(label="Reset " + self.auxWords[2] + \
-                                                    " (Step " + str(minionStep) + ": " + \
-                                                    step_names[minionStep] + ")...",
-                                                    command=lambda revert=minionStep: \
-                                                    self.RevertHero(autoStep=revert))
+                    print(notePrefix + "activated from " + self.auxWords[2] + " button")
+                    minionStep = self.myHero.mf_step
+                    if self.firstIncomplete > minionStep:
+                        contextMenu.add_command(label="Reset " + self.auxWords[2] + " (Step " + \
+                                                str(minionStep) + ": " + \
+                                                get_step_name(minionStep) + ")...",
+                                                command=lambda revert=minionStep: \
+                                                self.RevertHero(autoStep=revert))
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
                    update=1):
@@ -17782,6 +17892,8 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
+            for b in self.textButtons:
+                b.config(state=NORMAL)
             # resetButton only needs to be available if myHero has been edited by any step of hero
             #  creation...
             if len(self.myHero.steps_modified) > 0:
@@ -19065,7 +19177,7 @@ class HeroFrame(Frame):
                 nextStep = math.floor(max(self.myHero.steps_modified)) + 1
             if False not in self.completeSteps:
                 nextStep = len(step_names)
-            if autoStep in range(1, nextStep):
+            if autoStep >= 1 and autoStep < nextStep:
                 firstRedo = autoStep
             else:
                 stepOptions = [str(x) + ": " + step_names[x] for x in range(1, nextStep)]
@@ -19082,37 +19194,72 @@ class HeroFrame(Frame):
                                         success=success,
                                         width=40)
 ##                print(notePrefix + "success = " + str(success.get()))
+                if success.get() == 0:
+                    # User canceled out; drop everything
+                    return
                 firstRedo = stepChoice.get()
-            if success.get() == 0:
-                # User canceled out; drop everything
-                return
-            elif firstRedo in range(1, nextStep):
+                substepIndex = 0
+                if firstRedo in range(1, len(step_names)) and step_names[firstRedo] != "Retcon":
+                    # The selected step has substeps. Check if the user wants to redo the whole
+                    #  step, or keep some of them.
+                    stepName = step_names[firstRedo]
+                    substepIndices = [x for x in range(len(substep_names[firstRedo])) \
+                                      if len(substep_names[firstRedo][x]) > 0 and \
+                                      self.myHero.substeps_complete[firstRedo][x] and \
+                                      (firstRedo + 0.1 * x) in self.myHero.steps_modified]
+                    substepOptions = [str(x) + ": " + substep_names[firstRedo][x] \
+                                      for x in substepIndices]
+                    if len(substepOptions) == 1:
+                        substepIndex = substepIndices[0]
+                    else:
+                        substepPrompt = "Choose a section of the " + stepName + \
+                                        " step to redo from:"
+                        substepChoice = IntVar(self, 0)
+                        success.set(1)
+                        question = SelectWindow(self,
+                                                substepPrompt,
+                                                substepOptions,
+                                                var=substepChoice,
+                                                title="Revert Hero: " + stepName,
+                                                success=success,
+                                                width=50)
+##                        print(notePrefix + "success = " + str(success.get()))
+                        if success.get() == 0:
+                            # User canceled out; drop everything
+                            return
+##                        print(notePrefix + "substepChoice: " + str(substepChoice.get()))
+                        substepIndex = substepIndices[substepChoice.get()]
+##                    print(notePrefix + "substepIndex: " + str(substepIndex))
+                    firstRedo = firstRedo + 0.1 * substepIndex
+##                    print(notePrefix + "firstRedo: " + str(firstRedo))
+            if firstRedo >= 1 and firstRedo < nextStep:
                 # User selected a step to redo from
 ##                print(notePrefix + "step " + str(firstRedo) + " (" + step_names[firstRedo] + \
 ##                      ") selected")
-                name = "your hero"
-                reference = "this hero's"
+                name = "Your hero"
+                possessive = "this hero's"
                 if self.myHero.hero_name:
                     name = self.myHero.hero_name
                 elif self.myHero.alias:
                     name = self.myHero.alias
                 if self.myHero.pronoun_set in range(len(pronouns)):
-                    reference = pronouns[self.myHero.pronoun_set][2]
-                message = name.capitalize() + "'s existing data from the " + \
-                          step_names[firstRedo] + \
-                          " step and later will be lost. Do you want to save " + reference + \
-                          " current data to a TXT file first?"
+                    possessive = pronouns[self.myHero.pronoun_set][2]
+                step = get_step_name(firstRedo,
+                                     branch=True)
+                message = name + "'s existing data from the " + step + \
+                          " step and later will be lost. Do you want to save " + \
+                          possessive + " current data to a TXT file first?"
                 saveFirst = messagebox.askyesno(title="Save Changes?",
                                                 message=message)
                 if saveFirst:
                     self.SaveTxt()
                 self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
-            elif firstRedo == nextStep:
-                # User selected not to redo
-                print(notePrefix + stepOptions[firstRedo] + " selected")
+##            elif firstRedo >= nextStep:
+##                # User selected not to redo
+##                print(notePrefix + stepOptions[firstRedo] + " selected")
             elif firstRedo == 0:
                 # User selected to revert to a blank hero
-                print(notePrefix + stepOptions[firstRedo] + " selected")
+##                print(notePrefix + stepOptions[firstRedo] + " selected")
                 self.Empty(buttonPressed=True)
         self.UpdateAll(self.myHero,
                        restore=paused)
@@ -19646,29 +19793,29 @@ class ModeFrame(Frame):
             if isinstance(sourceMode, Mode):
                 # If the widget is associated with a specific Mode, give the context menu the
                 #  option to revert to the step of hero creation when that Mode was added
-                modeStep = math.floor(sourceMode.step)
+                modeStep = sourceMode.step
                 if myHeroFrame.firstIncomplete > modeStep:
                     contextMenu.add_command(label="Reset this Mode (Step " + str(modeStep) + \
-                                            ": " + step_names[modeStep] + ")...",
+                                            ": " + get_step_name(modeStep) + ")...",
                                             command=lambda revert=modeStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
                 if len(sourceMode.steps_modified) > 0:
                     lastModeStep = modeStep
                     for s in sourceMode.steps_modified:
-                        if math.floor(s) != lastModeStep:
-                            nextStep = math.floor(s)
+                        if s != lastModeStep:
+                            nextStep = s
                             contextMenu.add_command(label="Revert edit to this Mode (Step " + \
-                                                    str(nextStep) + ": " + step_names[nextStep] + \
-                                                    ")...",
+                                                    str(nextStep) + ": " + \
+                                                    get_step_name(nextStep) + ")...",
                                                     command=lambda revert=nextStep: \
                                                     myHeroFrame.RevertHero(autoStep=revert))
                             lastModeStep = nextStep
             if isinstance(sourcePower, PQDie):
                 # If the widget is associated with a specific Power, give the context menu the
                 #  option to revert to the step of hero creation when that Power was added
-                powerStep = math.floor(sourcePower.step)
+                powerStep = sourcePower.step
                 contextMenu.add_command(label="Reset this Power (Step " + str(powerStep) + \
-                                        ": " + step_names[powerStep] + ")...",
+                                        ": " + get_step_name(powerStep) + ")...",
                                         command=lambda revert=powerStep: \
                                         myHeroFrame.RevertHero(autoStep=revert))
                 if len(sourcePower.steps_modified) > 0:
@@ -19676,11 +19823,11 @@ class ModeFrame(Frame):
                     #  the option to revert to the step(s) when it was modified
                     lastPowerStep = powerStep
                     for s in sourcePower.steps_modified:
-                        if math.floor(s) != lastPowerStep:
-                            nextStep = math.floor(s)
+                        if s != lastPowerStep:
+                            nextStep = s
                             contextMenu.add_command(label="Revert edit to this Power (Step " + \
-                                                    str(nextStep) + ": " + step_names[nextStep] + \
-                                                    ")...",
+                                                    str(nextStep) + ": " + \
+                                                    get_step_name(nextStep) + ")...",
                                                     command=lambda revert=nextStep: \
                                                     myHeroFrame.RevertHero(autoStep=revert))
                             lastPowerStep = nextStep
@@ -19691,10 +19838,10 @@ class ModeFrame(Frame):
                 if indices[0] in range(len(self.myModeAbilities)):
                     sourceAbility = self.myModeAbilities[indices[0]]
                 if isinstance(sourceAbility, Ability):
-                    abilityStep = math.floor(sourceAbility.step)
+                    abilityStep = sourceAbility.step
                     contextMenu.add_command(label="Reset this Ability (Step " + \
-                                            str(abilityStep) + ": " + step_names[abilityStep] + \
-                                            ")...",
+                                            str(abilityStep) + ": " + \
+                                            get_step_name(abilityStep) + ")...",
                                             command=lambda revert=abilityStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
                     if len(sourceAbility.steps_modified) > 0:
@@ -19703,12 +19850,11 @@ class ModeFrame(Frame):
                         #  modified
                         lastAbilityStep = abilityStep
                         for s in sourceAbility.steps_modified:
-                            if myHeroFrame.firstIncomplete > math.floor(s) and \
-                               math.floor(s) != lastAbilityStep:
-                                nextStep = math.floor(s)
+                            if myHeroFrame.firstIncomplete > s and s != lastAbilityStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this Ability " + \
                                                         "(Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         myHeroFrame.RevertHero(autoStep=revert))
                                 lastAbilityStep = nextStep
@@ -20141,9 +20287,9 @@ class MinionFrame(Frame):
                     if myHeroFrame.firstIncomplete > self.myHero.mf_step:
                         minionsComplete = True
                 if minionsComplete:
-                    minionStep = math.floor(self.myHero.mf_step)
+                    minionStep = self.myHero.mf_step
                     contextMenu.add_command(label="Reset Minion Forms (Step " + str(minionStep) + \
-                                            ": " + step_names[minionStep] + ")...",
+                                            ": " + get_step_name(minionStep) + ")...",
                                             command=lambda revert=minionStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
         contextMenu.post(event.x_root, event.y_root)
@@ -20535,8 +20681,8 @@ class FormFrame(Frame):
         contextMenu = Menu(self, tearoff=0)
         contextMenu.config(font=self.dispFont)
         label = event.widget
-        # If the widget has text, give the context menu the option to copy that text
         if label.cget("text"):
+            # If the widget has text, give the context menu the option to copy that text
             flatText = label.cget("text").replace("\n","")
             contextMenu.add_command(label="Copy Text",
                                     command=lambda arg1=flatText : self.ClipboardWrite(arg1))
@@ -20584,10 +20730,10 @@ class FormFrame(Frame):
                 if isinstance(sourceForm, Form):
                     # If the widget is associated with a specific Form, give the context menu the
                     #  option to revert to the step of hero creation when that Form was added
-                    formStep = math.floor(sourceForm.step)
+                    formStep = sourceForm.step
                     if myHeroFrame.firstIncomplete > formStep:
                         contextMenu.add_command(label="Reset this Form (Step " + str(formStep) + \
-                                                ": " + step_names[formStep] + ")...",
+                                                ": " + get_step_name(formStep) + ")...",
                                                 command=lambda revert=formStep: \
                                                 myHeroFrame.RevertHero(autoStep=revert))
                         lastFormStep = formStep
@@ -20595,11 +20741,11 @@ class FormFrame(Frame):
                             # If the associated Form has been modified, give the context menu the
                             #  option to revert to the step(s) when it was modified
                             for s in sourceForm.steps_modified:
-                                if math.floor(s) != lastFormStep:
-                                    nextStep = math.floor(s)
+                                if s != lastFormStep:
+                                    nextStep = s
                                     contextMenu.add_command(label="Revert edit to this Form " + \
                                                             "(Step " + str(nextStep) + \
-                                                            ": " + step_names[nextStep] + \
+                                                            ": " + get_step_name(nextStep) + \
                                                             ")...",
                                                             command=lambda revert=nextStep: \
                                                             myHeroFrame.RevertHero(autoStep=revert))
@@ -20626,21 +20772,21 @@ class FormFrame(Frame):
                             if indices[2] in range(len(sourceForm.quality_dice)):
                                 sourcePQ = sourceForm.quality_dice[indices[2]]
                 if isinstance(sourcePQ, PQDie):
-                    pqStep = math.floor(sourcePQ.step)
+                    pqStep = sourcePQ.step
                     contextMenu.add_command(label="Reset this " + \
                                             categories_singular[sourcePQ.ispower] + " (Step " + \
-                                            str(pqStep) + ": " + step_names[pqStep] + ")...",
+                                            str(pqStep) + ": " + get_step_name(pqStep) + ")...",
                                             command=lambda revert=pqStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
                     if len(sourcePQ.steps_modified) > 0:
                         lastPQStep = pqStep
                         for s in sourcePQ.steps_modified:
-                            if math.floor(s) != lastPQStep:
-                                nextStep = math.floor(s)
+                            if s != lastPQStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this " + \
                                                         categories_singular[sourcePQ.ispower] + \
                                                         " (Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         myHeroFrame.RevertHero(autoStep=revert))
                                 lastPQStep = nextStep
@@ -20652,10 +20798,10 @@ class FormFrame(Frame):
                     if indices[1] in range(len(self.myFormInfo[indices[0]][5])):
                         sourceAbility = self.myFormInfo[indices[0]][5][indices[1]]
                 if isinstance(sourceAbility, Ability):
-                    abilityStep = math.floor(sourceAbility.step)
+                    abilityStep = sourceAbility.step
                     contextMenu.add_command(label="Reset this Ability (Step " + \
-                                            str(abilityStep) + ": " + step_names[abilityStep] + \
-                                            ")...",
+                                            str(abilityStep) + ": " + \
+                                            get_step_name(abilityStep) + ")...",
                                             command=lambda revert=abilityStep: \
                                             myHeroFrame.RevertHero(autoStep=revert))
                     if len(sourceAbility.steps_modified) > 0:
@@ -20664,12 +20810,12 @@ class FormFrame(Frame):
                         #  modified
                         lastAbilityStep = abilityStep
                         for s in sourceAbility.steps_modified:
-                            if myHeroFrame.firstIncomplete > math.floor(s) and \
-                               math.floor(s) != lastAbilityStep:
-                                nextStep = math.floor(s)
+                            if myHeroFrame.firstIncomplete > s and \
+                               s != lastAbilityStep:
+                                nextStep = s
                                 contextMenu.add_command(label="Revert edit to this Ability " + \
                                                         "(Step " + str(nextStep) + ": " + \
-                                                        step_names[nextStep] + ")...",
+                                                        get_step_name(nextStep) + ")...",
                                                         command=lambda revert=nextStep: \
                                                         myHeroFrame.RevertHero(autoStep=revert))
                                 lastAbilityStep = nextStep
@@ -20931,6 +21077,9 @@ class SelectFrame(Frame):
         # Bind up/down arrow keys to change selection
         self.bind("<Down>", self.nextoption)
         self.bind("<Up>", self.prevoption)
+        # Bind Home/End keys to first/last selection
+        self.bind("<Home>", self.firstoption)
+        self.bind("<End>", self.lastoption)
         (self.numCols, self.numRows) = self.grid_size()
         # Set initial wraplength for all text widgets
         self.renew()
@@ -20974,6 +21123,13 @@ class SelectFrame(Frame):
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index-1])
                 self.renew()
+    def firstoption(self, event=None):
+        self.myString.set(self.myOptions[0])
+        self.renew()
+    def lastoption(self, event=None):
+        if len(self.myOptions) > 0:
+            self.myString.set(self.myOptions[len(self.myOptions)-1])
+            self.renew()
     def ClipboardCopy(self, event=None):
         notePrefix = "### SelectFrame.ClipboardCopy: "
         # Only one widget in SelectFrame contains text, so we don't need to check which widget
@@ -21523,8 +21679,12 @@ class ExpandFrame(Frame):
         self.bind("<Return>", self.finish)
         # Bind the Escape key to the same method as the Cancel button
         self.bind("<Escape>", self.myParent.cancel)
+        # Bind Up/Down arrow keys to change selection
         self.bind("<Up>", self.prevoption)
         self.bind("<Down>", self.nextoption)
+        # Bind Home/End keys to first/last selection
+        self.bind("<Home>", self.firstoption)
+        self.bind("<End>", self.lastoption)
         self.expand()
     def expand(self,
                edited=False,
@@ -21555,6 +21715,13 @@ class ExpandFrame(Frame):
                 index = self.myOptions.index(self.myString.get())
                 self.myString.set(self.myOptions[index-1])
                 self.expand()
+    def firstoption(self, event=None):
+        self.myString.set(self.myOptions[0])
+        self.expand()
+    def lastoption(self, event=None):
+        if len(self.myOptions) > 0:
+            self.myString.set(self.myOptions[len(self.myOptions)-1])
+            self.expand()
     def ClipboardCopy(self, event=None):
         notePrefix = "### ExpandFrame.ClipboardCopy: "
         label = event.widget
@@ -22554,11 +22721,11 @@ root.columnconfigure(0, weight=1)
 # Testing HeroFrame...
 
 # Using the sample heroes (full or partial)
-firstHero = factory.getShikari()
-disp_frame = HeroFrame(root, hero=firstHero)
+##firstHero = factory.getLori()
+##disp_frame = HeroFrame(root, hero=firstHero)
 
 # Using a not-yet-constructed hero
-##disp_frame = HeroFrame(root)
+disp_frame = HeroFrame(root)
 
 disp_frame.grid(row=0, column=0, sticky=N+E+S+W)
 root.bind("<Configure>", disp_frame.Resize)
