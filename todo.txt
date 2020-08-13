@@ -207,8 +207,6 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
-
-Use SwapWindow to pick 2 Form Powers to upgrade in Yellow Form
  
 Default background is gray94
 

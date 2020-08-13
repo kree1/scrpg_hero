@@ -10013,30 +10013,62 @@ class Hero:
             entry_options = string.ascii_uppercase[0:len(form_power_dice)+1]
             entry_choice = ' '
             while upgraded < 2 and entry_choice != entry_options[len(power_indices)]:
-                decision = self.ChooseIndex([str(form_power_dice[x]) for x in power_indices],
-                                            prompt="Choose a Power die to increase by one size" + \
-                                            " in this Form:",
-                                            inputs=inputs,
-                                            title=title,
-                                            width=50)
-##                print(notePrefix + "proceed = " + str(self.proceed))
-                if self.proceed == 0:
-                    # User canceled out; drop everything
-                    if isRoot:
-                        self.proceed = 1
-                    return
-                entry_index = decision[0]
-                inputs = decision[1]
-                if entry_index in range(len(power_indices)):
-                    # User selected a Power to upgrade
-                    die_index = power_indices.pop(entry_index)
-                    upgrade_die = form_power_dice[die_index]
-                    upgrade_die.SetPrevious(this_step)
-                    upgrade_die.diesize = upgrade_die.diesize + 2
-                    print("OK! " + upgrade_die.flavorname + " is now a d" + \
-                          str(upgrade_die.diesize) + " in " + form_name + ".")
-                    upgraded += 1
-                    entry_choice = ' '
+                if self.UseGUI(inputs) and upgraded == 0:
+                    # Create a SwapWindow to choose both Powers to upgrade at once.
+                    prompt = "Choose 2 Power dice to increase by one size in this Form:"
+                    answer0 = IntVar()
+                    answer1 = IntVar()
+                    success = IntVar(self.myFrame, 1)
+                    question = SwapWindow(self.myFrame,
+                                          prompt,
+                                          [str(form_power_dice[x]) for x in power_indices],
+                                          answer0,
+                                          answer1,
+                                          title=title,
+                                          success=success,
+                                          width=50)
+                    self.proceed = success.get()
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    entry_indices = [answer0.get(), answer1.get()]
+                    # Upgrade both Powers
+                    for upgrade_index in entry_indices:
+                        die_index = power_indices[upgrade_index]
+                        upgrade_die = form_power_dice[die_index]
+                        upgrade_die.SetPrevious(this_step)
+                        upgrade_die.diesize += 2
+                        print("OK! " + upgrade_die.flavorname + " is now a d" + \
+                              str(upgrade_die.diesize) + " in " + form_name + ".")
+                        upgraded += 1
+                else:
+                    decision = self.ChooseIndex([str(form_power_dice[x]) for x in power_indices],
+                                                prompt="Choose a Power die to increase by one " + \
+                                                "size in this Form:",
+                                                inputs=inputs,
+                                                title=title,
+                                                width=50)
+##                    print(notePrefix + "proceed = " + str(self.proceed))
+                    if self.proceed == 0:
+                        # User canceled out; drop everything
+                        if isRoot:
+                            self.proceed = 1
+                        return
+                    entry_index = decision[0]
+                    inputs = decision[1]
+                    if entry_index in range(len(power_indices)):
+                        # User selected a Power to upgrade
+                        die_index = power_indices.pop(entry_index)
+                        upgrade_die = form_power_dice[die_index]
+                        upgrade_die.SetPrevious(this_step)
+                        upgrade_die.diesize = upgrade_die.diesize + 2
+                        print("OK! " + upgrade_die.flavorname + " is now a d" + \
+                              str(upgrade_die.diesize) + " in " + form_name + ".")
+                        upgraded += 1
+                        entry_choice = ' '
         # Have the user fill in the form's Ability
         f_ability = ""
         if track_inputs:
@@ -18088,7 +18120,8 @@ class HeroFrame(Frame):
         self.SetFirstIncomplete()
         if self.firstIncomplete > this_step:
             # This hero already finished the Background step.
-            messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
+            messagebox.showerror("Error",
+                                 self.myHero.hero_name + " already has the " + \
                                  bg_collection[self.myHero.background][0] + " Background.")
         else:
             if self.myHero.background in range(len(bg_collection)):
@@ -18145,14 +18178,14 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
-                  str(self.myHero.substeps_complete[this_step]))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+##                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPowerSource(self, inputs=[]):
@@ -18169,7 +18202,8 @@ class HeroFrame(Frame):
         self.SetFirstIncomplete()
         if self.firstIncomplete > this_step:
             # This hero already finished the Power Source step.
-            messagebox.showerror("Error", self.myHero.hero_name + " already has the " + \
+            messagebox.showerror("Error",
+                                 self.myHero.hero_name + " already has the " + \
                                  ps_collection[self.myHero.power_source][0] + " Power Source.")
         else:
             if self.myHero.power_source in range(len(ps_collection)):
@@ -18226,14 +18260,14 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
-                  str(self.myHero.substeps_complete[this_step]))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+##                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroArchetype(self, inputs=[]):
@@ -18253,7 +18287,9 @@ class HeroFrame(Frame):
             arc_text = arc_collection[self.myHero.archetype][0]
             if self.myHero.archetype_modifier in range(1,len(arc_modifiers)):
                 arc_text = arc_modifiers[self.myHero.archetype_modifier][0] + ":" + arc_text
-            print(indent + self.myHero.hero_name + " already has the " + arc_text + " Archetype.")
+            messagebox.showerror("Error",
+                                 self.myHero.hero_name + " already has the " + arc_text + \
+                                 " Archetype.")
         else:
             if self.myHero.archetype in range(len(arc_collection)):
                 # This hero already has an Archetype, but hasn't finished adding the attributes
@@ -18309,14 +18345,14 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
-                  str(self.myHero.substeps_complete[this_step]))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##            print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+##                  str(self.myHero.substeps_complete[this_step]))
             self.UpdateAll(self.myHero,
                            restore=paused)
     def AddHeroPersonality(self, inputs=[]):
@@ -18339,7 +18375,8 @@ class HeroFrame(Frame):
                           " Personality in " + self.myHero.dv_tags[1] + " form and the " + \
                           pn_collection[self.myHero.dv_personality][0] + " Personality in " + \
                           self.myHero.dv_tags[0] + " form."
-            print(indent + self.myHero.hero_name + " already has " + pn_text)
+            messagebox.showerror("Error",
+                                 self.myHero.hero_name + " already has " + pn_text)
         else:
             if self.myHero.personality in range(len(pn_collection)):
                 # This hero already has a Personality, but hasn't finished adding the attributes
@@ -18384,8 +18421,9 @@ class HeroFrame(Frame):
                         self.myHero.proceed = 1
                         return
                     if pn_indices[0] not in range(len(pn_collection)):
-                        print("There was a problem with your Guided result. " + \
-                              "Let's try the Constructed method.")
+                        messagebox.showerror("Error",
+                                             "There was a problem with your Guided result. " + \
+                                             "Let's try the Constructed method.")
                         if track_inputs:
                             print(notePrefix + tracker_open)
                         pass_inputs = []
@@ -18438,12 +18476,12 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
 ##        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
 ##              str(self.myHero.substeps_complete[this_step]))
         self.UpdateAll(self.myHero,
@@ -18475,12 +18513,12 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
                 canceled = True
             self.SetFirstIncomplete()
         self.UpdateAll(self.myHero,
@@ -18510,12 +18548,12 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
         self.UpdateAll(self.myHero,
                        restore=paused)
     def AddHeroHealth(self, health_roll=99, inputs=[]):
@@ -18544,14 +18582,14 @@ class HeroFrame(Frame):
 ##            print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
             if self.myHero.proceed == 0:
                 # User canceled out while modifying myHero; restore to last saved version
-                print(notePrefix + "first False in steps_complete: " + \
-                      str(self.myHero.steps_complete.index(False)))
-                print(notePrefix + "last started substep: " + \
-                      str(max(self.myHero.steps_modified)))
+##                print(notePrefix + "first False in steps_complete: " + \
+##                      str(self.myHero.steps_complete.index(False)))
+##                print(notePrefix + "last started substep: " + \
+##                      str(max(self.myHero.steps_modified)))
                 self.RetrievePreviousHero()
-                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
-        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
-              str(self.myHero.substeps_complete[this_step]))
+##                print(notePrefix + "myHero.proceed = " + str(self.myHero.proceed))
+##        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
+##              str(self.myHero.substeps_complete[this_step]))
         print("Done!")
         self.UpdateAll(self.myHero,
                        restore=paused)
