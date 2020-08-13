@@ -131,8 +131,8 @@ x	Hero.AddRetcon, 12572 (choose a Principle category)
 Figure out titleWidth
   
 Complete steps of hero creation are now reversible
- Can we make this more granular?
-  What would it take for the user to be able to stop in the middle of a step?
+.Can we make this more granular?
+. To stop in the middle of a step...
 .  Data entry windows would need a "Cancel" button
 .  Hitting "Cancel" or the X button would need to send a message back to the Hero
 .	Hero.__init__: self.proceed = 1
@@ -172,6 +172,8 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
+
+Replace "Prev Hero" and "Next Hero" with "Select Sample Hero"
  
 Default background is gray94
 

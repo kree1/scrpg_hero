@@ -542,6 +542,19 @@ class PQDie:
             else:
                 return ancestor
         return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the PQDie as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
 
 # Class representing a set of three status dice
 class Status:
@@ -638,6 +651,19 @@ class Status:
         ancestor = self.copy()
         while len(ancestor.steps_modified) > 0:
             if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Status as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
                 ancestor = ancestor.prev_version
             else:
                 return ancestor
@@ -1281,6 +1307,19 @@ class Principle:
         ancestor = self.copy()
         while len(ancestor.steps_modified) > 0:
             if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Principle as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
                 ancestor = ancestor.prev_version
             else:
                 return ancestor
@@ -2071,6 +2110,19 @@ class Ability:
         ancestor = self.copy()
         while len(ancestor.steps_modified) > 0:
             if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Ability as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
                 ancestor = ancestor.prev_version
             else:
                 return ancestor
@@ -5827,6 +5879,19 @@ class Mode:
             else:
                 return ancestor
         return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Mode as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
 
 # Class representing one of a hero's alternate Forms
 class Form:
@@ -5923,6 +5988,19 @@ class Form:
         ancestor = self.copy()
         while len(ancestor.steps_modified) > 0:
             if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Form as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
                 ancestor = ancestor.prev_version
             else:
                 return ancestor
@@ -6687,6 +6765,8 @@ class Hero:
         mirror.archetype = self.archetype
         mirror.archetype_modifier = self.archetype_modifier
         mirror.dv_tags = [x for x in self.dv_tags]
+        mirror.dv_transition = self.dv_transition
+        mirror.dv_nature = self.dv_nature
         mirror.min_forms = [x for x in self.min_forms]
         mirror.mf_step = self.mf_step
         mirror.personality = self.personality
@@ -6723,6 +6803,19 @@ class Hero:
         ancestor = self.copy()
         while len(ancestor.steps_modified) > 0:
             if max(ancestor.steps_modified) >= stepnum:
+                ancestor = ancestor.prev_version
+            else:
+                return ancestor
+        return ancestor
+    def RetrieveAt(self, stepnum):
+        # Returns a copy of the Hero as it existed immediately following the specified step of
+        #  character creation.
+        if stepnum < 1:
+            print("Error! " + str(stepnum) + " is too small to be a valid step index.")
+            return self
+        ancestor = self.copy()
+        while len(ancestor.steps_modified) > 0:
+            if max(ancestor.steps_modified) > stepnum:
                 ancestor = ancestor.prev_version
             else:
                 return ancestor
@@ -9536,8 +9629,8 @@ class Hero:
             return modeString
         else:
             mode = self.other_modes[index]
-            if stepnum+0.1 > min(range(len(step_names))):
-                mode = mode.RetrievePrior(stepnum+0.1)
+            if stepnum >= min(range(len(step_names))):
+                mode = mode.RetrieveAt(stepnum)
             if codename:
                 modeString += split_text(self.hero_name,
                                          width=width,
@@ -9567,8 +9660,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in mode.power_dice:
-                    if stepnum+0.1 > min(range(len(step_names))):
-                        d = d.RetrievePrior(stepnum+0.1)
+                    if stepnum >= min(range(len(step_names))):
+                        d = d.RetrieveAt(stepnum)
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
@@ -9581,8 +9674,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in mode.quality_dice:
-                    if stepnum+0.1 > min(range(len(step_names))):
-                        d = d.RetrievePrior(stepnum+0.1)
+                    if stepnum >= min(range(len(step_names))):
+                        d = d.RetrieveAt(stepnum)
                     modeString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
@@ -9592,8 +9685,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 alt_status = self.dv_status
-                if stepnum+0.1 > min(range(len(step_names))):
-                    alt_status = self.dv_status.RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    alt_status = self.dv_status.RetrieveAt(stepnum)
                 for i in range(len(alt_status.array())):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
                                                     str(alt_status.array()[i]),
@@ -9609,8 +9702,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 modeStatus = mode.status_dice
-                if stepnum+0.1 > min(range(len(step_names))):
-                    modeStatus = mode.status_dice.RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    modeStatus = mode.status_dice.RetrieveAt(stepnum)
                 for i in range(len(modeStatus.array())):
                     modeString += "\n" + split_text(status_zones[i] + ": " + \
                                                     str(modeStatus.array()[i]),
@@ -9638,8 +9731,8 @@ class Hero:
                                                 prefix=prefix)
             for i in range(len(mode.abilities)):
                 thisAbility = mode.abilities[i]
-                if stepnum+0.1 > min(range(len(step_names))):
-                    thisAbility = mode.abilities[i].RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    thisAbility = mode.abilities[i].RetrieveAt(stepnum)
                 modeString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
                                                          indented=indented,
@@ -9691,8 +9784,8 @@ class Hero:
             return ""
         else:
             form = self.other_forms[index]
-            if stepnum+0.1 > min(range(len(step_names))):
-                form = form.RetrievePrior(stepnum+0.1)
+            if stepnum >= min(range(len(step_names))):
+                form = form.RetrieveAt(stepnum)
             if codename:
                 formString = split_text(self.hero_name,
                                         width=width,
@@ -9738,8 +9831,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in form.power_dice:
-                    if stepnum+0.1 > min(range(len(step_names))):
-                        d = d.RetrievePrior(stepnum+0.1)
+                    if stepnum >= min(range(len(step_names))):
+                        d = d.RetrieveAt(stepnum)
                     formString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
@@ -9756,8 +9849,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 for d in form.quality_dice:
-                    if stepnum+0.1 > min(range(len(step_names))):
-                        d = d.RetrievePrior(stepnum+0.1)
+                    if stepnum >= min(range(len(step_names))):
+                        d = d.RetrieveAt(stepnum)
                     formString += "\n" + split_text(str(d),
                                                     width=width,
                                                     prefix=prefix+indent)
@@ -9768,8 +9861,8 @@ class Hero:
                                                 width=width,
                                                 prefix=prefix)
                 alt_status = self.dv_status
-                if stepnum+0.1 > min(range(len(step_names))):
-                    alt_status = self.dv_status.RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    alt_status = self.dv_status.RetrieveAt(stepnum)
                 for i in range(len(alt_status.array())):
                     formString += "\n" + split_text(status_zones[i] + ": " + \
                                                     str(alt_status.array()[i]),
@@ -9781,8 +9874,8 @@ class Hero:
                                                 prefix=prefix)
             else:
                 fm_status = form.status_dice
-                if stepnum+0.1 > min(range(len(step_names))):
-                    fm_status = form.status_dice.RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    fm_status = form.status_dice.RetrieveAt(stepnum)
                 for i in range(len(form.status_dice.array())):
                     formString += "\n" + split_text(status_zones[i] + ": " + \
                                                     str(fm_status.array()[i]),
@@ -9798,8 +9891,8 @@ class Hero:
                                                 prefix=prefix)
             for i in range(len(form.abilities)):
                 thisAbility = form.abilities[i]
-                if stepnum+0.1 > min(range(len(step_names))):
-                    thisAbility = form.abilities[i].RetrievePrior(stepnum+0.1)
+                if stepnum >= min(range(len(step_names))):
+                    thisAbility = form.abilities[i].RetrieveAt(stepnum)
                 formString += "\n" + thisAbility.details(width=width,
                                                          prefix=prefix+indent,
                                                          indented=indented,
@@ -12689,7 +12782,8 @@ class Hero:
                             #  corresponding Divided Form.
                             impulsive_prompt = "Choose a " + self.dv_tags[i] + \
                                                " Power or Quality to upgrade by one size:"
-                            matching_forms = [form for form in self.other_forms if form[6] == i]
+                            matching_forms = [form for form in self.other_forms \
+                                              if form.dv_index == i]
                         for this_form in matching_forms:
                             # Add less-than-maximal Powers and Qualities from this form, if they
                             #  don't already have dice in upgrade_pqs
@@ -12704,9 +12798,11 @@ class Hero:
                                                 if d.diesize < max(legal_dice) \
                                                 and d.triplet() not in \
                                                 [ex.triplet() for ex in upgrade_pqs]]
-                        # Check if the hero has Divided Psyche. If so, their Heroic Form can only
-                        #  use Powers, and their Civilian Form can only use Qualities.
-                        if dn_collection.index(a_divided_psyche) == self.dv_nature:
+                        # Check if the hero has Divided Psyche. If so, their Heroic Personality
+                        #  can only use Powers, and their Civilian Personality can only use
+                        #  Qualities.
+                        if dn_collection.index(a_divided_psyche) == self.dv_nature and \
+                           has_multiple:
                             if i == 1:
                                 upgrade_pqs = [d for d in upgrade_pqs if d.ispower == 1]
                             else:
@@ -14669,7 +14765,7 @@ class Hero:
                         else:
                             prinPrefix = secPrefix + indent
                         for r in step_principles:
-                            rPrime = r.RetrievePrior(substep+0.1)
+                            rPrime = r.RetrieveAt(substep)
                             substepText += "\n" + rPrime.details(width=width,
                                                                  prefix=prinPrefix,
                                                                  green=False,
@@ -14684,7 +14780,7 @@ class Hero:
                                                              prefix=secPrefix+indent)
                             powerPrefix = secPrefix + indent * 2
                         for d in step_powers:
-                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                            substepText += "\n" + split_text(str(d.RetrieveAt(substep)),
                                                              width=width,
                                                              prefix=powerPrefix)
                     if len(step_qualities) > 0:
@@ -14696,7 +14792,7 @@ class Hero:
                                                              prefix=secPrefix+indent)
                             qualityPrefix = secPrefix + indent * 2
                         for d in step_qualities:
-                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                            substepText += "\n" + split_text(str(d.RetrieveAt(substep)),
                                                              width=width,
                                                              prefix=qualityPrefix)
                     if self.dv_status.array() != self.status_dice.array() and \
@@ -14705,7 +14801,7 @@ class Hero:
                                                          width=width,
                                                          prefix=secPrefix+indent)
                         statusPrefix = secPrefix + indent * 2
-                        dPrime = self.dv_status.RetrievePrior(substep+0.1)
+                        dPrime = self.dv_status.RetrieveAt(substep)
                         for x in range(len(dPrime.array())):
                             substepText += "\n" + split_text(status_zones[x] + ": " + \
                                                              str(dPrime.array()[x]),
@@ -14730,7 +14826,7 @@ class Hero:
                                                                  width=width,
                                                                  prefix=secPrefix+indent)
                             statusPrefix = secPrefix + indent * 2
-                        sPrime = self.status_dice.RetrievePrior(substep+0.1)
+                        sPrime = self.status_dice.RetrieveAt(substep)
                         for x in range(len(sPrime.array())):
                             substepText += "\n" + split_text(status_zones[x] + ": " + \
                                                              str(sPrime.array()[x]),
@@ -14749,7 +14845,7 @@ class Hero:
                                                                  prefix=secPrefix+indent)
                                 abilityPrefix = secPrefix + indent * 2
                             for a in step_zone_abilities:
-                                aPrime = a.RetrievePrior(substep+0.1)
+                                aPrime = a.RetrieveAt(substep)
                                 substepText += "\n" + aPrime.details(prefix=abilityPrefix,
                                                                      width=width,
                                                                      indented=indented,
@@ -14847,7 +14943,7 @@ class Hero:
                                                              prefix=secPrefix+indent)
                             powerPrefix = secPrefix + indent * 2
                         for d in modified_powers:
-                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                            substepText += "\n" + split_text(str(d.RetrieveAt(substep)),
                                                              width=width,
                                                              prefix=powerPrefix)
                     if len(modified_qualities) > 0:
@@ -14859,7 +14955,7 @@ class Hero:
                                                              prefix=secPrefix+indent)
                             qualityPrefix = secPrefix + indent * 2
                         for d in modified_qualities:
-                            substepText += "\n" + split_text(str(d.RetrievePrior(substep+0.1)),
+                            substepText += "\n" + split_text(str(d.RetrieveAt(substep)),
                                                              width=width,
                                                              prefix=qualityPrefix)
                     if len(modified_principles) > 0:
@@ -14885,7 +14981,7 @@ class Hero:
                                                              width=width,
                                                              prefix=secPrefix+indent)
                             statusPrefix = secPrefix + indent * 2
-                        dPrime = self.dv_status.RetrievePrior(substep+0.1)
+                        dPrime = self.dv_status.RetrieveAt(substep)
                         for x in range(len(dPrime.array())):
                             substepText += "\n" + split_text(status_zones[x] + ": " + \
                                                              str(dPrime.array()[x]),
@@ -14904,7 +15000,7 @@ class Hero:
                                                                  width=width,
                                                                  prefix=secPrefix+indent)
                             statusPrefix = secPrefix + indent * 2
-                        sPrime = self.status_dice.RetrievePrior(substep+0.1)
+                        sPrime = self.status_dice.RetrieveAt(substep)
                         for x in range(len(sPrime.array())):
                             substepText += "\n" + split_text(status_zones[x] + ": " + \
                                                              str(sPrime.array()[x]),
@@ -14923,7 +15019,7 @@ class Hero:
                                                                  prefix=secPrefix+indent)
                                 abilityPrefix = secPrefix + indent * 2
                             for a in modified_zone_abilities:
-                                aPrime = a.RetrievePrior(substep+0.1)
+                                aPrime = a.RetrieveAt(substep)
                                 substepText += "\n" + aPrime.details(width=width,
                                                                      prefix=abilityPrefix,
                                                                      indented=indented,
