@@ -17051,7 +17051,7 @@ class HeroFrame(Frame):
         # We want a big gap between these buttons, which just display additional info on this hero,
         #  and the other buttons, which modify, clear, or replace this hero
         # This many button heights should do it...
-        self.auxBufferHeight = 6
+        self.auxBufferHeight = 5
         # This buffer will span all the columns in buttonFrame
         self.auxBufferWidth = 2
         self.auxBuffer = Label(self.buttonFrame,
@@ -17091,8 +17091,7 @@ class HeroFrame(Frame):
         prevButtonRows += self.auxBufferHeight
         # Text manipulation buttons (Display Text, Display Steps, Save as TXT) go in the next 6
         #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
-        self.buttonColors = ["PaleTurquoise" + str(x) for x in range(1,5)]
-##        self.textButtonColor = self.buttonColor + str(1)
+        self.buttonColors = ["PaleTurquoise1", "PaleTurquoise2", "steelblue1", "steelblue2"]
         # All hero manipulation buttons will be in this row or lower
         editRow = firstBFRow + self.buttonHeight * prevButtonRows
         prevButtonRows = 0
@@ -17248,6 +17247,89 @@ class HeroFrame(Frame):
                                                             identifier=myID,
                                                             indices=myIndex))
         prevButtonRows += 1
+        # If necessary, additional buttons go below these
+        self.fontBufferHeight = 2
+        self.fontBuffer = Label(self.buttonFrame,
+                                width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
+                                height=self.rowHeight*self.buttonHeight*self.fontBufferHeight,
+                                padx=self.buttonPadX,
+                                pady=self.buttonPadY)
+        self.fontBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight*self.fontBufferHeight,
+                             columnspan=self.buttonWidth*self.auxBufferWidth,
+                             sticky=N+E+S+W)
+        prevButtonRows += self.fontBufferHeight - 1
+        # Buttons for updating font
+        self.viewButtons = []
+        self.fontButton = Button(self.buttonFrame,
+                                 background=self.buttonColors[0],
+                                 activebackground=self.buttonColors[1],
+                                 text="Next Font",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.currentFont,
+                                 command=self.SwitchFont,
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.fontButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
+        self.fontButton.bind("<Button-3>",
+                             lambda event, myID="viewButtons", myIndex=[len(self.viewButtons)]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
+        self.viewButtons.append(self.fontButton)
+        self.miniButtonWidth = 2
+        buttonCol2B = secondBFCol + self.miniButtonWidth
+        self.fPlusButton = Button(self.buttonFrame,
+                                  background=self.buttonColors[0],
+                                  activebackground=self.buttonColors[1],
+                                  text="+",
+                                  width=self.columnWidth*self.miniButtonWidth,
+                                  height=self.rowHeight*self.buttonHeight,
+                                  font=self.currentFont,
+                                  command=self.UpdateFontSize,
+                                  padx=self.buttonPadX,
+                                  pady=self.buttonPadY)
+        self.fPlusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                              column=secondBFCol,
+                              rowspan=self.buttonHeight,
+                              columnspan=self.miniButtonWidth,
+                              sticky=N+E+S+W)
+        self.fPlusButton.bind("<Button-3>",
+                              lambda event, myID="viewButtons", myIndex=[len(self.viewButtons)]: \
+                              self.LaunchContextMenu(event,
+                                                     identifier=myID,
+                                                     indices=myIndex))
+        self.viewButtons.append(self.fPlusButton)
+        self.fMinusButton = Button(self.buttonFrame,
+                                   background=self.buttonColors[0],
+                                   activebackground=self.buttonColors[1],
+                                   text="-",
+                                   width=self.columnWidth*self.miniButtonWidth,
+                                   height=self.rowHeight*self.buttonHeight,
+                                   font=self.currentFont,
+                                   command=lambda arg1=-1 : self.UpdateFontSize(increment=arg1),
+                                   padx=self.buttonPadX,
+                                   pady=self.buttonPadY)
+        self.fMinusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
+                               column=buttonCol2B,
+                               rowspan=self.buttonHeight,
+                               columnspan=self.miniButtonWidth,
+                               sticky=N+E+S+W)
+        self.fMinusButton.bind("<Button-3>",
+                               lambda event, myID="viewButtons", myIndex=[len(self.viewButtons)]: \
+                               self.LaunchContextMenu(event,
+                                                      identifier=myID,
+                                                      indices=myIndex))
+        self.viewButtons.append(self.fMinusButton)
+        prevButtonRows += 1
+        self.demoColors = ["plum1", "plum2"]
+        self.demoButtons = []
         # Buttons for switching to another hero (for demonstration purposes) go in the following
         #  2 rows of buttonFrame- previous hero in the left column, next hero in the right
         # We want a large gap between these buttons and the ones that will be in the final GUI.
@@ -17256,7 +17338,7 @@ class HeroFrame(Frame):
         self.demoBufferHeight = 2
         self.demoBuffer = Label(self.buttonFrame,
                                 width=self.columnWidth*self.buttonWidth*self.auxBufferWidth,
-                                height=self.buttonHeight*self.demoBufferHeight,
+                                height=self.rowHeight*self.buttonHeight*self.demoBufferHeight,
                                 padx=self.buttonPadX,
                                 pady=self.buttonPadY)
         self.demoBuffer.grid(row=editRow+self.buttonHeight*prevButtonRows,
@@ -17265,8 +17347,6 @@ class HeroFrame(Frame):
                              columnspan=self.buttonWidth*self.auxBufferWidth,
                              sticky=N+E+S+W)
         prevButtonRows += self.demoBufferHeight - 1
-        self.demoColors = ["plum1", "plum2"]
-        self.demoButtons = []
         self.backButton = Button(self.buttonFrame,
                                  background=self.demoColors[0],
                                  activebackground=self.demoColors[1],
@@ -17309,74 +17389,6 @@ class HeroFrame(Frame):
                                                        identifier=myID,
                                                        indices=myIndex))
         self.demoButtons.append(self.forwardButton)
-        prevButtonRows += 1
-        # If necessary, additional buttons go below these
-        # Buttons for updating font (for design purposes)
-        self.fontButton = Button(self.buttonFrame,
-                                 background=self.demoColors[0],
-                                 activebackground=self.demoColors[1],
-                                 text="Next Font",
-                                 width=self.columnWidth*self.buttonWidth,
-                                 height=self.rowHeight*self.buttonHeight,
-                                 font=self.currentFont,
-                                 command=self.SwitchFont,
-                                 padx=self.buttonPadX,
-                                 pady=self.buttonPadY)
-        self.fontButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                             column=firstBFCol,
-                             rowspan=self.buttonHeight,
-                             columnspan=self.buttonWidth,
-                             sticky=N+E+S+W)
-        self.fontButton.bind("<Button-3>",
-                             lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
-                             self.LaunchContextMenu(event,
-                                                    identifier=myID,
-                                                    indices=myIndex))
-        self.demoButtons.append(self.fontButton)
-        self.miniButtonWidth = 2
-        buttonCol2B = secondBFCol + self.miniButtonWidth
-        self.fPlusButton = Button(self.buttonFrame,
-                                  background=self.demoColors[0],
-                                  activebackground=self.demoColors[1],
-                                  text="+",
-                                  width=self.columnWidth*self.miniButtonWidth,
-                                  height=self.rowHeight*self.buttonHeight,
-                                  font=self.currentFont,
-                                  command=self.UpdateFontSize,
-                                  padx=self.buttonPadX,
-                                  pady=self.buttonPadY)
-        self.fPlusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                              column=secondBFCol,
-                              rowspan=self.buttonHeight,
-                              columnspan=self.miniButtonWidth,
-                              sticky=N+E+S+W)
-        self.fPlusButton.bind("<Button-3>",
-                              lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
-                              self.LaunchContextMenu(event,
-                                                     identifier=myID,
-                                                     indices=myIndex))
-        self.demoButtons.append(self.fPlusButton)
-        self.fMinusButton = Button(self.buttonFrame,
-                                   background=self.demoColors[0],
-                                   activebackground=self.demoColors[1],
-                                   text="-",
-                                   width=self.columnWidth*self.miniButtonWidth,
-                                   height=self.rowHeight*self.buttonHeight,
-                                   font=self.currentFont,
-                                   command=lambda arg1=-1 : self.UpdateFontSize(increment=arg1),
-                                   padx=self.buttonPadX,
-                                   pady=self.buttonPadY)
-        self.fMinusButton.grid(row=editRow+self.buttonHeight*prevButtonRows,
-                               column=buttonCol2B,
-                               rowspan=self.buttonHeight,
-                               columnspan=self.miniButtonWidth,
-                               sticky=N+E+S+W)
-        self.fMinusButton.bind("<Button-3>",
-                               lambda event, myID="demoButtons", myIndex=[len(self.demoButtons)]: \
-                               self.LaunchContextMenu(event,
-                                                      identifier=myID,
-                                                      indices=myIndex))
-        self.demoButtons.append(self.fMinusButton)
         prevButtonRows += 1
         # Button for updating relief option (for design purposes)
 ##        self.reliefButton = Button(self.buttonFrame,
@@ -17546,6 +17558,12 @@ class HeroFrame(Frame):
                 if maxAbilityCount > 0:
                     contextMenu.add_command(label="Rename Abilities...",
                                             command=self.RenameAbilities)
+            elif identifier == "demoButtons":
+                # If the widget relates to the sample heroes, give the context menu the option to
+                #  switch between sample Heroes
+                if indices[0] < 2:
+                    contextMenu.add_command(label="Select Sample Hero...",
+                                            command=self.SelectSampleHero)
             # Then, include options that rely on identifying the specific widget and the Hero
             #  attributes behind it. This may overlap with the previous section, so it's in a
             #  distinct set of if statements.
@@ -17749,20 +17767,27 @@ class HeroFrame(Frame):
                                                 self.RevertHero(autoStep=revert))
         contextMenu.post(event.x_root, event.y_root)
     def SwitchHero(self,
-                   update=1):
-        self.sampleIndex = -1
-        if self.myHeroNames[0] in factory.codenames:
-            self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
-        elif self.myHero:
-            # There is a Hero associated with this frame but it's not one of the samples
-            # Ask the user if they want to save it before switching away
+                   update=1,
+                   newIndex=99):
+        # Determine which sample Hero to switch to
+        if newIndex in range(len(factory.codenames)):
+            self.sampleIndex = newIndex
+        else:
+            self.sampleIndex = -1
+            if self.myHeroNames[0] in factory.codenames:
+                self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
+            self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
+        # If the current Hero isn't one of the samples, ask the user if they want to save before
+        #  switching away
+        if self.myHeroNames[0] not in factory.codenames and isinstance(self.myHero, Hero):
             saveFirst = messagebox.askyesno(title="Save Changes?",
-                                            message="Switching to a different hero will clear " + \
-                                            "all data for your current one. Do you want to " + \
-                                            "save this hero to a TXT file before you switch?")
+                                            message="Switching to a different hero will " + \
+                                            "clear all data for your current one. Do you " + \
+                                            "want to save this hero to a TXT file before " + \
+                                            "you switch?")
             if saveFirst:
                 self.SaveTxt()
-        self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
+        # Switch to the indicated sample Hero
         if self.sampleIndex == 0:
             self.UpdateAll(factory.getShikari())
         elif self.sampleIndex == 1:
@@ -17781,6 +17806,28 @@ class HeroFrame(Frame):
             self.UpdateAll(factory.getTalyn())
         elif self.sampleIndex == 8:
             self.UpdateAll(factory.getChaz())
+    def SelectSampleHero(self,
+                         event=None):
+        # Use a SelectWindow to let the user choose which sample Hero to display.
+        notePrefix = "### HeroFrame.SelectSampleHero: "
+        prompt = "Select one of the sample heroes to display:"
+        options = [str(i) + ": " + factory.codenames[i] for i in range(len(factory.codenames))]
+        title = "View Sample Heroes"
+        sample_choice = IntVar()
+        success = IntVar(self, 1)
+        question = SelectWindow(self,
+                                prompt,
+                                options,
+                                var=sample_choice,
+                                title=title,
+                                success=success,
+                                width=30)
+##        print(notePrefix + "success = " + str(success.get()))
+        if success.get() == 0:
+            # User canceled out; drop everything
+            return
+        sample_index = sample_choice.get()
+        self.SwitchHero(newIndex=sample_index)
     def Empty(self,
               buttonPressed=False):
         # Clears all hero attributes

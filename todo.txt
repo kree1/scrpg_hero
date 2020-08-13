@@ -172,8 +172,6 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
-
-Replace "Prev Hero" and "Next Hero" with "Select Sample Hero"
  
 Default background is gray94
 
