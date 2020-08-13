@@ -21908,7 +21908,8 @@ class SwapFrame(Frame):
                                          activebackground=self.normalBG,
                                          anchor=W,
                                          justify=LEFT,
-                                         font=self.myFont)
+                                         font=self.myFont,
+                                         takefocus=1)
             # Get the Menu that displays when myOptionMenus[i] is clicked, and set its font to
             #  match
             menu = self.myOptionMenus[i].nametowidget(self.myOptionMenus[i].menuname)
@@ -21989,6 +21990,10 @@ class SwapFrame(Frame):
         self.bind("<Return>", self.finish)
         # Bind the Escape key to the same method as the Cancel button
         self.bind("<Escape>", self.myParent.cancel)
+        self.myOptionMenus[0].bind("<Up>", self.prevoption0)
+        self.myOptionMenus[0].bind("<Down>", self.nextoption0)
+        self.myOptionMenus[1].bind("<Up>", self.prevoption1)
+        self.myOptionMenus[1].bind("<Down>", self.nextoption1)
         self.resize()
     def nextoption0(self, event=None):
         if len(self.myOptions) > 1:

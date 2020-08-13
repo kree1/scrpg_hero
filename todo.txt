@@ -208,7 +208,6 @@ Let EditNames rename...
 .	Modes
 .	dice
 
-Bind Up and Down to move functions on individual OptionMenu objects in SwapFrame (you should be able to use these once you've selected an OptionMenu using Tab)
 Use SwapWindow to pick 2 Form Powers to upgrade in Yellow Form
  
 Default background is gray94
