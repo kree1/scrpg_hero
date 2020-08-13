@@ -5465,6 +5465,7 @@ fc_zones = [form_abilities_green, form_abilities_yellow]
 
 global mt_powerless, mt_debilitator, mt_improvement, mt_scout, mt_analysis, mt_bombardment
 global mt_regeneration, mt_skirmish, mt_stalwart, mt_destroyer, mt_hunter_killer, mt_shield
+global mt_width
 mt_powerless = ["Powerless Mode",
                0,
                [6, 10],
@@ -5597,6 +5598,7 @@ mt_shield = ["Shield Mode",
 # Power Mods:         0, 0, +1, +1
 # Prohibited Actions: Attack
 # Ability:            Shield
+mt_width = 60
 
 global mc_green, mc_yellow, mc_red, mc_zones
 mc_green = [mt_debilitator, mt_improvement, mt_scout]
@@ -5734,7 +5736,7 @@ pn_collection = [pn_lone_wolf,
 pn_special = ["",
               "Upgrade a d10 or smaller Power or Quality by one die size.",
               "May use any Power or Quality for Health"]
-pn_width = 100
+pn_width = 45
 
 # Class representing one of a hero's alternate Modes
 class Mode:
@@ -7280,8 +7282,8 @@ class Hero:
                 choice_request = "Choose a section of the list to pick from:"
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
-                    dispWidth = 75
                     details = ["" for i in range(sections)]
+                    dispWidth = 75
                     for i in range(sections):
                         this_section = print_names[i*section_length]
                         for j in range(1, section_length):
@@ -7301,7 +7303,7 @@ class Hero:
                                             title=print_type + " Selection",
                                             success=success,
                                             lwidth=50,
-                                            rwidth=dispWidth)
+                                            rwidth=int(0.8 * dispWidth))
 ##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
                     if self.proceed == 0:
@@ -7480,7 +7482,7 @@ class Hero:
                                         title="Principle Selection",
                                         success=success,
                                         lwidth=30,
-                                        rwidth=dispWidth)
+                                        rwidth=ri_width)
                 print(notePrefix + "success = " + str(success.get()))
                 self.proceed = success.get()
                 if self.proceed == 0:
@@ -9827,18 +9829,17 @@ class Hero:
             form_options = [fa for fa in form_options if fa.name not in \
                             [oa.name for oa in other_abilities]]
         prompt = "Choose a Form to add in " + status_zones[zone] + ":"
-        dispWidth = 100
         decision = self.ChooseDetailIndex(prompt,
                                           "Enter a lowercase letter to see a Form expanded, " + \
                                           "or an uppercase letter to select it.",
                                           [x.name for x in form_options],
                                           [x.details(width=-1,
                                                      indented=True) for x in form_options],
-                                          [x.details(width=dispWidth,
+                                          [x.details(width=100,
                                                      indented=True) for x in form_options],
                                           title="Form Selection",
                                           lwidth=30,
-                                          rwidth=dispWidth,
+                                          rwidth=a_width,
                                           swidth=100,
                                           inputs=inputs)
 ##        print(notePrefix + "proceed = " + str(self.proceed))
@@ -9867,6 +9868,7 @@ class Hero:
                      "Yes, replace a Power with a Form-Changer Power",
                      "No, no further changes"]
         step_choice = 99
+        dispWidth = 100
         # The user can swap two power dice, or replace a power die with another Power from the
         #  Form-Changer secondary list, any number of times.
         while step_choice != len(step_text)-1:
@@ -10313,7 +10315,7 @@ class Hero:
                                                     prompt=ext_report + "\n\nDo you want to " + \
                                                     "put one of " + str(a_dice) + \
                                                     " into another option above? (y/n)",
-                                                    title="Archetype Selection: " + arc_title,
+                                                    title="Archetype: " + arc_title,
                                                     inputs=inputs)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
@@ -10356,7 +10358,7 @@ class Hero:
                                                     prompt=ext_report + "\n\nDo you want to " + \
                                                     "swap one of the dice you have above for " + \
                                                     "one of " + str(a_dice) + "? (y/n)",
-                                                    title="Archetype Selection: " + arc_title,
+                                                    title="Archetype: " + arc_title,
                                                     inputs=inputs)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
@@ -10716,7 +10718,7 @@ class Hero:
                     entry_options = ["Yes", "No"]
                     decision = self.ChooseIndex(entry_options,
                                                 prompt=prompt,
-                                                title="Archetype Selection: Modular",
+                                                title="Archetype: Modular",
                                                 inputs=inputs)
 ##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
@@ -10765,7 +10767,7 @@ class Hero:
                                                        for i in range(len(mc_green))],
                                                       title="Mode Selection",
                                                       lwidth=30,
-                                                      rwidth=100,
+                                                      rwidth=mt_width,
                                                       swidth=dispWidth,
                                                       shellHeader="Choose 1 additional Green " + \
                                                       "Mode:",
@@ -10823,7 +10825,7 @@ class Hero:
                                                            for x in yellow_indices],
                                                           title="Mode Selection",
                                                           lwidth=30,
-                                                          rwidth=100,
+                                                          rwidth=mt_width,
                                                           swidth=dispWidth,
                                                           shellHeader=prompt,
                                                           inputs=inputs)
@@ -10874,7 +10876,7 @@ class Hero:
                                                        for i in range(len(mc_red))],
                                                       title="Mode Selection",
                                                       lwidth=30,
-                                                      rwidth=100,
+                                                      rwidth=mt_width,
                                                       swidth=dispWidth,
                                                       shellHeader="Choose a Red Mode:",
                                                       inputs=inputs)
@@ -11238,7 +11240,7 @@ class Hero:
                         entry_options = ["Yes", "No"]
                         decision = self.ChooseIndex(entry_options,
                                                     prompt=prompt,
-                                                    title="Archetype Selection: Divided",
+                                                    title="Archetype: Divided",
                                                     inputs=inputs)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
@@ -11253,7 +11255,7 @@ class Hero:
                                 decision = self.EnterText("Enter a new name for your " + \
                                                           self.dv_tags[i] + " form.",
                                                           inputs=inputs,
-                                                          title="Archetype Selection: Divided")
+                                                          title="Archetype: Divided")
 ##                                print(notePrefix + "proceed = " + str(self.proceed))
                                 if self.proceed == 0:
                                     # User canceled out; drop everything
@@ -11286,7 +11288,7 @@ class Hero:
                                                           title="Archetype: Divided - " + \
                                                           "Transition Selection",
                                                           lwidth=35,
-                                                          rwidth=100,
+                                                          rwidth=a_width,
                                                           swidth=dispWidth,
                                                           shellHeader=tr_prompt,
                                                           inputs=inputs)
@@ -11477,7 +11479,7 @@ class Hero:
                                                               title="Archetype: Divided - " + \
                                                               "Divided Nature",
                                                               lwidth=30,
-                                                              rwidth=100,
+                                                              rwidth=a_width,
                                                               swidth=dispWidth,
                                                               shellHeader=dn_prompt,
                                                               inputs=inputs)
@@ -12712,7 +12714,7 @@ class Hero:
                         decision = self.ChooseIndex([str(x) for x in upgrade_pqs],
                                                     prompt=impulsive_prompt,
                                                     inputs=inputs,
-                                                    title="Personality Selection: Impulsive",
+                                                    title="Personality: Impulsive",
                                                     width=40)
 ##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
@@ -13211,7 +13213,7 @@ class Hero:
                                         title="Red Ability Selection",
                                         success=success,
                                         lwidth=35,
-                                        rwidth=100)
+                                        rwidth=a_width)
 ##                print(notePrefix + "success = " + str(success.get()))
                 self.proceed = success.get()
                 if self.proceed == 0:
@@ -13862,7 +13864,6 @@ class Hero:
                 if self.UseGUI(inputs):
                     # Create an ExpandWindow to prompt the user
                     answer = IntVar()
-                    dispWidth = 50
                     options = [rc_names[i] + " Principles" for i in range(len(rc_names))]
                     details = [rc_names[i] + " Principles:" for i in range(len(rc_names))]
                     for i in range(len(rc_names)):
@@ -13877,7 +13878,7 @@ class Hero:
                                             title="Retcon: Change a Principle",
                                             success=success,
                                             lwidth=25,
-                                            rwidth=dispWidth)
+                                            rwidth=25)
 ##                    print(notePrefix + "success = " + str(success.get()))
                     self.proceed = success.get()
                     if self.proceed == 0:
