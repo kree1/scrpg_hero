@@ -7576,7 +7576,7 @@ class Hero:
                                         success=success,
                                         lwidth=30,
                                         rwidth=ri_width)
-                print(notePrefix + "success = " + str(success.get()))
+##                print(notePrefix + "success = " + str(success.get()))
                 self.proceed = success.get()
                 if self.proceed == 0:
                     # User canceled out; drop everything
@@ -8553,7 +8553,7 @@ class Hero:
                                                 title=display_str,
                                                 inputs=inputs,
                                                 width=50)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if add==1:
@@ -9446,7 +9446,7 @@ class Hero:
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
                                             width=45)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -9490,7 +9490,7 @@ class Hero:
                                             inputs=inputs,
                                             title="Mode Creation: " + t_name,
                                             width=45)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -9531,7 +9531,7 @@ class Hero:
                                        inputs=pass_inputs)
         if track_inputs:
             print(notePrefix + tracker_close)
-        print(notePrefix + "proceed = " + str(self.proceed))
+##        print(notePrefix + "proceed = " + str(self.proceed))
         if self.proceed == 0:
             # User canceled out; drop everything
             if isRoot:
@@ -10622,7 +10622,7 @@ class Hero:
                                                    inputs=pass_inputs)
                         if track_inputs:
                             print(notePrefix + tracker_close)
-                        print(notePrefix + "proceed = " + str(self.proceed))
+##                        print(notePrefix + "proceed = " + str(self.proceed))
                         if self.proceed == 0:
                             # User canceled out; fix proceed & drop everything
                             if isRoot:
@@ -11645,6 +11645,7 @@ class Hero:
                                                divided=1,
                                                stepnum=divided_step)
                             self.other_forms.append(heroic_form)
+                            self.RefreshFrame()
                             print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                                   "'s Form Sheet in Green.")
                             if self.archetype == 15:
@@ -12196,6 +12197,7 @@ class Hero:
                                                divided=1,
                                                stepnum=divided_step)
                             self.other_forms.append(heroic_form)
+                            self.RefreshFrame()
                             print("Added " + self.dv_tags[1] + " Form to " + self.hero_name + \
                                   "'s Form Sheet in Green.")
                         self.substeps_complete[this_step][divided_substep] = True
@@ -12342,7 +12344,7 @@ class Hero:
                                             "results?",
                                             title="Archetype Selection",
                                             inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -12916,7 +12918,7 @@ class Hero:
                                         prompt="Do you want to use two different Personalities?",
                                         title="Personality Selection",
                                         inputs=inputs)
-            print(notePrefix + "proceed = " + str(self.proceed))
+##            print(notePrefix + "proceed = " + str(self.proceed))
             if self.proceed == 0:
                 # User canceled out; drop everything
                 if isRoot:
@@ -12983,7 +12985,7 @@ class Hero:
                                                   rwidth=pn_width,
                                                   swidth=dispWidth,
                                                   inputs=inputs)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -13000,7 +13002,7 @@ class Hero:
                                                 "previous results? (y/n)",
                                                 title="Personality Selection",
                                                 inputs=inputs)
-                    print(notePrefix + "proceed = " + str(self.proceed))
+##                    print(notePrefix + "proceed = " + str(self.proceed))
                     if self.proceed == 0:
                         # User canceled out; drop everything
                         if isRoot:
@@ -13023,7 +13025,7 @@ class Hero:
                                                         inputs=inputs,
                                                         title="Personality Selection",
                                                         width=25)
-                            print(notePrefix + "proceed = " + str(self.proceed))
+##                            print(notePrefix + "proceed = " + str(self.proceed))
                             if self.proceed == 0:
                                 # User canceled out; drop everything
                                 if isRoot:
@@ -13745,7 +13747,7 @@ class Hero:
                               inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -14014,7 +14016,7 @@ class Hero:
                                      inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -14040,7 +14042,7 @@ class Hero:
                                    inputs=pass_inputs)
                 if track_inputs:
                     print(notePrefix + tracker_close)
-                print(notePrefix + "proceed = " + str(self.proceed))
+##                print(notePrefix + "proceed = " + str(self.proceed))
                 if self.proceed == 0:
                     # User canceled out; drop everything
                     if isRoot:
@@ -14073,8 +14075,6 @@ class Hero:
             print(notePrefix + "inputs=" + str(inputs))
         # This is step 7 of hero creation!
         this_step = 7
-        print(notePrefix + "substeps_complete[" + str(this_step) + "] = " + \
-              str(self.substeps_complete[this_step]))
         if self.health_zones != [0,0,0]:
             # The hero already has defined Health!
             print("Error! " + self.hero_name + " already has maximum Health:")
