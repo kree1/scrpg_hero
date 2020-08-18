@@ -9419,7 +9419,9 @@ class Hero:
         DisplayModeTemplate(zone,
                             index,
                             width=100,
-                            prefix="    ")
+                            prefix="    ",
+                            indented=True,
+                            hanging=False)
         # For each die size in t_die_sizes, prompt the user to choose a Power to add at that size.
         mode_power_dice = []
         print(self.hero_name + " has the following Power dice:")
@@ -10851,12 +10853,14 @@ class Hero:
                                                       [ModeTemplateDetails(0,
                                                                            i,
                                                                            width=-1,
-                                                                           indented=True) \
+                                                                           indented=True,
+                                                                           hanging=False) \
                                                        for i in range(len(mc_green))],
                                                       [ModeTemplateDetails(0,
                                                                            i,
                                                                            width=dispWidth,
-                                                                           indented=True) \
+                                                                           indented=True,
+                                                                           hanging=False) \
                                                        for i in range(len(mc_green))],
                                                       title="Mode Selection",
                                                       lwidth=30,
@@ -10909,12 +10913,14 @@ class Hero:
                                                           [ModeTemplateDetails(1,
                                                                                x,
                                                                                width=-1,
-                                                                               indented=True) \
+                                                                               indented=True,
+                                                                               hanging=False) \
                                                            for x in yellow_indices],
                                                           [ModeTemplateDetails(1,
                                                                                x,
                                                                                width=dispWidth,
-                                                                               indented=True) \
+                                                                               indented=True,
+                                                                               hanging=False) \
                                                            for x in yellow_indices],
                                                           title="Mode Selection",
                                                           lwidth=30,
@@ -10960,12 +10966,14 @@ class Hero:
                                                       [ModeTemplateDetails(2,
                                                                            i,
                                                                            width=-1,
-                                                                           indented=True) \
+                                                                           indented=True,
+                                                                           hanging=False) \
                                                        for i in range(len(mc_red))],
                                                       [ModeTemplateDetails(2,
                                                                            i,
                                                                            width=dispWidth,
-                                                                           indented=True) \
+                                                                           indented=True,
+                                                                           hanging=False) \
                                                        for i in range(len(mc_red))],
                                                       title="Mode Selection",
                                                       lwidth=30,
@@ -11372,11 +11380,13 @@ class Hero:
                                                           [x[0] for x in tr_collection],
                                                           [TransitionDetails(i,
                                                                              width=-1,
-                                                                             indented=True) \
+                                                                             indented=True,
+                                                                             hanging=False) \
                                                            for i in range(len(tr_collection))],
                                                           [TransitionDetails(i,
                                                                              width=dispWidth,
-                                                                             indented=True) \
+                                                                             indented=True,
+                                                                             hanging=False) \
                                                            for i in range(len(tr_collection))],
                                                           title="Archetype: Divided - " + \
                                                           "Transition Selection",
