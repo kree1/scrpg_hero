@@ -16490,13 +16490,21 @@ class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         # Match custom types here
         if isinstance(obj, PQDie):
-            # Leaving out prev_version until this part works
             return {"__PQDie__": True,
                     "ispower": obj.ispower,
                     "category": obj.category,
                     "index": obj.index,
                     "diesize": obj.diesize,
                     "flavorname": obj.flavorname,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
+        elif isinstance(obj, Status):
+            return {"__Status__": True,
+                    "green": obj.green,
+                    "yellow": obj.yellow,
+                    "red": obj.red,
+                    "reference": obj.reference,
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
@@ -16518,10 +16526,19 @@ class CustomDecoder(json.JSONDecoder):
                            flavorname=obj["flavorname"],
                            stepnum=obj["step"])
             result.steps_modified = [x for x in obj["steps_modified"]]
-            if obj["prev_version"]:
-                if obj["prev_version"] != None:
-                    result.prev_version = obj["prev_version"]
-            # ...
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        if "__Status__" in obj:
+            # This is a Status
+            result = Status(green=obj["green"],
+                            yellow=obj["yellow"],
+                            red=obj["red"],
+                            ref=obj["reference"],
+                            stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
             return result
         # ...
         # Handle nested objects
@@ -18323,7 +18340,10 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            for o in self.myHero.power_dice:
+            statusList = [self.myHero.status_dice, self.myHero.dv_status]
+            statusList.extend([md.status_dice for md in self.myHero.other_modes])
+            statusList.extend([fm.status_dice for fm in self.myHero.other_forms])
+            for o in statusList:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
