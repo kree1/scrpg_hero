@@ -157,7 +157,7 @@ Save and load...
  CustomEncoder/CustomDecoder needs to handle...
 . PQDie
 . Status
-  Principle
+. Principle
   Ability
   Mode
   Form

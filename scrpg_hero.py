@@ -16508,6 +16508,20 @@ class CustomEncoder(json.JSONEncoder):
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
+        elif isinstance(obj, Principle):
+            return {"__Principle__": True,
+                    "category": obj.category,
+                    "index": obj.index,
+                    "title": obj.title,
+                    "during_roleplaying": obj.during_roleplaying,
+                    "minor_twist": obj.minor_twist,
+                    "major_twist": obj.major_twist,
+                    "green_ability": obj.green_ability,
+                    "has_ref": obj.has_ref,
+                    "is_template": obj.is_template,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
@@ -16536,6 +16550,20 @@ class CustomDecoder(json.JSONDecoder):
                             red=obj["red"],
                             ref=obj["reference"],
                             stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        if "__Principle__" in obj:
+            # This is a Principle
+            result = Principle(category=obj["category"],
+                               index=obj["index"],
+                               title=obj["title"],
+                               roleplaying=obj["during_roleplaying"],
+                               minor=obj["minor_twist"],
+                               major=obj["major_twist"],
+                               green=obj["green_ability"],
+                               stepnum=obj["step"])
             result.steps_modified = [x for x in obj["steps_modified"]]
             if obj["prev_version"] != None:
                 result.prev_version = obj["prev_version"]
@@ -18340,10 +18368,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            statusList = [self.myHero.status_dice, self.myHero.dv_status]
-            statusList.extend([md.status_dice for md in self.myHero.other_modes])
-            statusList.extend([fm.status_dice for fm in self.myHero.other_forms])
-            for o in statusList:
+            for o in self.myHero.principles:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
