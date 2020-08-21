@@ -154,16 +154,8 @@ Let EditNames rename...
 Replace "Next Font" with a font selection OptionMenu?
 
 Save and load...
- JSONEncoder needs to handle...
-  PQDie
-  Status
-  Principle
-  Ability
-  Mode
-  Form
-  Hero
- JSONDecoder needs to handle...
-  PQDie
+ CustomEncoder/CustomDecoder needs to handle...
+. PQDie
   Status
   Principle
   Ability

@@ -16485,19 +16485,44 @@ class SampleGUI:
                                    command=Create_Spark)
         self.spark_button.pack(side=LEFT)
 
-class JSONEncoder(json.JSONEncoder):
+class CustomEncoder(json.JSONEncoder):
     # Extension of JSONEncoder to handle custom objects
     def default(self, obj):
         # Match custom types here
+        if isinstance(obj, PQDie):
+            # Leaving out prev_version until this part works
+            return {"__PQDie__": True,
+                    "ispower": obj.ispower,
+                    "category": obj.category,
+                    "index": obj.index,
+                    "diesize": obj.diesize,
+                    "flavorname": obj.flavorname,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
-class JSONDecoder(json.JSONDecoder):
+class CustomDecoder(json.JSONDecoder):
     # Extension of JSONDecoder to handle custom objects
     def __init__(self, *args, **kwargs):
         json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
     def object_hook(self, obj):
         # Match custom types here
+        if "__PQDie__" in obj:
+            # This is a PQDie
+            result = PQDie(obj["ispower"],
+                           obj["category"],
+                           obj["index"],
+                           obj["diesize"],
+                           flavorname=obj["flavorname"],
+                           stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"]:
+                if obj["prev_version"] != None:
+                    result.prev_version = obj["prev_version"]
+            # ...
+            return result
         # ...
         # Handle nested objects
         if isinstance(obj, dict):
@@ -16511,10 +16536,10 @@ class JSONDecoder(json.JSONDecoder):
         return obj
 
 def json_encode(data):
-    return JSONEncoder().encode(data)
+    return json.dumps(data, cls=CustomEncoder)
 
 def json_decode(string):
-    return JSONDecoder().decode(string)
+    return json.loads(string, object_hook=CustomDecoder().object_hook)
 
 class HeroFrame(Frame):
     # A container displaying all the mechanical information about a Hero.
@@ -17825,9 +17850,16 @@ class HeroFrame(Frame):
         if newIndex in range(len(factory.codenames)):
             self.sampleIndex = newIndex
         else:
-            self.sampleIndex = -1
             if self.myHeroNames[0] in factory.codenames:
                 self.sampleIndex = factory.codenames.index(self.myHeroNames[0])
+            elif update > 0:
+                # Moving up from outside the list? Use -1 as start value, so that +1 puts you at
+                #  the first sample hero.
+                self.sampleIndex = -1
+            elif update <= 0:
+                # Moving down from outside the list? Use 0 as start value, so that -1 puts you at
+                #  the last sample hero.
+                self.sampleIndex = 0
             self.sampleIndex = (self.sampleIndex + update) % len(factory.codenames)
         # If the current Hero isn't one of the samples, ask the user if they want to save before
         #  switching away
@@ -18290,6 +18322,15 @@ class HeroFrame(Frame):
     def DisplayHeroText(self):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
+            # Testing for CustomEncoder/CustomDecoder
+            for o in self.myHero.power_dice:
+                print(notePrefix + str(o))
+                pack = json_encode(o)
+                print(notePrefix + "packed: " + str(pack))
+                print(notePrefix + "packed type: " + str(pack.__class__.__name__))
+                unpack = json_decode(pack)
+                print(notePrefix + "unpacked: " + str(unpack))
+                print(notePrefix + "unpacked type: " + str(unpack.__class__.__name__))
             self.myHero.display(width=100)
         else:
             print(notePrefix + "Your hero needs at least a name first!")
