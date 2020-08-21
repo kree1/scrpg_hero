@@ -1,5 +1,6 @@
 #! python3.7
 
+import json
 import math
 import os
 import random
@@ -16483,6 +16484,37 @@ class SampleGUI:
                                    text="Spark",
                                    command=Create_Spark)
         self.spark_button.pack(side=LEFT)
+
+class JSONEncoder(json.JSONEncoder):
+    # Extension of JSONEncoder to handle custom objects
+    def default(self, obj):
+        # Match custom types here
+        # ...
+        return json.JSONEncoder.default(self, obj)
+
+class JSONDecoder(json.JSONDecoder):
+    # Extension of JSONDecoder to handle custom objects
+    def __init__(self, *args, **kwargs):
+        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+    def object_hook(self, obj):
+        # Match custom types here
+        # ...
+        # Handle nested objects
+        if isinstance(obj, dict):
+            for key in list(obj):
+                obj[key] = self.object_hook(obj[key])
+            return obj
+        if isinstance(obj, list):
+            for i in range(len(obj)):
+                obj[i] = self.object_hook(obj[i])
+            return obj
+        return obj
+
+def json_encode(data):
+    return JSONEncoder().encode(data)
+
+def json_decode(string):
+    return JSONDecoder().decode(string)
 
 class HeroFrame(Frame):
     # A container displaying all the mechanical information about a Hero.

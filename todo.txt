@@ -150,6 +150,26 @@ Let EditNames rename...
 .	Forms
 .	Modes
 .	dice
+
+Replace "Next Font" with a font selection OptionMenu?
+
+Save and load...
+ JSONEncoder needs to handle...
+  PQDie
+  Status
+  Principle
+  Ability
+  Mode
+  Form
+  Hero
+ JSONDecoder needs to handle...
+  PQDie
+  Status
+  Principle
+  Ability
+  Mode
+  Form
+  Hero
  
 Default background is gray94
 
