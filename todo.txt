@@ -160,7 +160,7 @@ Save and load...
 . Principle
 . Ability
 . Mode
-  Form
+. Form
   Hero
  
 Default background is gray94

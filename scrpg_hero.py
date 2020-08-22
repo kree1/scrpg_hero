@@ -16554,6 +16554,18 @@ class CustomEncoder(json.JSONEncoder):
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
+        elif isinstance(obj, Form):
+            return {"__Form__": True,
+                    "name": obj.name,
+                    "zone": obj.zone,
+                    "power_dice": obj.power_dice,
+                    "quality_dice": obj.quality_dice,
+                    "status_dice": obj.status_dice,
+                    "abilities": obj.abilities,
+                    "dv_index": obj.dv_index,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
@@ -16630,6 +16642,19 @@ class CustomDecoder(json.JSONDecoder):
                           status=obj["status_dice"],
                           abilities=obj["abilities"],
                           prohibited=obj["prohibited_actions"],
+                          stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        elif "__Form__" in obj:
+            # This is a Form
+            result = Form(name=obj["name"],
+                          zone=obj["zone"],
+                          pqs=[x for x in obj["power_dice"] + obj["quality_dice"]],
+                          status=obj["status_dice"],
+                          abilities=obj["abilities"],
+                          divided=obj["dv_index"],
                           stepnum=obj["step"])
             result.steps_modified = [x for x in obj["steps_modified"]]
             if obj["prev_version"] != None:
@@ -18435,7 +18460,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            for o in self.myHero.other_modes:
+            for o in self.myHero.other_forms:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
