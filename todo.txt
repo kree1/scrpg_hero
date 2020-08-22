@@ -159,7 +159,7 @@ Save and load...
 . Status
 . Principle
 . Ability
-  Mode
+. Mode
   Form
   Hero
  

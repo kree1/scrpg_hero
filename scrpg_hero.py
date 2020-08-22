@@ -16542,6 +16542,18 @@ class CustomEncoder(json.JSONEncoder):
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
+        elif isinstance(obj, Mode):
+            return {"__Mode__": True,
+                    "name": obj.name,
+                    "zone": obj.zone,
+                    "power_dice": obj.power_dice,
+                    "quality_dice": obj.quality_dice,
+                    "status_dice": obj.status_dice,
+                    "abilities": obj.abilities,
+                    "prohibited_actions": obj.prohibited_actions,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
@@ -16606,6 +16618,19 @@ class CustomDecoder(json.JSONDecoder):
                              damage_id=obj["insert_damage"],
                              energy=obj["requires_energy"],
                              hero_step=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        elif "__Mode__" in obj:
+            # This is a Mode
+            result = Mode(obj["name"],
+                          zone=obj["zone"],
+                          pqs=[x for x in obj["power_dice"] + obj["quality_dice"]],
+                          status=obj["status_dice"],
+                          abilities=obj["abilities"],
+                          prohibited=obj["prohibited_actions"],
+                          stepnum=obj["step"])
             result.steps_modified = [x for x in obj["steps_modified"]]
             if obj["prev_version"] != None:
                 result.prev_version = obj["prev_version"]
@@ -18410,7 +18435,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            for o in self.myHero.abilities:
+            for o in self.myHero.other_modes:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
