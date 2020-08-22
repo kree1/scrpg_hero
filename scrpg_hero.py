@@ -16808,8 +16808,8 @@ class HeroFrame(Frame):
                                              family=self.dispFonts[self.fontIndex].cget("family"),
                                              size=self.dispFonts[self.fontIndex].cget("size"),
                                              name="HeroFrame Display Font")
-        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
-              str(self.currentFont.actual(option="size")) + "pt")
+##        print(notePrefix + "currentFont: " + str(self.currentFont.actual(option="family")) + \
+##              str(self.currentFont.actual(option="size")) + "pt")
         self.numCols = 39
         self.numRows = 52
         self.width = width
@@ -19704,6 +19704,15 @@ class HeroFrame(Frame):
     def LoadHero(self):
         # Lets the user load a hero from a JSON file.
         notePrefix = "### HeroFrame.LoadHero: "
+        # If the current Hero is filled out at all, ask the user if they want to save before
+        #  switching away
+        if isinstance(self.myHero, Hero):
+            saveFirst = messagebox.askyesno(title="Save Changes?",
+                                            message="Opening a different hero will " + \
+                                            "clear all data for your current one. Do you " + \
+                                            "want to save this hero first?")
+            if saveFirst:
+                self.SaveAny()
         fname = filedialog.askopenfilename(filetypes=[("JSON files", "json")],
                                            title="Load Hero")
 ##        print(notePrefix + fname)
