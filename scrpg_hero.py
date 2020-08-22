@@ -10,6 +10,7 @@ import tkinter.font
 import tkSimpleDialog
 from tkinter import *
 from tkinter import messagebox
+from tkinter import filedialog
 
 random.seed()
 
@@ -6796,7 +6797,7 @@ class Hero:
             summary += "Unnamed Hero"
         summary += " ("
         if self.alias:
-            summary += self.alias
+            summary += "aka " + self.alias
         else:
             summary += "Identity Unknown"
         summary += ", "
@@ -17348,12 +17349,13 @@ class HeroFrame(Frame):
                         for i in range(len(self.auxWords))]
         firstBFRow = 1
         firstBFCol = 1
+        secondBFCol = firstBFCol + self.buttonWidth
         prevButtonRows = 0
         self.auxButtons = [None for x in range(len(self.auxCommands))]
         # We want a big gap between these buttons, which just display additional info on this hero,
         #  and the other buttons, which modify, clear, or replace this hero
         # This many button heights should do it...
-        self.auxBufferHeight = 5
+        self.auxBufferHeight = 4
         # This buffer will span all the columns in buttonFrame
         self.auxBufferWidth = 2
         self.auxBuffer = Label(self.buttonFrame,
@@ -17391,9 +17393,53 @@ class HeroFrame(Frame):
             if self.myAuxCounts[i] == 0:
                 self.auxButtons[i].grid_remove()
         prevButtonRows += self.auxBufferHeight
-        # Text manipulation buttons (Display Text, Display Steps, Save as TXT) go in the next 6
-        #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
         self.buttonColors = ["PaleTurquoise1", "PaleTurquoise2", "steelblue1", "steelblue2"]
+        # Hero Save/Load buttons go in this row
+        self.packButton = Button(self.buttonFrame,
+                                 background=self.buttonColors[0],
+                                 activebackground=self.buttonColors[1],
+                                 text="Save Hero...",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.currentFont,
+                                 command=self.PackHero,
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.packButton.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
+                             column=firstBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
+        self.packButton.bind("<Button-3>",
+                             lambda event, myID="fileButtons", myIndex=[0]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
+        self.loadButton = Button(self.buttonFrame,
+                                 background=self.buttonColors[2],
+                                 activebackground=self.buttonColors[3],
+                                 text="Load Hero...",
+                                 width=self.columnWidth*self.buttonWidth,
+                                 height=self.rowHeight*self.buttonHeight,
+                                 font=self.currentFont,
+                                 command=self.LoadHero,
+                                 padx=self.buttonPadX,
+                                 pady=self.buttonPadY)
+        self.loadButton.grid(row=firstBFRow+self.buttonHeight*prevButtonRows,
+                             column=secondBFCol,
+                             rowspan=self.buttonHeight,
+                             columnspan=self.buttonWidth,
+                             sticky=N+E+S+W)
+        self.loadButton.bind("<Button-3>",
+                             lambda event, myID="fileButtons", myIndex=[1]: \
+                             self.LaunchContextMenu(event,
+                                                    identifier=myID,
+                                                    indices=myIndex))
+        self.fileButtons = [self.packButton, self.loadButton]
+        # ...
+        prevButtonRows += 1
+        # Text manipulation buttons (Display Text, Display Steps, Export as TXT) go in the next 6
+        #  rows of columns 1-4 of buttonFrame, and use self.buttonColors[0:2]
         # All hero manipulation buttons will be in this row or lower
         editRow = firstBFRow + self.buttonHeight * prevButtonRows
         prevButtonRows = 0
@@ -17445,7 +17491,7 @@ class HeroFrame(Frame):
         self.saveButton = Button(self.buttonFrame,
                                  background=self.buttonColors[0],
                                  activebackground=self.buttonColors[1],
-                                 text="Save as TXT",
+                                 text="Export as TXT",
                                  width=self.columnWidth*self.buttonWidth,
                                  height=self.rowHeight*self.buttonHeight,
                                  command=self.SaveTxt,
@@ -17466,7 +17512,6 @@ class HeroFrame(Frame):
         prevButtonRows += 1
         # Hero creation step buttons go in columns 5-8 of buttonFrame, starting at editRow, and use
         #  self.buttonColors[2:4]
-        secondBFCol = firstBFCol + self.buttonWidth
         prevButtonRows = 0
         self.stepCommands = [self.RenameHero,
                              self.AddHeroBackground,
@@ -17815,11 +17860,11 @@ class HeroFrame(Frame):
                 #  option to reset to that step
 ##                print(notePrefix + idText + ": Health-related")
                 if isinstance(self.myHero, Hero):
-                    healthStep = self.myHero.health_step
-                    if healthStep in self.myHero.steps_modified:
-                        contextMenu.add_command(label="Reset Step " + str(healthStep) + ": " + \
-                                                get_step_name(healthStep) + "...",
-                                                command=lambda revert=healthStep: \
+                    health_step = self.myHero.health_step
+                    if health_step in [math.floor(x) for x in self.myHero.steps_modified]:
+                        contextMenu.add_command(label="Reset Health (Step " + str(health_step) + \
+                                                ": " + get_step_name(health_step) + ")...",
+                                                command=lambda revert=health_step: \
                                                 self.RevertHero(autoStep=revert))
             elif identifier in ["statusTitle", "statusValues"]:
                 # If the widget is associated with the hero's Status dice and the hero has
@@ -18102,10 +18147,9 @@ class HeroFrame(Frame):
             saveFirst = messagebox.askyesno(title="Save Changes?",
                                             message="Switching to a different hero will " + \
                                             "clear all data for your current one. Do you " + \
-                                            "want to save this hero to a TXT file before " + \
-                                            "you switch?")
+                                            "want to save this hero before you switch?")
             if saveFirst:
-                self.SaveTxt()
+                self.SaveAny()
         # Switch to the indicated sample Hero
         if self.sampleIndex == 0:
             self.UpdateAll(factory.getShikari())
@@ -18156,10 +18200,9 @@ class HeroFrame(Frame):
             clearDisplay = True
             saveFirst = messagebox.askyesno(title="Save Changes?",
                                             message="This will clear all data for your " + \
-                                            "current hero. Do you want to save this hero " + \
-                                            "to a TXT file first?")
+                                            "current hero. Do you want to save this hero first?")
             if saveFirst:
-                self.SaveTxt()
+                self.SaveAny()
         self.myHero = None
         self.myHeroNames = ["", ""]
         self.myHeroChars = ["" for i in range(4)]
@@ -18387,6 +18430,7 @@ class HeroFrame(Frame):
                 self.stepButtons[self.firstIncomplete].grid()
 ##                print(notePrefix + "stepButtons[" + str(self.firstIncomplete) + "] (" + \
 ##                      step_names[i] + ") shown")
+            self.packButton.config(state=NORMAL)
             for b in self.textButtons:
                 b.config(state=NORMAL)
             # resetButton only needs to be available if myHero has been edited by any step of hero
@@ -18401,6 +18445,7 @@ class HeroFrame(Frame):
         else:
             self.stepButtons[0].config(text="0. Add Names")
             self.resetButton.config(state=DISABLED)
+            self.packButton.config(state=DISABLED)
             for b in self.textButtons:
                 b.config(state=DISABLED)
     def SetFirstIncomplete(self):
@@ -19596,14 +19641,14 @@ class HeroFrame(Frame):
                 closed = 2
                 w.cancel()
         return closed
-    def DisplayHeroSteps(self, inputs=[]):
+    def DisplayHeroSteps(self):
         # Prints the set of attributes (Powers, Qualities, Principles, Abilities, Modes, Forms,
         #  etc.) that the hero gained in each step of hero creation.
         if isinstance(self.myHero, Hero):
             self.myHero.DisplaySteps(width=100)
         else:
             print("You need to complete at least 1 step first!")
-    def SaveTxt(self, inputs=[]):
+    def SaveTxt(self):
         # Lets the user save the hero's attributes to a txt file.
         notePrefix = "### HeroFrame.SaveTxt: "
         indent = "    "
@@ -19634,32 +19679,64 @@ class HeroFrame(Frame):
                 writeText = self.myHero.details(width=-1) + "\n\n" + \
                             self.myHero.AllStepDetails(width=-1)
             # Then ask where they want to save it
-            prompt = "Name a file to save " + self.myHero.hero_name + "'s details in.\nDO NOT " + \
-                     "name a .txt file that already exists " + \
-                     "in this folder. It WILL be overwritten."
-            textVar = StringVar(self, self.myHero.hero_name)
-            success = IntVar(self, 1)
-            question = EntryWindow(self,
-                                   prompt,
-                                   textVar,
-                                   title="Save Hero",
-                                   success=success)
-##            print(notePrefix + "success = " + str(success.get()))
-            if success.get() == 0:
-                # User canceled out; drop everything
-                return
-            fname = textVar.get()
-            # Remove illegal filename characters, plus .
-            for char in '\\/:*?><|.':
-                fname = fname.replace(char, '')
-            # Add file extension, unless the user included it
-            if not fname.endswith(".txt"):
-                fname += ".txt"
+            fname = filedialog.asksaveasfilename(defaultextension=".txt",
+                                                 filetypes=[("Text file", "txt")],
+                                                 title="Save Hero Attributes")
             heroFile = open(fname, mode='w')
             heroFile.write(writeText)
             heroFile.close()
         else:
             messagebox.showerror("Error", "You haven't created a hero yet!")
+    def PackHero(self):
+        # Lets the user save the hero's attributes to a JSON file.
+        notePrefix = "### HeroFrame.PackHero: "
+        if isinstance(self.myHero, Hero):
+            fname = filedialog.asksaveasfilename(defaultextension=".json",
+                                                 filetypes=[("JSON files", "json")],
+                                                 title="Save Hero As")
+##            print(notePrefix + fname)
+            jsonFile = open(fname, mode='w')
+            jsonFile.write(json_encode(self.myHero))
+            jsonFile.close()
+            # ...
+        else:
+            messagebox.showerror("Error", "You haven't created a hero yet!")
+    def LoadHero(self):
+        # Lets the user load a hero from a JSON file.
+        notePrefix = "### HeroFrame.LoadHero: "
+        fname = filedialog.askopenfilename(filetypes=[("JSON files", "json")],
+                                           title="Load Hero")
+##        print(notePrefix + fname)
+        heroFile = open(fname, mode='r')
+        jsonString = heroFile.read()
+        contents = json_decode(jsonString)
+        if isinstance(contents, Hero):
+            self.UpdateAll(contents)
+        else:
+            messagebox.showerror("Error", fname + " doesn't contain a Hero.")
+    def SaveAny(self):
+        # Lets the user choose what format to save in.
+        notePrefix = "### HeroFrame.SaveAny: "
+        if isinstance(self.myHero, Hero):
+            options = ["TXT file (plain text that you can read)",
+                       "JSON file (a file that SCRPG Hero Editor can open later)"]
+            answer = IntVar()
+            success = IntVar(self, 1)
+            question = SelectWindow(self,
+                                    "Choose a format to save this hero's information.\n" + \
+                                    "(WARNING: If you hit Cancel, this hero will NOT be saved.)",
+                                    options,
+                                    var=answer,
+                                    title="Save Hero",
+                                    success=success)
+##            print(notePrefix + "success = " + str(success.get()))
+            if success.get() == 0:
+                # User canceled out; drop everything
+                return
+            if answer.get() == 0:
+                self.SaveTxt()
+            else:
+                self.PackHero()
     def RevertHero(self,
                    autoStep=99):
         notePrefix = "### HeroFrame.RevertHero: "
@@ -19749,11 +19826,11 @@ class HeroFrame(Frame):
                                      branch=True)
                 message = name + "'s existing data from the " + step + \
                           " step and later will be lost. Do you want to save " + \
-                          possessive + " current data to a TXT file first?"
+                          possessive + " current data first?"
                 saveFirst = messagebox.askyesno(title="Save Changes?",
                                                 message=message)
                 if saveFirst:
-                    self.SaveTxt()
+                    self.SaveAny()
                 self.UpdateAll(self.myHero.RetrievePrior(firstRedo))
 ##            elif firstRedo >= nextStep:
 ##                # User selected not to redo

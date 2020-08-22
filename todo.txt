@@ -145,26 +145,9 @@ Context Menu
 . Redo from Step (any widget associated with a hero name field, Power, Quality, Ability, Form, Mode, Status, or Health field)
   
 Let EditNames rename...
-.	Abilities
 	Principles?
-.	Forms
-.	Modes
-.	dice
 
 Replace "Next Font" with a font selection OptionMenu?
-
-Save and load...
-.CustomEncoder/CustomDecoder needs to handle...
-. PQDie
-. Status
-. Principle
-. Ability
-. Mode
-. Form
-. Hero
- HeroFrame needs buttons for...
-  Save Hero
-  Load Hero
  
 Default background is gray94
 
