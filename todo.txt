@@ -154,14 +154,17 @@ Let EditNames rename...
 Replace "Next Font" with a font selection OptionMenu?
 
 Save and load...
- CustomEncoder/CustomDecoder needs to handle...
+.CustomEncoder/CustomDecoder needs to handle...
 . PQDie
 . Status
 . Principle
 . Ability
 . Mode
 . Form
-  Hero
+. Hero
+ HeroFrame needs buttons for...
+  Save Hero
+  Load Hero
  
 Default background is gray94
 

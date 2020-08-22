@@ -6788,6 +6788,24 @@ class Hero:
         if self.prev_version:
             mirror.prev_version = self.prev_version.copy()
         return mirror
+    def __str__(self):
+        summary = ""
+        if self.hero_name:
+            summary += self.hero_name
+        else:
+            summary += "Unnamed Hero"
+        summary += " ("
+        if self.alias:
+            summary += self.alias
+        else:
+            summary += "Identity Unknown"
+        summary += ", "
+        if self.pronoun_set in range(len(pronouns)):
+            summary += pronouns[self.pronoun_set][0] + "/" + pronouns[self.pronoun_set][1]
+        else:
+            summary += "Pronouns Unspecified"
+        summary += ")"
+        return summary
     def SetPrevious(self, stepnum):
         # Used in preparation for editing the Hero's attributes during character creation
         # Creates a copy of the Hero with its current attributes and saves it in
@@ -16566,6 +16584,45 @@ class CustomEncoder(json.JSONEncoder):
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
+        elif isinstance(obj, Hero):
+            return {"__Hero__": True,
+                    "hero_name": obj.hero_name,
+                    "alias": obj.alias,
+                    "pronoun_set": obj.pronoun_set,
+                    "steps_complete": obj.steps_complete,
+                    "substeps_complete": obj.substeps_complete,
+                    "power_dice": obj.power_dice,
+                    "quality_dice": obj.quality_dice,
+                    "health_zones": obj.health_zones,
+                    "status_dice": obj.status_dice,
+                    "background": obj.background,
+                    "ps_dice": obj.ps_dice,
+                    "power_source": obj.power_source,
+                    "arc_dice": obj.arc_dice,
+                    "arc_bonus_quality": obj.arc_bonus_quality,
+                    "archetype": obj.archetype,
+                    "archetype_modifier": obj.archetype_modifier,
+                    "dv_tags": obj.dv_tags,
+                    "dv_transition": obj.dv_transition,
+                    "dv_nature": obj.dv_nature,
+                    "min_forms": obj.min_forms,
+                    "mf_step": obj.mf_step,
+                    "personality": obj.personality,
+                    "dv_personality": obj.dv_personality,
+                    "dv_status": obj.dv_status,
+                    "used_retcon": obj.used_retcon,
+                    "principles": obj.principles,
+                    "abilities": obj.abilities,
+                    "other_modes": obj.other_modes,
+                    "other_forms": obj.other_forms,
+                    "health_pqs": obj.health_pqs,
+                    "health_step": obj.health_step,
+                    "health_status": obj.health_status,
+                    "health_pqdie": obj.health_pqdie,
+                    "health_choice": obj.health_choice,
+                    "proceed": obj.proceed,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
@@ -16656,6 +16713,47 @@ class CustomDecoder(json.JSONDecoder):
                           abilities=obj["abilities"],
                           divided=obj["dv_index"],
                           stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        elif "__Hero__" in obj:
+            # This is a Hero
+            result = Hero(codename=obj["hero_name"],
+                          civ_name=obj["alias"],
+                          pro_index=obj["pronoun_set"])
+            result.steps_complete = obj["steps_complete"]
+            result.substeps_complete = obj["substeps_complete"]
+            result.power_dice = obj["power_dice"]
+            result.quality_dice = obj["quality_dice"]
+            result.health_zones = obj["health_zones"]
+            result.status_dice = obj["status_dice"]
+            result.background = obj["background"]
+            result.ps_dice = obj["ps_dice"]
+            result.power_source = obj["power_source"]
+            result.arc_dice = obj["arc_dice"]
+            result.arc_bonus_quality = obj["arc_bonus_quality"]
+            result.archetype = obj["archetype"]
+            result.archetype_modifier = obj["archetype_modifier"]
+            result.dv_tags = obj["dv_tags"]
+            result.dv_transition = obj["dv_transition"]
+            result.dv_nature = obj["dv_nature"]
+            result.min_forms = obj["min_forms"]
+            result.mf_step = obj["mf_step"]
+            result.personality = obj["personality"]
+            result.dv_personality = obj["dv_personality"]
+            result.dv_status = obj["dv_status"]
+            result.used_retcon = obj["used_retcon"]
+            result.principles = obj["principles"]
+            result.abilities = obj["abilities"]
+            result.other_modes = obj["other_modes"]
+            result.other_forms = obj["other_forms"]
+            result.health_pqs = obj["health_pqs"]
+            result.health_step = obj["health_step"]
+            result.health_status = obj["health_status"]
+            result.health_pqdie = obj["health_pqdie"]
+            result.health_choice = obj["health_choice"]
+            result.proceed = obj["proceed"]
             result.steps_modified = [x for x in obj["steps_modified"]]
             if obj["prev_version"] != None:
                 result.prev_version = obj["prev_version"]
@@ -18460,7 +18558,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            for o in self.myHero.other_forms:
+            for o in [self.myHero]:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
