@@ -158,7 +158,7 @@ Save and load...
 . PQDie
 . Status
 . Principle
-  Ability
+. Ability
   Mode
   Form
   Hero

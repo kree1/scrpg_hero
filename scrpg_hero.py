@@ -16522,6 +16522,26 @@ class CustomEncoder(json.JSONEncoder):
                     "step": obj.step,
                     "steps_modified": obj.steps_modified,
                     "prev_version": obj.prev_version}
+        elif isinstance(obj, Ability):
+            return {"__Ability__": True,
+                    "name": obj.name,
+                    "type": obj.type,
+                    "text": obj.text,
+                    "zone": obj.zone,
+                    "flavorname": obj.flavorname,
+                    "flavordice": obj.flavordice,
+                    "required_pqs": obj.required_pqs,
+                    "pq_options": obj.pq_options,
+                    "insert_pqs": obj.insert_pqs,
+                    "insert_element": obj.insert_element,
+                    "insert_actions": obj.insert_actions,
+                    "action_options": obj.action_options,
+                    "required_categories": obj.required_categories,
+                    "insert_damage": obj.insert_damage,
+                    "requires_energy": obj.requires_energy,
+                    "step": obj.step,
+                    "steps_modified": obj.steps_modified,
+                    "prev_version": obj.prev_version}
         # ...
         return json.JSONEncoder.default(self, obj)
 
@@ -16564,6 +16584,28 @@ class CustomDecoder(json.JSONDecoder):
                                major=obj["major_twist"],
                                green=obj["green_ability"],
                                stepnum=obj["step"])
+            result.steps_modified = [x for x in obj["steps_modified"]]
+            if obj["prev_version"] != None:
+                result.prev_version = obj["prev_version"]
+            return result
+        if "__Ability__" in obj:
+            # This is an Ability
+            result = Ability(obj["name"],
+                             obj["type"],
+                             obj["text"],
+                             obj["zone"],
+                             f_name=obj["flavorname"],
+                             die_names=obj["flavordice"],
+                             pq_reqs=obj["required_pqs"],
+                             pq_opts=obj["pq_options"],
+                             pq_ids=obj["insert_pqs"],
+                             element_id=obj["insert_element"],
+                             actions=obj["insert_actions"],
+                             action_choices=obj["action_options"],
+                             categories=obj["required_categories"],
+                             damage_id=obj["insert_damage"],
+                             energy=obj["requires_energy"],
+                             hero_step=obj["step"])
             result.steps_modified = [x for x in obj["steps_modified"]]
             if obj["prev_version"] != None:
                 result.prev_version = obj["prev_version"]
@@ -18368,7 +18410,7 @@ class HeroFrame(Frame):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
             # Testing for CustomEncoder/CustomDecoder
-            for o in self.myHero.principles:
+            for o in self.myHero.abilities:
                 print(notePrefix + str(o))
                 pack = json_encode(o)
                 print(notePrefix + "packed: " + str(pack))
