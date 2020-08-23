@@ -18602,15 +18602,6 @@ class HeroFrame(Frame):
     def DisplayHeroText(self):
         notePrefix = "### HeroFrame.DisplayHeroText: "
         if isinstance(self.myHero, Hero):
-            # Testing for CustomEncoder/CustomDecoder
-            for o in [self.myHero]:
-                print(notePrefix + str(o))
-                pack = json_encode(o)
-                print(notePrefix + "packed: " + str(pack))
-                print(notePrefix + "packed type: " + str(pack.__class__.__name__))
-                unpack = json_decode(pack)
-                print(notePrefix + "unpacked: " + str(unpack))
-                print(notePrefix + "unpacked type: " + str(unpack.__class__.__name__))
             self.myHero.display(width=100)
         else:
             print(notePrefix + "Your hero needs at least a name first!")
