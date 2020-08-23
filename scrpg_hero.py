@@ -14874,7 +14874,21 @@ class Hero:
                                                                  width=width,
                                                                  prefix=secPrefix+indent)
                                 abilityPrefix = secPrefix + indent * 2
+                            # Move Green Abilities from Principles to a separate list
+                            step_prin_abilities = []
+                            if z == 0:
+                                step_prin_abilities = [a for a in step_zone_abilities \
+                                                       if a.name in [str(p).replace("*","") \
+                                                                     for p in self.principles]]
+                                step_zone_abilities = [a for a in step_zone_abilities \
+                                                       if a not in step_prin_abilities]
                             for a in step_zone_abilities:
+                                aPrime = a.RetrieveAt(substep)
+                                substepText += "\n" + aPrime.details(prefix=abilityPrefix,
+                                                                     width=width,
+                                                                     indented=indented,
+                                                                     base_name=True)
+                            for a in step_prin_abilities:
                                 aPrime = a.RetrieveAt(substep)
                                 substepText += "\n" + aPrime.details(prefix=abilityPrefix,
                                                                      width=width,
@@ -15048,7 +15062,21 @@ class Hero:
                                                                  width=width,
                                                                  prefix=secPrefix+indent)
                                 abilityPrefix = secPrefix + indent * 2
+                            # Move Green Abilities from Principles to a separate list
+                            modified_prin_abilities = []
+                            if z == 0:
+                                modified_prin_abilities = [a for a in modified_zone_abilities \
+                                                           if a.name in [str(p).replace("*","") \
+                                                                         for p in self.principles]]
+                                modified_zone_abilities = [a for a in modified_zone_abilities \
+                                                           if a not in modified_prin_abilities]
                             for a in modified_zone_abilities:
+                                aPrime = a.RetrieveAt(substep)
+                                substepText += "\n" + aPrime.details(width=width,
+                                                                     prefix=abilityPrefix,
+                                                                     indented=indented,
+                                                                     base_name=True)
+                            for a in modified_prin_abilities:
                                 aPrime = a.RetrieveAt(substep)
                                 substepText += "\n" + aPrime.details(width=width,
                                                                      prefix=abilityPrefix,
@@ -15282,11 +15310,21 @@ class Hero:
                                                 prefix=prefix+indent)
         for z in range(len(status_zones)):
             zone_abilities = self.Abilities(z)
-            if len(zone_abilities) > 0:
+            # Move Green Abilities from Principles to a separate list
+            prin_abilities = []
+            if z == 0:
+                prin_abilities = [a for a in zone_abilities \
+                                  if a.name in [str(p).replace("*","") for p in self.principles]]
+                zone_abilities = [a for a in zone_abilities if a not in prin_abilities]
+            if len(zone_abilities) + len(prin_abilities) > 0:
                 heroString += "\n" + split_text("Abilities (" + status_zones[z] + "):",
                                                 width=width,
                                                 prefix=prefix)
                 for a in zone_abilities:
+                    heroString += "\n" + a.details(width=width,
+                                                   prefix=prefix+indent,
+                                                   indented=indented)
+                for a in prin_abilities:
                     heroString += "\n" + a.details(width=width,
                                                    prefix=prefix+indent,
                                                    indented=indented)
