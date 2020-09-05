@@ -2167,7 +2167,7 @@ global a_alien_boost, a_empower_and_repair, a_halt
 # Genius Abilities
 global a_a_plan_for_everything, a_expanded_mind, a_overwhelming_vision
 # Cosmos Abilities
-global a_cosmic_ray_absorption, a_encourage, a_mass_adjust
+global a_cosmic_ray_absorption, a_encourage, a_mass_effect
 # Extradimensional Abilities
 global a_absorb_essence, a_aura_of_pain, a_bizarre_strike, a_attune, a_extrasensory_awareness
 # Unknown Abilities
@@ -2379,7 +2379,7 @@ a_unflagging = Ability("Unflagging",
                        0)
 a_modification_wave = Ability("Modification Wave",
                               "A",
-                              "Boost or Hinder using %p0, and apply that mod against multiple " + \
+                              "Boost or Hinder using %p0, and apply that mod to multiple " + \
                               "nearby targets.",
                               1,
                               categories=[1,2])
@@ -2460,8 +2460,8 @@ a_punishment = Ability("Punishment",
                        0)
 a_energy_converter = Ability("Energy Converter",
                              "R",
-                             "When you take damage from %e, gain a bonus equal to that amount " + \
-                             "of damage.",
+                             "When you take damage from %e, treat the amount of damage you " + \
+                             "take as a Boost action for yourself.",
                              1)
 a_explosive_attack = Ability("Explosive Attack",
                              "A",
@@ -2537,8 +2537,8 @@ a_recharge = Ability("Recharge",
                      categories=[1,2])
 a_techno_absorb = Ability("Techno-Absorb",
                           "I",
-                          "If you would take damage from %e, instead reduce that damage to 0 " + \
-                          "and Recover that amount of Health instead.",
+                          "If you would take damage from %e, you may Recover that amount of " + \
+                          "Health instead.",
                           1,
                           pq_reqs=[Category(1,1)],
                           categories=[1,2],
@@ -2672,7 +2672,7 @@ a_overwhelming_vision = Ability("Overwhelming Vision",
 a_cosmic_ray_absorption = Ability("Cosmic Ray Absorption",
                                   "I",
                                   "If you would take damage from %e, instead reduce that " + \
-                                  "damage to 0 and Recover that amount of Health instead.",
+                                  "damage to 0 and Recover that amount of Health.",
                                   1,
                                   pq_reqs=[Category(1,1)],
                                   categories=[1,2],
@@ -2683,10 +2683,9 @@ a_encourage = Ability("Encourage",
                       "actions using your Min die until your next turn.",
                       1,
                       categories=[1,2])
-a_mass_adjust = Ability("Mass Adjust",
+a_mass_effect = Ability("Mass Effect",
                         "A",
-                        "Boost or Hinder using %p0 and apply that mod against multiple close " + \
-                        "targets.",
+                        "Boost or Hinder using %p0 and apply that mod to multiple close targets.",
                         1,
                         categories=[1,2])
 a_absorb_essence = Ability("Absorb Essence",
@@ -2767,8 +2766,8 @@ a_resilience = Ability("Resilience",
                        0)
 a_twist_reality = Ability("Twist Reality",
                           "R",
-                          "After rolling during your turn, you may take 1 damage to reroll " + \
-                          "your entire dice pool.",
+                          "After rolling during your turn, you may take 1 irreducible damage " + \
+                          "to reroll your entire dice pool.",
                           0)
 a_power_from_beyond = Ability("Power from Beyond",
                               "A",
@@ -2924,7 +2923,7 @@ a_sniper_aim = Ability("Sniper Aim",
                        categories=[2,2])
 a_called_shot = Ability("Called Shot",
                         "A",
-                        "Attack using %p0. Create a Boost for another hero using your Max die.",
+                        "Attack using %p0. Boost another hero using your Max die.",
                         1,
                         categories=[0,2])
 a_exploding_ammo = Ability("Exploding Ammo",
@@ -2970,7 +2969,7 @@ a_precise_hit = Ability("Precise Hit",
 a_energy_immunity = Ability("Energy Immunity",
                             "I",
                             "If you would take damage from %e, instead reduce that damage to " + \
-                            "0 and Recover that amount of Health instead.",
+                            "0 and Recover that amount of Health.",
                             1,
                             pq_reqs=[Category(1,1)],
                             categories=[1,2],
@@ -3012,8 +3011,7 @@ a_throw_minion2 = Ability("Throw Minion",
                           "A",
                           "Attack a minion using %p0. Whatever that minion rolls as defense " + \
                           "Attacks another target of your choice.",
-                          -1,
-                          categories=[1,2])
+                          -1)
 a_armored = Ability("Armored",
                     "I",
                     "Reduce any physical or energy damage you take by 1 while you are in the " + \
@@ -3052,7 +3050,7 @@ a_aerial_bombardment = Ability("Aerial Bombardment",
 a_aerial_surveillance = Ability("Aerial Surveillance",
                                 "A",
                                 "Boost using %p0. Apply that bonus to all hero Attack and " + \
-                                "Overcome actions until your next turn.",
+                                "Overcome actions until the start of your next turn.",
                                 -1)
 a_barrel_roll = Ability("Barrel Roll",
                         "R",
@@ -3077,7 +3075,7 @@ a_strike_and_swoop = Ability("Strike & Swoop",
                              -1)
 a_backlash = Ability("Backlash",
                      "A",
-                     "Attack using %p0. Take damage equal to your Min die.",
+                     "Attack using %p0. Use your Max die. Take damage equal to your Min die.",
                      0,
                      pq_reqs=[Category(1,1)],
                      pq_opts=[Category(1,1)],
@@ -3299,7 +3297,7 @@ a_telekinetic_assault = Ability("Telekinetic Assault",
 a_telepathic_whammy = Ability("Telepathic Whammy",
                               "A",
                               "Attack using %p0 and use your Max die. Hinder the target with " + \
-                              "a persistent penalty equal to your Min die.",
+                              "a persistent penalty using your Min die.",
                               1,
                               pq_reqs=[[[1,6,7]]],
                               pq_opts=[[[1,6,7]]],
@@ -4010,8 +4008,8 @@ a_change_self = Ability("Change Self",
                         pq_reqs=[Category(1,7)])
 a_empowerment = Ability("Empowerment",
                         "R",
-                        "Whenever you are dealt damage, roll your single %p0 die to Defend " + \
-                        "against the Attack and Boost yourself.",
+                        "When you are Attacked, roll your single %p0 die as a Defend against " + \
+                        "that Attack. Also Boost yourself with that same roll.",
                         2,
                         pq_reqs=[Category(1,7)],
                         pq_opts=[Category(1,7)],
@@ -4111,16 +4109,16 @@ a_considered_planning = Ability("Considered Planning",
                                 "A",
                                 "Boost using %p0 and use your Max die. Defend against all " + \
                                 "Attacks against you using your Mid die until your next turn. " + \
-                                "Note your Min die- as a Reaction, until your next turn, you " + \
-                                "may Hinder an attacker using that die.",
+                                "Note your Min die resutl: as a Reaction, until your next " + \
+                                "turn, you may Hinder an attacker using that result.",
                                 2,
                                 pq_reqs=[Category(0,1)],
                                 pq_opts=[Category(0,1)],
                                 categories=[0,2])
 a_harmony = Ability("Harmony",
                     "I",
-                    "As long as you have at least one bonus created from %p0, treat your %p1 " + \
-                    "die as one size higher (max d12).",
+                    "As long as you have at least one bonus created from %p0, treat %p1 as " + \
+                    "one size higher (max d12).",
                     2,
                     pq_reqs=[Category(0,1)],
                     pq_opts=[Category(0,1)],
@@ -4135,8 +4133,8 @@ a_book_it = Ability("Book It",
                     categories=[0,2])
 a_endurance_fighting = Ability("Endurance Fighting",
                                "I",
-                               "Whenever you Attack a target with an action, also Hinder that " + \
-                               "target with your Min die.",
+                               "Whenever you Attack a target with an action, you may also " + \
+                               "Hinder that target with your Min die.",
                                2,
                                pq_reqs=[Category(0,2)])
 a_finishing_blow = Ability("Finishing Blow",
@@ -4527,7 +4525,7 @@ ps_cosmos = ["Cosmos",
              [[1,1,1], [1,3,2]] + Category(1,2) + Category(1,5) + Category(1,6) + Category(1,7) + \
              Category(1,8),
              2,
-             [a_cosmic_ray_absorption, a_encourage, a_mass_adjust],
+             [a_cosmic_ray_absorption, a_encourage, a_mass_effect],
              0,
              [],
              6,
@@ -5728,7 +5726,8 @@ min_hive_mind = ["Hive-Mind",
                  "action as it does.",
                  4]
 min_turret = ["Turret",
-              "When the minion Attacks, it may split its die into two dice of smaller sizes.",
+              "When Attacking, the minion may split its die into two dice, each one size " + \
+              "smaller than its die, and either Attack one target with both, or two targets.",
               4]
 min_collection = [min_autonomous,
                   min_burrowing,
