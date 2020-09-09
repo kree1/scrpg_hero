@@ -4664,7 +4664,8 @@ global arc_modular, arc_collection, arc_special, arc_width
 arc_speedster = ["Speedster",
                  "Sorrygottagobeintwelveplacesatonce...",
                  [[1,0,1]],
-                 2,
+                 1,
+                 True,
                  2,
                  [[1,0,0], [1,7,4], [1,3,3], [1,0,3]] + Category(1,5),
                  Category(0,1) + Category(0,2),
@@ -4682,7 +4683,8 @@ arc_speedster = ["Speedster",
                  1,
                  0]
 # Primary Power/Quality:  Speed
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Agility, Intangibility, Lightning Calculator, Vitality, any Mobility
 # Tertiary PQs:           any Mental, any Physical
@@ -4702,10 +4704,11 @@ arc_speedster = ["Speedster",
 arc_shadow = ["Shadow",
               "You operate in the shadows via subtlety and guile.",
               [[0,2,5]],
-              2,
+              1,
+              True,
               0,
               [],
-              [[1,7,4], [1,7,5], [1,2,1]] + Category(1,0) + [[0,2,m] for m in range(5)],
+              [[1,7,4], [1,7,5], [1,2,1]] + Category(1,0) + Category(0,2),
               [],
               2,
               1,
@@ -4720,7 +4723,8 @@ arc_shadow = ["Shadow",
               1,
               0]
 # Primary Power/Quality:  Stealth
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    0
 # Secondary Powers:       none
 # Tertiary PQs:           Intangibility, Invisibility, Signature Weaponry, any Athletic, 
@@ -4741,7 +4745,8 @@ arc_shadow = ["Shadow",
 arc_physical_powerhouse = ["Physical Powerhouse",
                            "You are the brute squad.",
                            [[1,0,2]],
-                           2,
+                           1,
+                           True,
                            1,
                            [[1,7,1], [1,5,1], [1,2,1], [1,7,8]] + Category(1,0),
                            Category(0,2) + Category(0,3),
@@ -4760,7 +4765,8 @@ arc_physical_powerhouse = ["Physical Powerhouse",
                            1,
                            0]
 # Primary Power/Quality:  Strength
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1
 # Secondary Powers:       Density Control, Leaping, Signature Weaponry, Size-Changing, any Athletic
 # Tertiary PQs:           any Physical, any Social
@@ -4781,7 +4787,8 @@ arc_physical_powerhouse = ["Physical Powerhouse",
 arc_marksman = ["Marksman",
                 "Whether it's guns, a bow and arrow, or something else, you know your aim is true.",
                 [[1,2,1]],
-                2,
+                1,
+                True,
                 2,
                 [[1,2,0], [1,5,4]] + Category(1,0) + Category(1,3) + Category(1,8),
                 Category(0,0) + Category(0,1) + Category(0,2),
@@ -4799,7 +4806,8 @@ arc_marksman = ["Marksman",
                 4,
                 0]
 # Primary Power/Quality:  Signature Weaponry
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Signature Vehicle, Swinging, any Athletic, any Intellectual, 
 #                         any Technological
@@ -4821,6 +4829,7 @@ arc_blaster = ["Blaster",
                "No need to mess around- the best way to use energy is to throw it at the bad guy.",
                Category(1,1),
                1,
+               True,
                1,
                [[1,2,1]] + Category(1,1) + Category(1,5) + Category(1,8),
                Category(0,1) + Category(0,2),
@@ -4838,7 +4847,8 @@ arc_blaster = ["Blaster",
                0,
                0]
 # Primary Power/Quality:  any Elemental/Energy
-# If already present:     Skip or choose another
+# Primary Qty Required:   1
+# Primary swaps allowed:  True
 # Secondary Power Qty:    1
 # Secondary Powers:       Signature Vehicle, any Elemental/Energy, any Mobility, any Technological
 # Tertiary PQs:           any Mental, any Physical
@@ -4858,7 +4868,8 @@ arc_blaster = ["Blaster",
 arc_close_quarters_combatant = ["Close Quarters Combatant",
                                 "You prefer to fight up close and personal.",
                                 [[0,2,1]],
-                                2,
+                                1,
+                                True,
                                 2,
                                 [[1,2,1]] + Category(1,0) + Category(1,5) + Category(1,8),
                                 Category(0,2) + Category(0,3),
@@ -4877,7 +4888,8 @@ arc_close_quarters_combatant = ["Close Quarters Combatant",
                                 4,
                                 0]
 # Primary Power/Quality:  Close Combat
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Signature Weaponry, any Athletic, any Mobility, any Technological
 # Tertiary PQs:           any Physical, any Social
@@ -4899,6 +4911,7 @@ arc_armored = ["Armored",
                "You are an indomitable and unstoppable force.",
                [],
                0,
+               False,
                2,
                Category(1,2) + Category(1,0) + Category(1,3) + Category(1,4) + Category(1,5) + \
                Category(1,8),
@@ -4917,7 +4930,8 @@ arc_armored = ["Armored",
                1,
                1]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Intellectual, any Materials, 
 #                         any Mobility, any Technological
@@ -4938,7 +4952,8 @@ arc_armored = ["Armored",
 arc_flier = ["Flier",
              "The best way to support your team is from the air.",
              [[1,5,0], [1,2,0]],
-             2,
+             1,
+             True,
              2,
              Category(1,2) + Category(1,0) + Category(1,5) + Category(1,8),
              Category(0,0) + Category(0,2),
@@ -4957,7 +4972,8 @@ arc_flier = ["Flier",
              2,
              0]
 # Primary Power/Quality:  Flight or Signature Vehicle
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Mobility, any Technological
 # Tertiary PQs:           any Information, any Physical
@@ -4979,7 +4995,8 @@ arc_elemental_manipulator = ["Elemental Manipulator",
                              "Energies are yours to command and flow, sometimes through your " + \
                              "own body.",
                              Category(1,1),
-                             2,
+                             1,
+                             True,
                              1,
                              [[1,7,0], [1,5,0], [1,5,1], [1,5,3], [1,4,4]] + Category(1,2) + \
                              Category(1,1),
@@ -5000,7 +5017,8 @@ arc_elemental_manipulator = ["Elemental Manipulator",
                              0,
                              0]
 # Primary Power/Quality:  any Elemental/Energy
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1
 # Secondary Powers:       Absorption, Flight, Leaping, Swimming, Transmutation, any Hallmark, 
 #                         any Elemental/Energy
@@ -5022,6 +5040,7 @@ arc_robot_cyborg = ["Robot/Cyborg",
                     "Your machine nature gives you adaptability and firepower.",
                     [],
                     0,
+                    False,
                     2,
                     Category(1,2) + Category(1,0) + Category(1,3) + Category(1,5) + \
                     Category(1,7) + Category(1,8),
@@ -5041,7 +5060,8 @@ arc_robot_cyborg = ["Robot/Cyborg",
                     1,
                     2]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Intellectual, any Mobility, 
 #                         any Self Control, any Technological
@@ -5064,6 +5084,7 @@ arc_sorceror = ["Sorcerer",
                 "You command an arsenal of spells and mystical forces.",
                 [],
                 0,
+                False,
                 2,
                 Category(1,1) + Category(1,4) + Category(1,5) + Category(1,6) + Category(1,7),
                 Category(0,0) + Category(0,1),
@@ -5081,7 +5102,8 @@ arc_sorceror = ["Sorcerer",
                 0,
                 0]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Elemental/Energy, any Materials, any Mobility, any Psychic, 
 #                         any Self Control
@@ -5103,9 +5125,11 @@ arc_psychic = ["Psychic",
                "Mysterious mental abilities give you the ability to manifest a variety of " + \
                "powers with but a thought.",
                Category(1,6),
-               0,
                2,
-               Category(1,3) + Category(1,4) + Category(1,6) + Category(1,7),
+               False,
+               0,
+               [],
+               Category(1,3) + Category(1,4) + Category(1,6) + Category(1,7) + Category(0,0) + \
                Category(0,1),
                [],
                2,
@@ -5123,10 +5147,12 @@ arc_psychic = ["Psychic",
                0,
                0]
 # Primary Power/Quality:  any Psychic
-# If already present:     none
-# Secondary Power Qty:    1 or more(*)
-# Secondary Powers:       any Intellectual, any Materials, any Psychic, any Self Control(*)
-# Tertiary PQs:           any Mental
+# Primary Qty Required:   2
+# Primary swaps allowed:  No
+# Secondary Power Qty:    0
+# Secondary Powers:       none
+# Tertiary PQs:           any Intellectual, any Materials, any Psychic, any Self Control,
+#                         any Information, any Mental
 # Mandatory Abilities:    none
 # Green Ability Qty:      2
 # Yellow Ability Qty:     2
@@ -5145,7 +5171,8 @@ arc_psychic = ["Psychic",
 arc_transporter = ["Transporter",
                    "You know how to get exactly where you need to be, when you need to be there.",
                    [[1,2,0]] + Category(1,5),
-                   2,
+                   1,
+                   True,
                    2,
                    [[1,2,0]] + Category(1,0) + Category(1,5) + Category(1,6) + Category(1,8),
                    Category(0,2) + Category(0,3),
@@ -5164,7 +5191,8 @@ arc_transporter = ["Transporter",
                    1,
                    0]
 # Primary Power/Quality:  Signature Vehicle or any Mobility
-# If already present:     Skip or swap out
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Signature Vehicle, any Athletic, any Mobility, any Psychic, 
 #                         any Technological
@@ -5186,6 +5214,7 @@ arc_minion_maker = ["Minion-Maker",
                     "Who needs friends when you can just make them?",
                     [],
                     0,
+                    False,
                     2,
                     [[1,7,2], [1,8,1], [1,7,6], [1,8,3]] + Category(1,1) + Category(1,4),
                     Category(0,0) + Category(0,1),
@@ -5203,7 +5232,8 @@ arc_minion_maker = ["Minion-Maker",
                     1,
                     0]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Duplication, Inventions, Part Detachment, Robotics, any Elemental/Energy,
 #                         any Materials
@@ -5227,6 +5257,7 @@ arc_wild_card = ["Wild Card",
                  "sometimes not even you.",
                  [],
                  0,
+                 False,
                  2,
                  Category(1,2) + Category(1,0) + Category(1,3) + Category(1,5) + Category(1,7),
                  Category(0,2) + Category(0,3),
@@ -5245,7 +5276,8 @@ arc_wild_card = ["Wild Card",
                  2,
                  0]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  False
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Athletic, any Intellectual, any Mobility, 
 #                         any Self Control
@@ -5267,6 +5299,7 @@ arc_form_changer = ["Form-Changer",
                     "You can shift yourself between a few different forms.",
                     Category(1,7),
                     1,
+                    True,
                     2,
                     Category(1,0) + Category(1,5) + Category(1,7) + Category(1,8),
                     Category(0,0) + Category(0,2),
@@ -5284,7 +5317,8 @@ arc_form_changer = ["Form-Changer",
                     0,
                     3]
 # Primary Power/Quality:  any Self Control
-# If already present:     Skip or choose another
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Athletic, any Mobility, any Self Control, any Technological
 # Tertiary PQs:           any Information, any Physical
@@ -5304,7 +5338,8 @@ arc_form_changer = ["Form-Changer",
 arc_gadgeteer = ["Gadgeteer",
                  "Any problem can be solved through sufficient brainpower.",
                  Category(1,3),
-                 0,
+                 1,
+                 True,
                  2,
                  Category(1,2) + Category(1,3) + Category(1,5) + Category(1,6) + Category(1,8),
                  Category(0,0) + Category(0,1),
@@ -5322,7 +5357,8 @@ arc_gadgeteer = ["Gadgeteer",
                  3,
                  0]
 # Primary Power/Quality:  any Intellectual
-# If already present:     none
+# Primary Qty Required:   1
+# Primary swaps allowed:  Yes
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       any Hallmark, any Intellectual, any Mobility, any Psychic, 
 #                         any Technological
@@ -5344,6 +5380,7 @@ arc_reality_shaper = ["Reality Shaper",
                       "God may not play dice with the universe, but you do.",
                       [],
                       0,
+                      False,
                       2,
                       [[1,7,1], [1,7,4], [1,7,5], [1,0,1], [1,5,5], [1,4,4]] + Category(1,3) + \
                       Category(1,6) + Category(1,8),
@@ -5364,7 +5401,8 @@ arc_reality_shaper = ["Reality Shaper",
                       1,
                       0]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    1 or more
 # Secondary Powers:       Density Control, Intangibility, Invisibility, Speed, Teleportation, 
 #                         Transmutation, any Intellectual, any Psychic, any Technological
@@ -5387,6 +5425,7 @@ arc_divided = ["Divided",
                "powered heroic form.",
                [],
                0,
+               False,
                0,
                [],
                [],
@@ -5404,7 +5443,8 @@ arc_divided = ["Divided",
                4,
                4]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    0
 # Secondary Powers:       none
 # Tertiary PQs:           none
@@ -5427,6 +5467,7 @@ arc_modular = ["Modular",
                "give their own advantages and disadvantages.",
                [],
                0,
+               False,
                0,
                [],
                [],
@@ -5444,7 +5485,8 @@ arc_modular = ["Modular",
                -1,
                5]
 # Primary Power/Quality:  none
-# If already present:     none
+# Primary Qty Required:   0
+# Primary swaps allowed:  No
 # Secondary Power Qty:    none
 # Secondary Powers:       none
 # Tertiary PQs:           none
@@ -6404,7 +6446,7 @@ def ArchetypeDetails(index,
                               prefix=prefix)
         if hanging:
             prefix += "    "
-        if index in range(18):
+        if index in range(len(arc_simple)):
             # A normal standalone archetype
             # Include the primary power(s)/quality(ies) from archetype[2]
             pcat = DieCategory(archetype[2])
@@ -6413,11 +6455,13 @@ def ArchetypeDetails(index,
                                                       ": " + MixedPQ(archetype[2][0]),
                                                       width=width,
                                                       prefix=prefix)
+                existing_primary = MixedPQ(archetype[2][0])
             elif len(archetype[2])>1:
                 arcText += "\n" * breaks + split_text("Primary " + categories_plural[pcat] + \
-                                                      " (choose 1):",
+                                                      " (choose " + str(archetype[3]) + "):",
                                                       width=width,
                                                       prefix=prefix)
+                existing_primary = "one of these"
                 primary_choices = archetype[2]
                 if grid:
                     # Include primary choices spaced in equal columns
@@ -6440,22 +6484,22 @@ def ArchetypeDetails(index,
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
                                                  prefix=prefix+indent)
-            if archetype[3] > 0:
-                alternatives = ["", "skip it or choose another", "skip it or swap in a new die"]
-                arcText += "\n" + split_text("(If already present: " + \
-                                             alternatives[archetype[3]] + ")",
+            if len(archetype[2]) > 0 and archetype[4]:
+                arcText += "\n" + split_text("If you already have " + existing_primary + \
+                                             ", you may swap the die with one of your new " + \
+                                             "dice.",
                                              width=width,
                                              prefix=prefix+indent)
-            # Include the secondary power(s)/quality(ies) from archetype[5]
+            # Include the secondary power(s)/quality(ies) from archetype[6]
             secondary_count = "1"
-            if archetype[4] > 1:
+            if archetype[5] > 1:
                 secondary_count = "1 or more"
-            if archetype[4] > 0:
+            if archetype[5] > 0:
                 arcText += "\n" * breaks + split_text("Required Powers/Qualities (choose " + \
                                                       secondary_count + "):",
                                                       width=width,
                                                       prefix=prefix)
-                secondary_choices = archetype[5]
+                secondary_choices = archetype[6]
                 if grid:
                     # Include secondary choices spaced in equal columns
                     maxWidth = 2 + max([len(x) for x in MixedPQs(secondary_choices)])
@@ -6477,12 +6521,12 @@ def ArchetypeDetails(index,
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
                                                  prefix=prefix+indent)
-            # Include the tertiary power(s)/quality(ies) from archetype[6]
-            if len(archetype[6]) > 0:
+            # Include the tertiary power(s)/quality(ies) from archetype[7]
+            if len(archetype[7]) > 0:
                 arcText += "\n" * breaks + split_text("Optional Powers/Qualities:",
                                                       width=width,
                                                       prefix=prefix)
-                tertiary_choices = archetype[6]
+                tertiary_choices = archetype[7]
                 if grid:
                     # Include tertiary choices spaced in equal columns
                     maxWidth = 2 + max([len(x) for x in MixedPQs(tertiary_choices)])
@@ -6504,9 +6548,9 @@ def ArchetypeDetails(index,
                     arcText += "\n" + split_text(this_line,
                                                  width=width,
                                                  prefix=prefix+indent)
-            # Include the mandatory Abilities from archetype[7]
-            if len(archetype[7]) > 0:
-                if len(archetype[7]) == 1:
+            # Include the mandatory Abilities from archetype[8]
+            if len(archetype[8]) > 0:
+                if len(archetype[8]) == 1:
                     arcText += "\n" * breaks + split_text("Required Ability:",
                                                           width=width,
                                                           prefix=prefix)
@@ -6514,21 +6558,21 @@ def ArchetypeDetails(index,
                     arcText += "\n" * breaks + split_text("Required Abilities:",
                                                           width=width,
                                                           prefix=prefix)
-                for ability in archetype[7]:
+                for ability in archetype[8]:
                     arcText += "\n" + ability.details(width=width,
                                                       prefix=prefix+indent,
                                                       indented=indented)
             green_text = "Green Ability"
             yellow_text = "Yellow Ability"
-            if archetype[8] > 1:
+            if archetype[9] > 1:
                 green_text = "Green Abilities"
                 green_restrictions = ""
-                if archetype[15] >= archetype[8]:
+                if archetype[16] >= archetype[9]:
                     green_restrictions = "each using a different Power/Quality"
-                elif archetype[15] > 0:
-                    green_restrictions = "using at least " + str(archetype[15]) + \
+                elif archetype[16] > 0:
+                    green_restrictions = "using at least " + str(archetype[16]) + \
                                          " different Powers/Qualities"
-                if archetype[17]:
+                if archetype[18]:
                     if len(green_restrictions) == 0:
                         green_restrictions = "using only Powers/Qualities from the " + \
                                              archetype[0] + " lists"
@@ -6537,11 +6581,11 @@ def ArchetypeDetails(index,
                                               archetype[0] + " lists"
                 if len(green_restrictions) > 0:
                     green_text += ", " + green_restrictions + ","
-            if archetype[9] > 1:
+            if archetype[10] > 1:
                 yellow_text = "Yellow Abilities"
-                if archetype[16] >= archetype[9]:
+                if archetype[17] >= archetype[10]:
                     yellow_text += ", each using a different Power/Quality,"
-            # Prepare restrictions on Green Abilities from archetype[13] and archetype[14], if
+            # Prepare restrictions on Green Abilities from archetype[14] and archetype[15], if
             #  applicable
             # If Green and Yellow Abilities are separate, this is displayed after Green; otherwise,
             #  after both
@@ -6550,21 +6594,21 @@ def ArchetypeDetails(index,
             ptext = "the Primary " + categories_singular[pcat]
             if len(archetype[2])==1:
                 ptext = MixedPQ(archetype[2][0])
-            if archetype[14] >= 0:
-                gcat = categories_singular[archetype[14]]
+            if archetype[15] >= 0:
+                gcat = categories_singular[archetype[15]]
                 gtext = "(1 Green Ability uses " + ptext + "; another uses a " + gcat + ")"
-            elif archetype[13]:
+            elif archetype[14]:
                 gtext = "(1 Green Ability uses " + ptext + ")"
-            if len(archetype[12]) > 0:
+            if len(archetype[13]) > 0:
                 # Green and Yellow Abilities are listed together
-                # Add list of Green/Yellow Abilities from archetype[12], then add Green
+                # Add list of Green/Yellow Abilities from archetype[13], then add Green
                 #  restrictions if present
-                arcText += "\n" * breaks + split_text(str(archetype[8]) + " " + green_text + \
-                                                      " and " + str(archetype[9]) + " " + \
+                arcText += "\n" * breaks + split_text(str(archetype[9]) + " " + green_text + \
+                                                      " and " + str(archetype[10]) + " " + \
                                                       yellow_text + " from:",
                                                       width=width,
                                                       prefix=prefix)
-                for ability in archetype[12]:
+                for ability in archetype[13]:
                     arcText += "\n" + ability.details(width=width,
                                                       prefix=prefix+indent,
                                                       indented=indented)
@@ -6574,23 +6618,10 @@ def ArchetypeDetails(index,
                                                  prefix=prefix)
             else:
                 # Green and Yellow Abilities are listed separately
-                # Add list of Green Abilities from archetype[10], then add Green restrictions if
-                #  present, then add list of Yellow Abilities from archetype[11]
-                if archetype[8] > 0:
-                    arcText += "\n" * breaks + split_text(str(archetype[8]) + " " + green_text + \
-                                                          " from:",
-                                                          width=width,
-                                                          prefix=prefix)
-                    for ability in archetype[10]:
-                        arcText += "\n" + ability.details(width=width,
-                                                          prefix=prefix+indent,
-                                                          indented=indented)
-                    if len(gtext) > 0:
-                        arcText += "\n" + split_text(gtext,
-                                                     width=width,
-                                                     prefix=prefix)
+                # Add list of Green Abilities from archetype[11], then add Green restrictions if
+                #  present, then add list of Yellow Abilities from archetype[12]
                 if archetype[9] > 0:
-                    arcText += "\n" * breaks + split_text(str(archetype[9]) + " " + yellow_text + \
+                    arcText += "\n" * breaks + split_text(str(archetype[9]) + " " + green_text + \
                                                           " from:",
                                                           width=width,
                                                           prefix=prefix)
@@ -6598,20 +6629,33 @@ def ArchetypeDetails(index,
                         arcText += "\n" + ability.details(width=width,
                                                           prefix=prefix+indent,
                                                           indented=indented)
-            # Add Principle category from archetype[18]
-            arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
+                    if len(gtext) > 0:
+                        arcText += "\n" + split_text(gtext,
+                                                     width=width,
+                                                     prefix=prefix)
+                if archetype[10] > 0:
+                    arcText += "\n" * breaks + split_text(str(archetype[10]) + " " + yellow_text + \
+                                                          " from:",
+                                                          width=width,
+                                                          prefix=prefix)
+                    for ability in archetype[12]:
+                        arcText += "\n" + ability.details(width=width,
+                                                          prefix=prefix+indent,
+                                                          indented=indented)
+            # Add Principle category from archetype[19]
+            arcText += "\n" * breaks + split_text(rc_names[archetype[19]] + " Principle",
                                                   width=width,
                                                   prefix=prefix)
             # Add bonus effects, if applicable
-            if archetype[19] > 0:
-                arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+            if archetype[20] > 0:
+                arcText += "\n" * breaks + split_text(arc_special[archetype[20]],
                                                       width=width,
                                                       prefix=prefix)
         elif index == 18:
             # Divided
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+            arcText += "\n" * breaks + split_text(arc_special[archetype[20]],
                                                   width=width,
                                                   prefix=prefix)
             # Include the Transition Types and their associated Green Abilities.
@@ -6631,20 +6675,20 @@ def ArchetypeDetails(index,
             for i in range(len(dn_collection)):
                 arcText += "\n" + dn_collection[i].details(width=width,
                                                            prefix=prefix+indent)
-            # Include the Principle category from archetype[18]
-            arcText += "\n" * breaks + split_text(rc_names[archetype[18]] + " Principle",
+            # Include the Principle category from archetype[19]
+            arcText += "\n" * breaks + split_text(rc_names[archetype[19]] + " Principle",
                                                   width=width,
                                                   prefix=prefix)
         elif index == 19:
             # Modular
             # Bonus effects first- they indicate that this is a complex Archetype that needs a
             #  simple one underneath
-            arcText += "\n" * breaks + split_text(arc_special[archetype[19]],
+            arcText += "\n" * breaks + split_text(arc_special[archetype[20]],
                                                   width=width,
                                                   prefix=prefix)
-            # Include the mandatory Abilities from archetype[7]
-            if len(archetype[7]) > 0:
-                if len(archetype[7]) == 1:
+            # Include the mandatory Abilities from archetype[8]
+            if len(archetype[8]) > 0:
+                if len(archetype[8]) == 1:
                     arcText += "\n" * breaks + split_text("Required Ability:",
                                                           width=width,
                                                           prefix=prefix)
@@ -6652,7 +6696,7 @@ def ArchetypeDetails(index,
                     arcText += "\n" * breaks + split_text("Required Abilities:",
                                                           width=width,
                                                           prefix=prefix)
-                for ability in archetype[7]:
+                for ability in archetype[8]:
                     arcText += "\n" + ability.details(width=width,
                                                       prefix=prefix+indent,
                                                       indented=indented)
@@ -9932,7 +9976,7 @@ class Hero:
         if len(inputs) > 0:
             print(notePrefix + "inputs=" + str(inputs))
         this_step = max([0, stepnum])
-        fc_powers = arc_collection[15][5]
+        fc_powers = arc_collection[15][6]
         form_options = form_abilities_green
         if zone > 0:
             form_options = form_abilities_green + form_abilities_yellow
@@ -10299,49 +10343,52 @@ class Hero:
         # This is Step 3 of hero creation!
         this_step = 3
         your_arc = arc_simple[arc_index]
-        # your_arc is a list of 20 objects:
+        # your_arc is a list of 21 objects:
         # 0: title
         # 1: description
-        # 2: list of primary powers/qualities (if applicable)
-        # 3: index of what to do if you have the primary power/quality already (if applicable)
+        # 2: list of primary power/quality options (if applicable)
+        # 3: number of required primary powers/qualities (if applicable)
+        # 4: whether a previously added power/quality from the primary list can have its die size
+        #     swapped out
         primary_pqs = [pq for pq in your_arc[2]]
         primary_matches = [d for d in self.power_dice + self.quality_dice \
                            if d.triplet() in primary_pqs]
         primary_category = DieCategory(primary_pqs)
-        primary_alt = your_arc[3]
-        # 4: number of secondary powers/qualities (if applicable) (2 indicates "1 or more")
-        # 5: list of secondary powers/qualities (if applicable)
-        secondary_count = your_arc[4]
-        secondary_pqs = [pq for pq in your_arc[5]]
-        # 6: list of tertiary powers/qualities
-        tertiary_pqs = [pq for pq in your_arc[6]]
-        # 7: list of mandatory abilities (if applicable)
-        mandatory_abilities = [a for a in your_arc[7]]
-        # 8: number of green abilities to choose
-        # 9: number of Yellow Abilities to choose (if applicable)
-        green_count = your_arc[8]
-        yellow_count = your_arc[9]
-        # 10: list of green ability options (if applicable)
-        # 11: list of Yellow Ability options (if applicable)
-        # 12: list of green-or-Yellow Ability options (if applicable)
-        green_abilities = [a for a in your_arc[10]]
-        yellow_abilities = [a for a in your_arc[11]]
-        mixed_abilities = [a for a in your_arc[12]]
-        # 13: whether a green ability is required to use the primary power/quality
-        # 14: what category of die is required for the other green ability (if applicable)
-        requires_primary = your_arc[13]
-        category_required = your_arc[14]
-        # 15: requirement for unique Power/Quality dice used in Green Abilities
-        # 16: requirement for unique Power/Quality dice used in Yellow Abilities
-        green_unique = your_arc[15]
-        yellow_unique = your_arc[16]
-        # 17: whether all Green Abilities are limited to powers/qualities listed in the Archetype
-        green_limited = your_arc[17]
+        primary_req = your_arc[3]
+        primary_swappable = your_arc[4]
+        # 5: number of secondary powers/qualities (if applicable) (2 indicates "1 or more")
+        # 6: list of secondary powers/qualities (if applicable)
+        secondary_count = your_arc[5]
+        secondary_pqs = [pq for pq in your_arc[6]]
+        # 7: list of tertiary powers/qualities
+        tertiary_pqs = [pq for pq in your_arc[7]]
+        # 8: list of mandatory abilities (if applicable)
+        mandatory_abilities = [a for a in your_arc[8]]
+        # 9: number of green abilities to choose
+        # 10: number of Yellow Abilities to choose (if applicable)
+        green_count = your_arc[9]
+        yellow_count = your_arc[10]
+        # 11: list of green ability options (if applicable)
+        # 12: list of Yellow Ability options (if applicable)
+        # 13: list of green-or-Yellow Ability options (if applicable)
+        green_abilities = [a for a in your_arc[11]]
+        yellow_abilities = [a for a in your_arc[12]]
+        mixed_abilities = [a for a in your_arc[13]]
+        # 14: whether a green ability is required to use the primary power/quality
+        # 15: what category of die is required for the other green ability (if applicable)
+        requires_primary = your_arc[14]
+        category_required = your_arc[15]
+        # 16: requirement for unique Power/Quality dice used in Green Abilities
+        # 17: requirement for unique Power/Quality dice used in Yellow Abilities
+        green_unique = your_arc[16]
+        yellow_unique = your_arc[17]
+        # 18: whether all Green Abilities are limited to powers/qualities listed in the Archetype
+        green_limited = your_arc[18]
         all_arc_pqs = primary_pqs + secondary_pqs + tertiary_pqs
-        # 18: index of Principle category
-        r_category = your_arc[18]
-        # 19: index of bonus step (if applicable)
-        arc_bonus = your_arc[19]
+        # 19: index of Principle category
+        r_category = your_arc[19]
+        # 20: index of bonus step (if applicable)
+        arc_bonus = your_arc[20]
         # Some bonus steps have to be implemented sooner than others
         arc_grants_dice = arc_bonus in [2]
         if (self.archetype in range(len(arc_collection)) and \
@@ -10385,88 +10432,49 @@ class Hero:
                                   100)
                         self.substeps_complete[this_step][primary_substep] = False
                         return
-                elif len(primary_changed) > 1:
+                elif len(primary_changed) > primary_req:
                     primary_changed_list = str(primary_changed[0])
                     for i in range(1, len(primary_changed)):
                         primary_changed_list += ", "
                         if i == len(primary_changed) - 1:
                             primary_changed_list += "and "
                         primary_changed_list += str(primary_changed[i])
-                    printlong("Error! More than one Power/Quality (" + primary_changed_list + \
-                              ") was added/modified in the Primary Power/Quality substep!",
+                    printlong("Error! More than " + str(primary_req) + " Power/Quality (" + \
+                              primary_changed_list + ") were added/modified in the Primary " + \
+                              "Power/Quality substep!",
                               100)
                     return
                 else:
-                    primary_size = primary_changed[0].diesize
-                    print(notePrefix + "found primary Power/Quality " + str(primary_changed[0]))
-                    del a_dice[a_dice.index(primary_size)]
-                    print(notePrefix + "remaining a_dice: " + str(a_dice))
+                    for primary_die in primary_changed:
+                        primary_size = primary_die.diesize
+                        print(notePrefix + "found primary Power/Quality " + str(primary_die))
+                        del a_dice[a_dice.index(primary_size)]
+                        print(notePrefix + "remaining a_dice: " + str(a_dice))
             else:
                 print("You get " + str(a_dice) + " to assign to Powers and/or Qualities.")
-                if len(primary_matches) > 0 and primary_alt > 0:
-                    # This hero already has at least one of the primary Powers/Qualities for this
-                    #  Archetype.
-                    ext_report = "This archetype requires one of the following " + \
-                                 categories_plural[primary_category] + "..."
-                    primary_names = MixedPQ(primary_pqs[0])
-                    for triplet in primary_pqs[1:]:
-                        primary_names += ", " + MixedPQ(triplet)
-                    ext_report += "\n" + split_text(primary_names,
-                                                    width=100,
-                                                    prefix="    ")
-                    ext_report += "\n\nYou already have..."
-                    ext_names = str(primary_matches[0])
-                    for d in primary_matches[1:]:
-                        ext_names += "\n" + str(d)
-                    ext_report += "\n" + split_text(ext_names,
-                                                    width=100,
-                                                    prefix="    ")
-                    # primary_alt > 0, so the user gets to make a choice
-                    if primary_alt == 1 and len(primary_matches) < len(primary_pqs):
-                        # Skip or choose another die to gain
-                        entry_options = ["Yes", "No"]
-                        decision = self.ChooseIndex(entry_options,
-                                                    prompt=ext_report + "\n\nDo you want to " + \
-                                                    "put one of " + str(a_dice) + \
-                                                    " into another option above? (y/n)",
-                                                    title="Archetype: " + arc_title,
-                                                    inputs=inputs)
-##                        print(notePrefix + "proceed = " + str(self.proceed))
-                        if self.proceed == 0:
-                            # User canceled out; fix proceed & drop everything
-                            if isRoot:
-                                self.proceed = 1
-                            return
-                        entry_choice = decision[0]
-                        inputs = decision[1]
-                        if entry_choice == 0:
-                            # Gain one of the primary_pqs that this hero doesn't already have.
-                            primary_options = [triplet for triplet in primary_pqs \
-                                               if triplet not in \
-                                               [d.triplet() for d in primary_matches]]
-                            if track_inputs:
-                                print(notePrefix + tracker_open)
-                            pass_inputs = []
-                            if len(inputs) > 0:
-                                if str(inputs[0]) != inputs[0]:
-                                    pass_inputs = inputs.pop(0)
-                            self.SetPrevious(primary_step)
-                            remainders = self.ChoosePQ(primary_options,
-                                                       a_dice,
-                                                       stepnum=primary_step,
-                                                       isRoot=False,
-                                                       inputs=pass_inputs)
-                            if track_inputs:
-                                print(notePrefix + tracker_close)
-##                            print(notePrefix + "proceed = " + str(self.proceed))
-                            if self.proceed == 0:
-                                # User canceled out; fix proceed & drop everything
-                                if isRoot:
-                                    self.proceed = 1
-                                return
-                            a_dice = remainders[1]
-                    elif primary_alt == 2:
-                        # Skip or swap the die with one of the new ones
+                if primary_req > 0:
+                    # This Archetype requires at least 1 of the primary Power/Quality options
+                    if len(primary_matches) > 0:
+                        # This hero already has at least one of the primary Powers/Qualities for
+                        #  this Archetype.
+                        ext_report = "This archetype requires one of the following " + \
+                                     categories_plural[primary_category] + "..."
+                        primary_names = MixedPQ(primary_pqs[0])
+                        for triplet in primary_pqs[1:]:
+                            primary_names += ", " + MixedPQ(triplet)
+                        ext_report += "\n" + split_text(primary_names,
+                                                        width=100,
+                                                        prefix="    ")
+                        ext_report += "\n\nYou already have..."
+                        ext_names = str(primary_matches[0])
+                        for d in primary_matches[1:]:
+                            ext_names += "\n" + str(d)
+                        ext_report += "\n" + split_text(ext_names,
+                                                        width=100,
+                                                        prefix="    ")
+                    if len(primary_matches) > 0 and primary_swappable:
+                        # Ask the user whether they want to swap out the die size of an existing
+                        #  primary Power/Quality
                         entry_options = ["Yes", "No"]
                         decision = self.ChooseIndex(entry_options,
                                                     prompt=ext_report + "\n\nDo you want to " + \
@@ -10525,58 +10533,86 @@ class Hero:
                             print("OK! " + self.hero_name + " now has " + \
                                   str(primary_matches[swap_index]) + ", and " + str(a_dice) + \
                                   " remaining for Powers/Qualities.")
-                elif len(primary_pqs)==1:
-                    # This Archetype has exactly 1 primary Power/Quality and this hero needs to
-                    #  gain it.
-                    # print("primary_pqs[0]: " + str(primary_pqs[0]))
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.SetPrevious(primary_step)
-                    a_dice = self.ChoosePQDieSize(primary_pqs[0][0],
-                                                  primary_pqs[0][1:],
-                                                  a_dice,
-                                                  stepnum=primary_step,
-                                                  isRoot=False,
-                                                  inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                elif len(primary_pqs) > 1:
-                    # This Archetype has more than 1 primary power/quality and this hero needs to
-                    #  gain one of them.
-                    primary_options = [triplet for triplet in primary_pqs if triplet not in \
-                                       [d.triplet() for d in primary_matches]]
-                    remainders = []
-                    if track_inputs:
-                        print(notePrefix + tracker_open)
-                    pass_inputs = []
-                    if len(inputs) > 0:
-                        if str(inputs[0]) != inputs[0]:
-                            pass_inputs = inputs.pop(0)
-                    self.SetPrevious(primary_step)
-                    remainders = self.ChoosePQ(primary_options,
-                                               a_dice,
-                                               stepnum=primary_step,
-                                               isRoot=False,
-                                               inputs=pass_inputs)
-                    if track_inputs:
-                        print(notePrefix + tracker_close)
-##                    print(notePrefix + "proceed = " + str(self.proceed))
-                    if self.proceed == 0:
-                        # User canceled out; fix proceed & drop everything
-                        if isRoot:
-                            self.proceed = 1
-                        return
-                    a_dice = remainders[1]
+                    if len(primary_matches) < primary_req:
+                        # The hero needs more primary Powers/Qualities
+                        while len(primary_matches) < primary_req and len(a_dice) > 0:
+                            # Prompt the user to assign one of a_dice to one of primary_pqs
+                            primary_options = [triplet for triplet in primary_pqs \
+                                               if triplet not in \
+                                               [d.triplet() for d in primary_matches]]
+                            remainders = []
+                            if track_inputs:
+                                print(notePrefix + tracker_open)
+                            pass_inputs = []
+                            if len(inputs) > 0:
+                                if str(inputs[0]) != inputs[0]:
+                                    pass_inputs = inputs.pop(0)
+                            self.SetPrevious(primary_step)
+                            remainders = self.ChoosePQ(primary_options,
+                                                       a_dice,
+                                                       stepnum=primary_step,
+                                                       isRoot=False,
+                                                       inputs=pass_inputs)
+                            if track_inputs:
+                                print(notePrefix + tracker_close)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; fix proceed & drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                            a_dice = remainders[1]
+                            primary_matches = [d for d in self.power_dice + self.quality_dice \
+                                               if d.triplet() in primary_pqs]
+                    else:
+                        primary_swapped = [pq for pq in (self.power_dice + self.quality_dice) if \
+                                           (pq.step != primary_step and \
+                                            primary_step in pq.steps_modified)]
+                        if len(primary_swapped) == 0 and len(primary_pqs) > len(primary_matches):
+                            # The user didn't swap out any die sizes in this substep, and there are
+                            #  other primary Power/Quality options that the hero doesn't already
+                            #  have. Ask the user whether to add one of them.
+                            entry_options = ["Yes", "No"]
+                            decision = self.ChooseIndex(entry_options,
+                                                        prompt=ext_report + "\n\nDo you want " + \
+                                                        "to put one of " + str(a_dice) + \
+                                                        " into another option above? (y/n)",
+                                                        title="Archetype: " + arc_title,
+                                                        inputs=inputs)
+##                            print(notePrefix + "proceed = " + str(self.proceed))
+                            if self.proceed == 0:
+                                # User canceled out; fix proceed & drop everything
+                                if isRoot:
+                                    self.proceed = 1
+                                return
+                            entry_choice = decision[0]
+                            inputs = decision[1]
+                            if entry_choice == 0:
+                                # Gain one of the primary_pqs that this hero doesn't already have.
+                                primary_options = [triplet for triplet in primary_pqs \
+                                                   if triplet not in \
+                                                   [d.triplet() for d in primary_matches]]
+                                if track_inputs:
+                                    print(notePrefix + tracker_open)
+                                pass_inputs = []
+                                if len(inputs) > 0:
+                                    if str(inputs[0]) != inputs[0]:
+                                        pass_inputs = inputs.pop(0)
+                                self.SetPrevious(primary_step)
+                                remainders = self.ChoosePQ(primary_options,
+                                                           a_dice,
+                                                           stepnum=primary_step,
+                                                           isRoot=False,
+                                                           inputs=pass_inputs)
+                                if track_inputs:
+                                    print(notePrefix + tracker_close)
+##                                print(notePrefix + "proceed = " + str(self.proceed))
+                                if self.proceed == 0:
+                                    # User canceled out; fix proceed & drop everything
+                                    if isRoot:
+                                        self.proceed = 1
+                                    return
+                                a_dice = remainders[1]
                 self.substeps_complete[this_step][primary_substep] = True
             # Substep 2: Secondary Powers/Qualities...
             secondary_substep = 2
@@ -10799,7 +10835,7 @@ class Hero:
                     if not self.substeps_complete[this_step][ability_substep]:
                         # First, add the mandatory Abilities for the Modular archetype:
                         self.SetPrevious(ability_step)
-                        mandatory_abilities = [a for a in arc_modular[7]]
+                        mandatory_abilities = [a for a in arc_modular[8]]
                         for template in mandatory_abilities:
                             zone = template.zone
                             if track_inputs:
@@ -12233,7 +12269,7 @@ class Hero:
                     # Substep 9: Principle...
                     self.SetPrevious(prin_step)
                     # Finally, choose a Principle from the Divided archetype
-                    r_category = arc_divided[18]
+                    r_category = arc_divided[19]
                     if track_inputs:
                         print(notePrefix + tracker_open)
                     pass_inputs = []
@@ -15510,7 +15546,7 @@ def Create_Ultra_Boy(step=len(step_names)):
             print(notePrefix + tracker_open)
         jo.AddArchetype(arc[0],
                         arc[1],
-                        inputs=[["a"],["f",["b"]],[["f"]],
+                        inputs=[[["a"]],["f",["b"]],[["f"]],
                                 ["f","a","I'm On It"],
                                 ["a","'Scuse Me"],
                                 ["a","Now I'm Mad"],
@@ -16183,7 +16219,7 @@ def Create_Platypus(step=len(step_names)):
             print(notePrefix + tracker_close)
         if track_inputs:
             print(notePrefix + tracker_open)
-        platypus.AddArchetype(arc[0], arc[1], inputs=[["b"],
+        platypus.AddArchetype(arc[0], arc[1], inputs=[[["b"]],
                                                       [["g",["b"]],["b"]],
                                                       ["B","c","a","No One Here But You"],
                                                       ["B","a","Reflection"],
@@ -17563,8 +17599,6 @@ class HeroFrame(Frame):
         self.resetButton = Button(self.buttonFrame,
                                   background=self.buttonColors[2],
                                   activebackground=self.buttonColors[3],
-                                  anchor=self.stepAnchor,
-                                  justify=self.stepReason,
                                   text="Reset Hero...",
                                   width=self.columnWidth*self.buttonWidth,
                                   height=self.rowHeight*self.buttonHeight,
@@ -18459,7 +18493,9 @@ class HeroFrame(Frame):
         if isinstance(self.myHero, Hero):
             # Display ONLY the button for the first hero creation step that ISN'T complete for this
             #  hero
-            self.stepButtons[0].config(text="Edit Names...")
+            self.stepButtons[0].config(text="Edit Names...",
+                                       anchor=CENTER,
+                                       justify=CENTER)
             self.SetFirstIncomplete()
             if False in self.completeSteps:
                 self.firstIncomplete = self.completeSteps.index(False)
@@ -18480,7 +18516,9 @@ class HeroFrame(Frame):
 ##                print(notePrefix + "max(steps_modified) not found, disabling ResetButton")
                 self.resetButton.config(state=DISABLED)
         else:
-            self.stepButtons[0].config(text="0. Add Names")
+            self.stepButtons[0].config(text="0. Add Names",
+                                       anchor=self.stepAnchor,
+                                       justify=self.stepReason)
             self.resetButton.config(state=DISABLED)
             self.packButton.config(state=DISABLED)
             for b in self.textButtons:
@@ -23364,11 +23402,10 @@ root.mainloop()
 ##ind=True
 ##hg=False
 ##
-##for s in range(1,len(step_names)):
+##for i in range(len(arc_collection)):
 ##    print()
-##    print("Step " + str(s) + ": " + step_names[s])
-##    snapshot = firstHero.RetrievePrior(s+1)
-##    snapshot.display(width=w,
+##    DisplayArchetype(i,
+##                     width=w,
 ##                     prefix=pf,
 ##                     indented=ind,
 ##                     hanging=hg)
