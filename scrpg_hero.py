@@ -1,4 +1,4 @@
-#! python3.7
+r#! python3.7
 
 import json
 import math
@@ -4109,7 +4109,7 @@ a_considered_planning = Ability("Considered Planning",
                                 "A",
                                 "Boost using %p0 and use your Max die. Defend against all " + \
                                 "Attacks against you using your Mid die until your next turn. " + \
-                                "Note your Min die resutl: as a Reaction, until your next " + \
+                                "Note your Min die result: as a Reaction, until your next " + \
                                 "turn, you may Hinder an attacker using that result.",
                                 2,
                                 pq_reqs=[Category(0,1)],
