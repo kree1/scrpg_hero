@@ -1,4 +1,4 @@
-r#! python3.7
+#! python3.7
 
 import json
 import math
