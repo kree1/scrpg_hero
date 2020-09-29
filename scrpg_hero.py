@@ -13858,7 +13858,7 @@ class Hero:
                        self.dv_personality in range(len(pn_collection)):
                         # This form relies on the Divided/Civilian form for its status dice, and
                         #  won't need to be updated if that die is changed
-                        if len(fm[5]) > 0:
+                        if len(fm.abilities) > 0:
                             # This form has an Ability, which means it's from Form-Changer, so its
                             #  name goes at the end of the list
                             if len(alt_pn_form) > 0:
