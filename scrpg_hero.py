@@ -3218,8 +3218,8 @@ a_psychic_coordination = Ability("Psychic Coordination",
                                  categories=[1,2])
 a_psychic_insight = Ability("Psychic Insight",
                             "R",
-                            "After rolling during your turn, you may take 1 damage to reroll " + \
-                            "your entire dice pool.",
+                            "After rolling during your turn, you may take 1 irreducible damage " + \
+                            "to reroll your entire dice pool.",
                             0)
 a_astral_projection = Ability("Astral Projection",
                               "A",
@@ -3392,8 +3392,8 @@ a_multitask = Ability("Multitask",
                       0)
 a_surprise_results = Ability("Surprise Results",
                              "R",
-                             "After rolling your dice pool for the turn, you may lose 1 " + \
-                             "Health to reroll your entire pool.",
+                             "After rolling your dice pool for the turn, you may take 1 " + \
+                             "irreducible damage to reroll your entire pool.",
                              0)
 a_unknown_results = Ability("Unknown Results",
                             "A",
@@ -3509,8 +3509,8 @@ a_emergency_change = Ability("Emergency Change",
                              2)
 a_analyze_probabilities = Ability("Analyze Probabilities",
                                   "R",
-                                  "After rolling your dice pool, you may lose 1 Health to " + \
-                                  "reroll your dice pool.",
+                                  "After rolling your dice pool, you may take 1 irreducible " + \
+                                  "damage to reroll your dice pool.",
                                   0)
 a_analyze_weakness = Ability("Analyze Weakness",
                              "A",
@@ -5181,7 +5181,7 @@ arc_transporter = ["Transporter",
                    1,
                    [],
                    [],
-                   [a_displacement_assault, a_hit_and_run, a_mobile_dodge, a_mobile_assist,
+                   [a_displacement_assault, a_hit_and_run, a_mobile_assist, a_mobile_dodge,
                     a_run_down],
                    False,
                    -1,
