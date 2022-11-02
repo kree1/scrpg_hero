@@ -4197,10 +4197,11 @@ ra_materials = [a_field_of_hazards, a_impenetrable_defense, a_like_the_wind, a_p
                 a_summoned_allies]
 ra_mobility = [a_calculated_dodge, a_heroic_interruption, a_intercession, a_take_down,
                a_untouchable_movement]
-ra_psychic = [a_dangerous_hinder, a_dire_control, a_final_wrath, a_give_time, a_impenetrable_defense,
-              a_impossible_knowledge, a_summoned_allies]
+ra_psychic = [a_dangerous_hinder, a_dire_control, a_final_wrath, a_give_time,
+              a_impenetrable_defense, a_impossible_knowledge, a_summoned_allies]
 ra_self_control = [a_change_self, a_empowerment, a_impenetrable_defense, a_major_regeneration,
-                   a_defensive_deflection, a_mutable_form, a_powerful_strike, a_resurrection, a_summoned_allies]
+                   a_defensive_deflection, a_mutable_form, a_powerful_strike, a_resurrection,
+                   a_summoned_allies]
 ra_technological = [a_combustion, a_final_wrath, a_full_defensive, a_ultimate_weaponry, a_unload]
 ra_information = [a_critical_eye, a_discern_weakness, a_reliable_aptitude, a_specialized_info]
 ra_mental = [a_aware_response, a_canny_awareness, a_considered_planning, a_final_wrath, a_harmony,
@@ -4208,7 +4209,8 @@ ra_mental = [a_aware_response, a_canny_awareness, a_considered_planning, a_final
 ra_physical = [a_book_it, a_endurance_fighting, a_finishing_blow, a_reactive_defense]
 ra_social = [a_heroic_sacrifice, a_inspiring_totem, a_lead_by_example, a_ultimatum]
 ra_collection = [[ra_information, ra_mental, ra_physical, ra_social],
-                 [ra_athletic, ra_elemental, ra_hallmark, ra_intellectual, ra_materials, ra_mobility, ra_psychic, ra_self_control, ra_technological]]
+                 [ra_athletic, ra_elemental, ra_hallmark, ra_intellectual, ra_materials,
+                  ra_mobility, ra_psychic, ra_self_control, ra_technological]]
 ra_minion_maker = [a_construction_focus, a_swarm_combat, a_sacrifice]
 
 global ps_accident, ps_training, ps_genetic, ps_experimentation, ps_mystical, ps_nature, ps_relic
