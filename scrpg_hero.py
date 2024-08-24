@@ -13270,7 +13270,7 @@ class Hero:
             #  than 1, we have a problem.
             rs_abilities = [a for a in self.abilities \
                             if math.floor(a.step) == math.floor(this_step)]
-            print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
+##            print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
             if len(rs_abilities) > 1 or self.steps_complete[this_step]:
                 print("Error! " + self.hero_name + " already added " + str(len(rs_abilities)) + \
                       " Red Abilities in step " + str(this_step) + ".")
@@ -13459,8 +13459,8 @@ class Hero:
                 rs_abilities = [a for a in self.abilities \
                                 if math.floor(a.step) == math.floor(this_step)]
                 self.substeps_complete[this_step][ra_substep] = True
-                print(notePrefix + "this_step = " + str(this_step))
-                print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
+##                print(notePrefix + "this_step = " + str(this_step))
+##                print(notePrefix + "len(rs_abilities) = " + str(len(rs_abilities)))
                 if len(rs_abilities) > 1:
                     print("That's all for your Red Abilities.")
                     self.steps_complete[math.floor(this_step)] = True
